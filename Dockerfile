@@ -1,5 +1,5 @@
-# Use the official Tomcat image
-FROM tomcat:9.0-jdk17
+# Use Tomcat 10.1 because this project uses jakarta.servlet (Java EE 10)
+FROM tomcat:10.1-jdk17
 
 # Remove default Tomcat apps to keep it clean
 RUN rm -rf /usr/local/tomcat/webapps/*
