@@ -1,0 +1,19 @@
+# Thư mục build của NetBeans/Ant
+build/
+dist/
+
+# File cấu hình cá nhân của NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# File rác hệ thống
+.DS_Store
+Thumbs.db
+*.log
+
+# Cấu hình IDE khác (nếu dùng chung với VSCode/IntelliJ)
+.vscode/
+.idea/
+*.iml

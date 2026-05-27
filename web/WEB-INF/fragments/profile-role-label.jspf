@@ -1,0 +1,31 @@
+<%
+    String profileRoleLabel = "h\u1ecdc vi\u00ean";
+    if (user != null && user.getRoles() != null) {
+        boolean hasStudentRole = false;
+        for (com.hipzi.model.Role role : user.getRoles()) {
+            if (role == null || role.getName() == null) {
+                continue;
+            }
+            String roleName = role.getName().trim().toLowerCase();
+            if ("admin".equals(roleName)) {
+                profileRoleLabel = "qu\u1ea3n tr\u1ecb vi\u00ean";
+                break;
+            } else if ("staff".equals(roleName)) {
+                profileRoleLabel = "nh\u00e2n vi\u00ean";
+                break;
+            } else if ("teacher".equals(roleName)) {
+                profileRoleLabel = "gi\u1ea3ng vi\u00ean";
+                break;
+            } else if ("parent".equals(roleName)) {
+                profileRoleLabel = "ph\u1ee5 huynh";
+                break;
+            } else if ("student".equals(roleName)) {
+                hasStudentRole = true;
+            }
+        }
+        if (hasStudentRole && "h\u1ecdc vi\u00ean".equals(profileRoleLabel)) {
+            profileRoleLabel = "h\u1ecdc vi\u00ean";
+        }
+    }
+    String profileMenuLabel = "H\u1ed3 s\u01a1 " + profileRoleLabel;
+%>

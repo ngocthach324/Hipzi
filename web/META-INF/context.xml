@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Context path="/HipZi">
+  <!--
+        Google OAuth config for local Tomcat.
+        In Google Cloud Console, add this Authorized redirect URI:
+        http://localhost:8080/HipZi/auth/google/callback
+    -->
+  <Parameter name="GOOGLE_CLIENT_ID" value="74329463402-nnshv2a07vs4tgut7fnohi4mlpeskher.apps.googleusercontent.com" override="false" />
+  <Parameter name="GOOGLE_CLIENT_SECRET" value="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" override="false" />
+  <Parameter name="GOOGLE_REDIRECT_URI" value="http://localhost:8080/HipZi/auth/google/callback" override="false" />
+</Context>
