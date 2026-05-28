@@ -52,6 +52,7 @@ public class ClassroomServlet extends HttpServlet {
                             || c.getGrade().equalsIgnoreCase(gradeParam);
                     boolean matchSearch = (searchParam == null || searchParam.trim().isEmpty())
                             || c.getTitle().toLowerCase().contains(searchParam.trim().toLowerCase())
+                            || c.getSubject().toLowerCase().contains(searchParam.trim().toLowerCase())
                             || c.getTeacherName().toLowerCase().contains(searchParam.trim().toLowerCase());
                     return matchSubject && matchGrade && matchSearch;
                 })

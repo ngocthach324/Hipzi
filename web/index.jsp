@@ -39,7 +39,8 @@
                 <li><a href="<%= request.getContextPath() + (user != null ? "/material-repository" : "/login") %>">Kho tài liệu</a></li>
                 <li><a href="<%= request.getContextPath() + (user != null ? "/classes" : "/login") %>">Lớp học</a></li>
                 <li><a href="<%= request.getContextPath() + (user != null ? "/practice" : "/login") %>">Luyện tập</a></li>
-                <li><a href="<%= request.getContextPath() + (user != null ? "/teachers" : "/login") %>">Tìm giảng viên</a></li>
+                <li><a href="<%= request.getContextPath() + (user != null ? "/exam-room" : "/login") %>">Phòng thi</a></li>
+                <li><a href="${pageContext.request.contextPath}/index.jsp#ai-roadmap">Hipzi AI</a></li>
             </ul>
             
             <% if (user != null) { %>
@@ -477,7 +478,7 @@
     </section>
 
     <!-- PHẦN LỘ TRÌNH HỌC TẬP AI / AI ROADMAP SECTION -->
-    <section class="ai-roadmap-section">
+    <section id="ai-roadmap" class="ai-roadmap-section">
         <div class="ai-roadmap-header">
             <h2 class="section-title scroll-letter-title ai-roadmap-title" data-accent-text="HIPZI AI" data-accent-mode="brand-bounce">Xây dựng lộ trình học tập cùng HIPZI AI</h2>
             <p class="section-subtitle typewriter-text">HIPZI AI đồng hành cùng bạn từ việc xác định mục tiêu, gợi ý lộ trình, cung cấp tài liệu đến luyện tập và theo dõi tiến độ học tập.</p>

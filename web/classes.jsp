@@ -36,7 +36,8 @@
                 <li><a href="${pageContext.request.contextPath}/material-repository">Kho tài liệu</a></li>
                 <li><a href="${pageContext.request.contextPath}/classes" class="active">Lớp học</a></li>
                 <li><a href="${pageContext.request.contextPath}/practice">Luyện tập</a></li>
-                <li><a href="${pageContext.request.contextPath}/teachers">Tìm giảng viên</a></li>
+                <li><a href="${pageContext.request.contextPath}/exam-room">Phòng thi</a></li>
+                <li><a href="${pageContext.request.contextPath}/index.jsp#ai-roadmap">Hipzi AI</a></li>
             </ul>
             
             <% if (user != null) { %>
@@ -85,7 +86,7 @@
             <div class="search-bar-wrapper" style="max-width: 650px; margin: 2rem auto 0 auto;">
                 <form action="${pageContext.request.contextPath}/classes" method="GET" class="search-bar" style="background: #ffffff; padding: 0.5rem 0.5rem 0.5rem 1.5rem; border-radius: 100px; display: flex; align-items: center; box-shadow: 0 10px 25px rgba(109, 40, 217, 0.2);">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" name="q" class="search-input" placeholder="Tìm kiếm lớp học, tên giảng viên..." value="${param.q}" style="border: none; outline: none; width: 100%; margin-left: 0.75rem; font-size: 1rem;" />
+                    <input type="text" name="q" class="search-input" placeholder="Tìm kiếm lớp học, chủ đề, tên giảng viên..." value="${param.q}" style="border: none; outline: none; width: 100%; margin-left: 0.75rem; font-size: 1rem;" />
                     <input type="hidden" name="subject" value="${empty param.subject ? 'Tất cả' : param.subject}" />
                     <input type="hidden" name="grade" value="${empty param.grade ? 'Tất cả' : param.grade}" />
                     <button type="submit" class="btn btn-primary search-btn" style="background: #8b5cf6; border-color: #8b5cf6; border-radius: 100px; font-weight: 600;">Tìm kiếm</button>

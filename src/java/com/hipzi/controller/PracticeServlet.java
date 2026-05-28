@@ -2,7 +2,6 @@ package com.hipzi.controller;
 
 import com.hipzi.model.Quiz;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -19,7 +18,12 @@ public class PracticeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        List<Quiz> quizzes = practiceService.getRecentQuizzes();
+        String subjectParam = request.getParameter("subject");
+        String gradeParam = request.getParameter("grade");
+        String typeParam = request.getParameter("type");
+        String searchParam = request.getParameter("q");
+
+        List<Quiz> quizzes = practiceService.getFilteredQuizzes(subjectParam, gradeParam, typeParam, searchParam);
 
         request.setAttribute("quizzes", quizzes);
         

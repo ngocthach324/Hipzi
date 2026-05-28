@@ -54,7 +54,8 @@
                 <li><a href="${pageContext.request.contextPath}/material-repository" class="active">Kho tài liệu</a></li>
                 <li><a href="${pageContext.request.contextPath}/classes">Lớp học</a></li>
                 <li><a href="${pageContext.request.contextPath}/practice">Luyện tập</a></li>
-                <li><a href="${pageContext.request.contextPath}/teachers">Tìm giảng viên</a></li>
+                <li><a href="${pageContext.request.contextPath}/exam-room">Phòng thi</a></li>
+                <li><a href="${pageContext.request.contextPath}/index.jsp#ai-roadmap">Hipzi AI</a></li>
             </ul>
             
             <% if (user != null) { %>
@@ -103,7 +104,7 @@
                 <form action="${pageContext.request.contextPath}/material-repository" method="GET">
                     <div class="search-input-wrapper">
                         <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <input type="text" name="q" placeholder="Tìm kiếm tài liệu, chủ đề..." class="search-input" value="${param.q}">
+                        <input type="text" name="q" placeholder="Tìm kiếm tài liệu, chủ đề, tên giảng viên..." class="search-input" value="${param.q}">
                         <input type="hidden" name="subject" value="${currentSubject}">
                         <input type="hidden" name="grade" value="${currentGrade}">
                         <input type="hidden" name="type" value="${currentType}">

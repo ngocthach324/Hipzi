@@ -82,8 +82,10 @@ public class ClassroomDao {
             params.add(gradeFilter.trim());
         }
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-            sql.append("AND (c.title ILIKE ? OR u.display_name ILIKE ?) ");
+            sql.append("AND (c.title ILIKE ? OR COALESCE(c.description, '') ILIKE ? OR c.subject ILIKE ? OR u.display_name ILIKE ?) ");
             String keyword = "%" + searchQuery.trim() + "%";
+            params.add(keyword);
+            params.add(keyword);
             params.add(keyword);
             params.add(keyword);
         }

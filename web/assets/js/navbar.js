@@ -286,6 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
             { match: ['/material-repository'], target: '/material-repository' },
             { match: ['/classes', '/class-detail', '/classroom'], target: '/classes' },
             { match: ['/practice'], target: '/practice' },
+            { match: ['/exam-room'], target: '/exam-room' },
             { match: ['/teachers'], target: '/teachers' }
         ];
 
@@ -294,10 +295,13 @@ document.addEventListener('DOMContentLoaded', function() {
         );
 
         navLinks.forEach(link => {
-            const linkPath = new URL(link.href, window.location.origin).pathname.replace(/\/+$/, '');
+            const linkUrl = new URL(link.href, window.location.origin);
+            const linkPath = linkUrl.pathname.replace(/\/+$/, '');
             const isHome = !activeGroup && linkPath.endsWith('/index.jsp')
+                    && !link.hash
                     && (currentPath === appRoot || currentPath.endsWith('/index.jsp'));
-            link.classList.toggle('active', isHome || (!!activeGroup && linkPath.endsWith(activeGroup.target)));
+            const isActive = isHome || (!!activeGroup && linkPath.endsWith(activeGroup.target));
+            link.classList.toggle('active', isActive);
         });
     }
 
