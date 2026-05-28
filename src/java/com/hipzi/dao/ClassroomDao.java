@@ -14,7 +14,7 @@ import java.util.List;
 public class ClassroomDao {
 
     public List<Classroom> findByTeacherId(String teacherId) {
-        String sql = "SELECT c.*, u.display_name AS teacher_name, "
+        String sql = "SELECT c.*, u.display_name AS teacher_name, u.avatar_url AS teacher_avatar_url, "
                 + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "
                 + "FROM classrooms c "
                 + "JOIN users u ON u.id = c.teacher_id "
@@ -39,7 +39,7 @@ public class ClassroomDao {
     }
 
     public Classroom findById(String classId) {
-        String sql = "SELECT c.*, u.display_name AS teacher_name, "
+        String sql = "SELECT c.*, u.display_name AS teacher_name, u.avatar_url AS teacher_avatar_url, "
                 + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "
                 + "FROM classrooms c "
                 + "JOIN users u ON u.id = c.teacher_id "
@@ -65,7 +65,7 @@ public class ClassroomDao {
 
     public List<Classroom> listPublic(String subjectFilter, String gradeFilter, String searchQuery) {
         StringBuilder sql = new StringBuilder(
-                "SELECT c.*, u.display_name AS teacher_name, "
+                "SELECT c.*, u.display_name AS teacher_name, u.avatar_url AS teacher_avatar_url, "
                 + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "
                 + "FROM classrooms c "
                 + "JOIN users u ON u.id = c.teacher_id "
@@ -113,7 +113,7 @@ public class ClassroomDao {
 
     public List<Classroom> listForStaff(String titleFilter, String subjectFilter, String statusFilter) {
         StringBuilder sql = new StringBuilder(
-                "SELECT c.*, u.display_name AS teacher_name, "
+                "SELECT c.*, u.display_name AS teacher_name, u.avatar_url AS teacher_avatar_url, "
                 + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "
                 + "FROM classrooms c "
                 + "JOIN users u ON u.id = c.teacher_id "
@@ -263,6 +263,7 @@ public class ClassroomDao {
         classroom.setEndTime(rs.getTime("end_time"));
         classroom.setTeacherName(readOptionalString(rs, "teacher_name"));
         classroom.setTeacherSchool(readOptionalString(rs, "teacher_school"));
+        classroom.setTeacherAvatarUrl(readOptionalString(rs, "teacher_avatar_url"));
         classroom.setSchedule(formatSchedule(classroom.getScheduleDays(), classroom.getStartTime(), classroom.getEndTime()));
         classroom.setCreatedAt(rs.getTimestamp("created_at"));
         classroom.setUpdatedAt(rs.getTimestamp("updated_at"));

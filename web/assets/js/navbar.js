@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
             { match: ['/material-repository'], target: '/material-repository' },
             { match: ['/classes', '/class-detail', '/classroom'], target: '/classes' },
             { match: ['/practice'], target: '/practice' },
-            { match: ['/exam-room'], target: '/exam-room' },
+            { match: ['/exam-room', '/class-exam-room.jsp'], target: '/exam-room' },
             { match: ['/teachers'], target: '/teachers' }
         ];
 

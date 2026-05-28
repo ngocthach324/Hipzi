@@ -31,6 +31,7 @@
     String grade = classroom != null && classroom.getGrade() != null && !classroom.getGrade().isEmpty() ? classroom.getGrade() : "Mọi trình độ";
     String teacherName = classroom != null && classroom.getTeacherName() != null && !classroom.getTeacherName().isEmpty() ? classroom.getTeacherName() : "Giảng viên HIPZI";
     String teacherSchool = classroom != null && classroom.getTeacherSchool() != null && !classroom.getTeacherSchool().isEmpty() ? classroom.getTeacherSchool() : "Đơn vị giảng dạy đang cập nhật";
+    String teacherAvatarUrl = classroom != null && classroom.getTeacherAvatarUrl() != null ? classroom.getTeacherAvatarUrl().trim() : "";
     String schedule = classroom != null && classroom.getSchedule() != null ? classroom.getSchedule() : "Lịch học đang cập nhật";
     String status = classroom != null ? classroom.getStatus() : "open";
     String statusLabel = classroom != null ? classroom.getStatusLabel() : "Đang mở";
@@ -44,6 +45,7 @@
     String safeGrade = grade.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     String safeTeacherName = teacherName.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     String safeTeacherSchool = teacherSchool.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    String safeTeacherAvatarUrl = teacherAvatarUrl.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     String safeSchedule = schedule.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     String safeStatusLabel = statusLabel.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     String safeDescription = description.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
@@ -66,7 +68,7 @@
         .class-detail-shell {
             max-width: 1180px;
             margin: 0 auto;
-            padding: 7rem 1.25rem 4rem;
+            padding: calc(7rem - 20px) 1.25rem 4rem;
         }
 
         .class-back-link {
@@ -448,6 +450,215 @@
             left: 13%;
             bottom: 5%;
             animation-delay: 1.4s;
+        }
+
+        .class-hero {
+            min-height: auto;
+            border: 1px solid rgba(203, 213, 225, 0.72);
+            border-radius: 1.15rem;
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(240, 253, 250, 0.9)),
+                #ffffff;
+            box-shadow: 0 22px 60px rgba(15, 23, 42, 0.08), 0 14px 34px rgba(15, 118, 110, 0.08);
+            overflow: hidden;
+        }
+
+        .class-hero::before,
+        .class-hero::after {
+            content: none;
+        }
+
+        .class-hero-band {
+            min-height: auto;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(260px, 0.38fr);
+            gap: 1.25rem;
+            align-items: stretch;
+            padding: 1.35rem;
+            color: #0f172a;
+        }
+
+        .class-hero-content {
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            animation: none;
+        }
+
+        .class-hero h1 {
+            max-width: 760px;
+            margin: 0;
+            color: #0f172a;
+            font-size: clamp(1.8rem, 3vw, 2.65rem);
+            line-height: 1.12;
+            text-shadow: none;
+        }
+
+        .class-hero p {
+            display: block;
+            max-width: 700px;
+            margin: 0.75rem 0 0;
+            color: #64748b;
+            font-size: 0.98rem;
+            line-height: 1.55;
+            font-weight: 650;
+        }
+
+        .class-hero-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.85rem;
+        }
+
+        .class-hero-chip {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.38rem 0.78rem;
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+            font-size: 0.78rem;
+            font-weight: 900;
+        }
+
+        .class-hero-chip.muted {
+            background: #f8fafc;
+            color: #475569;
+            border-color: #e2e8f0;
+        }
+
+        .hero-join-actions {
+            margin-top: 1.1rem;
+        }
+
+        .hero-join-btn {
+            min-width: 0;
+            border-radius: 999px;
+            padding: 0.78rem 1.25rem;
+            background: #0f766e;
+            color: #ffffff;
+            box-shadow: 0 14px 30px rgba(15, 118, 110, 0.22);
+        }
+
+        .hero-join-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 38px rgba(15, 118, 110, 0.28);
+        }
+
+        .hero-join-btn.secondary {
+            background: #ffffff;
+            color: #0f766e;
+            border: 1px solid rgba(15, 118, 110, 0.22);
+            box-shadow: none;
+        }
+
+        .join-request-note {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #92400e;
+            backdrop-filter: none;
+        }
+
+        .hero-visual {
+            min-height: auto;
+            display: block;
+            animation: none;
+        }
+
+        .hero-orbit,
+        .floating-chip,
+        .visual-board,
+        .visual-screen,
+        .visual-desk {
+            display: none;
+        }
+
+        .classroom-visual-card {
+            width: 100%;
+            min-width: 0;
+            height: 100%;
+            min-height: 210px;
+            aspect-ratio: auto;
+            transform: none;
+            animation: none;
+            border-radius: 1rem;
+            background:
+                linear-gradient(180deg, rgba(240, 253, 250, 0.96), rgba(255, 255, 255, 0.96)),
+                #ffffff;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 18px 36px rgba(15, 118, 110, 0.1);
+            padding: 1rem;
+            color: #0f172a;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 0.85rem;
+        }
+
+        .classroom-visual-card::before,
+        .classroom-visual-card::after {
+            content: none;
+        }
+
+        .teacher-photo-badge {
+            display: inline-flex;
+            width: max-content;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.34rem 0.7rem;
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+            font-size: 0.75rem;
+            font-weight: 900;
+        }
+
+        .teacher-photo-frame {
+            align-self: center;
+            justify-self: center;
+            width: min(150px, 55%);
+            aspect-ratio: 1;
+            border-radius: 999px;
+            padding: 0.35rem;
+            background: linear-gradient(135deg, #14b8a6, #d1fae5);
+            box-shadow: 0 18px 34px rgba(15, 118, 110, 0.18);
+        }
+
+        .teacher-photo-frame img,
+        .teacher-photo-placeholder {
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            border: 4px solid #ffffff;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            color: #0f766e;
+            font-size: 2.6rem;
+            font-weight: 950;
+        }
+
+        .teacher-photo-meta {
+            text-align: center;
+            display: grid;
+            gap: 0.2rem;
+        }
+
+        .teacher-photo-meta strong {
+            color: #0f172a;
+            font-size: 1rem;
+            line-height: 1.25;
+        }
+
+        .teacher-photo-meta span {
+            color: #64748b;
+            font-size: 0.84rem;
+            font-weight: 750;
         }
 
         @keyframes visualIn {
@@ -845,42 +1056,22 @@
 
         @media (max-width: 720px) {
             .class-detail-shell {
-                padding: 6rem 1rem 3rem;
-            }
-
-            .class-hero-band {
-                min-height: 520px;
-                padding: 1.35rem;
-                align-items: flex-end;
-            }
-
-            .class-hero-band::before {
-                content: none;
+                padding: calc(6rem - 20px) 1rem 3rem;
             }
 
             .class-hero-band {
                 grid-template-columns: 1fr;
                 gap: 1rem;
+                padding: 1rem;
             }
 
             .hero-visual {
-                min-height: 250px;
+                min-height: auto;
                 order: -1;
             }
 
             .classroom-visual-card {
-                width: min(82vw, 330px);
-                min-width: 0;
-            }
-
-            .hero-orbit {
-                width: min(80vw, 320px);
-            }
-
-            .floating-chip {
-                min-width: 60px;
-                height: 36px;
-                font-size: 0.82rem;
+                min-height: 190px;
             }
 
             .class-overview {
@@ -954,7 +1145,13 @@
         <section class="class-hero">
             <div class="class-hero-band">
                 <div class="class-hero-content">
-                    <h1>Chào mừng đến với phòng học HIPZI</h1>
+                    <div class="class-hero-meta">
+                        <span class="class-hero-chip"><%= h(statusLabel) %></span>
+                        <span class="class-hero-chip muted"><%= h(subject) %></span>
+                        <span class="class-hero-chip muted"><%= h(grade) %></span>
+                    </div>
+                    <h1><%= safeTitle %></h1>
+                    <p>Không gian học tập của lớp cùng giảng viên <strong><%= h(teacherName) %></strong>. Theo dõi tài liệu, bài tập và trao đổi trong phòng học riêng của HIPZI.</p>
                     <div class="hero-join-actions">
                         <% if (canEditClassModules) { %>
                             <a class="hero-join-btn" href="${pageContext.request.contextPath}/classroom?id=<%= h(classroom.getId()) %>">Vào không gian quản lý lớp</a>
@@ -980,14 +1177,19 @@
                     </div>
                 </div>
                 <div class="hero-visual" aria-hidden="true">
-                    <div class="hero-orbit"></div>
                     <div class="classroom-visual-card">
-                        <div class="visual-board"></div>
-                        <div class="visual-screen"></div>
-                        <div class="visual-desk"></div>
-                        <span class="floating-chip one">LIVE</span>
-                        <span class="floating-chip two">AI</span>
-                        <span class="floating-chip three">XP</span>
+                        <span class="teacher-photo-badge">Giảng viên</span>
+                        <div class="teacher-photo-frame">
+                            <% if (!safeTeacherAvatarUrl.isEmpty()) { %>
+                                <img src="<%= safeTeacherAvatarUrl %>" alt="">
+                            <% } else { %>
+                                <div class="teacher-photo-placeholder"><%= safeTeacherName.substring(0, 1).toUpperCase() %></div>
+                            <% } %>
+                        </div>
+                        <div class="teacher-photo-meta">
+                            <strong><%= safeTeacherName %></strong>
+                            <span><%= h(subject) %> · <%= h(grade) %></span>
+                        </div>
                     </div>
                 </div>
             </div>

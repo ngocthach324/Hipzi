@@ -26,14 +26,21 @@
     <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/favicon.png">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css">
     <style>
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             background: linear-gradient(135deg, #e8f3f6 0%, #f7fbfc 46%, #ffffff 100%);
-            min-height: 100vh;
         }
 
         .exam-gateway {
-            padding: 6.35rem 1.5rem 2rem;
-            min-height: 100vh;
+            padding: 5.55rem 1.5rem 1.25rem;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .exam-gateway-inner {
@@ -51,7 +58,7 @@
             display: inline-flex;
             align-items: center;
             gap: 0.45rem;
-            margin-bottom: 0.9rem;
+            margin-bottom: 0.7rem;
             color: #0f766e;
             font-weight: 800;
             font-size: 0.82rem;
@@ -78,7 +85,7 @@
         }
 
         .exam-hero p {
-            margin: 1rem auto 0;
+            margin: 0.85rem auto 0;
             color: #475569;
             font-size: 1rem;
             line-height: 1.7;
@@ -133,11 +140,16 @@
         }
 
         .exam-card-code {
+            display: inline-flex;
+            align-items: center;
+            width: max-content;
+            border-radius: 999px;
+            padding: 0.34rem 0.72rem;
+            background: rgba(20, 184, 166, 0.12);
             color: #0f766e;
             font-size: 0.78rem;
             font-weight: 900;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
+            letter-spacing: 0;
         }
 
         .exam-entry-card h2 {
@@ -158,29 +170,46 @@
         .exam-card-bottom {
             position: relative;
             z-index: 1;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
+            justify-content: center;
+            align-self: flex-start;
+            gap: 0.55rem;
             margin-top: 1.35rem;
-            color: #0f766e;
+            color: #ffffff;
             font-weight: 800;
             font-size: 0.92rem;
+            border-radius: 999px;
+            padding: 0.72rem 0.95rem 0.72rem 1.1rem;
+            background: #0f766e;
+            box-shadow: 0 12px 26px rgba(15, 118, 110, 0.22);
         }
 
         .exam-card-arrow {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 42px;
-            height: 42px;
+            width: 24px;
+            height: 24px;
             border-radius: 999px;
-            background: #e8f3f6;
-            color: #0f766e;
-            font-size: 1.25rem;
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            font-size: 1rem;
         }
 
         @media (max-width: 960px) {
+            html,
+            body {
+                height: auto;
+                overflow: auto;
+            }
+
+            .exam-gateway {
+                height: auto;
+                min-height: 100vh;
+                overflow: visible;
+            }
+
             .exam-card-grid {
                 grid-template-columns: 1fr;
             }
@@ -192,7 +221,7 @@
 
         @media (max-width: 640px) {
             .exam-gateway {
-                padding: 6rem 1rem 2rem;
+                padding: 5.6rem 1rem 2rem;
             }
 
             .exam-hero {
@@ -263,21 +292,21 @@
             <section class="exam-card-grid" aria-label="Các hạng mục thi trong HIPZI">
                 <a class="exam-entry-card" href="#" aria-label="Mở hạng mục Thi thử">
                     <div>
-                        <div class="exam-card-code">mock_exam</div>
+                        <div class="exam-card-code">Luyện tập cá nhân</div>
                         <h2>Thi thử</h2>
-                        <p>Bài thi mở để học viên tự luyện tập, kiểm tra năng lực cá nhân và làm quen cấu trúc đề thật.</p>
+                        <p>Luyện đề mở, kiểm tra năng lực và làm quen cấu trúc bài thi thật.</p>
                     </div>
                     <div class="exam-card-bottom">
-                        <span>Khám phá Thi thử</span>
+                        <span>Khám phá thi thử</span>
                         <span class="exam-card-arrow" aria-hidden="true">›</span>
                     </div>
                 </a>
 
-                <a class="exam-entry-card" href="#" data-tone="class" aria-label="Mở hạng mục Bài thi lớp học">
+                <a class="exam-entry-card" href="${pageContext.request.contextPath}/class-exam-room.jsp" data-tone="class" aria-label="Mở hạng mục Bài thi lớp học">
                     <div>
-                        <div class="exam-card-code">class_exam</div>
+                        <div class="exam-card-code">Kiểm tra lớp học</div>
                         <h2>Bài thi lớp học</h2>
-                        <p>Bài kiểm tra riêng cho từng lớp, phục vụ đánh giá sau buổi học, giữa lớp hoặc cuối khóa.</p>
+                        <p>Làm bài kiểm tra riêng theo lớp và theo dõi tiến độ học tập.</p>
                     </div>
                     <div class="exam-card-bottom">
                         <span>Vào bài thi lớp học</span>
@@ -287,9 +316,9 @@
 
                 <a class="exam-entry-card" href="#" data-tone="contest" aria-label="Mở hạng mục Kỳ thi HIPZI">
                     <div>
-                        <div class="exam-card-code">hipzi_contest</div>
+                        <div class="exam-card-code">Sự kiện thi chung</div>
                         <h2>Kỳ thi HIPZI</h2>
-                        <p>Sân chơi học tập chung theo tuần, tháng hoặc sự kiện, có thể mở rộng bảng xếp hạng và phần thưởng.</p>
+                        <p>Tham gia kỳ thi chung, cạnh tranh bảng xếp hạng và nhận phần thưởng.</p>
                     </div>
                     <div class="exam-card-bottom">
                         <span>Xem kỳ thi HIPZI</span>

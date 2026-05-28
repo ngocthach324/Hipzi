@@ -508,10 +508,13 @@ public class ProfileServlet extends HttpServlet {
 
     private Time parseTimeParam(String value) {
         String cleaned = cleanParam(value);
-        if (!cleaned.matches("^\\d{2}:\\d{2}$")) {
+        if (!cleaned.matches("^(([01]\\d|2[0-3]):[0-5]\\d|24:00)$")) {
             return null;
         }
         try {
+            if ("24:00".equals(cleaned)) {
+                return Time.valueOf("23:59:59");
+            }
             return Time.valueOf(cleaned + ":00");
         } catch (IllegalArgumentException e) {
             return null;

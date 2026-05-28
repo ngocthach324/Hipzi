@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.List"%>
 <%@page import="com.hipzi.model.Classroom"%>
 <%@page import="com.hipzi.model.User"%>
@@ -283,92 +283,89 @@
         </div>
     </footer>
 
-    <!-- KỊCH BẢN JAVASCRIPT HỖ TRỢ LỌC CHÉO AJAX HAI CHIỀU -->
+    <!-- KỊCH BẢN JAVASCRIPT HỖ TRỢ LỌC CHÉO AJAX HAI CHIỀU (TỐI ƯU) -->
     <script>
     (function () {
         var sidebarEl = document.querySelector('.sidebar-filters');
         var resultsEl = document.getElementById('materials-results');
+        var gridEl = resultsEl ? resultsEl.querySelector('.material-grid') : null;
+        var abortCtrl = null;
 
         function setLoading(isLoading) {
             if (!resultsEl) return;
-            if (isLoading) {
-                resultsEl.style.opacity = '0.4';
-                resultsEl.style.pointerEvents = 'none';
-            } else {
-                resultsEl.style.opacity = '1';
-                resultsEl.style.pointerEvents = 'auto';
-            }
+            resultsEl.style.opacity = isLoading ? '0.45' : '1';
+            resultsEl.style.pointerEvents = isLoading ? 'none' : 'auto';
         }
 
         function applyTwoWayFilter(targetHref, isPopState) {
             var targetUrl = new URL(targetHref, location.href);
             var currentUrl = new URL(location.href);
 
-            var newSubject = targetUrl.searchParams.get('subject');
-            var newGrade = targetUrl.searchParams.get('grade');
+            var newSubject = targetUrl.searchParams.get('subject') || currentUrl.searchParams.get('subject') || 'Tất cả';
+            var newGrade   = targetUrl.searchParams.get('grade')   || currentUrl.searchParams.get('grade')   || 'Tất cả';
+            var q          = currentUrl.searchParams.get('q') || '';
 
-            if (!newSubject) newSubject = currentUrl.searchParams.get('subject') || 'Tất cả';
-            if (!newGrade) newGrade = currentUrl.searchParams.get('grade') || 'Tất cả';
+            // Cập nhật trạng thái active sidebar ngay lập tức (không cần chờ server)
+            updateSidebarActive(newSubject, newGrade, q);
 
             var fetchUrl = new URL(location.pathname, location.href);
             fetchUrl.searchParams.set('subject', newSubject);
             fetchUrl.searchParams.set('grade', newGrade);
-            
-            var q = currentUrl.searchParams.get('q');
             if (q) fetchUrl.searchParams.set('q', q);
+            fetchUrl.searchParams.set('ajax', '1'); // Chỉ lấy fragment kết quả, không tải cả trang
+
+            if (!isPopState) {
+                var pushUrl = new URL(fetchUrl.toString());
+                pushUrl.searchParams.delete('ajax');
+                history.pushState(null, '', pushUrl.toString());
+            }
+
+            // Hủy request cũ nếu đang chạy
+            if (abortCtrl) abortCtrl.abort();
+            abortCtrl = new AbortController();
 
             setLoading(true);
 
-            fetch(fetchUrl.toString())
+            fetch(fetchUrl.toString(), { signal: abortCtrl.signal })
                 .then(function (res) { return res.text(); })
                 .then(function (html) {
-                    var doc = new DOMParser().parseFromString(html, 'text/html');
-                    var newResults = doc.getElementById('materials-results');
-                    if (newResults && resultsEl) {
-                        resultsEl.innerHTML = newResults.innerHTML;
-                    }
-
-                    if (sidebarEl) {
-                        var subjectFilterCard = sidebarEl.querySelectorAll('.filter-card')[0];
-                        if (subjectFilterCard) {
-                            subjectFilterCard.querySelectorAll('a').forEach(function(a) {
-                                var aOrigUrl = new URL(a.href, location.href);
-                                var thisSubject = aOrigUrl.searchParams.get('subject') || 'Tất cả';
-                                
-                                var updatedUrl = new URL(location.pathname, location.href);
-                                updatedUrl.searchParams.set('subject', thisSubject);
-                                updatedUrl.searchParams.set('grade', newGrade);
-                                if (q) updatedUrl.searchParams.set('q', q);
-                                
-                                a.href = updatedUrl.toString();
-                                a.classList.toggle('active', thisSubject.toLowerCase() === newSubject.toLowerCase());
-                            });
-                        }
-
-                        var gradeFilterCard = sidebarEl.querySelectorAll('.filter-card')[1];
-                        if (gradeFilterCard) {
-                            gradeFilterCard.querySelectorAll('a').forEach(function(a) {
-                                var aOrigUrl = new URL(a.href, location.href);
-                                var thisGrade = aOrigUrl.searchParams.get('grade') || 'Tất cả';
-                                
-                                var updatedUrl = new URL(location.pathname, location.href);
-                                updatedUrl.searchParams.set('subject', newSubject);
-                                updatedUrl.searchParams.set('grade', thisGrade);
-                                if (q) updatedUrl.searchParams.set('q', q);
-                                
-                                a.href = updatedUrl.toString();
-                                a.classList.toggle('active', thisGrade.toLowerCase() === newGrade.toLowerCase());
-                            });
-                        }
-                    }
-
-                    if (!isPopState) {
-                        history.pushState(null, '', fetchUrl.toString().split('#')[0]);
-                    }
-
+                    if (gridEl) gridEl.innerHTML = html; // Gán trực tiếp, không cần DOMParser
                     setLoading(false);
+                    abortCtrl = null;
                 })
-                .catch(function () { setLoading(false); });
+                .catch(function (err) {
+                    if (err.name !== 'AbortError') setLoading(false);
+                });
+        }
+
+        function updateSidebarActive(newSubject, newGrade, q) {
+            if (!sidebarEl) return;
+            var subjectCard = sidebarEl.querySelectorAll('.filter-card')[0];
+            if (subjectCard) {
+                subjectCard.querySelectorAll('a').forEach(function(a) {
+                    var aUrl = new URL(a.href, location.href);
+                    var thisSubject = aUrl.searchParams.get('subject') || 'Tất cả';
+                    var updatedUrl = new URL(location.pathname, location.href);
+                    updatedUrl.searchParams.set('subject', thisSubject);
+                    updatedUrl.searchParams.set('grade', newGrade);
+                    if (q) updatedUrl.searchParams.set('q', q);
+                    a.href = updatedUrl.toString();
+                    a.classList.toggle('active', thisSubject.toLowerCase() === newSubject.toLowerCase());
+                });
+            }
+            var gradeCard = sidebarEl.querySelectorAll('.filter-card')[1];
+            if (gradeCard) {
+                gradeCard.querySelectorAll('a').forEach(function(a) {
+                    var aUrl = new URL(a.href, location.href);
+                    var thisGrade = aUrl.searchParams.get('grade') || 'Tất cả';
+                    var updatedUrl = new URL(location.pathname, location.href);
+                    updatedUrl.searchParams.set('subject', newSubject);
+                    updatedUrl.searchParams.set('grade', thisGrade);
+                    if (q) updatedUrl.searchParams.set('q', q);
+                    a.href = updatedUrl.toString();
+                    a.classList.toggle('active', thisGrade.toLowerCase() === newGrade.toLowerCase());
+                });
+            }
         }
 
         document.addEventListener('click', function (e) {
@@ -383,6 +380,7 @@
         });
     })();
     </script>
+
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js"></script>
 </body>
 </html>

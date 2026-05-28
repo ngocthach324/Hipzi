@@ -242,77 +242,85 @@
     <script>
     (function () {
         var resultsEl = document.getElementById('materials-results');
+        var gridEl = resultsEl ? resultsEl.querySelector('.material-grid') : null;
         var sidebarEl = document.querySelector('.sidebar-filters');
+        var abortCtrl = null;
 
         function setLoading(on) {
             if (!resultsEl) return;
-            resultsEl.style.opacity = on ? '0.4' : '1';
+            resultsEl.style.opacity = on ? '0.45' : '1';
             resultsEl.style.pointerEvents = on ? 'none' : '';
         }
 
         function applyTwoWayFilter(targetUrlStr, isPopState) {
             var targetUrl = new URL(targetUrlStr, location.href);
             var currentUrl = new URL(location.href);
-            var newSubject = targetUrl.searchParams.get('subject') || currentUrl.searchParams.get('subject') || 'Tất cả';
-            var newGrade = targetUrl.searchParams.get('grade') || currentUrl.searchParams.get('grade') || 'Tất cả';
-            var newType = targetUrl.searchParams.get('type') || currentUrl.searchParams.get('type') || 'Tất cả';
+            var newSubject = targetUrl.searchParams.get('subject') || currentUrl.searchParams.get('subject') || 'T\u1ea5t c\u1ea3';
+            var newGrade   = targetUrl.searchParams.get('grade')   || currentUrl.searchParams.get('grade')   || 'T\u1ea5t c\u1ea3';
+            var newType    = targetUrl.searchParams.get('type')    || currentUrl.searchParams.get('type')    || 'T\u1ea5t c\u1ea3';
+            var q          = currentUrl.searchParams.get('q') || '';
+
+            // C\u1eadp nh\u1eadt sidebar active ngay l\u1eadp t\u1ee9c
+            updateSidebarActive(newSubject, newGrade, newType, q);
 
             var fetchUrl = new URL(location.pathname, location.href);
             fetchUrl.searchParams.set('subject', newSubject);
             fetchUrl.searchParams.set('grade', newGrade);
             fetchUrl.searchParams.set('type', newType);
-
-            var q = currentUrl.searchParams.get('q');
             if (q) fetchUrl.searchParams.set('q', q);
+            fetchUrl.searchParams.set('ajax', '1');
 
+            if (!isPopState) {
+                var pushUrl = new URL(fetchUrl.toString());
+                pushUrl.searchParams.delete('ajax');
+                history.pushState(null, '', pushUrl.toString());
+            }
+
+            if (abortCtrl) abortCtrl.abort();
+            abortCtrl = new AbortController();
             setLoading(true);
-            fetch(fetchUrl.toString())
+
+            fetch(fetchUrl.toString(), { signal: abortCtrl.signal })
                 .then(function (res) { return res.text(); })
                 .then(function (html) {
-                    var doc = new DOMParser().parseFromString(html, 'text/html');
-                    var newResults = doc.getElementById('materials-results');
-                    if (newResults && resultsEl) resultsEl.innerHTML = newResults.innerHTML;
-
-                    if (sidebarEl) {
-                        var cards = sidebarEl.querySelectorAll('.filter-card');
-                        if (cards[0]) {
-                            cards[0].querySelectorAll('a').forEach(function(a) {
-                                var aUrl = new URL(a.href, location.href);
-                                var thisSubject = aUrl.searchParams.get('subject') || 'Tất cả';
-                                var updatedUrl = new URL(location.pathname, location.href);
-                                updatedUrl.searchParams.set('subject', thisSubject);
-                                updatedUrl.searchParams.set('grade', newGrade);
-                                updatedUrl.searchParams.set('type', newType);
-                                if (q) updatedUrl.searchParams.set('q', q);
-                                a.href = updatedUrl.toString();
-                                a.classList.toggle('active', thisSubject.toLowerCase() === newSubject.toLowerCase());
-                            });
-                        }
-                        if (cards[1]) {
-                            cards[1].querySelectorAll('a').forEach(function(a) {
-                                var aUrl = new URL(a.href, location.href);
-                                var thisGrade = aUrl.searchParams.get('grade') || 'Tất cả';
-                                var updatedUrl = new URL(location.pathname, location.href);
-                                updatedUrl.searchParams.set('subject', newSubject);
-                                updatedUrl.searchParams.set('grade', thisGrade);
-                                updatedUrl.searchParams.set('type', newType);
-                                if (q) updatedUrl.searchParams.set('q', q);
-                                a.href = updatedUrl.toString();
-                                a.classList.toggle('active', thisGrade.toLowerCase() === newGrade.toLowerCase());
-                            });
-                        }
-                    }
-
+                    if (gridEl) gridEl.innerHTML = html;
                     var typeSelect = document.getElementById('type-select');
-                    if (typeSelect) {
-                        typeSelect.value = newType;
-                        attachTypeSelectEvent();
-                    }
-
-                    if (!isPopState) history.pushState(null, '', fetchUrl.toString().split('#')[0]);
+                    if (typeSelect) { typeSelect.value = newType; attachTypeSelectEvent(); }
                     setLoading(false);
+                    abortCtrl = null;
                 })
-                .catch(function () { setLoading(false); });
+                .catch(function (err) { if (err.name !== 'AbortError') setLoading(false); });
+        }
+
+        function updateSidebarActive(newSubject, newGrade, newType, q) {
+            if (!sidebarEl) return;
+            var cards = sidebarEl.querySelectorAll('.filter-card');
+            if (cards[0]) {
+                cards[0].querySelectorAll('a').forEach(function(a) {
+                    var aUrl = new URL(a.href, location.href);
+                    var thisSubject = aUrl.searchParams.get('subject') || 'T\u1ea5t c\u1ea3';
+                    var updatedUrl = new URL(location.pathname, location.href);
+                    updatedUrl.searchParams.set('subject', thisSubject);
+                    updatedUrl.searchParams.set('grade', newGrade);
+                    updatedUrl.searchParams.set('type', newType);
+                    if (q) updatedUrl.searchParams.set('q', q);
+                    a.href = updatedUrl.toString();
+                    a.classList.toggle('active', thisSubject.toLowerCase() === newSubject.toLowerCase());
+                });
+            }
+            if (cards[1]) {
+                cards[1].querySelectorAll('a').forEach(function(a) {
+                    var aUrl = new URL(a.href, location.href);
+                    var thisGrade = aUrl.searchParams.get('grade') || 'T\u1ea5t c\u1ea3';
+                    var updatedUrl = new URL(location.pathname, location.href);
+                    updatedUrl.searchParams.set('subject', newSubject);
+                    updatedUrl.searchParams.set('grade', thisGrade);
+                    updatedUrl.searchParams.set('type', newType);
+                    if (q) updatedUrl.searchParams.set('q', q);
+                    a.href = updatedUrl.toString();
+                    a.classList.toggle('active', thisGrade.toLowerCase() === newGrade.toLowerCase());
+                });
+            }
         }
 
         document.addEventListener('click', function (e) {
@@ -323,10 +331,10 @@
         });
 
         function attachTypeSelectEvent() {
-            var typeSelectEl = document.getElementById('type-select');
-            if (typeSelectEl && !typeSelectEl.dataset.hasEvent) {
-                typeSelectEl.dataset.hasEvent = 'true';
-                typeSelectEl.addEventListener('change', function () {
+            var el = document.getElementById('type-select');
+            if (el && !el.dataset.hasEvent) {
+                el.dataset.hasEvent = 'true';
+                el.addEventListener('change', function () {
                     var url = new URL(location.href);
                     url.searchParams.set('type', this.value);
                     applyTwoWayFilter(url.toString(), false);

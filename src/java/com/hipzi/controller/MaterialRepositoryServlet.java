@@ -58,7 +58,14 @@ public class MaterialRepositoryServlet extends HttpServlet {
         request.setAttribute("currentGrade", grade);
         request.setAttribute("currentType", type);
         request.setAttribute("currentSort", sort == null || sort.isEmpty() ? "newest" : sort);
-        
+
+        // Nếu là AJAX request (từ bộ lọc sidebar), chỉ trả về fragment kết quả
+        String ajaxParam = request.getParameter("ajax");
+        if ("1".equals(ajaxParam)) {
+            request.getRequestDispatcher("/WEB-INF/fragments/material-repository-results.jsp").forward(request, response);
+            return;
+        }
+
         request.getRequestDispatcher("/material-repository.jsp").forward(request, response);
     }
 

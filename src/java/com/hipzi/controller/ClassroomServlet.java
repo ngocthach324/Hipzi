@@ -30,6 +30,14 @@ public class ClassroomServlet extends HttpServlet {
         }
 
         request.setAttribute("classrooms", filteredClasses);
+
+        // Nếu là AJAX request (từ bộ lọc sidebar), chỉ trả về fragment kết quả
+        String ajaxParam = request.getParameter("ajax");
+        if ("1".equals(ajaxParam)) {
+            request.getRequestDispatcher("/WEB-INF/fragments/classes-results.jsp").forward(request, response);
+            return;
+        }
+
         request.getRequestDispatcher("/classes.jsp").forward(request, response);
     }
 

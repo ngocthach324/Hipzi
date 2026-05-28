@@ -12,6 +12,7 @@ public class Classroom {
     private String description;
     private String teacherName;
     private String teacherSchool;
+    private String teacherAvatarUrl;
     private int studentCount;
     private String status;
     private String scheduleDays;
@@ -59,6 +60,9 @@ public class Classroom {
 
     public String getTeacherSchool() { return teacherSchool; }
     public void setTeacherSchool(String teacherSchool) { this.teacherSchool = teacherSchool; }
+
+    public String getTeacherAvatarUrl() { return teacherAvatarUrl; }
+    public void setTeacherAvatarUrl(String teacherAvatarUrl) { this.teacherAvatarUrl = teacherAvatarUrl; }
 
     public int getStudentCount() { return studentCount; }
     public void setStudentCount(int studentCount) { this.studentCount = studentCount; }

@@ -26,7 +26,14 @@ public class PracticeServlet extends HttpServlet {
         List<Quiz> quizzes = practiceService.getFilteredQuizzes(subjectParam, gradeParam, typeParam, searchParam);
 
         request.setAttribute("quizzes", quizzes);
-        
+
+        // Nếu là AJAX request (từ bộ lọc sidebar), chỉ trả về fragment kết quả
+        String ajaxParam = request.getParameter("ajax");
+        if ("1".equals(ajaxParam)) {
+            request.getRequestDispatcher("/WEB-INF/fragments/practice-results.jsp").forward(request, response);
+            return;
+        }
+
         request.getRequestDispatcher("/practice.jsp").forward(request, response);
     }
 

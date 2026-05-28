@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.List"%>
 <%@page import="com.hipzi.model.Classroom"%>
 <%@page import="com.hipzi.model.ClassroomEnrollment"%>
@@ -28,7 +28,9 @@
 
     String title = classroom != null ? classroom.getTitle() : "Lớp học HIPZI";
     String subject = classroom != null ? classroom.getSubject() : "Môn học";
+    String grade = classroom != null && classroom.getGrade() != null && !classroom.getGrade().isEmpty() ? classroom.getGrade() : "Lớp học";
     String teacherName = classroom != null && classroom.getTeacherName() != null && !classroom.getTeacherName().isEmpty() ? classroom.getTeacherName() : "Giảng viên HIPZI";
+    String teacherAvatarUrl = classroom != null && classroom.getTeacherAvatarUrl() != null ? classroom.getTeacherAvatarUrl().trim() : "";
     String schedule = classroom != null && classroom.getSchedule() != null ? classroom.getSchedule() : "Lịch học đang cập nhật";
     String statusLabel = classroom != null ? classroom.getStatusLabel() : "Đang mở";
     String onlineRoomHref = "https://meet.google.com/new";
@@ -61,91 +63,209 @@
         }
 
         .classroom-shell {
-            max-width: 1180px;
+            width: 100%;
+            max-width: 1424px;
             margin: 0 auto;
             padding: 7rem 1.25rem 4rem;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .classroom-hero {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            gap: 1.5rem;
-            align-items: end;
-            padding: 2rem;
-            border-radius: 1.35rem;
-            background:
-                linear-gradient(135deg, rgba(109, 40, 217, 0.96), rgba(14, 165, 233, 0.86)),
-                #6d28d9;
-            color: #ffffff;
-            box-shadow: 0 24px 60px rgba(79, 70, 229, 0.2);
-            overflow: hidden;
             position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(250px, 0.34fr);
+            gap: 1.25rem;
+            align-items: stretch;
+            padding: 1.35rem;
+            border: 1px solid rgba(203, 213, 225, 0.72);
+            border-radius: 1.15rem;
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(240, 253, 250, 0.9)),
+                #ffffff;
+            color: #0f172a;
+            box-shadow: 0 22px 60px rgba(15, 23, 42, 0.08), 0 14px 34px rgba(15, 118, 110, 0.08);
+            overflow: hidden;
         }
 
         .classroom-hero::after {
-            content: "";
-            position: absolute;
-            width: 360px;
-            height: 360px;
-            right: -120px;
-            top: -130px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.18);
+            content: none;
+        }
+
+        .classroom-hero-main {
+            display: flex;
+            min-width: 0;
+            flex-direction: column;
+            justify-content: center;
+            padding-right: 0.5rem;
+        }
+
+        .classroom-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin: 0 0 0.75rem;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 850;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .classroom-back-link:hover {
+            color: #0f766e;
+            transform: translateX(-2px);
         }
 
         .classroom-hero h1 {
-            position: relative;
             margin: 0;
-            font-size: clamp(2rem, 5vw, 4.2rem);
-            line-height: 1;
+            font-size: clamp(1.8rem, 3vw, 2.65rem);
+            line-height: 1.12;
             letter-spacing: 0;
         }
 
+        .classroom-hero-desc {
+            max-width: 720px;
+            margin: 0.75rem 0 0;
+            color: #64748b;
+            font-size: 0.98rem;
+            font-weight: 650;
+            line-height: 1.55;
+        }
+
         .classroom-meta {
-            position: relative;
             display: flex;
             flex-wrap: wrap;
-            gap: 0.65rem;
-            margin-top: 1rem;
+            gap: 0.55rem;
+            margin-bottom: 0.85rem;
         }
 
         .classroom-pill {
             display: inline-flex;
             align-items: center;
             border-radius: 999px;
-            padding: 0.45rem 0.85rem;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            font-weight: 850;
-            font-size: 0.88rem;
+            padding: 0.38rem 0.78rem;
+            background: #ecfdf5;
+            border: 1px solid #bbf7d0;
+            color: #047857;
+            font-weight: 900;
+            font-size: 0.78rem;
+        }
+
+        .classroom-pill.muted {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            color: #475569;
         }
 
         .online-room-btn {
-            position: relative;
-            z-index: 1;
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            min-width: 210px;
+            width: max-content;
+            min-width: 0;
             border-radius: 999px;
-            padding: 0.95rem 1.35rem;
-            background: #ffffff;
-            color: #6d28d9;
+            margin-top: 1.1rem;
+            padding: 0.78rem 1.25rem;
+            background: #0f766e;
+            color: #ffffff;
             font-weight: 950;
             text-decoration: none;
-            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.2);
+            box-shadow: 0 14px 30px rgba(15, 118, 110, 0.22);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .online-room-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 38px rgba(15, 118, 110, 0.28);
+        }
+
+        .classroom-teacher-card {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 0.85rem;
+            min-height: 210px;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            border-radius: 1rem;
+            padding: 1rem;
+            background:
+                linear-gradient(180deg, rgba(240, 253, 250, 0.96), rgba(255, 255, 255, 0.96)),
+                #ffffff;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 18px 36px rgba(15, 118, 110, 0.1);
+        }
+
+        .classroom-teacher-badge {
+            display: inline-flex;
+            width: max-content;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.34rem 0.7rem;
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+            font-size: 0.75rem;
+            font-weight: 900;
+        }
+
+        .classroom-teacher-photo {
+            align-self: center;
+            justify-self: center;
+            width: min(150px, 55%);
+            aspect-ratio: 1;
+            border-radius: 999px;
+            padding: 0.35rem;
+            background: linear-gradient(135deg, #14b8a6, #d1fae5);
+            box-shadow: 0 18px 34px rgba(15, 118, 110, 0.18);
+        }
+
+        .classroom-teacher-photo img,
+        .classroom-teacher-placeholder {
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            border: 4px solid #ffffff;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            color: #0f766e;
+            font-size: 2.6rem;
+            font-weight: 950;
+        }
+
+        .classroom-teacher-meta {
+            text-align: center;
+            display: grid;
+            gap: 0.2rem;
+        }
+
+        .classroom-teacher-meta strong {
+            color: #0f172a;
+            font-size: 1rem;
+            line-height: 1.25;
+        }
+
+        .classroom-teacher-meta span {
+            color: #64748b;
+            font-size: 0.84rem;
+            font-weight: 750;
         }
 
         .classroom-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 360px;
-            gap: 1.25rem;
-            align-items: start;
-            margin-top: 1.25rem;
-        }
-
-        .classroom-grid.classroom-tabbed {
             display: block;
+            width: 100%;
+            max-width: 100%;
+            margin-top: calc(1.25rem - 15px);
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        .classroom-grid > div {
+            width: 100%;
+            max-width: 100%;
+            display: block;
+            box-sizing: border-box;
         }
 
         .classroom-card {
@@ -154,6 +274,9 @@
             border-radius: 1rem;
             padding: 1.2rem;
             box-shadow: 0 16px 34px rgba(15, 23, 42, 0.05);
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .classroom-card + .classroom-card {
@@ -173,6 +296,8 @@
             border-radius: 1.1rem;
             box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
             overflow: hidden;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .classroom-tab-list {
@@ -242,6 +367,8 @@
 
         .classroom-tab-panel {
             display: none;
+            width: 100%;
+            box-sizing: border-box;
             animation: classroomTabIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
@@ -251,6 +378,9 @@
 
         .classroom-tabbed .classroom-card.classroom-tab-panel {
             margin-top: 0;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .classroom-tabbed .classroom-tab-panel.active ~ .classroom-tab-panel.active {
@@ -538,8 +668,7 @@
         }
 
         @media (max-width: 900px) {
-            .classroom-hero,
-            .classroom-grid {
+            .classroom-hero {
                 grid-template-columns: 1fr;
             }
 
@@ -611,16 +740,37 @@
     </header>
 
     <main class="classroom-shell">
+        <a class="classroom-back-link" href="${pageContext.request.contextPath}/class-detail?id=<%= h(classroom.getId()) %>">
+            <span>←</span>
+            <span>Quay lại</span>
+        </a>
+
         <section class="classroom-hero">
-            <div>
+            <div class="classroom-hero-main">
                 <h1><%= h(title) %></h1>
+                <p class="classroom-hero-desc">Không gian học tập của lớp cùng giảng viên <strong><%= h(teacherName) %></strong>. Theo dõi tài liệu, bài tập và trao đổi trong phòng học riêng của HIPZI.</p>
                 <div class="classroom-meta">
-                    <span class="classroom-pill"><%= h(subject) %></span>
                     <span class="classroom-pill"><%= h(statusLabel) %></span>
-                    <span class="classroom-pill"><%= h(schedule) %></span>
+                    <span class="classroom-pill muted"><%= h(subject) %></span>
+                    <span class="classroom-pill muted"><%= h(grade) %></span>
+                    <span class="classroom-pill muted"><%= h(schedule) %></span>
                 </div>
+                <a class="online-room-btn" href="<%= h(onlineRoomHref) %>" target="_blank" rel="noopener">Vào phòng học online</a>
             </div>
-            <a class="online-room-btn" href="<%= h(onlineRoomHref) %>" target="_blank" rel="noopener">Vào phòng học online</a>
+            <aside class="classroom-teacher-card" aria-label="Thông tin giảng viên">
+                <span class="classroom-teacher-badge">Giảng viên</span>
+                <div class="classroom-teacher-photo">
+                    <% if (!teacherAvatarUrl.isEmpty()) { %>
+                        <img src="<%= h(teacherAvatarUrl) %>" alt="">
+                    <% } else { %>
+                        <div class="classroom-teacher-placeholder"><%= h(teacherName.substring(0, 1).toUpperCase()) %></div>
+                    <% } %>
+                </div>
+                <div class="classroom-teacher-meta">
+                    <strong><%= h(teacherName) %></strong>
+                    <span><%= h(subject) %> · <%= h(grade) %></span>
+                </div>
+            </aside>
         </section>
 
         <section class="classroom-tabs-shell" aria-label="Nội dung lớp học">
@@ -661,6 +811,66 @@
                             <span>Lịch học gần nhất</span>
                             <strong><%= h(schedule) %></strong>
                         </div>
+                    </div>
+                </section>
+
+                <% if (canReviewEnrollments) { %>
+                    <section class="classroom-card classroom-tab-panel active" data-classroom-panel="info">
+                        <h2>Hàng chờ học viên</h2>
+                        <div class="student-list">
+                            <% if (pendingEnrollments == null || pendingEnrollments.isEmpty()) { %>
+                                <div class="empty-state">Hiện chưa có học viên nào đang chờ duyệt.</div>
+                            <% } else {
+                                for (ClassroomEnrollment enrollment : pendingEnrollments) {
+                                    String name = enrollment.getStudentName() != null && !enrollment.getStudentName().isEmpty() ? enrollment.getStudentName() : "Học viên";
+                            %>
+                                <div class="student-row">
+                                    <div class="student-avatar"><%= h(name.substring(0, 1).toUpperCase()) %></div>
+                                    <div>
+                                        <strong><%= h(name) %></strong>
+                                        <span><%= h(enrollment.getStudentEmail()) %></span>
+                                    </div>
+                                    <div class="review-actions">
+                                        <form action="${pageContext.request.contextPath}/classroom" method="POST">
+                                            <input type="hidden" name="action" value="reviewEnrollment">
+                                            <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                            <input type="hidden" name="enrollmentId" value="<%= h(enrollment.getId()) %>">
+                                            <input type="hidden" name="decision" value="accepted">
+                                            <button class="mini-btn primary" type="submit">Chấp nhận</button>
+                                        </form>
+                                        <form action="${pageContext.request.contextPath}/classroom" method="POST">
+                                            <input type="hidden" name="action" value="reviewEnrollment">
+                                            <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                            <input type="hidden" name="enrollmentId" value="<%= h(enrollment.getId()) %>">
+                                            <input type="hidden" name="decision" value="rejected">
+                                            <button class="mini-btn danger" type="submit">Từ chối</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            <%  }
+                            } %>
+                        </div>
+                    </section>
+                <% } %>
+
+                <section class="classroom-card classroom-tab-panel active" data-classroom-panel="info">
+                    <h2>Học viên trong lớp</h2>
+                    <div class="student-list">
+                        <% if (acceptedEnrollments == null || acceptedEnrollments.isEmpty()) { %>
+                            <div class="empty-state">Danh sách học viên trong lớp đang trống.</div>
+                        <% } else {
+                            for (ClassroomEnrollment enrollment : acceptedEnrollments) {
+                                String name = enrollment.getStudentName() != null && !enrollment.getStudentName().isEmpty() ? enrollment.getStudentName() : "Học viên";
+                        %>
+                            <div class="student-row">
+                                <div class="student-avatar"><%= h(name.substring(0, 1).toUpperCase()) %></div>
+                                <div>
+                                    <strong><%= h(name) %></strong>
+                                    <span><%= h(enrollment.getStudentEmail()) %></span>
+                                </div>
+                            </div>
+                        <%  }
+                        } %>
                     </div>
                 </section>
 
@@ -886,68 +1096,6 @@
                     </div>
                 </section>
             </div>
-
-            <aside>
-                <% if (canReviewEnrollments) { %>
-                    <section class="classroom-card classroom-tab-panel active" data-classroom-panel="info">
-                        <h2>Hàng chờ học viên</h2>
-                        <div class="student-list">
-                            <% if (pendingEnrollments == null || pendingEnrollments.isEmpty()) { %>
-                                <div class="empty-state">Hiện chưa có học viên nào đang chờ duyệt.</div>
-                            <% } else {
-                                for (ClassroomEnrollment enrollment : pendingEnrollments) {
-                                    String name = enrollment.getStudentName() != null && !enrollment.getStudentName().isEmpty() ? enrollment.getStudentName() : "Học viên";
-                            %>
-                                <div class="student-row">
-                                    <div class="student-avatar"><%= h(name.substring(0, 1).toUpperCase()) %></div>
-                                    <div>
-                                        <strong><%= h(name) %></strong>
-                                        <span><%= h(enrollment.getStudentEmail()) %></span>
-                                    </div>
-                                    <div class="review-actions">
-                                        <form action="${pageContext.request.contextPath}/classroom" method="POST">
-                                            <input type="hidden" name="action" value="reviewEnrollment">
-                                            <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
-                                            <input type="hidden" name="enrollmentId" value="<%= h(enrollment.getId()) %>">
-                                            <input type="hidden" name="decision" value="accepted">
-                                            <button class="mini-btn primary" type="submit">Chấp nhận</button>
-                                        </form>
-                                        <form action="${pageContext.request.contextPath}/classroom" method="POST">
-                                            <input type="hidden" name="action" value="reviewEnrollment">
-                                            <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
-                                            <input type="hidden" name="enrollmentId" value="<%= h(enrollment.getId()) %>">
-                                            <input type="hidden" name="decision" value="rejected">
-                                            <button class="mini-btn danger" type="submit">Từ chối</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            <%  }
-                            } %>
-                        </div>
-                    </section>
-                <% } %>
-
-                <section class="classroom-card classroom-tab-panel active" data-classroom-panel="info">
-                    <h2>Học viên trong lớp</h2>
-                    <div class="student-list">
-                        <% if (acceptedEnrollments == null || acceptedEnrollments.isEmpty()) { %>
-                            <div class="empty-state">Danh sách học viên trong lớp đang trống.</div>
-                        <% } else {
-                            for (ClassroomEnrollment enrollment : acceptedEnrollments) {
-                                String name = enrollment.getStudentName() != null && !enrollment.getStudentName().isEmpty() ? enrollment.getStudentName() : "Học viên";
-                        %>
-                            <div class="student-row">
-                                <div class="student-avatar"><%= h(name.substring(0, 1).toUpperCase()) %></div>
-                                <div>
-                                    <strong><%= h(name) %></strong>
-                                    <span><%= h(enrollment.getStudentEmail()) %></span>
-                                </div>
-                            </div>
-                        <%  }
-                        } %>
-                    </div>
-                </section>
-            </aside>
         </section>
     </main>
 

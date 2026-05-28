@@ -455,6 +455,23 @@
             overflow-y: auto;
         }
 
+        #tab-class-registration {
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #tab-class-registration .tab-grouped-container {
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #tab-class-registration .tab-body-content {
+            flex: 0 0 auto;
+            min-height: auto;
+            overflow: visible;
+            padding-bottom: 3rem;
+        }
+
         .card-main-premium {
             padding: 0.25rem 0.5rem 1.5rem 0.5rem;
             flex: 1;
@@ -855,6 +872,31 @@
             margin: 0;
             flex-shrink: 0;
             accent-color: var(--primary);
+        }
+
+        .class-time-input {
+            min-height: 3rem;
+            background:
+                linear-gradient(135deg, #ffffff 0%, #f8fafc 100%),
+                #ffffff;
+            background-image:
+                url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='12' cy='12' r='9' stroke='%23059669' stroke-width='2'/%3E%3Cpath d='M12 7v5l3 2' stroke='%23059669' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+                linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            background-repeat: no-repeat, no-repeat;
+            background-position: right 1rem center, left top;
+            background-size: 18px 18px, 100% 100%;
+            padding-right: 3rem !important;
+            font-weight: 700;
+        }
+
+        .class-time-input::placeholder {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .class-time-input:invalid:not(:placeholder-shown) {
+            border-color: #fca5a5;
+            box-shadow: 0 0 0 3px #fee2e2;
         }
 
         .form-actions-row {
@@ -2134,11 +2176,11 @@
                                                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
                                                             <div class="form-group-edit">
                                                                 <label>Giờ bắt đầu</label>
-                                                                <input type="time" name="startTime" value="<%= startValue %>" required>
+                                                                <input type="text" name="startTime" class="class-time-input" value="<%= startValue %>" placeholder="__:__" inputmode="numeric" maxlength="5" pattern="^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$" title="Nhập giờ dạng HH:mm, từ 00:00 đến 24:00" required>
                                                             </div>
                                                             <div class="form-group-edit">
                                                                 <label>Giờ kết thúc</label>
-                                                                <input type="time" name="endTime" value="<%= endValue %>" required>
+                                                                <input type="text" name="endTime" class="class-time-input" value="<%= endValue %>" placeholder="__:__" inputmode="numeric" maxlength="5" pattern="^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$" title="Nhập giờ dạng HH:mm, từ 00:00 đến 24:00" required>
                                                             </div>
                                                         </div>
                                                         <div class="form-group-edit full-span">
@@ -2216,11 +2258,11 @@
                                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.25rem;">
                                             <div class="form-group-edit">
                                                 <label>Giờ bắt đầu</label>
-                                                <input type="time" name="startTime" required>
+                                                <input type="text" name="startTime" class="class-time-input" placeholder="__:__" inputmode="numeric" maxlength="5" pattern="^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$" title="Nhập giờ dạng HH:mm, từ 00:00 đến 24:00" required>
                                             </div>
                                             <div class="form-group-edit">
                                                 <label>Giờ kết thúc</label>
-                                                <input type="time" name="endTime" required>
+                                                <input type="text" name="endTime" class="class-time-input" placeholder="__:__" inputmode="numeric" maxlength="5" pattern="^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$" title="Nhập giờ dạng HH:mm, từ 00:00 đến 24:00" required>
                                             </div>
                                         </div>
 
@@ -3208,6 +3250,39 @@
             }
             return true;
         }
+
+        function formatClassTimeValue(rawValue) {
+            const digits = rawValue.replace(/\D/g, '').slice(0, 4);
+            if (digits.length <= 2) {
+                return digits;
+            }
+            var hour = digits.slice(0, 2);
+            var minute = digits.slice(2);
+
+            if (hour.length === 2 && Number(hour) > 24) {
+                hour = '24';
+            }
+            if (minute.length === 2 && Number(minute) > 59) {
+                minute = '59';
+            }
+            if (hour === '24' && minute.length > 0) {
+                minute = minute.length === 1 ? '0' : '00';
+            }
+
+            return hour + ':' + minute;
+        }
+
+        document.querySelectorAll('.class-time-input').forEach(input => {
+            input.addEventListener('input', () => {
+                input.value = formatClassTimeValue(input.value);
+            });
+
+            input.addEventListener('blur', () => {
+                if (input.value.length === 4 && input.value.indexOf(':') === -1) {
+                    input.value = formatClassTimeValue(input.value);
+                }
+            });
+        });
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js"></script>
 </body>
