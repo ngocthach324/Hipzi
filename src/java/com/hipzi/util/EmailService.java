@@ -1,9 +1,11 @@
 package com.hipzi.util;
 
-import jakarta.mail.*;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
-import java.util.Properties;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 
 /**
  * Dịch vụ gửi email qua Gmail SMTP.
@@ -20,40 +22,14 @@ import java.util.Properties;
  */
 public class EmailService {
 
-    // -------------------------------------------------------------------------
-    // Cấu hình SMTP — Thay bằng thông tin Gmail thật của dự án
-    // -------------------------------------------------------------------------
-    private static final String SMTP_HOST     = "smtp.gmail.com";
-    private static final int    SMTP_PORT     = 587;
-    private static final String SMTP_USER     = "boicoc25062006@gmail.com";
-    private static final String SMTP_PASSWORD = "cpvxvarzpqxhksxu";
+    // Cấu hình Resend API
+    private static final String RESEND_API_KEY = "re_QGYdS6mw_4oVBPRWetESMYg7QtkbHoKV9";
+    // Phải verify tên miền hipzi.site trên Resend trước khi dùng no-reply@hipzi.site
+    private static final String SENDER_EMAIL   = "no-reply@hipzi.site"; 
+    private static final String SENDER_NAME    = "HIPZI Platform";
     
     // Hòm thư nhận liên hệ / yêu cầu hỗ trợ
     private static final String SUPPORT_EMAIL = "moviezonevn@gmail.com";
-
-    private static final String SENDER_NAME   = "HIPZI Platform";
-
-    // -------------------------------------------------------------------------
-    // Cấu hình phiên SMTP (Session tái sử dụng)
-    // -------------------------------------------------------------------------
-    private static final Session MAIL_SESSION;
-
-    static {
-        Properties props = new Properties();
-        props.put("mail.smtp.auth",            "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host",            SMTP_HOST);
-        props.put("mail.smtp.port",            String.valueOf(SMTP_PORT));
-        props.put("mail.smtp.connectiontimeout", "10000"); // 10s
-        props.put("mail.smtp.timeout",           "10000");
-
-        MAIL_SESSION = Session.getInstance(props, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(SMTP_USER, SMTP_PASSWORD);
-            }
-        });
-    }
 
     // -------------------------------------------------------------------------
     // Gửi email OTP xác minh tài khoản (dùng khi đăng ký)
@@ -114,16 +90,38 @@ public class EmailService {
     // -------------------------------------------------------------------------
     private static void send(String toEmail, String subject, String htmlBody) {
         try {
-            MimeMessage message = new MimeMessage(MAIL_SESSION);
-            message.setFrom(new InternetAddress(SMTP_USER, SENDER_NAME, "UTF-8"));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
-            message.setSubject(subject, "UTF-8");
-            message.setContent(htmlBody, "text/html; charset=UTF-8");
-            Transport.send(message);
-            System.out.println("[EmailService] Đã gửi email thành công đến: " + toEmail);
+            URL url = new URL("https://api.resend.com/emails");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", "Bearer " + RESEND_API_KEY);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+
+            String jsonPayload = "{"
+                    + "\"from\": \"" + SENDER_NAME + " <" + SENDER_EMAIL + ">\","
+                    + "\"to\": [\"" + toEmail + "\"],"
+                    + "\"subject\": \"" + escapeJson(subject) + "\","
+                    + "\"html\": \"" + escapeJson(htmlBody) + "\""
+                    + "}";
+
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonPayload.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200 || responseCode == 201) {
+                System.out.println("[EmailService] Đã gửi email qua Resend thành công đến: " + toEmail);
+            } else {
+                System.err.println("[EmailService] Resend API lỗi: " + responseCode);
+                try (InputStream is = conn.getErrorStream(); Scanner s = new Scanner(is, "UTF-8")) {
+                    s.useDelimiter("\\A");
+                    System.err.println("Chi tiết lỗi: " + (s.hasNext() ? s.next() : ""));
+                }
+                throw new RuntimeException("Máy chủ gửi email từ chối yêu cầu.");
+            }
         } catch (Exception e) {
-            // Ghi log nhưng không để lộ thông tin chi tiết ra ngoài
-            System.err.println("[EmailService] Lỗi gửi email đến " + toEmail + ": " + e.getMessage());
+            System.err.println("[EmailService] Lỗi hệ thống khi gửi email đến " + toEmail + ": " + e.getMessage());
             throw new RuntimeException("Không thể gửi email xác thực. Vui lòng thử lại sau.", e);
         }
     }
@@ -280,5 +278,13 @@ public class EmailService {
                     .replace("<", "&lt;")
                     .replace(">", "&gt;")
                     .replace("\"", "&quot;");
+    }
+
+    // -------------------------------------------------------------------------
+    // Escape JSON để gửi qua API
+    // -------------------------------------------------------------------------
+    private static String escapeJson(String input) {
+        if (input == null) return "";
+        return input.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "").replace("\r", "");
     }
 }
