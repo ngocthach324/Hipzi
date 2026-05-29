@@ -153,8 +153,11 @@ body::after {
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.68);
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
-    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     white-space: nowrap;
+}
+
+.nav-links.navbar-ready a {
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .nav-links a:hover {

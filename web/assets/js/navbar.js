@@ -303,6 +303,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const isActive = isHome || (!!activeGroup && linkPath.endsWith(activeGroup.target));
             link.classList.toggle('active', isActive);
         });
+
+        setTimeout(() => {
+            const navContainer = document.querySelector('.nav-links');
+            if (navContainer) navContainer.classList.add('navbar-ready');
+        }, 50);
     }
 
     window.addEventListener('scroll', function() {
