@@ -66,7 +66,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tìm giảng viên - HIPZI</title>
     <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=3">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/materials.css">
     <style>
         .teacher-market .repo-header {

@@ -18,7 +18,7 @@
                                     <link rel="icon" type="image/png"
                                         href="${pageContext.request.contextPath}/assets/images/favicon.png">
                                     <link rel="stylesheet"
-                                        href="${pageContext.request.contextPath}/assets/css/landing.css">
+                                        href="${pageContext.request.contextPath}/assets/css/landing.css?v=3">
                                     <style>
                                         /* ===== OVERRIDE N?N T?NG & GIAO DI?N PREMIUM TUONG T? B?N THI?T K? ===== */
                                         body {

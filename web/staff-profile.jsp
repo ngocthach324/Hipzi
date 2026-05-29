@@ -50,7 +50,7 @@
     <title>Hồ sơ nhân viên - HIPZI</title>
     <meta name="description" content="Khu vực làm việc và quản lý hàng đợi kiểm duyệt tài liệu, hồ sơ đăng ký giảng viên dành cho nhân viên HIPZI.">
     <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=3">
     <style>
         /* ===== OVERRIDE NỀN TẢNG & GIAO DIỆN PREMIUM TƯƠNG TỰ BẢN THIẾT KẾ ===== */
         body {

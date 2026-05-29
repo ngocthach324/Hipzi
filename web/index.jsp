@@ -21,7 +21,7 @@
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=2">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=3">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/hero-v2.css">
     <!-- Hiệu ứng cuộn mượt và chậm Lenis CSS -->
     <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.13/dist/lenis.css">
