@@ -41,7 +41,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/materials.css">
     <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
 </head>
 <body>
 

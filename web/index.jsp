@@ -26,7 +26,7 @@
     <!-- Hiệu ứng cuộn mượt và chậm Lenis CSS -->
     <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.13/dist/lenis.css">
     <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
 </head>
 <body>
 
