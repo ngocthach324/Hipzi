@@ -11,6 +11,10 @@
 %>
 <%
     User user = (User) session.getAttribute("loggedUser");
+    String classId = request.getParameter("classId");
+    String examCode = request.getParameter("code");
+    String examTitle = request.getParameter("title");
+    boolean hasClassExamContext = examCode != null && !examCode.trim().isEmpty();
     String initials = "H";
     if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
         String[] parts = user.getDisplayName().trim().split("\\s+");
@@ -478,7 +482,8 @@
                 <li><a href="${pageContext.request.contextPath}/index.jsp">Trang chủ</a></li>
                 <li><a href="${pageContext.request.contextPath}/material-repository">Kho tài liệu</a></li>
                 <li><a href="${pageContext.request.contextPath}/classes">Lớp học</a></li>
-                <li><a href="${pageContext.request.contextPath}/practice">Luyện tập</a></li>
+                <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
+
                 <li><a href="${pageContext.request.contextPath}/exam-room" class="active">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/index.jsp#ai-roadmap">Hipzi AI</a></li>
             </ul>
@@ -517,7 +522,9 @@
 
     <main class="class-exam-page">
         <div class="class-exam-topbar">
-            <a class="class-exam-back" href="${pageContext.request.contextPath}/exam-room">
+            <a class="class-exam-back" href="<%= classId != null && !classId.trim().isEmpty()
+                    ? request.getContextPath() + "/classroom?id=" + h(classId) + "#tab-exams"
+                    : request.getContextPath() + "/exam-room" %>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M19 12H5"/>
                     <path d="m12 19-7-7 7-7"/>
@@ -548,20 +555,20 @@
                     </div>
                     <p>Nhập mã đề thi được gửi trong lớp học hoặc thông báo từ giảng viên.</p>
                     <form class="exam-code-form" id="classExamCodeForm">
-                        <input class="exam-code-input" id="classExamCode" type="text" autocomplete="off" placeholder="VD: HIPZI-TOAN10-01" aria-label="Mã đề thi">
-                        <button class="exam-code-submit" id="classExamCodeSubmit" type="submit" disabled>Hiển thị bài thi <span aria-hidden="true">›</span></button>
+                        <input class="exam-code-input" id="classExamCode" type="text" autocomplete="off" placeholder="VD: HIPZI-TOAN10-01" aria-label="Mã đề thi" value="<%= h(examCode) %>">
+                        <button class="exam-code-submit" id="classExamCodeSubmit" type="submit" <%= hasClassExamContext ? "" : "disabled" %>>Hiển thị bài thi <span aria-hidden="true">›</span></button>
                         <div class="exam-code-error" id="classExamCodeError">Vui lòng nhập mã đề thi trước khi tiếp tục.</div>
                         <div class="exam-code-help">Mã đề được giáo viên cung cấp trong lớp học. Vui lòng nhập đúng chữ hoa, số và dấu gạch ngang nếu có.</div>
                     </form>
                 </section>
 
-                <section class="exam-result-panel" id="classExamResult" aria-live="polite">
+                <section class="exam-result-panel <%= hasClassExamContext ? "active" : "" %>" id="classExamResult" aria-live="polite">
                     <div class="exam-found-label">Đã tìm thấy bài thi</div>
-                    <h2 id="examResultTitle">Bài kiểm tra lớp học</h2>
+                    <h2 id="examResultTitle"><%= h(examTitle != null && !examTitle.trim().isEmpty() ? examTitle : "Bài kiểm tra lớp học") %></h2>
                     <div class="exam-meta-list">
                         <div class="exam-meta-item">
                             <span>Mã đề</span>
-                            <strong id="examResultCode">HIPZI-CLASS</strong>
+                            <strong id="examResultCode"><%= h(hasClassExamContext ? examCode : "HIPZI-CLASS") %></strong>
                         </div>
                         <div class="exam-meta-item">
                             <span>Thời lượng</span>

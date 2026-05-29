@@ -2,15 +2,23 @@ package com.hipzi.controller;
 
 import com.hipzi.dao.ClassroomDao;
 import com.hipzi.dao.ClassroomEnrollmentDao;
+import com.hipzi.dao.ClassroomExamDao;
 import com.hipzi.dao.ClassroomHomeworkSubmissionDao;
 import com.hipzi.dao.ClassroomMaterialDao;
+import com.hipzi.dao.ClassroomQuizDao;
 import com.hipzi.model.Classroom;
 import com.hipzi.model.ClassroomEnrollment;
+import com.hipzi.model.ClassroomExam;
 import com.hipzi.model.ClassroomHomeworkSubmission;
 import com.hipzi.model.ClassroomMaterial;
+import com.hipzi.model.ClassroomQuiz;
+import com.hipzi.model.ClassroomQuizAttempt;
+import com.hipzi.model.ClassroomQuizQuestion;
 import com.hipzi.model.Role;
 import com.hipzi.model.User;
+import com.hipzi.service.AiQuizParserService;
 import com.hipzi.service.SupabaseStorageService;
+import com.hipzi.service.TesseractOcrService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -19,12 +27,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @WebServlet(name = "ClassroomSpaceServlet", urlPatterns = {"/classroom"})
 @MultipartConfig(
@@ -36,9 +50,13 @@ public class ClassroomSpaceServlet extends HttpServlet {
 
     private final ClassroomDao classroomDao = new ClassroomDao();
     private final ClassroomEnrollmentDao enrollmentDao = new ClassroomEnrollmentDao();
+    private final ClassroomExamDao examDao = new ClassroomExamDao();
     private final ClassroomMaterialDao materialDao = new ClassroomMaterialDao();
     private final ClassroomHomeworkSubmissionDao submissionDao = new ClassroomHomeworkSubmissionDao();
+    private final ClassroomQuizDao quizDao = new ClassroomQuizDao();
     private final SupabaseStorageService storageService = new SupabaseStorageService();
+    private final TesseractOcrService ocrService = new TesseractOcrService();
+    private final AiQuizParserService aiQuizParserService = new AiQuizParserService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -73,6 +91,10 @@ public class ClassroomSpaceServlet extends HttpServlet {
 
         List<ClassroomMaterial> allMaterials = materialDao.listByClassroom(classId);
         boolean canSubmitHomework = acceptedStudent && hasRole(user, "student") && !canManageClassroom;
+        List<ClassroomQuiz> classroomQuizzes = quizDao.listByClassroom(classId, !canManageClassroom);
+        Map<String, ClassroomQuizAttempt> latestQuizAttempts = acceptedStudent
+                ? quizDao.latestAttemptsForStudent(classId, user.getId())
+                : new LinkedHashMap<String, ClassroomQuizAttempt>();
         request.setAttribute("classroom", classroom);
         request.setAttribute("canManageClassroom", canManageClassroom);
         request.setAttribute("canReviewEnrollments", canReviewEnrollments);
@@ -82,8 +104,12 @@ public class ClassroomSpaceServlet extends HttpServlet {
             request.setAttribute("pendingEnrollments", enrollmentDao.listByClassroomAndStatus(classId, "pending"));
         }
         request.setAttribute("acceptedEnrollments", enrollmentDao.listByClassroomAndStatus(classId, "accepted"));
-        request.setAttribute("classMaterials", filterMaterials(allMaterials, false));
-        request.setAttribute("classHomework", filterMaterials(allMaterials, true));
+        request.setAttribute("classMaterials", filterMaterialsByCategory(allMaterials, "document", "teaching", "theory"));
+        request.setAttribute("classHomework", filterMaterialsByCategory(allMaterials, "homework"));
+        request.setAttribute("classExamMaterials", filterMaterialsByCategory(allMaterials, "exam"));
+        request.setAttribute("classroomExams", examDao.listByClassroom(classId, !canManageClassroom));
+        request.setAttribute("classroomQuizzes", classroomQuizzes);
+        request.setAttribute("latestQuizAttempts", latestQuizAttempts);
         request.setAttribute("homeworkSubmissions", canManageClassroom
                 ? submissionDao.listByClassroom(classId)
                 : submissionDao.listByClassroomAndStudent(classId, user.getId()));
@@ -137,6 +163,29 @@ public class ClassroomSpaceServlet extends HttpServlet {
             return;
         }
 
+        if ("submitQuizAttempt".equals(action)) {
+            boolean acceptedStudent = currentEnrollment != null && "accepted".equals(currentEnrollment.getStatus());
+            if (!acceptedStudent || !hasRole(user, "student") || canManageClassroom) {
+                session.setAttribute("toastMsg", "Ban chua co quyen lam bai luyen tap trong lop nay.");
+                session.setAttribute("toastType", "error");
+                response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
+                return;
+            }
+            String quizId = cleanParam(request.getParameter("quizId"));
+            ClassroomQuiz quiz = !quizId.isEmpty() ? quizDao.findById(quizId) : null;
+            if (quiz == null || !classId.equals(quiz.getClassroomId()) || !quiz.isPublished()) {
+                session.setAttribute("toastMsg", "Bai luyen tap nay chua san sang cho hoc vien.");
+                session.setAttribute("toastType", "error");
+                response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
+                return;
+            }
+            boolean saved = quizDao.createAttempt(quiz, user.getId(), collectQuizAnswers(request, quiz));
+            session.setAttribute("toastMsg", saved ? "Da nop bai luyen tap." : "Chua nop duoc bai luyen tap.");
+            session.setAttribute("toastType", saved ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
+            return;
+        }
+
         if (!canManageClassroom) {
             session.setAttribute("toastMsg", "Bạn không có quyền quản lý lớp học này.");
             session.setAttribute("toastType", "error");
@@ -180,6 +229,68 @@ public class ClassroomSpaceServlet extends HttpServlet {
             }
             session.setAttribute("toastMsg", deleted ? "Đã xóa tài liệu khỏi lớp." : "Không thể xóa tài liệu này.");
             session.setAttribute("toastType", deleted ? "success" : "error");
+        } else if ("createClassExam".equals(action)) {
+            boolean saved = handleClassExamCreate(request, classroom, user);
+            session.setAttribute("toastMsg", saved ? "Da tao bai thi lop hoc." : "Chua tao duoc bai thi. Vui long kiem tra tieu de va ma de.");
+            session.setAttribute("toastType", saved ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
+            return;
+        } else if ("deleteClassExam".equals(action)) {
+            String examId = cleanParam(request.getParameter("examId"));
+            boolean deleted = !examId.isEmpty() && examDao.deleteForClassroom(examId, classId);
+            session.setAttribute("toastMsg", deleted ? "Da xoa bai thi lop hoc." : "Khong the xoa bai thi nay.");
+            session.setAttribute("toastType", deleted ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
+            return;
+        } else if ("scanQuizImage".equals(action) || "scanQuizImageAi".equals(action)) {
+            boolean scanned;
+            try {
+                scanned = handleQuizImageScan(request, session, "scanQuizImageAi".equals(action));
+            } catch (Exception e) {
+                scanned = false;
+                System.err.println("Error scanning classroom quiz image: " + e.getMessage());
+            }
+            session.setAttribute("toastMsg", scanned
+                    ? ("scanQuizImageAi".equals(action) ? "Da scan AI. Hay kiem tra lai cau hoi da nhan dien." : "Da scan anh de. Hay kiem tra lai noi dung scan.")
+                    : ("scanQuizImageAi".equals(action) ? "Chua scan AI duoc. Kiem tra OPENAI_API_KEY hoac thu scan mien phi." : "Chua scan duoc anh de. Vui long chon anh ro hon."));
+            session.setAttribute("toastType", scanned ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
+            return;
+        } else if ("createQuizDraft".equals(action)) {
+            boolean saved;
+            try {
+                saved = handleQuizDraftCreate(request, classroom, user);
+            } catch (Exception e) {
+                saved = false;
+                System.err.println("Error creating classroom quiz draft: " + e.getMessage());
+            }
+            session.setAttribute("toastMsg", saved ? "Da tao ban nhap de luyen tap." : "Chua tao duoc ban nhap. Vui long nhap tieu de va noi dung scan.");
+            session.setAttribute("toastType", saved ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
+            return;
+        } else if ("updateQuizDraft".equals(action)) {
+            boolean saved = handleQuizDraftUpdate(request, classroom);
+            session.setAttribute("toastMsg", saved ? "Da luu de luyen tap." : "Chua luu duoc de. Moi de can co tieu de va it nhat mot cau hoi.");
+            session.setAttribute("toastType", saved ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
+            return;
+        } else if ("publishQuiz".equals(action) || "unpublishQuiz".equals(action)) {
+            String quizId = cleanParam(request.getParameter("quizId"));
+            String nextStatus = "publishQuiz".equals(action) ? "published" : "draft";
+            boolean saved = !quizId.isEmpty() && quizDao.updateStatus(quizId, classId, nextStatus);
+            session.setAttribute("toastMsg", saved
+                    ? ("published".equals(nextStatus) ? "Da publish de cho lop." : "Da dua de ve ban nhap.")
+                    : "Chua cap nhat duoc trang thai de.");
+            session.setAttribute("toastType", saved ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
+            return;
+        } else if ("deleteQuiz".equals(action)) {
+            String quizId = cleanParam(request.getParameter("quizId"));
+            boolean deleted = !quizId.isEmpty() && quizDao.deleteForClassroom(quizId, classId);
+            session.setAttribute("toastMsg", deleted ? "Da xoa de luyen tap." : "Khong the xoa de nay.");
+            session.setAttribute("toastType", deleted ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
+            return;
         }
 
         response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId);
@@ -271,6 +382,365 @@ public class ClassroomSpaceServlet extends HttpServlet {
         return created;
     }
 
+    private boolean handleClassExamCreate(HttpServletRequest request, Classroom classroom, User user) {
+        String title = cleanParam(request.getParameter("examTitle"));
+        String code = normalizeExamCode(request.getParameter("examCode"));
+        String description = cleanParam(request.getParameter("examDescription"));
+        String status = cleanParam(request.getParameter("examStatus"));
+        String sourceMaterialId = cleanParam(request.getParameter("sourceMaterialId"));
+        int duration = parsePositiveInt(request.getParameter("durationMinutes"), 45);
+        if (title.isEmpty() || code.isEmpty()) {
+            return false;
+        }
+        ClassroomExam exam = new ClassroomExam();
+        exam.setClassroomId(classroom.getId());
+        exam.setTitle(title);
+        exam.setDescription(description);
+        exam.setExamCode(code);
+        exam.setStatus(status);
+        exam.setDurationMinutes(duration);
+        exam.setSourceMaterialId(sourceMaterialId);
+        exam.setCreatedBy(user.getId());
+        return examDao.create(exam);
+    }
+
+    private boolean handleQuizDraftCreate(HttpServletRequest request, Classroom classroom, User user)
+            throws Exception {
+        String title = cleanParam(request.getParameter("quizTitle"));
+        String description = cleanParam(request.getParameter("quizDescription"));
+        String rawScanText = cleanParam(request.getParameter("quizScanText"));
+        if (title.isEmpty()) {
+            return false;
+        }
+
+        String storedRelativePath = "";
+        String originalFileName = "";
+        Part imagePart = request.getPart("quizSourceImage");
+        if (imagePart != null && imagePart.getSize() > 0 && imagePart.getSubmittedFileName() != null) {
+            originalFileName = Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
+            if (!isAllowedQuizImage(originalFileName, imagePart.getContentType()) || imagePart.getSize() > 10L * 1024 * 1024) {
+                return false;
+            }
+            storedRelativePath = buildQuizSourceStorageObjectPath(classroom.getId(), originalFileName);
+            byte[] fileBytes;
+            try (java.io.InputStream input = imagePart.getInputStream()) {
+                fileBytes = input.readAllBytes();
+            }
+            storageService.uploadObject(storedRelativePath, fileBytes, imagePart.getContentType());
+            if (rawScanText.isEmpty()) {
+                rawScanText = scanQuizImage(fileBytes, originalFileName);
+            }
+        }
+
+        if (rawScanText.isEmpty()) {
+            if (!storedRelativePath.isEmpty()) {
+                try {
+                    storageService.deleteObject(storedRelativePath);
+                } catch (Exception ignored) {
+                }
+            }
+            return false;
+        }
+
+        ClassroomQuiz quiz = new ClassroomQuiz();
+        quiz.setClassroomId(classroom.getId());
+        quiz.setTitle(title);
+        quiz.setDescription(description);
+        quiz.setRawScanText(rawScanText);
+        quiz.setSourceImagePath(storedRelativePath);
+        quiz.setSourceFileName(originalFileName);
+        quiz.setStatus("draft");
+        quiz.setCreatedBy(user.getId());
+        List<ClassroomQuizQuestion> questions = collectQuizQuestions(request);
+        if (questions.isEmpty()) {
+            questions = parseQuizQuestions(rawScanText);
+        }
+        boolean created = quizDao.createWithQuestions(quiz, questions);
+        if (!created && !storedRelativePath.isEmpty()) {
+            try {
+                storageService.deleteObject(storedRelativePath);
+            } catch (Exception ignored) {
+            }
+        }
+        return created;
+    }
+
+    private boolean handleQuizImageScan(HttpServletRequest request, HttpSession session, boolean useAi) throws Exception {
+        Part imagePart = request.getPart("quizSourceImage");
+        if (imagePart == null || imagePart.getSize() <= 0 || imagePart.getSubmittedFileName() == null) {
+            return false;
+        }
+        String originalFileName = Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
+        if (!isAllowedQuizImage(originalFileName, imagePart.getContentType()) || imagePart.getSize() > 10L * 1024 * 1024) {
+            return false;
+        }
+
+        byte[] fileBytes;
+        try (java.io.InputStream input = imagePart.getInputStream()) {
+            fileBytes = input.readAllBytes();
+        }
+        String scannedText = scanQuizImage(fileBytes, originalFileName);
+        if (scannedText == null || scannedText.trim().isEmpty()) {
+            return false;
+        }
+
+        List<ClassroomQuizQuestion> recognizedQuestions = useAi
+                ? aiQuizParserService.parseQuestions(scannedText)
+                : parseQuizQuestions(scannedText);
+        if (recognizedQuestions.isEmpty()) {
+            return false;
+        }
+
+        session.setAttribute("quizDraftTitle", cleanParam(request.getParameter("quizTitle")));
+        session.setAttribute("quizDraftDescription", cleanParam(request.getParameter("quizDescription")));
+        session.setAttribute("quizDraftScanText", scannedText);
+        session.setAttribute("quizDraftQuestions", recognizedQuestions);
+        return true;
+    }
+
+    private String scanQuizImage(byte[] fileBytes, String originalFileName) throws Exception {
+        String extension = ".png";
+        String safeName = originalFileName == null ? "" : originalFileName.toLowerCase(Locale.ROOT);
+        int dotIndex = safeName.lastIndexOf('.');
+        if (dotIndex >= 0) {
+            String ext = safeName.substring(dotIndex);
+            if (ext.matches("\\.(png|jpg|jpeg|webp)")) {
+                extension = ext;
+            }
+        }
+        File tempFile = Files.createTempFile("hipzi-quiz-ocr-", extension).toFile();
+        try {
+            Files.write(tempFile.toPath(), fileBytes);
+            return ocrService.scan(tempFile);
+        } finally {
+            try {
+                Files.deleteIfExists(tempFile.toPath());
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
+    private boolean handleQuizDraftUpdate(HttpServletRequest request, Classroom classroom) {
+        String quizId = cleanParam(request.getParameter("quizId"));
+        String title = cleanParam(request.getParameter("quizTitle"));
+        if (quizId.isEmpty() || title.isEmpty()) {
+            return false;
+        }
+        ClassroomQuiz existing = quizDao.findById(quizId);
+        if (existing == null || !classroom.getId().equals(existing.getClassroomId())) {
+            return false;
+        }
+        List<ClassroomQuizQuestion> questions = collectQuizQuestions(request);
+        if (questions.isEmpty()) {
+            return false;
+        }
+        existing.setTitle(title);
+        existing.setDescription(cleanParam(request.getParameter("quizDescription")));
+        existing.setRawScanText(cleanParam(request.getParameter("quizScanText")));
+        existing.setStatus(normalizeQuizStatus(request.getParameter("quizStatus")));
+        return quizDao.updateWithQuestions(existing, questions);
+    }
+
+    private List<ClassroomQuizQuestion> parseQuizQuestions(String rawScanText) {
+        List<ClassroomQuizQuestion> questions = new ArrayList<>();
+        if (rawScanText == null || rawScanText.trim().isEmpty()) {
+            return questions;
+        }
+        Pattern questionStart = Pattern.compile("^\\(?\\s*(?:c(?:a|â)u\\s*)?(\\d+)[\\.|\\)|:]\\s*(.+)$", Pattern.CASE_INSENSITIVE);
+        Pattern optionLine = Pattern.compile("^([A-Da-d])\\s*[\\.|\\)|:]\\s*(.+)$");
+        Pattern inlineOption = Pattern.compile("(?i)(?:^|\\s)([A-D])\\s*[\\.|\\)]\\s*(.+?)(?=\\s+[A-D]\\s*[\\.|\\)]|$)");
+        Pattern answerLine = Pattern.compile("^(?:đáp\\s*án|dap\\s*an|answer)\\s*[:\\-]?\\s*([A-Da-d]).*$", Pattern.CASE_INSENSITIVE);
+        ClassroomQuizQuestion current = null;
+
+        String[] lines = normalizeScanTextForParsing(rawScanText).split("\n+");
+        for (String line : lines) {
+            String cleaned = cleanParam(line);
+            if (cleaned.isEmpty()) {
+                continue;
+            }
+            Matcher answerMatcher = answerLine.matcher(cleaned);
+            if (answerMatcher.matches() && current != null) {
+                current.setCorrectOption(answerMatcher.group(1).toUpperCase(Locale.ROOT));
+                continue;
+            }
+            Matcher optionMatcher = optionLine.matcher(cleaned);
+            if (optionMatcher.matches()) {
+                if (current == null) {
+                    current = new ClassroomQuizQuestion();
+                    current.setQuestionText("Câu hỏi cần kiểm tra lại");
+                }
+                if (cleaned.matches("(?i).*\\s+[A-D]\\s*[\\.|\\)].*")) {
+                    extractInlineOptions(current, cleaned);
+                } else {
+                    setQuestionOption(current, optionMatcher.group(1), optionMatcher.group(2));
+                }
+                continue;
+            }
+            Matcher questionMatcher = questionStart.matcher(cleaned);
+            boolean startsQuestion = questionMatcher.matches();
+            if (startsQuestion && current != null && hasQuestionContent(current)) {
+                questions.add(current);
+                current = new ClassroomQuizQuestion();
+                current.setQuestionText(extractInlineOptions(current, questionMatcher.group(2)));
+                continue;
+            }
+            if (current == null) {
+                current = new ClassroomQuizQuestion();
+                current.setQuestionText(startsQuestion ? extractInlineOptions(current, questionMatcher.group(2)) : cleaned);
+            } else {
+                Matcher inlineMatcher = inlineOption.matcher(cleaned);
+                boolean foundInlineOption = false;
+                int firstOptionIndex = -1;
+                while (inlineMatcher.find()) {
+                    if (firstOptionIndex < 0) {
+                        firstOptionIndex = inlineMatcher.start();
+                    }
+                    setQuestionOption(current, inlineMatcher.group(1), inlineMatcher.group(2));
+                    foundInlineOption = true;
+                }
+                if (foundInlineOption) {
+                    String prefix = firstOptionIndex > 0 ? cleaned.substring(0, firstOptionIndex).trim() : "";
+                    if (!prefix.isEmpty()) {
+                        current.setQuestionText(cleanParam(current.getQuestionText() + " " + prefix));
+                    }
+                } else {
+                    current.setQuestionText(cleanParam(current.getQuestionText() + " " + cleaned));
+                }
+            }
+        }
+        if (current != null && hasQuestionContent(current)) {
+            questions.add(current);
+        }
+        if (questions.isEmpty()) {
+            ClassroomQuizQuestion fallback = new ClassroomQuizQuestion();
+            fallback.setQuestionText(rawScanText.trim());
+            questions.add(fallback);
+        }
+        int order = 1;
+        for (ClassroomQuizQuestion question : questions) {
+            question.setSortOrder(order++);
+        }
+        return questions;
+    }
+
+    private String extractInlineOptions(ClassroomQuizQuestion question, String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return "";
+        }
+        Pattern inlineOption = Pattern.compile("(?i)(?:^|\\s)([A-D])\\s*[\\.|\\)]\\s*(.+?)(?=\\s+[A-D]\\s*[\\.|\\)]|$)");
+        Matcher matcher = inlineOption.matcher(text);
+        int firstOptionIndex = -1;
+        while (matcher.find()) {
+            if (firstOptionIndex < 0) {
+                firstOptionIndex = matcher.start();
+            }
+            setQuestionOption(question, matcher.group(1), matcher.group(2));
+        }
+        if (firstOptionIndex >= 0) {
+            return text.substring(0, firstOptionIndex).trim();
+        }
+        return text.trim();
+    }
+
+    private String normalizeScanTextForParsing(String rawScanText) {
+        String text = rawScanText == null ? "" : rawScanText.replace("\r", "\n");
+        text = text.replaceAll("(?i)\\s+(\\(?\\s*c(?:a|â)u\\s*\\d+[\\.|\\)|:])", "\n$1");
+        text = text.replaceAll("(?i)\\s+(\\d+[\\.|\\)]\\s+)", "\n$1");
+        text = text.replaceAll("(?i)\\s+(đáp\\s*án|dap\\s*an|answer)\\s*[:\\-]?", "\n$1: ");
+        text = text.replaceAll("\\n{2,}", "\n");
+        return text.trim();
+    }
+
+    private List<ClassroomQuizQuestion> collectQuizQuestions(HttpServletRequest request) {
+        String[] questionTexts = request.getParameterValues("questionText");
+        String[] optionAs = request.getParameterValues("optionA");
+        String[] optionBs = request.getParameterValues("optionB");
+        String[] optionCs = request.getParameterValues("optionC");
+        String[] optionDs = request.getParameterValues("optionD");
+        String[] correctOptions = request.getParameterValues("correctOption");
+        String[] explanations = request.getParameterValues("explanation");
+        List<ClassroomQuizQuestion> questions = new ArrayList<>();
+        if (questionTexts == null) {
+            return questions;
+        }
+        for (int i = 0; i < questionTexts.length; i++) {
+            String text = cleanParam(questionTexts[i]);
+            if (text.isEmpty()) {
+                continue;
+            }
+            ClassroomQuizQuestion question = new ClassroomQuizQuestion();
+            question.setQuestionText(text);
+            question.setOptionA(valueAt(optionAs, i));
+            question.setOptionB(valueAt(optionBs, i));
+            question.setOptionC(valueAt(optionCs, i));
+            question.setOptionD(valueAt(optionDs, i));
+            question.setCorrectOption(normalizeQuestionOption(valueAt(correctOptions, i)));
+            question.setExplanation(valueAt(explanations, i));
+            question.setSortOrder(questions.size() + 1);
+            questions.add(question);
+        }
+        return questions;
+    }
+
+    private Map<String, String> collectQuizAnswers(HttpServletRequest request, ClassroomQuiz quiz) {
+        Map<String, String> answers = new LinkedHashMap<>();
+        if (quiz == null || quiz.getQuestions() == null) {
+            return answers;
+        }
+        for (ClassroomQuizQuestion question : quiz.getQuestions()) {
+            answers.put(question.getId(), normalizeQuestionOption(request.getParameter("answer_" + question.getId())));
+        }
+        return answers;
+    }
+
+    private void setQuestionOption(ClassroomQuizQuestion question, String optionLetter, String optionText) {
+        String letter = normalizeQuestionOption(optionLetter);
+        if ("A".equals(letter)) {
+            question.setOptionA(optionText);
+        } else if ("B".equals(letter)) {
+            question.setOptionB(optionText);
+        } else if ("C".equals(letter)) {
+            question.setOptionC(optionText);
+        } else if ("D".equals(letter)) {
+            question.setOptionD(optionText);
+        }
+    }
+
+    private boolean hasQuestionContent(ClassroomQuizQuestion question) {
+        return question != null && question.getQuestionText() != null && !question.getQuestionText().trim().isEmpty();
+    }
+
+    private String valueAt(String[] values, int index) {
+        return values != null && index >= 0 && index < values.length ? cleanParam(values[index]) : "";
+    }
+
+    private String normalizeQuestionOption(String value) {
+        if (value == null) {
+            return "";
+        }
+        String cleaned = value.trim().toUpperCase(Locale.ROOT);
+        return cleaned.matches("[ABCD]") ? cleaned : "";
+    }
+
+    private String normalizeQuizStatus(String value) {
+        return "published".equals(cleanParam(value)) ? "published" : "draft";
+    }
+
+    private String normalizeExamCode(String value) {
+        String cleaned = cleanParam(value).toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9-]", "-");
+        cleaned = cleaned.replaceAll("-{2,}", "-").replaceAll("^-|-$", "");
+        return cleaned;
+    }
+
+    private int parsePositiveInt(String value, int defaultValue) {
+        try {
+            int parsed = Integer.parseInt(cleanParam(value));
+            return parsed > 0 ? parsed : defaultValue;
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
     private String buildStorageObjectPath(String classroomId, String originalFileName) {
         String safeOriginalName = originalFileName.replaceAll("[^A-Za-z0-9._-]", "_");
         String extension = "";
@@ -292,6 +762,16 @@ public class ClassroomSpaceServlet extends HttpServlet {
         }
         String safeStudentId = studentId == null ? "student" : studentId.replaceAll("[^A-Za-z0-9._-]", "_");
         return "classrooms/" + classroomId + "/submissions/" + safeStudentId + "/" + UUID.randomUUID() + extension;
+    }
+
+    private String buildQuizSourceStorageObjectPath(String classroomId, String originalFileName) {
+        String safeOriginalName = originalFileName.replaceAll("[^A-Za-z0-9._-]", "_");
+        String extension = "";
+        int dotIndex = safeOriginalName.lastIndexOf('.');
+        if (dotIndex >= 0) {
+            extension = safeOriginalName.substring(dotIndex).toLowerCase(Locale.ROOT);
+        }
+        return "classrooms/" + classroomId + "/quiz-sources/" + UUID.randomUUID() + extension;
     }
 
     private void deleteStoredFileFromStorage(ClassroomMaterial material) {
@@ -320,6 +800,17 @@ public class ClassroomSpaceServlet extends HttpServlet {
         return allowedExtension && contentType != null && !contentType.trim().isEmpty();
     }
 
+    private boolean isAllowedQuizImage(String fileName, String contentType) {
+        String lower = fileName == null ? "" : fileName.toLowerCase(Locale.ROOT);
+        boolean allowedExtension = lower.endsWith(".png")
+                || lower.endsWith(".jpg")
+                || lower.endsWith(".jpeg")
+                || lower.endsWith(".webp");
+        return allowedExtension
+                && contentType != null
+                && contentType.toLowerCase(Locale.ROOT).startsWith("image/");
+    }
+
     private String normalizeMaterialCategory(String category) {
         String cleaned = cleanParam(category);
         if ("homework".equals(cleaned) || "exam".equals(cleaned)
@@ -329,15 +820,23 @@ public class ClassroomSpaceServlet extends HttpServlet {
         return "document";
     }
 
-    private List<ClassroomMaterial> filterMaterials(List<ClassroomMaterial> materials, boolean homeworkOnly) {
+    private List<ClassroomMaterial> filterMaterialsByCategory(List<ClassroomMaterial> materials, String... categories) {
         List<ClassroomMaterial> filtered = new ArrayList<>();
         if (materials == null) {
             return filtered;
         }
         for (ClassroomMaterial material : materials) {
-            boolean isHomework = material != null && "homework".equals(material.getCategory());
-            if (homeworkOnly == isHomework) {
-                filtered.add(material);
+            if (material == null) {
+                continue;
+            }
+            String category = material.getCategory() == null || material.getCategory().trim().isEmpty()
+                    ? "document"
+                    : material.getCategory().trim();
+            for (String allowedCategory : categories) {
+                if (category.equals(allowedCategory)) {
+                    filtered.add(material);
+                    break;
+                }
             }
         }
         return filtered;

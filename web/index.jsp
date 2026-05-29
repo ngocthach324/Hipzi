@@ -43,7 +43,8 @@
                 <li><a href="${pageContext.request.contextPath}/index.jsp">Trang chủ</a></li>
                 <li><a href="<%= request.getContextPath() + (user != null ? "/material-repository" : "/login") %>">Kho tài liệu</a></li>
                 <li><a href="<%= request.getContextPath() + (user != null ? "/classes" : "/login") %>">Lớp học</a></li>
-                <li><a href="<%= request.getContextPath() + (user != null ? "/practice" : "/login") %>">Luyện tập</a></li>
+                <li><a href="<%= request.getContextPath() + (user != null ? "/courses" : "/login") %>">Khóa học</a></li>
+
                 <li><a href="<%= request.getContextPath() + (user != null ? "/exam-room" : "/login") %>">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/index.jsp#ai-roadmap">Hipzi AI</a></li>
             </ul>

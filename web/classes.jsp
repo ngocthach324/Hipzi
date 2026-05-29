@@ -40,7 +40,8 @@
                 <li><a href="${pageContext.request.contextPath}/index.jsp">Trang chủ</a></li>
                 <li><a href="${pageContext.request.contextPath}/material-repository">Kho tài liệu</a></li>
                 <li><a href="${pageContext.request.contextPath}/classes" class="active">Lớp học</a></li>
-                <li><a href="${pageContext.request.contextPath}/practice">Luyện tập</a></li>
+                <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
+
                 <li><a href="${pageContext.request.contextPath}/exam-room">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/index.jsp#ai-roadmap">Hipzi AI</a></li>
             </ul>
@@ -263,7 +264,7 @@
                         <ul>
                             <li><a href="${pageContext.request.contextPath}/material-repository">Kho tài liệu</a></li>
                             <li><a href="${pageContext.request.contextPath}/classes">Lớp học trực tuyến</a></li>
-                            <li><a href="${pageContext.request.contextPath}/practice">Luyện tập</a></li>
+
                         </ul>
                     </div>
                     <div class="footer-links-col">

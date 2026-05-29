@@ -2,9 +2,16 @@
 <%@page import="java.util.List"%>
 <%@page import="com.hipzi.model.Classroom"%>
 <%@page import="com.hipzi.model.ClassroomEnrollment"%>
+<%@page import="com.hipzi.model.ClassroomExam"%>
 <%@page import="com.hipzi.model.ClassroomHomeworkSubmission"%>
 <%@page import="com.hipzi.model.ClassroomMaterial"%>
+<%@page import="com.hipzi.model.ClassroomQuiz"%>
+<%@page import="com.hipzi.model.ClassroomQuizAttempt"%>
+<%@page import="com.hipzi.model.ClassroomQuizQuestion"%>
 <%@page import="com.hipzi.model.User"%>
+<%@page import="java.util.Map"%>
+<%@page import="java.net.URLEncoder"%>
+<%@page import="java.nio.charset.StandardCharsets"%>
 <%!
     private String h(String value) {
         if (value == null) return "";
@@ -12,6 +19,10 @@
                     .replace("<", "&lt;")
                     .replace(">", "&gt;")
                     .replace("\"", "&quot;");
+    }
+
+    private String u(String value) {
+        return URLEncoder.encode(value == null ? "" : value, StandardCharsets.UTF_8);
     }
 %>
 <%
@@ -24,7 +35,11 @@
     List<ClassroomEnrollment> acceptedEnrollments = (List<ClassroomEnrollment>) request.getAttribute("acceptedEnrollments");
     List<ClassroomMaterial> classMaterials = (List<ClassroomMaterial>) request.getAttribute("classMaterials");
     List<ClassroomMaterial> classHomework = (List<ClassroomMaterial>) request.getAttribute("classHomework");
+    List<ClassroomMaterial> classExamMaterials = (List<ClassroomMaterial>) request.getAttribute("classExamMaterials");
+    List<ClassroomExam> classroomExams = (List<ClassroomExam>) request.getAttribute("classroomExams");
     List<ClassroomHomeworkSubmission> homeworkSubmissions = (List<ClassroomHomeworkSubmission>) request.getAttribute("homeworkSubmissions");
+    List<ClassroomQuiz> classroomQuizzes = (List<ClassroomQuiz>) request.getAttribute("classroomQuizzes");
+    Map<String, ClassroomQuizAttempt> latestQuizAttempts = (Map<String, ClassroomQuizAttempt>) request.getAttribute("latestQuizAttempts");
 
     String title = classroom != null ? classroom.getTitle() : "Lớp học HIPZI";
     String subject = classroom != null ? classroom.getSubject() : "Môn học";
@@ -38,6 +53,16 @@
     int acceptedCount = acceptedEnrollments != null ? acceptedEnrollments.size() : 0;
     int materialCount = classMaterials != null ? classMaterials.size() : 0;
     int homeworkCount = classHomework != null ? classHomework.size() : 0;
+    int examCount = classroomExams != null ? classroomExams.size() : 0;
+    int quizCount = classroomQuizzes != null ? classroomQuizzes.size() : 0;
+    String quizDraftTitle = (String) session.getAttribute("quizDraftTitle");
+    String quizDraftDescription = (String) session.getAttribute("quizDraftDescription");
+    String quizDraftScanText = (String) session.getAttribute("quizDraftScanText");
+    List<ClassroomQuizQuestion> quizDraftQuestions = (List<ClassroomQuizQuestion>) session.getAttribute("quizDraftQuestions");
+    session.removeAttribute("quizDraftTitle");
+    session.removeAttribute("quizDraftDescription");
+    session.removeAttribute("quizDraftScanText");
+    session.removeAttribute("quizDraftQuestions");
     String initials = "H";
     if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
         String[] parts = user.getDisplayName().trim().split("\\s+");
@@ -534,6 +559,12 @@
             color: #b91c1c;
         }
 
+        .mini-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .empty-state {
             border: 1px dashed #cbd5e1;
             border-radius: 0.85rem;
@@ -642,6 +673,149 @@
             background: #ffffff;
         }
 
+        .quiz-builder {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .quiz-scan-preview {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(220px, 0.45fr);
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .quiz-image-preview {
+            min-height: 180px;
+            border: 1px dashed #cbd5e1;
+            border-radius: 0.85rem;
+            background: #ffffff;
+            display: grid;
+            place-items: center;
+            color: #64748b;
+            overflow: hidden;
+            text-align: center;
+            padding: 0.9rem;
+        }
+
+        .quiz-image-preview img {
+            width: 100%;
+            max-height: 280px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .quiz-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .quiz-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.85rem;
+            background: #ffffff;
+            padding: 1rem;
+        }
+
+        .quiz-card-head {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0.85rem;
+            align-items: start;
+            margin-bottom: 0.85rem;
+        }
+
+        .quiz-card h3,
+        .quiz-question h4 {
+            margin: 0;
+            color: #0f172a;
+        }
+
+        .quiz-status {
+            border-radius: 999px;
+            padding: 0.35rem 0.7rem;
+            font-weight: 900;
+            font-size: 0.78rem;
+            background: #fef3c7;
+            color: #92400e;
+            white-space: nowrap;
+        }
+
+        .quiz-status.published {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .quiz-question-list {
+            display: grid;
+            gap: 0.85rem;
+        }
+
+        .quiz-question {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.8rem;
+            background: #f8fafc;
+            padding: 0.9rem;
+        }
+
+        .quiz-option-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.7rem;
+            margin-top: 0.75rem;
+        }
+
+        .quiz-option-grid label,
+        .quiz-answer-option {
+            display: grid;
+            gap: 0.35rem;
+            color: #334155;
+            font-weight: 750;
+        }
+
+        .quiz-option-grid input,
+        .quiz-option-grid select {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.7rem;
+            padding: 0.65rem 0.75rem;
+            font-family: inherit;
+            color: #0f172a;
+        }
+
+        .quiz-answer-option input[type="radio"] {
+            width: auto;
+            margin-top: 0.2rem;
+            border: 0;
+            padding: 0;
+        }
+
+        .quiz-answer-option {
+            grid-template-columns: auto minmax(0, 1fr);
+            align-items: start;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            background: #ffffff;
+            padding: 0.65rem;
+        }
+
+        .quiz-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+            margin-top: 0.9rem;
+        }
+
+        .quiz-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 0.35rem;
+        }
+
         .teacher-action-hint {
             color: #6d28d9;
             font-weight: 850;
@@ -700,7 +874,10 @@
             }
 
             .resource-item,
-            .upload-grid {
+            .upload-grid,
+            .quiz-scan-preview,
+            .quiz-card-head,
+            .quiz-option-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -720,7 +897,8 @@
                 <li><a href="${pageContext.request.contextPath}/index.jsp">Trang chủ</a></li>
                 <li><a href="${pageContext.request.contextPath}/material-repository">Kho tài liệu</a></li>
                 <li><a href="${pageContext.request.contextPath}/classes" class="active">Lớp học</a></li>
-                <li><a href="${pageContext.request.contextPath}/practice">Luyện tập</a></li>
+                <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
+
                 <li><a href="${pageContext.request.contextPath}/exam-room">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/index.jsp#ai-roadmap">Hipzi AI</a></li>
             </ul>
@@ -785,7 +963,14 @@
                     Tài liệu lớp học
                     <span class="tab-count"><%= materialCount + homeworkCount %></span>
                 </button>
-                <button type="button" class="classroom-tab-btn" data-classroom-tab="quiz" role="tab" aria-selected="false">Luyện tập trắc nghiệm</button>
+                <button type="button" class="classroom-tab-btn" data-classroom-tab="quiz" role="tab" aria-selected="false">
+                    Luyện tập trắc nghiệm
+                    <span class="tab-count"><%= quizCount %></span>
+                </button>
+                <button type="button" class="classroom-tab-btn" data-classroom-tab="exams" role="tab" aria-selected="false">
+                    Phòng thi
+                    <span class="tab-count"><%= examCount %></span>
+                </button>
                 <button type="button" class="classroom-tab-btn" data-classroom-tab="leaderboard" role="tab" aria-selected="false">Bảng thành tích</button>
                 <button type="button" class="classroom-tab-btn" data-classroom-tab="rules" role="tab" aria-selected="false">Nội quy lớp</button>
             </div>
@@ -1043,21 +1228,362 @@
 
                 <section class="classroom-card classroom-tab-panel" data-classroom-panel="quiz">
                     <h2>Luyện tập trắc nghiệm</h2>
-                    <div class="classroom-placeholder-grid">
-                        <div class="classroom-placeholder-card">
-                            <strong>Bộ câu hỏi theo buổi học</strong>
-                            <span>Giảng viên sẽ có thể tạo quiz ngắn để học viên luyện tập ngay sau mỗi buổi.</span>
+                    <% if (canManageClassroom) { %>
+                        <form class="upload-panel quiz-builder" action="${pageContext.request.contextPath}/classroom" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                            <h3>Tạo đề từ ảnh scan</h3>
+                            <div class="upload-grid">
+                                <div class="upload-field">
+                                    <label>Tiêu đề đề luyện tập</label>
+                                    <input type="text" name="quizTitle" placeholder="Ví dụ: Luyện tập chương 1" value="<%= h(quizDraftTitle) %>" required>
+                                </div>
+                                <div class="upload-field">
+                                    <label>Ảnh đề</label>
+                                    <input type="file" name="quizSourceImage" accept="image/png,image/jpeg,image/webp" capture="environment" data-quiz-image-input>
+                                </div>
+                                <div class="upload-field full">
+                                    <label>Mô tả</label>
+                                    <textarea name="quizDescription" rows="2" placeholder="Ghi chú ngắn cho học viên..."><%= h(quizDraftDescription) %></textarea>
+                                </div>
+                            </div>
+                            <div class="quiz-scan-preview">
+                                <div class="upload-field">
+                                    <label>Nội dung scan</label>
+                                    <textarea name="quizScanText" rows="12" placeholder="Câu 1. ...
+A. ...
+B. ...
+C. ...
+D. ...
+Đáp án: A"><%= h(quizDraftScanText) %></textarea>
+                                </div>
+                                <div class="quiz-image-preview" data-quiz-image-preview>Chưa chọn ảnh</div>
+                            </div>
+                            <div class="quiz-actions">
+                                <button class="mini-btn preview" type="submit" name="action" value="scanQuizImage">Scan miễn phí</button>
+                                <button class="mini-btn" type="submit" name="action" value="scanQuizImageAi" title="Scan AI dùng OCR text và AI để tách câu hỏi chính xác hơn.">Scan AI</button>
+                                <button class="mini-btn primary" type="submit" name="action" value="createQuizDraft">Tạo bản nháp</button>
+                            </div>
+                        </form>
+                    <% } %>
+
+                    <% if (canManageClassroom && quizDraftQuestions != null && !quizDraftQuestions.isEmpty()) { %>
+                        <div class="quiz-card" style="margin-bottom:1rem;">
+                            <div class="quiz-card-head">
+                                <div>
+                                    <h3>Câu hỏi đã nhận diện</h3>
+                                    <div class="quiz-meta">
+                                        <span><%= quizDraftQuestions.size() %> câu từ ảnh scan</span>
+                                        <span>Giảng viên kiểm tra nội dung và chọn đáp án đúng trước khi lưu.</span>
+                                    </div>
+                                </div>
+                                <span class="quiz-status">Chưa lưu</span>
+                            </div>
+                            <form action="${pageContext.request.contextPath}/classroom" method="POST" enctype="multipart/form-data" data-quiz-edit-form>
+                                <input type="hidden" name="action" value="createQuizDraft">
+                                <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                <div class="upload-grid">
+                                    <div class="upload-field">
+                                        <label>Tiêu đề</label>
+                                        <input type="text" name="quizTitle" value="<%= h(quizDraftTitle) %>" required>
+                                    </div>
+                                    <div class="upload-field">
+                                        <label>Trạng thái</label>
+                                        <select name="quizStatus" disabled>
+                                            <option>Bản nháp</option>
+                                        </select>
+                                    </div>
+                                    <div class="upload-field full">
+                                        <label>Mô tả</label>
+                                        <textarea name="quizDescription" rows="2"><%= h(quizDraftDescription) %></textarea>
+                                    </div>
+                                    <div class="upload-field full">
+                                        <label>Nội dung scan gốc</label>
+                                        <textarea name="quizScanText" rows="4"><%= h(quizDraftScanText) %></textarea>
+                                    </div>
+                                </div>
+                                <div class="quiz-question-list" data-question-list style="margin-top:0.9rem;">
+                                    <%
+                                        int draftQuestionIndex = 1;
+                                        for (ClassroomQuizQuestion question : quizDraftQuestions) {
+                                    %>
+                                        <div class="quiz-question">
+                                            <h4>Câu <%= draftQuestionIndex++ %></h4>
+                                            <div class="upload-field" style="margin-top:0.65rem;">
+                                                <label>Nội dung câu hỏi</label>
+                                                <textarea name="questionText" rows="2" required><%= h(question.getQuestionText()) %></textarea>
+                                            </div>
+                                            <div class="quiz-option-grid">
+                                                <label>A <input type="text" name="optionA" value="<%= h(question.getOptionA()) %>"></label>
+                                                <label>B <input type="text" name="optionB" value="<%= h(question.getOptionB()) %>"></label>
+                                                <label>C <input type="text" name="optionC" value="<%= h(question.getOptionC()) %>"></label>
+                                                <label>D <input type="text" name="optionD" value="<%= h(question.getOptionD()) %>"></label>
+                                            </div>
+                                            <div class="upload-grid" style="margin-top:0.75rem;">
+                                                <div class="upload-field">
+                                                    <label>Đáp án đúng</label>
+                                                    <select name="correctOption">
+                                                        <option value="">Chưa chọn</option>
+                                                        <option value="A" <%= "A".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>A</option>
+                                                        <option value="B" <%= "B".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>B</option>
+                                                        <option value="C" <%= "C".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>C</option>
+                                                        <option value="D" <%= "D".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>D</option>
+                                                    </select>
+                                                </div>
+                                                <div class="upload-field">
+                                                    <label>Giải thích</label>
+                                                    <input type="text" name="explanation" value="<%= h(question.getExplanation()) %>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                <div class="quiz-actions">
+                                    <button class="mini-btn preview" type="button" data-add-question>Thêm câu</button>
+                                    <button class="mini-btn primary" type="submit">Lưu bản nháp</button>
+                                </div>
+                            </form>
                         </div>
-                        <div class="classroom-placeholder-card">
-                            <strong>Chấm điểm tự động</strong>
-                            <span>Hệ thống sẽ ghi nhận điểm, thời gian làm bài và số lần luyện tập.</span>
-                        </div>
-                        <div class="classroom-placeholder-card">
-                            <strong>Ôn tập theo tiến độ</strong>
-                            <span>Học viên có thể xem lại câu sai và luyện thêm theo chủ đề yếu.</span>
-                        </div>
+                    <% } %>
+
+                    <div class="quiz-list">
+                        <% if (classroomQuizzes == null || classroomQuizzes.isEmpty()) { %>
+                            <div class="empty-state"><%= canManageClassroom ? "Chưa có đề luyện tập nào. Giảng viên có thể tạo bản nháp từ ảnh đề." : "Lớp chưa có đề luyện tập được publish." %></div>
+                        <% } else {
+                            for (ClassroomQuiz quiz : classroomQuizzes) {
+                                ClassroomQuizAttempt latestAttempt = latestQuizAttempts != null ? latestQuizAttempts.get(quiz.getId()) : null;
+                        %>
+                            <div class="quiz-card" id="quiz-<%= h(quiz.getId()) %>">
+                                <div class="quiz-card-head">
+                                    <div>
+                                        <h3><%= h(quiz.getTitle()) %></h3>
+                                        <% if (quiz.getDescription() != null && !quiz.getDescription().isEmpty()) { %>
+                                            <div class="quiz-meta"><span><%= h(quiz.getDescription()) %></span></div>
+                                        <% } %>
+                                        <div class="quiz-meta">
+                                            <span><%= quiz.getQuestionCount() %> câu hỏi</span>
+                                            <% if (latestAttempt != null) { %>
+                                                <span>Điểm gần nhất: <%= h(latestAttempt.getScoreLabel()) %></span>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                    <span class="quiz-status <%= quiz.isPublished() ? "published" : "" %>"><%= quiz.isPublished() ? "Đã publish" : "Bản nháp" %></span>
+                                </div>
+
+                                <% if (canManageClassroom) { %>
+                                    <form action="${pageContext.request.contextPath}/classroom" method="POST" data-quiz-edit-form>
+                                        <input type="hidden" name="action" value="updateQuizDraft">
+                                        <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                        <input type="hidden" name="quizId" value="<%= h(quiz.getId()) %>">
+                                        <div class="upload-grid">
+                                            <div class="upload-field">
+                                                <label>Tiêu đề</label>
+                                                <input type="text" name="quizTitle" value="<%= h(quiz.getTitle()) %>" required>
+                                            </div>
+                                            <div class="upload-field">
+                                                <label>Trạng thái</label>
+                                                <select name="quizStatus">
+                                                    <option value="draft" <%= quiz.isPublished() ? "" : "selected" %>>Bản nháp</option>
+                                                    <option value="published" <%= quiz.isPublished() ? "selected" : "" %>>Publish cho lớp</option>
+                                                </select>
+                                            </div>
+                                            <div class="upload-field full">
+                                                <label>Mô tả</label>
+                                                <textarea name="quizDescription" rows="2"><%= h(quiz.getDescription()) %></textarea>
+                                            </div>
+                                            <div class="upload-field full">
+                                                <label>Nội dung scan gốc</label>
+                                                <textarea name="quizScanText" rows="4"><%= h(quiz.getRawScanText()) %></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="quiz-question-list" data-question-list style="margin-top:0.9rem;">
+                                            <% if (quiz.getQuestions() != null) {
+                                                int questionIndex = 1;
+                                                for (ClassroomQuizQuestion question : quiz.getQuestions()) {
+                                            %>
+                                                <div class="quiz-question">
+                                                    <h4>Câu <%= questionIndex++ %></h4>
+                                                    <div class="upload-field" style="margin-top:0.65rem;">
+                                                        <label>Nội dung câu hỏi</label>
+                                                        <textarea name="questionText" rows="2" required><%= h(question.getQuestionText()) %></textarea>
+                                                    </div>
+                                                    <div class="quiz-option-grid">
+                                                        <label>A <input type="text" name="optionA" value="<%= h(question.getOptionA()) %>"></label>
+                                                        <label>B <input type="text" name="optionB" value="<%= h(question.getOptionB()) %>"></label>
+                                                        <label>C <input type="text" name="optionC" value="<%= h(question.getOptionC()) %>"></label>
+                                                        <label>D <input type="text" name="optionD" value="<%= h(question.getOptionD()) %>"></label>
+                                                    </div>
+                                                    <div class="upload-grid" style="margin-top:0.75rem;">
+                                                        <div class="upload-field">
+                                                            <label>Đáp án đúng</label>
+                                                            <select name="correctOption">
+                                                                <option value="">Chưa chọn</option>
+                                                                <option value="A" <%= "A".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>A</option>
+                                                                <option value="B" <%= "B".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>B</option>
+                                                                <option value="C" <%= "C".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>C</option>
+                                                                <option value="D" <%= "D".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>D</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="upload-field">
+                                                            <label>Giải thích</label>
+                                                            <input type="text" name="explanation" value="<%= h(question.getExplanation()) %>">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <%  }
+                                            } %>
+                                        </div>
+                                        <div class="quiz-actions">
+                                            <button class="mini-btn preview" type="button" data-add-question>Thêm câu</button>
+                                            <button class="mini-btn primary" type="submit">Lưu đề</button>
+                                        </div>
+                                    </form>
+                                    <div class="quiz-actions">
+                                        <form action="${pageContext.request.contextPath}/classroom" method="POST">
+                                            <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                            <input type="hidden" name="quizId" value="<%= h(quiz.getId()) %>">
+                                            <input type="hidden" name="action" value="<%= quiz.isPublished() ? "unpublishQuiz" : "publishQuiz" %>">
+                                            <button class="mini-btn <%= quiz.isPublished() ? "" : "primary" %>" type="submit"><%= quiz.isPublished() ? "Đưa về nháp" : "Publish" %></button>
+                                        </form>
+                                        <form action="${pageContext.request.contextPath}/classroom" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa đề này?');">
+                                            <input type="hidden" name="action" value="deleteQuiz">
+                                            <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                            <input type="hidden" name="quizId" value="<%= h(quiz.getId()) %>">
+                                            <button class="mini-btn danger" type="submit">Xóa đề</button>
+                                        </form>
+                                    </div>
+                                <% } else { %>
+                                    <form action="${pageContext.request.contextPath}/classroom" method="POST">
+                                        <input type="hidden" name="action" value="submitQuizAttempt">
+                                        <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                        <input type="hidden" name="quizId" value="<%= h(quiz.getId()) %>">
+                                        <div class="quiz-question-list">
+                                            <% if (quiz.getQuestions() != null) {
+                                                int studentQuestionIndex = 1;
+                                                for (ClassroomQuizQuestion question : quiz.getQuestions()) {
+                                            %>
+                                                <div class="quiz-question">
+                                                    <h4>Câu <%= studentQuestionIndex++ %></h4>
+                                                    <p style="margin:0.45rem 0 0;color:#0f172a;line-height:1.6;"><%= h(question.getQuestionText()) %></p>
+                                                    <div class="quiz-option-grid">
+                                                        <% if (question.getOptionA() != null && !question.getOptionA().isEmpty()) { %>
+                                                            <label class="quiz-answer-option"><input type="radio" name="answer_<%= h(question.getId()) %>" value="A"> <span>A. <%= h(question.getOptionA()) %></span></label>
+                                                        <% } %>
+                                                        <% if (question.getOptionB() != null && !question.getOptionB().isEmpty()) { %>
+                                                            <label class="quiz-answer-option"><input type="radio" name="answer_<%= h(question.getId()) %>" value="B"> <span>B. <%= h(question.getOptionB()) %></span></label>
+                                                        <% } %>
+                                                        <% if (question.getOptionC() != null && !question.getOptionC().isEmpty()) { %>
+                                                            <label class="quiz-answer-option"><input type="radio" name="answer_<%= h(question.getId()) %>" value="C"> <span>C. <%= h(question.getOptionC()) %></span></label>
+                                                        <% } %>
+                                                        <% if (question.getOptionD() != null && !question.getOptionD().isEmpty()) { %>
+                                                            <label class="quiz-answer-option"><input type="radio" name="answer_<%= h(question.getId()) %>" value="D"> <span>D. <%= h(question.getOptionD()) %></span></label>
+                                                        <% } %>
+                                                    </div>
+                                                </div>
+                                            <%  }
+                                            } %>
+                                        </div>
+                                        <div class="quiz-actions">
+                                            <button class="mini-btn primary" type="submit">Nộp bài</button>
+                                        </div>
+                                    </form>
+                                <% } %>
+                            </div>
+                        <%  }
+                        } %>
                     </div>
-                    <div class="empty-state" style="margin-top:1rem;">Tính năng luyện tập trắc nghiệm sẽ được thiết kế ở bước sau.</div>
+                </section>
+
+                <section class="classroom-card classroom-tab-panel" data-classroom-panel="exams">
+                    <h2>Phòng thi lớp học</h2>
+                    <% if (canManageClassroom) { %>
+                        <form class="upload-panel" action="${pageContext.request.contextPath}/classroom" method="POST">
+                            <input type="hidden" name="action" value="createClassExam">
+                            <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                            <h3>Tạo bài thi lớp học</h3>
+                            <div class="upload-grid">
+                                <div class="upload-field">
+                                    <label>Tiêu đề bài thi</label>
+                                    <input type="text" name="examTitle" placeholder="Ví dụ: Kiểm tra chương 1" required>
+                                </div>
+                                <div class="upload-field">
+                                    <label>Mã đề</label>
+                                    <input type="text" name="examCode" placeholder="VD: HIPZI-TOAN10-01" required>
+                                </div>
+                                <div class="upload-field">
+                                    <label>Thời lượng</label>
+                                    <input type="number" name="durationMinutes" min="1" value="45" required>
+                                </div>
+                                <div class="upload-field">
+                                    <label>Trạng thái</label>
+                                    <select name="examStatus">
+                                        <option value="open">Đang mở</option>
+                                        <option value="draft">Bản nháp</option>
+                                        <option value="closed">Đã đóng</option>
+                                    </select>
+                                </div>
+                                <div class="upload-field full">
+                                    <label>Gắn file đề đã upload</label>
+                                    <select name="sourceMaterialId">
+                                        <option value="">Không gắn file</option>
+                                        <% if (classExamMaterials != null) {
+                                            for (ClassroomMaterial material : classExamMaterials) {
+                                        %>
+                                            <option value="<%= h(material.getId()) %>"><%= h(material.getTitle()) %></option>
+                                        <%  }
+                                        } %>
+                                    </select>
+                                </div>
+                                <div class="upload-field full">
+                                    <label>Mô tả</label>
+                                    <textarea name="examDescription" rows="2" placeholder="Ghi chú, phạm vi kiến thức, quy định làm bài..."></textarea>
+                                </div>
+                            </div>
+                            <div class="quiz-actions">
+                                <button class="mini-btn primary" type="submit">Tạo bài thi</button>
+                            </div>
+                        </form>
+                    <% } %>
+                    <div class="resource-list">
+                        <% if (classroomExams == null || classroomExams.isEmpty()) { %>
+                            <div class="empty-state"><%= canManageClassroom ? "Chưa có bài thi lớp học nào." : "Lớp chưa có bài thi nào đang mở." %></div>
+                        <% } else {
+                            for (ClassroomExam exam : classroomExams) {
+                                String examHref = request.getContextPath()
+                                        + "/class-exam-room.jsp?classId=" + u(classroom.getId())
+                                        + "&code=" + u(exam.getExamCode())
+                                        + "&title=" + u(exam.getTitle());
+                        %>
+                            <div class="resource-item">
+                                <div>
+                                    <strong><%= h(exam.getTitle()) %></strong>
+                                    <% if (exam.getDescription() != null && !exam.getDescription().isEmpty()) { %>
+                                        <span><%= h(exam.getDescription()) %></span>
+                                    <% } %>
+                                    <div class="resource-meta">
+                                        <span class="resource-chip">Bài thi lớp học</span>
+                                        <span class="resource-chip"><%= h(exam.getExamCode()) %></span>
+                                        <span class="resource-chip"><%= h(exam.getStatusLabel()) %></span>
+                                        <span class="resource-chip"><%= exam.getDurationMinutes() %> phút</span>
+                                    </div>
+                                </div>
+                                <div class="resource-actions">
+                                    <a class="mini-btn primary" href="<%= h(examHref) %>">Vào phòng thi</a>
+                                    <% if (exam.getSourceMaterialId() != null && !exam.getSourceMaterialId().isEmpty()) { %>
+                                        <a class="mini-btn preview" href="${pageContext.request.contextPath}/classroom-preview?id=<%= h(exam.getSourceMaterialId()) %>" target="_blank" rel="noopener">Xem đề</a>
+                                    <% } %>
+                                    <% if (canManageClassroom) { %>
+                                        <form action="${pageContext.request.contextPath}/classroom" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa bài thi này?');">
+                                            <input type="hidden" name="action" value="deleteClassExam">
+                                            <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                            <input type="hidden" name="examId" value="<%= h(exam.getId()) %>">
+                                            <button class="mini-btn danger" type="submit">Xóa</button>
+                                        </form>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <%  }
+                        } %>
+                    </div>
                 </section>
 
                 <section class="classroom-card classroom-tab-panel" data-classroom-panel="leaderboard">
@@ -1149,6 +1675,70 @@
                 ? window.location.hash.replace('#tab-', '')
                 : 'info';
             switchClassroomTab(tabFromHash, true);
+        });
+
+        document.querySelectorAll('[data-quiz-image-input]').forEach(input => {
+            input.addEventListener('change', () => {
+                const preview = input.closest('form')?.querySelector('[data-quiz-image-preview]');
+                const file = input.files && input.files[0];
+                if (!preview) return;
+                if (!file) {
+                    preview.textContent = 'Chưa chọn ảnh';
+                    return;
+                }
+                const img = document.createElement('img');
+                img.alt = file.name || 'Ảnh đề';
+                img.src = URL.createObjectURL(file);
+                img.onload = () => URL.revokeObjectURL(img.src);
+                preview.replaceChildren(img);
+            });
+        });
+
+        function renumberQuizQuestions(list) {
+            list.querySelectorAll('.quiz-question h4').forEach((heading, index) => {
+                heading.textContent = 'Câu ' + (index + 1);
+            });
+        }
+
+        document.querySelectorAll('[data-add-question]').forEach(button => {
+            button.addEventListener('click', () => {
+                const form = button.closest('form');
+                const list = form ? form.querySelector('[data-question-list]') : null;
+                if (!list) return;
+                list.insertAdjacentHTML('beforeend', `
+                    <div class="quiz-question">
+                        <h4>Câu</h4>
+                        <div class="upload-field" style="margin-top:0.65rem;">
+                            <label>Nội dung câu hỏi</label>
+                            <textarea name="questionText" rows="2" required></textarea>
+                        </div>
+                        <div class="quiz-option-grid">
+                            <label>A <input type="text" name="optionA"></label>
+                            <label>B <input type="text" name="optionB"></label>
+                            <label>C <input type="text" name="optionC"></label>
+                            <label>D <input type="text" name="optionD"></label>
+                        </div>
+                        <div class="upload-grid" style="margin-top:0.75rem;">
+                            <div class="upload-field">
+                                <label>Đáp án đúng</label>
+                                <select name="correctOption">
+                                    <option value="">Chưa chọn</option>
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                </select>
+                            </div>
+                            <div class="upload-field">
+                                <label>Giải thích</label>
+                                <input type="text" name="explanation">
+                            </div>
+                        </div>
+                    </div>
+                `);
+                renumberQuizQuestions(list);
+                list.lastElementChild?.querySelector('textarea')?.focus();
+            });
         });
 
         function showToast(message, type = 'success') {

@@ -249,7 +249,8 @@
                 <li><a href="${pageContext.request.contextPath}/index.jsp">Trang chủ</a></li>
                 <li><a href="${pageContext.request.contextPath}/material-repository">Kho tài liệu</a></li>
                 <li><a href="${pageContext.request.contextPath}/classes">Lớp học</a></li>
-                <li><a href="${pageContext.request.contextPath}/practice">Luyện tập</a></li>
+                <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
+
                 <li><a href="${pageContext.request.contextPath}/exam-room" class="active">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/index.jsp#ai-roadmap">Hipzi AI</a></li>
             </ul>
@@ -295,7 +296,7 @@
             </section>
 
             <section class="exam-card-grid" aria-label="Các hạng mục thi trong HIPZI">
-                <a class="exam-entry-card" href="#" aria-label="Mở hạng mục Thi thử">
+                <a class="exam-entry-card" href="${pageContext.request.contextPath}/mock-exams.jsp" aria-label="Mở hạng mục Thi thử">
                     <div>
                         <div class="exam-card-code">Luyện tập cá nhân</div>
                         <h2>Thi thử</h2>
