@@ -898,121 +898,57 @@ AI generation requirements define how Teachers use AI to generate draft learning
 
 ---
 
-## 11. Student Practice Requirements
+## 11. Mock Exams Requirements
 
-Student practice requirements define how Students use quizzes and flashcards to reinforce learning.
+Mock Exams requirements define how Students participate in practice testing under the Exam Room.
 
 ---
 
-### FR-PRAC-001: Start Practice Quiz
+### FR-MOCK-001: Start Mock Exam
 
 | Field | Value |
 |---|---|
-| Module | Student Practice |
+| Module | Mock Exams |
 | Priority | MVP |
-| Description | The system shall allow Students to start a practice quiz from an approved learning material or practice activity. |
+| Description | The system shall allow Students to start a mock exam (Multiple choice, Flashcard, or Essay). |
 | Actors | Student |
-| Preconditions | The quiz is approved, visible, and available to Students. |
-| Trigger | Student selects start quiz. |
-| Expected Behavior | The system starts a quiz attempt for the Student. |
+| Preconditions | The mock exam is published and active. |
+| Trigger | Student selects start mock exam. |
+| Expected Behavior | The system starts a mock exam attempt. |
 | Related User Requirements | UR-STU-005 |
-| Related Business Rules | BR-PRAC-001, BR-MAT-004 |
+| Related Business Rules | BR-MOCK-001 |
 
 ---
 
-### FR-PRAC-002: Submit Quiz Answers
+### FR-MOCK-002: Submit Exam Answers
 
 | Field | Value |
 |---|---|
-| Module | Student Practice |
+| Module | Mock Exams |
 | Priority | MVP |
-| Description | The system shall allow Students to submit quiz answers. |
+| Description | The system shall allow Students to submit answers for Trắc nghiệm or Tự luận. |
 | Actors | Student |
-| Preconditions | The Student has started a quiz attempt. |
+| Preconditions | The Student has an active mock exam attempt. |
 | Trigger | Student submits answers. |
-| Expected Behavior | The system records the submitted answers and proceeds to scoring. |
+| Expected Behavior | The system records the submitted answers and proceeds to scoring (for objective questions). |
 | Related User Requirements | UR-STU-005 |
-| Related Business Rules | BR-PRAC-002, BR-PRAC-003 |
+| Related Business Rules | BR-MOCK-002 |
 
 ---
 
-### FR-PRAC-003: Calculate Quiz Results
+### FR-MOCK-003: Store Exam Attempts
 
 | Field | Value |
 |---|---|
-| Module | Student Practice |
+| Module | Mock Exams |
 | Priority | MVP |
-| Description | The system shall calculate quiz results based on defined answer keys or evaluation rules. |
+| Description | The system shall store Student exam attempts and scores. |
 | Actors | Student |
-| Preconditions | Quiz questions have answer keys or evaluation rules. |
-| Trigger | Student submits quiz answers. |
-| Expected Behavior | The system calculates the score and determines correct and incorrect answers. |
-| Related User Requirements | UR-STU-007 |
-| Related Business Rules | BR-PRAC-002, BR-PRAC-004 |
-
----
-
-### FR-PRAC-004: Display Quiz Results and Feedback
-
-| Field | Value |
-|---|---|
-| Module | Student Practice |
-| Priority | MVP |
-| Description | The system shall display quiz results, correct answers, and basic feedback after submission. |
-| Actors | Student |
-| Preconditions | The quiz attempt has been scored. |
-| Trigger | Scoring is completed. |
-| Expected Behavior | The system displays score, correct answers, incorrect answers, and available explanations. |
-| Related User Requirements | UR-STU-007 |
-| Related Business Rules | BR-PRAC-004 |
-
----
-
-### FR-PRAC-005: Store Quiz Attempts
-
-| Field | Value |
-|---|---|
-| Module | Student Practice |
-| Priority | MVP |
-| Description | The system shall store Student quiz attempts. |
-| Actors | Student |
-| Preconditions | Student submits or completes a quiz attempt. |
-| Trigger | Quiz attempt is submitted or scored. |
-| Expected Behavior | The system stores attempt details for learning history and progress tracking. |
+| Preconditions | Student submits or completes an exam attempt. |
+| Trigger | Exam attempt is submitted or scored. |
+| Expected Behavior | The system stores attempt details for learning history. |
 | Related User Requirements | UR-STU-008 |
-| Related Business Rules | BR-PRAC-003 |
-
----
-
-### FR-PRAC-006: Retake Practice Quizzes
-
-| Field | Value |
-|---|---|
-| Module | Student Practice |
-| Priority | MVP |
-| Description | The system shall allow Students to retake practice quizzes unless restricted by activity settings. |
-| Actors | Student |
-| Preconditions | The quiz is a practice quiz and is available for retake. |
-| Trigger | Student selects retake quiz. |
-| Expected Behavior | The system starts a new quiz attempt for the Student. |
-| Related User Requirements | UR-STU-005 |
-| Related Business Rules | BR-PRAC-005 |
-
----
-
-### FR-PRAC-007: Practice with Flashcards
-
-| Field | Value |
-|---|---|
-| Module | Student Practice |
-| Priority | MVP |
-| Description | The system shall allow Students to practice using flashcards. |
-| Actors | Student |
-| Preconditions | Flashcards are approved and visible. |
-| Trigger | Student opens a flashcard practice set. |
-| Expected Behavior | The system presents flashcards for Student review and practice. |
-| Related User Requirements | UR-STU-006 |
-| Related Business Rules | BR-PRAC-001 |
+| Related Business Rules | BR-MOCK-003 |
 
 ---
 
@@ -1263,7 +1199,7 @@ Class and course requirements are planned after the MVP, once core material and 
 | Field | Value |
 |---|---|
 | Module | Course Management |
-| Priority | Future |
+| Priority | MVP |
 | Description | The system shall allow Teachers to create structured courses. |
 | Actors | Teacher |
 | Preconditions | The user is an approved Teacher. |
@@ -1279,7 +1215,7 @@ Class and course requirements are planned after the MVP, once core material and 
 | Field | Value |
 |---|---|
 | Module | Course Management |
-| Priority | Future |
+| Priority | MVP |
 | Description | The system shall allow Teachers to submit courses for Staff review before public listing when required by platform policy. |
 | Actors | Teacher, Staff |
 | Preconditions | The course exists and is ready for review. |
@@ -1287,6 +1223,38 @@ Class and course requirements are planned after the MVP, once core material and 
 | Expected Behavior | The system sends the course to Staff review and controls public visibility based on moderation status. |
 | Related User Requirements | UR-TCH-015, UR-STF-005 |
 | Related Business Rules | BR-CLS-005 |
+
+---
+
+### FR-WALLET-001: View Wallet Balance
+
+| Field | Value |
+|---|---|
+| Module | Wallet Management |
+| Priority | MVP |
+| Description | The system shall display the wallet balance for the authenticated user. |
+| Actors | Student, Teacher |
+| Preconditions | User is logged in. |
+| Trigger | User navigates to their profile or dashboard. |
+| Expected Behavior | The current wallet balance is fetched and displayed. |
+| Related User Requirements | UR-STU-018 |
+| Related Business Rules | BR-WLT-001 |
+
+---
+
+### FR-WALLET-002: Purchase Course via Wallet
+
+| Field | Value |
+|---|---|
+| Module | Wallet Management |
+| Priority | MVP |
+| Description | The system shall allow a Student to purchase a Course using their Wallet Balance. |
+| Actors | Student |
+| Preconditions | Course is active, Student has sufficient balance. |
+| Trigger | Student clicks purchase on a course. |
+| Expected Behavior | The system deducts the balance, grants access to the course, and records the wallet transaction. |
+| Related User Requirements | UR-STU-018 |
+| Related Business Rules | BR-WLT-002 |
 
 ---
 

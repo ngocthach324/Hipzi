@@ -220,6 +220,7 @@ The MVP should allow:
 - AI to generate quizzes or flashcards from uploaded content.
 - Teachers to review AI-generated quizzes or flashcards before publishing.
 - Students to practice using generated quizzes or flashcards.
+- Staff and Admins to organize official HIPZI Exams with XP rewards.
 - Admins to manage roles, audit moderation actions, and override decisions when necessary.
 
 ### 7.2 Mid-Term Goals
@@ -308,12 +309,11 @@ The first version of HIPZI should include the following features.
 - AI-generated content should be editable by teachers before publishing.
 - Generated quizzes should include questions, answer options, correct answers, and explanations where possible.
 
-#### 8.2.7 Student Practice
+#### 8.2.7 Mock Exams & Courses
 
-- Students can practice using quizzes or flashcards.
-- Students can submit answers.
-- The system can show scores and correct answers.
-- The system can store basic practice history.
+- Students can participate in Mock Exams (Multiple choice, Flashcard, Essay) in the Exam Room.
+- Students can purchase and enroll in Courses using their internal Wallet Balance.
+- The system stores exam attempts, essay submissions, and wallet transaction history.
 
 #### 8.2.8 Staff Moderation
 
@@ -742,7 +742,9 @@ Focus:
 - Student material browsing.
 - AI quiz and flashcard generation.
 - Teacher review of AI-generated content.
-- Student quiz practice.
+- Mock Exams (Multiple Choice, Flashcard, Essay).
+- Course browsing and enrollment.
+- Internal Wallet Balance and transactions.
 - Admin governance and role management.
 
 ### 15.2 Phase 2: Teacher and Class Management
@@ -766,11 +768,11 @@ Focus:
 - Smart search.
 - Learning recommendations.
 
-### 15.4 Phase 4: Courses and Community
+### 15.4 Phase 4: Community & Advanced Features
 
 Focus:
 
-- Course builder.
+- Course builder (Advanced drag-and-drop).
 - Assignment management.
 - Study groups.
 - Discussion and Q&A.
@@ -781,10 +783,10 @@ Focus:
 
 Focus:
 
-- Online exams.
+- Full-scale Online exams (Proctoring/Anti-cheat).
 - AI-assisted grading.
 - Parent dashboard.
-- Payment system.
+- Advanced Payment system (Stripe/PayPal integrations).
 - Teacher marketplace.
 - Advanced analytics.
 

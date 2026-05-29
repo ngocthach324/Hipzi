@@ -604,70 +604,70 @@ A user may hold multiple roles only when explicitly assigned by an Admin.
 
 ---
 
-## 10. Quiz, Flashcard, and Practice Rules
+## 10. Mock Exams and HIPZI Exams Rules
 
-### BR-PRAC-001: Practice Content Must Be Linked to Learning Context
-
-| Field | Value |
-|---|---|
-| Category | Quiz, Flashcard, and Practice |
-| Priority | MVP |
-| Rule | A quiz or flashcard set must be linked to a study material, subject, teacher-created resource, or learning context. |
-| Rationale | Practice content should be traceable to learning material or subject context. |
-| Applies To | Student, Teacher |
-| Related User Requirements | UR-STU-005, UR-STU-006, UR-TCH-005, UR-TCH-006 |
-
----
-
-### BR-PRAC-002: Quiz Questions Must Have Evaluation Rules
+### BR-MOCK-001: Mock Exam Availability
 
 | Field | Value |
 |---|---|
-| Category | Quiz, Flashcard, and Practice |
+| Category | Mock Exams |
 | Priority | MVP |
-| Rule | A quiz question must have at least one correct answer or a defined evaluation rule. |
-| Rationale | The system needs clear evaluation criteria to score student answers. |
-| Applies To | Student, Teacher |
-| Related User Requirements | UR-STU-005, UR-STU-007 |
-
----
-
-### BR-PRAC-003: Practice Attempts Should Be Stored
-
-| Field | Value |
-|---|---|
-| Category | Quiz, Flashcard, and Practice |
-| Priority | MVP |
-| Rule | Student practice attempts should be stored for learning history and progress tracking. |
-| Rationale | Practice history enables feedback, progress tracking, and future personalization. |
-| Applies To | Student |
-| Related User Requirements | UR-STU-008, UR-STU-016 |
-
----
-
-### BR-PRAC-004: Practice Scores Are Not Formal Grades
-
-| Field | Value |
-|---|---|
-| Category | Quiz, Flashcard, and Practice |
-| Priority | MVP |
-| Rule | Practice quiz scores should be treated as learning feedback, not formal academic grades. |
-| Rationale | Practice activities are designed for learning reinforcement, not official assessment. |
-| Applies To | Student, Teacher |
-| Related User Requirements | UR-STU-007 |
-
----
-
-### BR-PRAC-005: Students May Retake Practice Quizzes
-
-| Field | Value |
-|---|---|
-| Category | Quiz, Flashcard, and Practice |
-| Priority | MVP |
-| Rule | Students may retake practice quizzes unless the activity is configured as a formal exam or restricted assessment. |
-| Rationale | Retaking quizzes supports learning and knowledge reinforcement. |
-| Applies To | Student |
+| Rule | Mock exams must be explicitly published to be visible in the Exam Room. |
+| Rationale | Students should only take ready and approved mock exams. |
+| Applies To | Student, Staff |
 | Related User Requirements | UR-STU-005 |
+
+---
+
+### BR-MOCK-002: Mock Exam Evaluation
+
+| Field | Value |
+|---|---|
+| Category | Mock Exams |
+| Priority | MVP |
+| Rule | Objective questions (Trắc nghiệm, Flashcard) are automatically scored. Essay questions (Tự luận) may require manual grading by Teachers. |
+| Rationale | Automated scoring handles standard questions, while essays need human review. |
+| Applies To | Student, Teacher |
+| Related User Requirements | UR-STU-005, UR-TCH-016 |
+
+---
+
+### BR-MOCK-003: Attempt Storage
+
+| Field | Value |
+|---|---|
+| Category | Mock Exams |
+| Priority | MVP |
+| Rule | All Mock Exam attempts must be stored for history and scoring. |
+| Rationale | It is important to track student testing history. |
+| Applies To | Student |
+| Related User Requirements | UR-STU-008 |
+
+---
+
+### BR-HIPZI-001: HIPZI Exams Creation and Management
+
+| Field | Value |
+|---|---|
+| Category | HIPZI Exams |
+| Priority | MVP |
+| Rule | HIPZI Exams can only be created and managed by Staff or Admins. |
+| Rationale | HIPZI Exams are official, system-wide events requiring centralized governance. |
+| Applies To | Staff, Admin |
+| Related User Requirements | UR-ADM-008 |
+
+---
+
+### BR-HIPZI-002: HIPZI Exam Rewards
+
+| Field | Value |
+|---|---|
+| Category | HIPZI Exams |
+| Priority | MVP |
+| Rule | Students who complete a HIPZI Exam may receive bonus XP (Experience Points) added to their profile level, based on the exam's configuration. |
+| Rationale | Rewards encourage student participation and gamify the learning experience. |
+| Applies To | Student, Staff, Admin |
+| Related User Requirements | UR-STU-008 |
 
 ---
 
@@ -797,9 +797,9 @@ A user may hold multiple roles only when explicitly assigned by an Admin.
 | Field | Value |
 |---|---|
 | Category | Class, Course, and Enrollment |
-| Priority | Future |
-| Rule | Courses should follow a structured hierarchy: Course → Module → Lesson → Material → Quiz or Assignment. |
-| Rationale | Structured courses support organized learning and future LMS capabilities. |
+| Priority | MVP |
+| Rule | Courses should follow a structured hierarchy: Course → Module → Lesson. |
+| Rationale | Structured courses support organized learning. |
 | Applies To | Teacher, Student |
 | Related User Requirements | UR-TCH-015 |
 
@@ -810,9 +810,9 @@ A user may hold multiple roles only when explicitly assigned by an Admin.
 | Field | Value |
 |---|---|
 | Category | Class, Course, and Enrollment |
-| Priority | Future |
+| Priority | MVP |
 | Rule | Courses may require Staff review before being publicly listed. |
-| Rationale | Course-level moderation helps maintain quality as the platform grows. |
+| Rationale | Course-level moderation helps maintain quality. |
 | Applies To | Teacher, Staff |
 | Related User Requirements | UR-TCH-015, UR-STF-005 |
 
@@ -954,44 +954,31 @@ A user may hold multiple roles only when explicitly assigned by an Admin.
 
 ---
 
-## 16. Monetization and Payment Rules
+## 16. Wallet and Monetization Rules
 
-### BR-PAY-001: Payment Features Are Out of MVP Scope
+### BR-WLT-001: Internal Wallet Balance
 
 | Field | Value |
 |---|---|
-| Category | Monetization and Payment |
-| Priority | Future |
-| Rule | Payment, subscription, and teacher marketplace monetization features should not be included in the MVP unless explicitly required. |
-| Rationale | The MVP should validate the core learning workflow before monetization. |
-| Applies To | Student, Parent, Teacher, Admin |
-| Related User Requirements | UR-PAR-002, UR-TCH-015 |
+| Category | Wallet and Monetization |
+| Priority | MVP |
+| Rule | Students and Teachers have an internal wallet balance to buy or sell courses. |
+| Rationale | A wallet system allows internal transactions without complex external payment gateways initially. |
+| Applies To | Student, Teacher |
+| Related User Requirements | UR-STU-018 |
 
 ---
 
-### BR-PAY-002: Premium Access Rules Must Be Explicit
+### BR-WLT-002: Course Purchase Deducts Wallet
 
 | Field | Value |
 |---|---|
-| Category | Monetization and Payment |
-| Priority | Future |
-| Rule | If premium features are introduced, access rules for free and paid users must be clearly defined. |
-| Rationale | Monetization should not create unclear access behavior. |
-| Applies To | Student, Parent, Teacher |
-| Related User Requirements | UR-GEN-001 |
-
----
-
-### BR-PAY-003: Teacher Marketplace Commission Requires Clear Policy
-
-| Field | Value |
-|---|---|
-| Category | Monetization and Payment |
-| Priority | Future |
-| Rule | If HIPZI charges commission for teacher marketplace transactions, commission rules must be clearly defined before implementation. |
-| Rationale | Marketplace monetization affects teachers, students, parents, and platform operations. |
-| Applies To | Teacher, Student, Parent, Admin |
-| Related User Requirements | UR-TCH-015, UR-PAR-002 |
+| Category | Wallet and Monetization |
+| Priority | MVP |
+| Rule | Purchasing a course deducts the specified amount from the Student's wallet balance. If balance is insufficient, purchase is denied. |
+| Rationale | Ensures valid transaction logic. |
+| Applies To | Student |
+| Related User Requirements | UR-STU-018 |
 
 ---
 

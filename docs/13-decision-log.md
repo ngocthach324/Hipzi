@@ -107,7 +107,7 @@ Each decision should use the following format:
 | DEC-015 | Use DAO Layer for Database Access | Accepted |
 | DEC-016 | Use Session-Based Authentication for JSP/Servlet MVP | Accepted |
 | DEC-017 | Use Audit Logs for Important Staff and Admin Actions | Accepted |
-| DEC-018 | Defer Parent, Payment, Exam, and Advanced Course Features | Accepted |
+| DEC-018 | Integrate Mock Exams, Courses, and Wallet Features into Phase 1 | Superseded |
 | DEC-019 | Keep AI Recommendations as Phase 2 Scope | Accepted |
 | DEC-020 | Keep UI/UX Design as a Separate Document | Accepted |
 
@@ -947,47 +947,44 @@ Audit logs should be created for:
 
 ## 10. Scope and Roadmap Decisions
 
-### DEC-018: Defer Parent, Payment, Exam, and Advanced Course Features
+### DEC-018: Integrate Mock Exams, Courses, and Wallet Features into Phase 1
 
 | Field | Value |
 |---|---|
-| Status | Accepted |
-| Date | TBD |
-| Related Documents | 00-prd.md, 03-functional-requirements.md, 11-tech-plan.md |
+| Status | Superseded (Previously Accepted to defer) |
+| Date | 2026-05-29 |
+| Related Documents | 00-prd.md, 03-functional-requirements.md, 11-tech-plan.md, 08-database-design.md |
 
 #### Context
 
-HIPZI has many possible features, including Parent dashboard, payment, online exams, structured courses, marketplace transactions, and reviews.
-
-A decision was needed on what belongs in MVP and what should be deferred.
+HIPZI originally deferred payment, online exams, structured courses, and marketplace transactions to Phase 2 to focus on the core MVP. However, a strategic decision was made to integrate these core business drivers immediately.
 
 #### Decision
 
-Parent features, payment, formal exams, advanced course builder, and marketplace features will be deferred to Phase 2 or Future.
+Mock Exams (Trắc nghiệm, Flashcard, Tự luận), Courses (Khóa học), and Wallet Balance (Số dư ví) are moved from Phase 2 to Phase 1 (MVP). Parent features and advanced analytics remain deferred.
 
 #### Reason
 
 This decision is made because:
 
-- The MVP should focus on the core learning and moderation loop.
-- Too many features would slow development.
-- Payment and exams require higher reliability and security.
-- Parent access requires careful privacy handling.
-- Advanced course features require more design and testing.
+- Mock exams and courses provide immediate high value for Student retention.
+- A basic wallet system establishes the foundation for monetization early.
+- The technical foundation (modular monolith) allows these features to be integrated cleanly without destabilizing the core.
 
 #### Alternatives Considered
 
 | Alternative | Reason Not Selected |
 |---|---|
-| Build all features in MVP | Too large and risky |
-| Remove future features completely | Too limiting for long-term vision |
-| Start with payment first | Not useful before core learning value is validated |
+| Keep deferring to Phase 2 | Delays business value and monetization opportunities |
+| Build full advanced payment gateways immediately | Too complex; a simple internal wallet balance is safer for MVP |
 
 #### Impact
 
-MVP focuses on:
+MVP now includes:
 
-- Authentication.
+- Mock Exams in the Exam Room.
+- Course listings and enrollments.
+- Internal Wallet Balance for Users.
 - Teacher application.
 - Staff moderation.
 - Material upload.

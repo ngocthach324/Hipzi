@@ -326,35 +326,17 @@ Recommended repositories:
 
 The Database and Storage Layer stores persistent system data.
 
-HIPZI should store structured data in a primary database and uploaded files in object storage.
+HIPZI uses a relational database, managed via 8 core SQL modules (stored in `database/`) executed in order:
 
-Structured data may include:
-
-- Users.
-- Roles.
-- User-role assignments.
-- Student profiles.
-- Teacher profiles.
-- Teacher applications.
-- Staff permissions.
-- Subjects.
-- Materials.
-- Material statuses.
-- Material moderation actions.
-- AI-generated content.
-- Quizzes.
-- Quiz questions.
-- Flashcard sets.
-- Flashcards.
-- Quiz attempts.
-- Learning history.
-- Reports.
-- Audit logs.
-- Classes.
-- Enrollments.
-- Courses.
-- Exams.
-- Payment records in future phases.
+1. `01-identity-auth.sql`: Auth, users, roles.
+2. `02-profiles-notifications.sql`: Profiles, parents, notifications.
+3. `03-teacher-applications.sql`: Teacher verification.
+4. `04-materials-repository.sql`: Material repository.
+5. `05-classrooms-core.sql`: Virtual classrooms.
+6. `06-classroom-quizzes-exams.sql`: Private quizzes and exams.
+7. `07-mock-exams.sql`: Open mock exams and practice capabilities.
+8. `08-courses-wallet.sql`: E-learning courses and internal wallet balances.
+9. `09-hipzi-exams.sql`: Official proctored HIPZI exams with XP rewards.
 
 File storage may include:
 
@@ -818,6 +800,8 @@ Responsibilities:
 - Support class-specific materials.
 - Support structured courses in future phases.
 - Support Course → Module → Lesson → Material → Quiz / Assignment hierarchy.
+
+**Data Structure**: 9 modular SQL files executed in order (Auth → Profiles → Teacher Apps → Materials → Classrooms → Classroom Quizzes → Mock Exams → Courses/Wallet → HIPZI Exams).
 
 Course hierarchy:
 

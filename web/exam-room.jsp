@@ -320,7 +320,7 @@
                     </div>
                 </a>
 
-                <a class="exam-entry-card" href="#" data-tone="contest" aria-label="Mở hạng mục Kỳ thi HIPZI">
+                <a class="exam-entry-card" href="${pageContext.request.contextPath}/hipzi-exams.jsp" data-tone="contest" aria-label="Mở hạng mục Kỳ thi HIPZI">
                     <div>
                         <div class="exam-card-code">Sự kiện thi chung</div>
                         <h2>Kỳ thi HIPZI</h2>
