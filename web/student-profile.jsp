@@ -16,7 +16,7 @@
                                     <meta name="description"
                                         content="Quản lý thông tin tài khoản và tiến trình học tập của học viên trên nền tảng HIPZI.">
                                     <link rel="icon" type="image/png"
-                                        href="${pageContext.request.contextPath}/favicon.png">
+                                        href="${pageContext.request.contextPath}/assets/images/favicon.png">
                                     <link rel="stylesheet"
                                         href="${pageContext.request.contextPath}/assets/css/landing.css">
                                     <style>
@@ -1511,7 +1511,7 @@
                                                         <div class="nav-container">
                                                             <a href="${pageContext.request.contextPath}/index.jsp"
                                                                 class="logo">
-                                                                <img src="${pageContext.request.contextPath}/favicon.png"
+                                                                <img src="${pageContext.request.contextPath}/assets/images/favicon.png"
                                                                     alt="HIPZI Logo">
                                                                 <span>HIPZI</span>
                                                             </a>

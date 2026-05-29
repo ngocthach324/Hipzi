@@ -34,6 +34,7 @@ public class MaterialRepositoryServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        long requestStartedAt = System.nanoTime();
         
         String subject = request.getParameter("subject");
         String grade = request.getParameter("grade");
@@ -51,7 +52,11 @@ public class MaterialRepositoryServlet extends HttpServlet {
             type = "Tất cả";
         }
         
+        long dataStartedAt = System.nanoTime();
         List<Material> materials = materialService.getMaterials(subject, grade, type, searchQuery, sort);
+        long dataMs = elapsedMs(dataStartedAt);
+        response.addHeader("Server-Timing", "material-data;dur=" + dataMs);
+        response.addHeader("X-Hipzi-Perf-Material", "data=" + dataMs + "ms; rows=" + materials.size());
         
         request.setAttribute("materials", materials);
         request.setAttribute("currentSubject", subject);
@@ -62,11 +67,23 @@ public class MaterialRepositoryServlet extends HttpServlet {
         // Nếu là AJAX request (từ bộ lọc sidebar), chỉ trả về fragment kết quả
         String ajaxParam = request.getParameter("ajax");
         if ("1".equals(ajaxParam)) {
+            long forwardStartedAt = System.nanoTime();
             request.getRequestDispatcher("/WEB-INF/fragments/material-repository-results.jsp").forward(request, response);
+            logPerf("MaterialRepositoryServlet.doGet ajax=1 rows=" + materials.size(), dataMs, elapsedMs(forwardStartedAt), elapsedMs(requestStartedAt));
             return;
         }
 
+        long forwardStartedAt = System.nanoTime();
         request.getRequestDispatcher("/material-repository.jsp").forward(request, response);
+        logPerf("MaterialRepositoryServlet.doGet ajax=0 rows=" + materials.size(), dataMs, elapsedMs(forwardStartedAt), elapsedMs(requestStartedAt));
+    }
+
+    private long elapsedMs(long startedAt) {
+        return (System.nanoTime() - startedAt) / 1_000_000L;
+    }
+
+    private void logPerf(String label, long dataMs, long forwardMs, long totalMs) {
+        System.err.println("[PERF] " + label + " data=" + dataMs + "ms forward=" + forwardMs + "ms total=" + totalMs + "ms");
     }
 
     @Override

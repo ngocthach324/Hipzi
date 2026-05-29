@@ -5,6 +5,7 @@ import com.hipzi.dao.UserDao;
 import com.hipzi.dao.UserRoleDao;
 import com.hipzi.model.Role;
 import com.hipzi.model.User;
+import com.hipzi.exception.UnauthorizedException;
 import com.hipzi.util.PasswordUtil;
 
 import java.util.List;
@@ -69,23 +70,23 @@ public class AuthService {
     // -------------------------------------------------------------------------
     // Đăng nhập bằng email/password
     // -------------------------------------------------------------------------
-    public User login(String email, String password) throws Exception {
+    public User login(String email, String password) {
         User user = userDao.findByEmail(email);
         if (user == null) {
-            throw new Exception("Email hoặc mật khẩu không chính xác.");
+            throw new UnauthorizedException("Email hoặc mật khẩu không chính xác.");
         }
 
         // User đăng ký qua OAuth không có password_hash
         if (user.getPasswordHash() == null) {
-            throw new Exception("Tài khoản này đăng ký qua Google. Vui lòng đăng nhập bằng Google.");
+            throw new UnauthorizedException("Tài khoản này đăng ký qua Google. Vui lòng đăng nhập bằng Google.");
         }
 
         if (!PasswordUtil.checkPassword(password, user.getPasswordHash())) {
-            throw new Exception("Email hoặc mật khẩu không chính xác.");
+            throw new UnauthorizedException("Email hoặc mật khẩu không chính xác.");
         }
 
         if (!"active".equalsIgnoreCase(user.getAccountStatus())) {
-            throw new Exception("Tài khoản của bạn đã bị vô hiệu hoá.");
+            throw new UnauthorizedException("Tài khoản của bạn đã bị vô hiệu hoá.");
         }
 
         // Gắn danh sách role vào user object

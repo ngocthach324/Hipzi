@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.List"%>
 <%@page import="com.hipzi.model.Classroom"%>
 <%@page import="com.hipzi.model.ClassroomEnrollment"%>
@@ -57,8 +57,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= safeTitle %> - HIPZI</title>
-    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/favicon.png">
+    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css">
+    <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
     <style>
         body {
             background: #f8fafc;
@@ -1087,6 +1091,7 @@
             }
         }
     </style>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" crossorigin>
 </head>
 <body>
     <%@ include file="/WEB-INF/fragments/profile-role-label.jspf" %>
@@ -1094,7 +1099,7 @@
     <header class="navbar">
         <div class="nav-container">
             <a href="${pageContext.request.contextPath}/index.jsp" class="logo">
-                <img src="${pageContext.request.contextPath}/favicon.png" alt="HIPZI Logo">
+                <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="HIPZI Logo">
                 <span>HIPZI</span>
             </a>
             <ul class="nav-links">

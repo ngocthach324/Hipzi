@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Role"%>
 <%@page import="com.hipzi.model.Notification"%>
@@ -42,7 +42,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng điều khiển Quản trị - HIPZI</title>
     <meta name="description" content="Trung tâm quản trị hệ thống, giám sát phân quyền, theo dõi hoạt động và nhật ký kiểm toán HIPZI.">
-    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/favicon.png">
+    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css">
     <style>
         /* ===== OVERRIDE NỀN TẢNG & GIAO DIỆN PREMIUM TƯƠNG TỰ BẢN THIẾT KẾ ===== */
@@ -1844,7 +1844,7 @@
     <header class="navbar" id="navbar">
         <div class="nav-container">
             <a href="${pageContext.request.contextPath}/index.jsp" class="logo">
-                <img src="${pageContext.request.contextPath}/favicon.png" alt="HIPZI Logo">
+                <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="HIPZI Logo">
                 <span>HIPZI</span>
             </a>
             <ul class="nav-links">

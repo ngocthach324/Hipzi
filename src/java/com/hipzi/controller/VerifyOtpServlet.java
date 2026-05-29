@@ -60,6 +60,14 @@ public class VerifyOtpServlet extends HttpServlet {
         // Lấy email từ session để hiển thị (đã che)
         HttpSession session = req.getSession(false);
         String rawEmail = getEmailFromSession(session, purpose);
+        if (rawEmail == null) {
+            if ("login".equals(purpose) || "disable_2fa".equals(purpose)) {
+                resp.sendRedirect(req.getContextPath() + "/login");
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/register.jsp?error=session_expired");
+            }
+            return;
+        }
 
         req.setAttribute("purpose",     purpose);
         req.setAttribute("maskedEmail", com.hipzi.util.OtpUtil.maskEmail(rawEmail));

@@ -3,6 +3,7 @@ package com.hipzi.service;
 import com.hipzi.dao.NotificationDao;
 import com.hipzi.dao.UserDao;
 import com.hipzi.model.Notification;
+import com.hipzi.model.NotificationBellData;
 import java.util.List;
 
 public class NotificationService {
@@ -35,6 +36,10 @@ public class NotificationService {
 
     public int getUnreadCount(String userId) {
         return notificationDao.countUnread(userId);
+    }
+
+    public NotificationBellData getBellData(String userId, int limit) {
+        return notificationDao.getBellData(userId, limit);
     }
 
     public boolean markAsRead(String notificationId) {

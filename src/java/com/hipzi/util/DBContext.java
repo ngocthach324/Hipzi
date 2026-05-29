@@ -1,8 +1,8 @@
 package com.hipzi.util;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
+import org.apache.tomcat.jdbc.pool.DataSource;
 
 public class DBContext {
 
@@ -15,6 +15,7 @@ public class DBContext {
     
     // Using PostgreSQL driver
     private static final String DRIVER_CLASS = "org.postgresql.Driver";
+    private static DataSource DATA_SOURCE = createDataSource();
 
     static {
         try {
@@ -25,6 +26,25 @@ public class DBContext {
         }
     }
 
+    private static DataSource createDataSource() {
+        DataSource ds = new DataSource();
+        ds.setDriverClassName(DRIVER_CLASS);
+        ds.setUrl(DB_URL);
+        ds.setUsername(DB_USER);
+        ds.setPassword(DB_PASSWORD);
+        ds.setInitialSize(1);
+        ds.setMinIdle(1);
+        ds.setMaxIdle(4);
+        ds.setMaxActive(10);
+        ds.setMaxWait(8000);
+        ds.setTestOnBorrow(true);
+        ds.setValidationQuery("SELECT 1");
+        ds.setValidationInterval(30000);
+        ds.setRemoveAbandoned(true);
+        ds.setRemoveAbandonedTimeout(60);
+        return ds;
+    }
+
     /**
      * Get a connection to the Supabase PostgreSQL database.
      *
@@ -32,7 +52,30 @@ public class DBContext {
      * @throws SQLException if a database access error occurs
      */
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        long startedAt = System.nanoTime();
+        try {
+            Connection conn = DATA_SOURCE.getConnection();
+            logPerf("DBContext.getConnection", startedAt);
+            return conn;
+        } catch (SQLException e) {
+            logPerf("DBContext.getConnection FAILED", startedAt);
+            throw e;
+        } catch (IllegalStateException e) {
+            // Fix for Tomcat JDBC hot-reload issue where internal timer is cancelled
+            System.err.println("DB Pool corrupted: " + e.getMessage() + ". Re-initializing pool...");
+            if (DATA_SOURCE != null) {
+                try { DATA_SOURCE.close(); } catch (Exception ignored) {}
+            }
+            DATA_SOURCE = createDataSource();
+            Connection conn = DATA_SOURCE.getConnection();
+            logPerf("DBContext.getConnection (RECOVERED)", startedAt);
+            return conn;
+        }
+    }
+
+    private static void logPerf(String label, long startedAt) {
+        long elapsedMs = (System.nanoTime() - startedAt) / 1_000_000L;
+        System.err.println("[PERF] " + label + " " + elapsedMs + "ms");
     }
 
     public static void main(String[] args) {

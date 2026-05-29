@@ -64,24 +64,27 @@ public class RepositoryMaterialDao {
     }
 
     public List<Material> search(String subject, String grade, String type, String searchQuery, String sort) {
-        ensureSchema();
+        long startedAt = System.nanoTime();
         List<Object> params = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT rm.*, u.display_name AS teacher_name ")
+        sql.append("SELECT rm.id, rm.title, rm.description, rm.subject, rm.grade, rm.material_type, ")
+                .append("rm.file_path, rm.original_file_name, rm.file_type, rm.file_size, rm.uploaded_by, ")
+                .append("rm.view_count, rm.rating_average, rm.rating_count, rm.status, rm.visibility, rm.created_at, ")
+                .append("u.display_name AS teacher_name ")
                 .append("FROM repository_materials rm ")
                 .append("LEFT JOIN users u ON u.id::text = rm.uploaded_by ")
                 .append("WHERE rm.visibility = 'VISIBLE' AND rm.status = 'APPROVED' ");
 
         if (!isAll(subject)) {
-            sql.append("AND lower(rm.subject) = lower(?) ");
+            sql.append("AND rm.subject = ? ");
             params.add(subject);
         }
         if (!isAll(grade)) {
-            sql.append("AND lower(rm.grade) = lower(?) ");
+            sql.append("AND rm.grade = ? ");
             params.add(grade);
         }
         if (!isAll(type)) {
-            sql.append("AND lower(rm.material_type) = lower(?) ");
+            sql.append("AND rm.material_type = ? ");
             params.add(type);
         }
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
@@ -116,6 +119,7 @@ public class RepositoryMaterialDao {
         } catch (SQLException e) {
             System.err.println("Error in RepositoryMaterialDao.search: " + e.getMessage());
         }
+        logPerf("RepositoryMaterialDao.search rows=" + materials.size() + " params=" + params.size(), startedAt);
         return materials;
     }
 
@@ -216,5 +220,10 @@ public class RepositoryMaterialDao {
         } catch (SQLException ignored) {
             return "";
         }
+    }
+
+    private void logPerf(String label, long startedAt) {
+        long elapsedMs = (System.nanoTime() - startedAt) / 1_000_000L;
+        System.err.println("[PERF] " + label + " " + elapsedMs + "ms");
     }
 }

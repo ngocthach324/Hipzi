@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xác minh bảo mật OTP - HIPZI</title>
-    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/favicon.png">
+    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/auth.css">
@@ -127,7 +127,7 @@
 <div class="auth-page-wrapper">
     <!-- Nút Favicon Về Trang Chủ -->
     <a href="${pageContext.request.contextPath}/index.jsp" class="auth-home-btn" title="Về trang chủ">
-        <img src="${pageContext.request.contextPath}/favicon.png" alt="HIPZI Logo">
+        <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="HIPZI Logo">
     </a>
 
     <!-- Cột bên trái: Banner Capybara Cute & Animation (Premium Brand Sync) -->

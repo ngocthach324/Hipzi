@@ -20,25 +20,44 @@ public class ClassroomServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        long requestStartedAt = System.nanoTime();
         String subjectParam = request.getParameter("subject");
         String gradeParam = request.getParameter("grade");
         String searchParam = request.getParameter("q");
 
+        long dataStartedAt = System.nanoTime();
         List<Classroom> filteredClasses = classroomDao.listPublic(subjectParam, gradeParam, searchParam);
+        long dataMs = elapsedMs(dataStartedAt);
+        boolean usedFallback = false;
         if (filteredClasses == null) {
             filteredClasses = filterSampleClasses(subjectParam, gradeParam, searchParam);
+            usedFallback = true;
         }
+        response.addHeader("Server-Timing", "classroom-data;dur=" + dataMs);
+        response.addHeader("X-Hipzi-Perf-Classroom", "data=" + dataMs + "ms; rows=" + filteredClasses.size() + "; fallback=" + usedFallback);
 
         request.setAttribute("classrooms", filteredClasses);
 
         // Nếu là AJAX request (từ bộ lọc sidebar), chỉ trả về fragment kết quả
         String ajaxParam = request.getParameter("ajax");
         if ("1".equals(ajaxParam)) {
+            long forwardStartedAt = System.nanoTime();
             request.getRequestDispatcher("/WEB-INF/fragments/classes-results.jsp").forward(request, response);
+            logPerf("ClassroomServlet.doGet ajax=1 rows=" + filteredClasses.size() + " fallback=" + usedFallback, dataMs, elapsedMs(forwardStartedAt), elapsedMs(requestStartedAt));
             return;
         }
 
+        long forwardStartedAt = System.nanoTime();
         request.getRequestDispatcher("/classes.jsp").forward(request, response);
+        logPerf("ClassroomServlet.doGet ajax=0 rows=" + filteredClasses.size() + " fallback=" + usedFallback, dataMs, elapsedMs(forwardStartedAt), elapsedMs(requestStartedAt));
+    }
+
+    private long elapsedMs(long startedAt) {
+        return (System.nanoTime() - startedAt) / 1_000_000L;
+    }
+
+    private void logPerf(String label, long dataMs, long forwardMs, long totalMs) {
+        System.err.println("[PERF] " + label + " data=" + dataMs + "ms forward=" + forwardMs + "ms total=" + totalMs + "ms");
     }
 
     private List<Classroom> filterSampleClasses(String subjectParam, String gradeParam, String searchParam) {

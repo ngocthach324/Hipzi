@@ -64,12 +64,22 @@ public class ClassroomDao {
 
 
     public List<Classroom> listPublic(String subjectFilter, String gradeFilter, String searchQuery) {
+        long startedAt = System.nanoTime();
         StringBuilder sql = new StringBuilder(
-                "SELECT c.*, u.display_name AS teacher_name, u.avatar_url AS teacher_avatar_url, "
+                "SELECT c.id, c.teacher_id, c.title, c.subject, c.grade_level, c.description, "
+                + "c.student_count, c.status, c.schedule_days, c.start_time, c.end_time, "
+                + "c.created_at, c.updated_at, "
+                + "u.display_name AS teacher_name, u.avatar_url AS teacher_avatar_url, "
                 + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "
                 + "FROM classrooms c "
                 + "JOIN users u ON u.id = c.teacher_id "
-                + "LEFT JOIN teacher_applications ta ON ta.user_id = c.teacher_id "
+                + "LEFT JOIN LATERAL ("
+                + "SELECT institution_name, workplace "
+                + "FROM teacher_applications "
+                + "WHERE user_id = c.teacher_id "
+                + "ORDER BY submitted_at DESC "
+                + "LIMIT 1"
+                + ") ta ON true "
                 + "WHERE c.status IN ('open', 'upcoming') ");
 
         List<Object> params = new ArrayList<>();
@@ -106,8 +116,10 @@ public class ClassroomDao {
             }
         } catch (SQLException e) {
             System.err.println("Error in ClassroomDao.listPublic: " + e.getMessage());
+            logPerf("ClassroomDao.listPublic FAILED params=" + params.size(), startedAt);
             return null;
         }
+        logPerf("ClassroomDao.listPublic rows=" + classrooms.size() + " params=" + params.size(), startedAt);
         return classrooms;
     }
 
@@ -283,5 +295,10 @@ public class ClassroomDao {
         String start = startTime != null ? startTime.toLocalTime().toString().substring(0, 5) : "--:--";
         String end = endTime != null ? endTime.toLocalTime().toString().substring(0, 5) : "--:--";
         return days + " (" + start + " - " + end + ")";
+    }
+
+    private void logPerf(String label, long startedAt) {
+        long elapsedMs = (System.nanoTime() - startedAt) / 1_000_000L;
+        System.err.println("[PERF] " + label + " " + elapsedMs + "ms");
     }
 }

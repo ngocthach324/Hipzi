@@ -3,7 +3,7 @@
 <%
     User user = (User) session.getAttribute("loggedUser");
     String initials = "H";
-    
+
     if (user != null) {
         if (user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
             String[] parts = user.getDisplayName().trim().split("\\s+");
@@ -17,11 +17,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HIPZI - Nền tảng học tập thông minh cùng AI</title>
-    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/favicon.png">
+    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=2">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/hero-v2.css">
     <!-- Hiệu ứng cuộn mượt và chậm Lenis CSS -->
     <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.13/dist/lenis.css">
+    <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" crossorigin>
 </head>
 <body>
 
@@ -31,7 +36,7 @@
     <header class="navbar">
         <div class="nav-container">
             <a href="${pageContext.request.contextPath}/index.jsp" class="logo">
-                <img src="${pageContext.request.contextPath}/favicon.png" alt="HIPZI Logo">
+                <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="HIPZI Logo">
                <span>HIPZI</span>
             </a>
             <ul class="nav-links">
@@ -824,7 +829,7 @@
                 <!-- Brand Info & Socials -->
                 <div class="footer-brand-col">
                     <a href="${pageContext.request.contextPath}/index.jsp" class="footer-logo">
-                        <img src="${pageContext.request.contextPath}/favicon.png" alt="HIPZI Logo">
+                        <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="HIPZI Logo">
                         <span>HIPZI</span>
                     </a>
                     <p class="footer-desc">Nền tảng giáo dục thông minh kết hợp tài liệu học tập, luyện tập tương tác và công nghệ AI nhằm tối ưu hóa hành trình tri thức.</p>
@@ -1056,11 +1061,11 @@
     </footer>
 
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js"></script>
-    <!-- Hiệu ứng cuộn mượt và chậm Lenis JS -->
+    <!-- Hieu ung cuon muot va cham Lenis JS -->
     <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Khởi tạo Lenis với cấu hình cuộn mượt mà và phản hồi nhanh hơn
+            // Khoi tao Lenis voi cau hinh cuon muot ma va phan hoi nhanh hon
             const lenis = new Lenis({
                 duration: 1.2,        // Thời gian thực hiện cuộn (giây) - giảm để cuộn nhanh hơn
                 lerp: 0.1,            // Tăng lerp lên 0.1 để phản hồi nhanh và nhạy hơn

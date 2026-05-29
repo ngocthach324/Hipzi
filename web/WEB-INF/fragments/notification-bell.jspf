@@ -1,70 +1,17 @@
 <%@ page pageEncoding="UTF-8" %>
-<%@ page import="com.hipzi.model.User" %>
-<%@ page import="com.hipzi.model.Notification" %>
-<%@ page import="com.hipzi.service.NotificationService" %>
-<%@ page import="java.util.List" %>
-<%@ page import="java.text.SimpleDateFormat" %>
-
-<%
-    User bellUser = (User) session.getAttribute("loggedUser");
-    List<Notification> bellNotifications = (List<Notification>) request.getAttribute("notifications");
-    int bellUnreadCount = 0;
-    if (bellUser != null) {
-        try {
-            NotificationService bellNotiService = new NotificationService();
-            if (bellNotifications == null) {
-                bellNotifications = bellNotiService.getRecentNotifications(bellUser.getId(), 5);
-            }
-            bellUnreadCount = bellNotiService.getUnreadCount(bellUser.getId());
-        } catch (Exception bellEx) {
-            bellNotifications = null;
-            bellUnreadCount = 0;
-            System.err.println("Notification bell unavailable: " + bellEx.getMessage());
-        }
-    }
-%>
 
 <div class="nav-bell-dropdown">
     <div class="nav-bell-trigger" title="Thông báo hệ thống" onclick="handleBellClick(event)">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <% if (bellUnreadCount > 0) { %>
-            <span class="badge-dot" id="bell-unread-count" style="display:flex; justify-content:center; align-items:center; font-size:9px; color:white; width:16px; height:16px; top:2px; right:2px; padding:0; border:1px solid white; position:absolute; background:#ef4444; border-radius:50%;"><%= bellUnreadCount > 9 ? "9+" : bellUnreadCount %></span>
-        <% } %>
+        <span class="badge-dot" id="bell-unread-count" style="display:none; justify-content:center; align-items:center; font-size:9px; color:white; width:16px; height:16px; top:2px; right:2px; padding:0; border:1px solid white; position:absolute; background:#ef4444; border-radius:50%;"></span>
     </div>
 
     <div class="notification-popup-menu">
         <div class="noti-popup-header">
-            <span>Thông báo (<%= bellUnreadCount %>)</span>
+            <span id="bell-popup-title">Thông báo (0)</span>
         </div>
-        <div class="noti-popup-list">
-            <% if (bellNotifications != null && !bellNotifications.isEmpty()) { 
-                SimpleDateFormat bellSdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                for (Notification n : bellNotifications) {
-                    if (n == null) {
-                        continue;
-                    }
-                    String bellType = n.getType() != null ? n.getType() : "info";
-                    String bellTitle = n.getTitle() != null ? n.getTitle() : "Thông báo hệ thống";
-                    String bellMessage = n.getMessage() != null ? n.getMessage() : "";
-                    String bellDate = n.getCreatedAt() != null ? bellSdf.format(n.getCreatedAt()) : "";
-            %>
-                <div class="noti-popup-item <%= n.isRead() ? "" : "unread" %>" onclick="markAsReadAndRedirect('<%= n.getId() %>')">
-                    <div class="noti-icon-round" style="background: <%= "error".equals(bellType) ? "#fee2e2" : "warning".equals(bellType) ? "#fef3c7" : "success".equals(bellType) ? "#dcfce7" : "#e0f2fe" %>; color: <%= "error".equals(bellType) ? "#ef4444" : "warning".equals(bellType) ? "#d97706" : "success".equals(bellType) ? "#059669" : "#3b82f6" %>;">
-                        <% if ("error".equals(bellType)) { %>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        <% } else { %>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="8"/><line x1="12" y1="10" x2="12" y2="14"/></svg>
-                        <% } %>
-                    </div>
-                    <div class="noti-info-col">
-                        <span class="noti-title"><%= bellTitle %></span>
-                        <span class="noti-desc"><%= bellMessage %></span>
-                        <span class="noti-date"><%= bellDate %></span>
-                    </div>
-                </div>
-            <% }} else { %>
-                <div style="padding:2rem; text-align:center; color:var(--text-muted); font-size:0.85rem;">Bạn chưa có thông báo nào mới.</div>
-            <% } %>
+        <div class="noti-popup-list" id="bell-notification-list">
+            <div style="padding:2rem; text-align:center; color:var(--text-muted); font-size:0.85rem;">Đang tải thông báo...</div>
         </div>
         <div class="noti-popup-footer">
             <a href="${pageContext.request.contextPath}/profile?tab=notifications">Xem tất cả thông báo</a>
@@ -73,44 +20,150 @@
 </div>
 
 <script>
-    function toggleNotificationMenu(e) {
-        if (e) e.stopPropagation();
-        const menu = document.querySelector('.notification-popup-menu');
-        if (menu) {
-            menu.classList.toggle('show');
-        }
-    }
-
-    function handleBellClick(e) {
-        toggleNotificationMenu(e);
-        // Khi mở chuông thì đánh dấu tất cả là đã đọc
+    (function () {
+        const contextPath = '${pageContext.request.contextPath}';
+        const bellList = document.getElementById('bell-notification-list');
+        const bellTitle = document.getElementById('bell-popup-title');
         const badge = document.getElementById('bell-unread-count');
-        if (badge && badge.style.display !== 'none') {
-            fetch('${pageContext.request.contextPath}/notification/markAllRead', {
-                method: 'POST'
-            }).then(response => {
-                if (response.ok) {
-                    badge.style.display = 'none';
-                }
-            });
-        }
-    }
+        let notificationsLoaded = false;
 
-    function markAsReadAndRedirect(id) {
-        fetch('${pageContext.request.contextPath}/notification/markRead?id=' + id, {
-            method: 'POST'
-        }).then(() => {
-            window.location.href = '${pageContext.request.contextPath}/profile?tab=notifications';
-        });
-    }
-
-    // Đóng popup thông báo nếu click ra ngoài
-    window.addEventListener('click', function(e) {
-        const menu = document.querySelector('.notification-popup-menu');
-        if (menu && menu.classList.contains('show')) {
-            if (!e.target.closest('.nav-bell-dropdown')) {
-                menu.classList.remove('show');
+        function setBadge(unreadCount) {
+            if (!badge) return;
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
             }
         }
-    });
+
+        function iconForType(type) {
+            const icon = document.createElement('div');
+            icon.className = 'noti-icon-round';
+            const palette = {
+                error: ['#fee2e2', '#ef4444'],
+                warning: ['#fef3c7', '#d97706'],
+                success: ['#dcfce7', '#059669'],
+                info: ['#e0f2fe', '#3b82f6']
+            };
+            const colors = palette[type] || palette.info;
+            icon.style.background = colors[0];
+            icon.style.color = colors[1];
+            icon.innerHTML = type === 'error'
+                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="8"/><line x1="12" y1="10" x2="12" y2="14"/></svg>';
+            return icon;
+        }
+
+        function renderNotifications(data) {
+            const unreadCount = Number(data && data.unreadCount) || 0;
+            const notifications = Array.isArray(data && data.notifications) ? data.notifications : [];
+            if (bellTitle) bellTitle.textContent = 'Thông báo (' + unreadCount + ')';
+            setBadge(unreadCount);
+            if (!bellList) return;
+
+            bellList.textContent = '';
+            if (notifications.length === 0) {
+                const empty = document.createElement('div');
+                empty.style.cssText = 'padding:2rem; text-align:center; color:var(--text-muted); font-size:0.85rem;';
+                empty.textContent = 'Bạn chưa có thông báo nào mới.';
+                bellList.appendChild(empty);
+                return;
+            }
+
+            notifications.forEach(function (notification) {
+                const item = document.createElement('div');
+                item.className = 'noti-popup-item' + (notification.read ? '' : ' unread');
+                item.addEventListener('click', function () {
+                    markAsReadAndRedirect(notification.id);
+                });
+
+                const info = document.createElement('div');
+                info.className = 'noti-info-col';
+
+                const title = document.createElement('span');
+                title.className = 'noti-title';
+                title.textContent = notification.title || 'Thông báo hệ thống';
+
+                const message = document.createElement('span');
+                message.className = 'noti-desc';
+                message.textContent = notification.message || '';
+
+                const date = document.createElement('span');
+                date.className = 'noti-date';
+                date.textContent = notification.createdAt || '';
+
+                info.appendChild(title);
+                info.appendChild(message);
+                info.appendChild(date);
+                item.appendChild(iconForType(notification.type));
+                item.appendChild(info);
+                bellList.appendChild(item);
+            });
+        }
+
+        function loadNotificationBell() {
+            if (notificationsLoaded) return;
+            notificationsLoaded = true;
+
+            fetch(contextPath + '/notification/bell', {
+                headers: { 'Accept': 'application/json' }
+            })
+                .then(function (response) {
+                    if (!response.ok) throw new Error('Notification request failed');
+                    return response.json();
+                })
+                .then(renderNotifications)
+                .catch(function () {
+                    if (!bellList) return;
+                    bellList.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--text-muted); font-size:0.85rem;">Chưa tải được thông báo.</div>';
+                });
+        }
+
+        window.toggleNotificationMenu = function (e) {
+            if (e) e.stopPropagation();
+            const menu = document.querySelector('.notification-popup-menu');
+            if (menu) {
+                menu.classList.toggle('show');
+                loadNotificationBell();
+            }
+        };
+
+        window.handleBellClick = function (e) {
+            window.toggleNotificationMenu(e);
+            if (badge && badge.style.display !== 'none') {
+                fetch(contextPath + '/notification/markAllRead', {
+                    method: 'POST'
+                }).then(function (response) {
+                    if (response.ok) {
+                        badge.style.display = 'none';
+                        if (bellTitle) bellTitle.textContent = 'Thông báo (0)';
+                    }
+                });
+            }
+        };
+
+        window.markAsReadAndRedirect = function (id) {
+            fetch(contextPath + '/notification/markRead?id=' + encodeURIComponent(id), {
+                method: 'POST'
+            }).then(function () {
+                window.location.href = contextPath + '/profile?tab=notifications';
+            });
+        };
+
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadNotificationBell, { timeout: 2500 });
+        } else {
+            window.setTimeout(loadNotificationBell, 1200);
+        }
+
+        window.addEventListener('click', function(e) {
+            const menu = document.querySelector('.notification-popup-menu');
+            if (menu && menu.classList.contains('show')) {
+                if (!e.target.closest('.nav-bell-dropdown')) {
+                    menu.classList.remove('show');
+                }
+            }
+        });
+    })();
 </script>
