@@ -308,7 +308,7 @@
                     </div>
                 </a>
 
-                <a class="exam-entry-card" href="${pageContext.request.contextPath}/class-exam-room.jsp" data-tone="class" aria-label="Mở hạng mục Bài thi lớp học">
+                <a class="exam-entry-card" href="${pageContext.request.contextPath}/class-exam-room" data-tone="class" aria-label="Mở hạng mục Bài thi lớp học">
                     <div>
                         <div class="exam-card-code">Kiểm tra lớp học</div>
                         <h2>Bài thi lớp học</h2>

@@ -9,6 +9,7 @@ import com.hipzi.dao.ClassroomQuizDao;
 import com.hipzi.model.Classroom;
 import com.hipzi.model.ClassroomEnrollment;
 import com.hipzi.model.ClassroomExam;
+import com.hipzi.model.ClassroomExamQuestion;
 import com.hipzi.model.ClassroomHomeworkSubmission;
 import com.hipzi.model.ClassroomMaterial;
 import com.hipzi.model.ClassroomQuiz;
@@ -17,6 +18,7 @@ import com.hipzi.model.ClassroomQuizQuestion;
 import com.hipzi.model.Role;
 import com.hipzi.model.User;
 import com.hipzi.service.AiQuizParserService;
+import com.hipzi.service.AiClassExamParserService;
 import com.hipzi.service.SupabaseStorageService;
 import com.hipzi.service.TesseractOcrService;
 import jakarta.servlet.ServletException;
@@ -57,6 +59,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
     private final SupabaseStorageService storageService = new SupabaseStorageService();
     private final TesseractOcrService ocrService = new TesseractOcrService();
     private final AiQuizParserService aiQuizParserService = new AiQuizParserService();
+    private final AiClassExamParserService aiClassExamParserService = new AiClassExamParserService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -159,7 +162,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
             }
             session.setAttribute("toastMsg", saved ? "Da nop bai tap thanh cong." : "Chua nop duoc bai tap. Vui long kiem tra file va thong tin nhap.");
             session.setAttribute("toastType", saved ? "success" : "error");
-            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId);
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-materials");
             return;
         }
 
@@ -218,6 +221,8 @@ public class ClassroomSpaceServlet extends HttpServlet {
             }
             session.setAttribute("toastMsg", saved ? "Đã đăng tải tài liệu nội bộ lớp." : "Chưa đăng tải được tài liệu. Vui lòng kiểm tra file và thông tin nhập.");
             session.setAttribute("toastType", saved ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-materials");
+            return;
         } else if ("deleteClassMaterial".equals(action)) {
             String materialId = cleanParam(request.getParameter("materialId"));
             ClassroomMaterial material = !materialId.isEmpty() ? materialDao.findById(materialId) : null;
@@ -229,9 +234,25 @@ public class ClassroomSpaceServlet extends HttpServlet {
             }
             session.setAttribute("toastMsg", deleted ? "Đã xóa tài liệu khỏi lớp." : "Không thể xóa tài liệu này.");
             session.setAttribute("toastType", deleted ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-materials");
+            return;
+        } else if ("scanClassExamAi".equals(action)) {
+            boolean scanned;
+            try {
+                scanned = handleClassExamAiScan(request, session);
+            } catch (Exception e) {
+                scanned = false;
+                System.err.println("Error scanning classroom exam with AI: " + e.getMessage());
+            }
+            session.setAttribute("toastMsg", scanned
+                    ? "Da phan tich de thi bang AI. Hay kiem tra va chinh sua cau hoi truoc khi luu."
+                    : "Chua phan tich duoc de thi. Kiem tra OPENAI_API_KEY, anh de hoac text de.");
+            session.setAttribute("toastType", scanned ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
+            return;
         } else if ("createClassExam".equals(action)) {
             boolean saved = handleClassExamCreate(request, classroom, user);
-            session.setAttribute("toastMsg", saved ? "Da tao bai thi lop hoc." : "Chua tao duoc bai thi. Vui long kiem tra tieu de va ma de.");
+            session.setAttribute("toastMsg", saved ? "Da tao bai thi lop hoc." : "Chua tao duoc bai thi. Vui long kiem tra thong tin va cau hoi.");
             session.setAttribute("toastType", saved ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
             return;
@@ -386,10 +407,18 @@ public class ClassroomSpaceServlet extends HttpServlet {
         String title = cleanParam(request.getParameter("examTitle"));
         String code = normalizeExamCode(request.getParameter("examCode"));
         String description = cleanParam(request.getParameter("examDescription"));
+        String examType = normalizeClassExamType(request.getParameter("examType"));
+        String creationMode = normalizeClassExamCreationMode(request.getParameter("examCreationMode"));
+        String rawSourceText = cleanParam(request.getParameter("examSourceText"));
         String status = cleanParam(request.getParameter("examStatus"));
         String sourceMaterialId = cleanParam(request.getParameter("sourceMaterialId"));
         int duration = parsePositiveInt(request.getParameter("durationMinutes"), 45);
-        if (title.isEmpty() || code.isEmpty()) {
+        List<ClassroomExamQuestion> questions = collectClassExamQuestions(request, examType);
+        if (title.isEmpty() || code.isEmpty() || "flashcard".equals(examType)
+                || questions.isEmpty() || !areClassExamQuestionsValid(questions, examType)) {
+            return false;
+        }
+        if (!sourceMaterialId.isEmpty() && !isExamMaterialForClassroom(sourceMaterialId, classroom.getId())) {
             return false;
         }
         ClassroomExam exam = new ClassroomExam();
@@ -397,11 +426,120 @@ public class ClassroomSpaceServlet extends HttpServlet {
         exam.setTitle(title);
         exam.setDescription(description);
         exam.setExamCode(code);
+        exam.setExamType(examType);
+        exam.setCreationMode(creationMode);
+        exam.setRawSourceText(rawSourceText);
         exam.setStatus(status);
         exam.setDurationMinutes(duration);
         exam.setSourceMaterialId(sourceMaterialId);
         exam.setCreatedBy(user.getId());
-        return examDao.create(exam);
+        exam.setQuestions(questions);
+        return examDao.createWithQuestions(exam, questions);
+    }
+
+    private boolean handleClassExamAiScan(HttpServletRequest request, HttpSession session) throws Exception {
+        String examType = normalizeClassExamType(request.getParameter("examType"));
+        if ("flashcard".equals(examType)) {
+            return false;
+        }
+        String sourceText = cleanParam(request.getParameter("examSourceText"));
+        Part imagePart = request.getPart("examSourceImage");
+        byte[] imageBytes = null;
+        String imageContentType = null;
+        if (imagePart != null && imagePart.getSize() > 0 && imagePart.getSubmittedFileName() != null) {
+            String originalFileName = Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
+            if (!isAllowedQuizImage(originalFileName, imagePart.getContentType()) || imagePart.getSize() > 10L * 1024 * 1024) {
+                return false;
+            }
+            try (java.io.InputStream input = imagePart.getInputStream()) {
+                imageBytes = input.readAllBytes();
+            }
+            imageContentType = imagePart.getContentType();
+        }
+        if (sourceText.isEmpty() && (imageBytes == null || imageBytes.length == 0)) {
+            return false;
+        }
+        List<ClassroomExamQuestion> questions = aiClassExamParserService.parseQuestions(
+                sourceText, imageBytes, imageContentType, examType);
+        if (questions.isEmpty()) {
+            return false;
+        }
+        session.setAttribute("examDraftTitle", cleanParam(request.getParameter("examTitle")));
+        session.setAttribute("examDraftCode", normalizeExamCode(request.getParameter("examCode")));
+        session.setAttribute("examDraftDescription", cleanParam(request.getParameter("examDescription")));
+        session.setAttribute("examDraftType", examType);
+        session.setAttribute("examDraftStatus", cleanParam(request.getParameter("examStatus")));
+        session.setAttribute("examDraftDuration", parsePositiveInt(request.getParameter("durationMinutes"), 45));
+        session.setAttribute("examDraftSourceMaterialId", cleanParam(request.getParameter("sourceMaterialId")));
+        session.setAttribute("examDraftSourceText", sourceText);
+        session.setAttribute("examDraftCreationMode", "ai");
+        session.setAttribute("examDraftQuestions", questions);
+        return true;
+    }
+
+    private List<ClassroomExamQuestion> collectClassExamQuestions(HttpServletRequest request, String examType) {
+        String[] questionTexts = request.getParameterValues("examQuestionText");
+        String[] optionAs = request.getParameterValues("examOptionA");
+        String[] optionBs = request.getParameterValues("examOptionB");
+        String[] optionCs = request.getParameterValues("examOptionC");
+        String[] optionDs = request.getParameterValues("examOptionD");
+        String[] correctOptions = request.getParameterValues("examCorrectOption");
+        String[] referenceAnswers = request.getParameterValues("examReferenceAnswer");
+        String[] pointValues = request.getParameterValues("examPoints");
+        List<ClassroomExamQuestion> questions = new ArrayList<>();
+        if (questionTexts == null) {
+            return questions;
+        }
+        boolean essay = "essay".equals(examType);
+        for (int i = 0; i < questionTexts.length; i++) {
+            String text = cleanParam(questionTexts[i]);
+            if (text.isEmpty()) {
+                continue;
+            }
+            ClassroomExamQuestion question = new ClassroomExamQuestion();
+            question.setQuestionText(text);
+            if (!essay) {
+                question.setOptionA(valueAt(optionAs, i));
+                question.setOptionB(valueAt(optionBs, i));
+                question.setOptionC(valueAt(optionCs, i));
+                question.setOptionD(valueAt(optionDs, i));
+                question.setCorrectOption(normalizeQuestionOption(valueAt(correctOptions, i)));
+            }
+            question.setReferenceAnswer(valueAt(referenceAnswers, i));
+            question.setPoints(parsePositiveInt(valueAt(pointValues, i), 1));
+            question.setSortOrder(questions.size() + 1);
+            questions.add(question);
+        }
+        return questions;
+    }
+
+    private boolean areClassExamQuestionsValid(List<ClassroomExamQuestion> questions, String examType) {
+        if (questions == null || questions.isEmpty()) {
+            return false;
+        }
+        boolean essay = "essay".equals(examType);
+        for (ClassroomExamQuestion question : questions) {
+            if (question == null || cleanParam(question.getQuestionText()).isEmpty() || question.getPoints() <= 0) {
+                return false;
+            }
+            if (!essay) {
+                if (cleanParam(question.getOptionA()).isEmpty()
+                        || cleanParam(question.getOptionB()).isEmpty()
+                        || cleanParam(question.getOptionC()).isEmpty()
+                        || cleanParam(question.getOptionD()).isEmpty()
+                        || normalizeQuestionOption(question.getCorrectOption()).isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean isExamMaterialForClassroom(String materialId, String classroomId) {
+        ClassroomMaterial material = materialDao.findById(materialId);
+        return material != null
+                && classroomId.equals(material.getClassroomId())
+                && "exam".equals(material.getCategory());
     }
 
     private boolean handleQuizDraftCreate(HttpServletRequest request, Classroom classroom, User user)
@@ -724,6 +862,18 @@ public class ClassroomSpaceServlet extends HttpServlet {
 
     private String normalizeQuizStatus(String value) {
         return "published".equals(cleanParam(value)) ? "published" : "draft";
+    }
+
+    private String normalizeClassExamType(String value) {
+        String cleaned = cleanParam(value);
+        if ("essay".equals(cleaned) || "flashcard".equals(cleaned)) {
+            return cleaned;
+        }
+        return "multiple_choice";
+    }
+
+    private String normalizeClassExamCreationMode(String value) {
+        return "ai".equals(cleanParam(value)) ? "ai" : "manual";
     }
 
     private String normalizeExamCode(String value) {

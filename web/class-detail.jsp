@@ -65,7 +65,6 @@
     <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
     <style>
         body {
-            background: #f8fafc;
             min-height: 100vh;
         }
 
@@ -79,11 +78,16 @@
             display: inline-flex;
             align-items: center;
             gap: 0.45rem;
-            color: #6d28d9;
+            color: #059669;
             font-weight: 800;
             text-decoration: none;
             margin-bottom: 1rem;
             font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .class-back-link:hover {
+            color: #047857;
         }
 
         .class-hero {
@@ -210,7 +214,7 @@
             padding: 0.95rem 1.6rem;
             min-width: 210px;
             background: #ffffff;
-            color: #6d28d9;
+            color: #059669;
             box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
             font-weight: 950;
             text-decoration: none;
@@ -292,7 +296,7 @@
         .hero-join-btn {
             min-width: 230px;
             padding: 1rem 1.7rem;
-            color: #37118f;
+            color: #059669;
         }
 
         .hero-visual {
@@ -543,20 +547,21 @@
             min-width: 0;
             border-radius: 999px;
             padding: 0.78rem 1.25rem;
-            background: #0f766e;
+            background: #059669;
             color: #ffffff;
-            box-shadow: 0 14px 30px rgba(15, 118, 110, 0.22);
+            box-shadow: 0 14px 30px rgba(5, 150, 105, 0.22);
         }
 
         .hero-join-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 18px 38px rgba(15, 118, 110, 0.28);
+            background: #047857;
+            box-shadow: 0 18px 38px rgba(5, 150, 105, 0.28);
         }
 
         .hero-join-btn.secondary {
             background: #ffffff;
-            color: #0f766e;
-            border: 1px solid rgba(15, 118, 110, 0.22);
+            color: #059669;
+            border: 1px solid rgba(5, 150, 105, 0.22);
             box-shadow: none;
         }
 
@@ -627,8 +632,8 @@
             aspect-ratio: 1;
             border-radius: 999px;
             padding: 0.35rem;
-            background: linear-gradient(135deg, #14b8a6, #d1fae5);
-            box-shadow: 0 18px 34px rgba(15, 118, 110, 0.18);
+            background: linear-gradient(135deg, #059669, #d1fae5);
+            box-shadow: 0 18px 34px rgba(5, 150, 105, 0.18);
         }
 
         .teacher-photo-frame img,
@@ -642,7 +647,7 @@
             align-items: center;
             justify-content: center;
             background: #f8fafc;
-            color: #0f766e;
+            color: #059669;
             font-size: 2.6rem;
             font-weight: 950;
         }
@@ -758,9 +763,13 @@
         }
 
         .join-action.btn-primary {
-            background: #6d28d9;
-            border-color: #6d28d9;
+            background: #059669;
+            border-color: #059669;
             color: #ffffff;
+        }
+        .join-action.btn-primary:hover {
+            background: #047857 !important;
+            border-color: #047857 !important;
         }
 
         @keyframes heroFloat {
@@ -834,8 +843,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #ede9fe;
-            color: #6d28d9;
+            background: #d1fae5;
+            color: #059669;
             font-weight: 900;
         }
 
@@ -853,15 +862,21 @@
 
         .module-edit-toggle {
             margin-top: 0.75rem;
-            border: 1px solid #ddd6fe;
+            border: 1px solid #a7f3d0;
             border-radius: 999px;
             background: #ffffff;
-            color: #6d28d9;
+            color: #059669;
             font-weight: 850;
             cursor: pointer;
             padding: 0.45rem 0.8rem;
             font-size: 0.88rem;
             line-height: 1;
+            transition: all 0.2s ease;
+        }
+        .module-edit-toggle:hover {
+            background: #ecfdf5;
+            color: #047857;
+            border-color: #059669;
         }
 
         .module-edit-form,
@@ -929,8 +944,8 @@
 
         .module-field input:focus,
         .module-field textarea:focus {
-            border-color: #6d28d9;
-            box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+            border-color: #059669;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
         }
 
         .module-field textarea {
@@ -946,20 +961,30 @@
         }
 
         .module-mini-btn {
-            border: 1px solid #ddd6fe;
-            color: #6d28d9;
+            border: 1px solid #a7f3d0;
+            color: #059669;
             background: #ffffff;
             border-radius: 999px;
             padding: 0.6rem 1rem;
             font-weight: 850;
             cursor: pointer;
             font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .module-mini-btn:hover {
+            background: #ecfdf5;
+            color: #047857;
+            border-color: #059669;
         }
 
         .module-mini-btn.primary {
-            background: #6d28d9;
-            border-color: #6d28d9;
+            background: #059669;
+            border-color: #059669;
             color: #ffffff;
+        }
+        .module-mini-btn.primary:hover {
+            background: #047857;
+            border-color: #047857;
         }
 
         .teacher-only-note {
@@ -1011,8 +1036,8 @@
             width: 58px;
             height: 58px;
             border-radius: 50%;
-            background: #ede9fe;
-            color: #6d28d9;
+            background: #d1fae5;
+            color: #059669;
             display: flex;
             align-items: center;
             justify-content: center;

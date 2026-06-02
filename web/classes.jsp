@@ -90,12 +90,12 @@
             
             <!-- THANH TÌM KIẾM TRUNG TÂM -->
             <div class="search-bar-wrapper" style="max-width: 650px; margin: 2rem auto 0 auto;">
-                <form action="${pageContext.request.contextPath}/classes" method="GET" class="search-bar" style="background: #ffffff; padding: 0.5rem 0.5rem 0.5rem 1.5rem; border-radius: 100px; display: flex; align-items: center; box-shadow: 0 10px 25px rgba(109, 40, 217, 0.2);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <form action="${pageContext.request.contextPath}/classes" method="GET" class="search-bar" style="background: #ffffff; padding: 0.5rem 0.5rem 0.5rem 1.5rem; border-radius: 100px; display: flex; align-items: center; box-shadow: 0 10px 25px rgba(5, 150, 105, 0.2);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <input type="text" name="q" class="search-input" placeholder="Tìm kiếm lớp học, chủ đề, tên giảng viên..." value="${param.q}" style="border: none; outline: none; width: 100%; margin-left: 0.75rem; font-size: 1rem;" />
                     <input type="hidden" name="subject" value="${empty param.subject ? 'Tất cả' : param.subject}" />
                     <input type="hidden" name="grade" value="${empty param.grade ? 'Tất cả' : param.grade}" />
-                    <button type="submit" class="btn btn-primary search-btn" style="background: #8b5cf6; border-color: #8b5cf6; border-radius: 100px; font-weight: 600;">Tìm kiếm</button>
+                    <button type="submit" class="btn btn-primary search-btn" style="background: #059669; border-color: #059669; border-radius: 100px; font-weight: 600;">Tìm kiếm</button>
                 </form>
             </div>
         </div>
@@ -111,8 +111,12 @@
                     <h3>Môn học</h3>
                     <ul class="subject-list classes-sidebar">
                         <style>
-                            .classes-sidebar a.active { background-color: #8b5cf6 !important; color: #ffffff !important; font-weight: 600; border-radius: 8px; padding-left: 1rem !important; }
+                            .classes-sidebar a.active { background-color: #059669 !important; color: #ffffff !important; font-weight: 600; border-radius: 8px; padding-left: 1rem !important; }
                             .classes-sidebar a.active::before { display: none; }
+                            .search-btn { transition: all 0.2s ease !important; }
+                            .search-btn:hover { background-color: #047857 !important; border-color: #047857 !important; box-shadow: 0 6px 16px rgba(5, 150, 105, 0.3) !important; }
+                            .btn-full { transition: all 0.2s ease !important; }
+                            .btn-full:hover { background-color: #047857 !important; border-color: #047857 !important; box-shadow: 0 6px 16px rgba(5, 150, 105, 0.3) !important; }
                         </style>
                         <li>
                             <a href="${pageContext.request.contextPath}/classes?subject=Tất cả&grade=${empty param.grade ? 'Tất cả' : param.grade}" 
@@ -189,7 +193,7 @@
                 <div class="results-header">
                     <h2>Lớp học ${not empty param.subject and param.subject ne 'Tất cả' ? param.subject : 'nổi bật'}</h2>
                     <div class="sort-by" style="display: flex; gap: 0.75rem;">
-                        <select class="sort-select" style="border-color: #ede9fe;">
+                        <select class="sort-select" style="border-color: #d1fae5;">
                             <option>Đang tuyển sinh</option>
                             <option>Khai giảng gần đây</option>
                             <option>Đông học viên</option>
@@ -215,7 +219,7 @@
                                 <div class="material-card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
                                     <div>
                                         <div class="material-card-header" style="margin-bottom: 0.75rem;">
-                                            <span class="subject-badge" style="background: #ede9fe; color: #8b5cf6;"><%= cls.getSubject() %></span>
+                                            <span class="subject-badge" style="background: #d1fae5; color: #059669;"><%= cls.getSubject() %></span>
                                             <span style="font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; background-color: <%= "Đang mở".equalsIgnoreCase(statusLabel) ? "#dcfce7" : "#fef9c3" %>; color: <%= "Đang mở".equalsIgnoreCase(statusLabel) ? "#15803d" : "#a16207" %>;">
                                                 <%= statusLabel %>
                                             </span>
@@ -226,18 +230,18 @@
                                         
                                         <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: 0.85rem; color: #475569;">
                                             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                                                 <span>Lịch: <strong><%= cls.getSchedule() %></strong></span>
                                             </div>
                                             <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
                                                 <span>Sĩ số: <strong><%= cls.getStudentCount() %> học viên</strong></span>
                                             </div>
                                         </div>
                                     </div>
                                     
                                     <div class="material-card-footer" style="padding: 0; border: none;">
-                                        <a href="<%= request.getContextPath() %>/class-detail?id=<%= cls.getId() %>" class="btn btn-primary btn-full" style="background: #8b5cf6; border-color: #8b5cf6; color: #ffffff; font-weight: 600; border-radius: 9999px;">Tham gia lớp</a>
+                                        <a href="<%= request.getContextPath() %>/class-detail?id=<%= cls.getId() %>" class="btn btn-primary btn-full" style="background: #059669; border-color: #059669; color: #ffffff; font-weight: 600; border-radius: 9999px;">Tham gia lớp</a>
                                     </div>
                                 </div>
                     <% 

@@ -3,6 +3,7 @@
 <%@page import="com.hipzi.model.Classroom"%>
 <%@page import="com.hipzi.model.ClassroomEnrollment"%>
 <%@page import="com.hipzi.model.ClassroomExam"%>
+<%@page import="com.hipzi.model.ClassroomExamQuestion"%>
 <%@page import="com.hipzi.model.ClassroomHomeworkSubmission"%>
 <%@page import="com.hipzi.model.ClassroomMaterial"%>
 <%@page import="com.hipzi.model.ClassroomQuiz"%>
@@ -63,6 +64,35 @@
     session.removeAttribute("quizDraftDescription");
     session.removeAttribute("quizDraftScanText");
     session.removeAttribute("quizDraftQuestions");
+    String examDraftTitle = (String) session.getAttribute("examDraftTitle");
+    String examDraftCode = (String) session.getAttribute("examDraftCode");
+    String examDraftDescription = (String) session.getAttribute("examDraftDescription");
+    String examDraftType = (String) session.getAttribute("examDraftType");
+    String examDraftStatus = (String) session.getAttribute("examDraftStatus");
+    Number examDraftDurationValue = (Number) session.getAttribute("examDraftDuration");
+    String examDraftSourceMaterialId = (String) session.getAttribute("examDraftSourceMaterialId");
+    String examDraftSourceText = (String) session.getAttribute("examDraftSourceText");
+    String examDraftCreationMode = (String) session.getAttribute("examDraftCreationMode");
+    List<ClassroomExamQuestion> examDraftQuestions = (List<ClassroomExamQuestion>) session.getAttribute("examDraftQuestions");
+    session.removeAttribute("examDraftTitle");
+    session.removeAttribute("examDraftCode");
+    session.removeAttribute("examDraftDescription");
+    session.removeAttribute("examDraftType");
+    session.removeAttribute("examDraftStatus");
+    session.removeAttribute("examDraftDuration");
+    session.removeAttribute("examDraftSourceMaterialId");
+    session.removeAttribute("examDraftSourceText");
+    session.removeAttribute("examDraftCreationMode");
+    session.removeAttribute("examDraftQuestions");
+    examDraftTitle = examDraftTitle != null ? examDraftTitle : "";
+    examDraftCode = examDraftCode != null ? examDraftCode : "";
+    examDraftDescription = examDraftDescription != null ? examDraftDescription : "";
+    examDraftType = "essay".equals(examDraftType) ? "essay" : "multiple_choice";
+    examDraftStatus = "draft".equals(examDraftStatus) || "closed".equals(examDraftStatus) ? examDraftStatus : "open";
+    int examDraftDuration = examDraftDurationValue != null ? examDraftDurationValue.intValue() : 45;
+    examDraftSourceMaterialId = examDraftSourceMaterialId != null ? examDraftSourceMaterialId : "";
+    examDraftSourceText = examDraftSourceText != null ? examDraftSourceText : "";
+    examDraftCreationMode = "ai".equals(examDraftCreationMode) ? "ai" : "manual";
     String initials = "H";
     if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
         String[] parts = user.getDisplayName().trim().split("\\s+");
@@ -84,10 +114,6 @@
     <style>
         body {
             min-height: 100vh;
-            background:
-                radial-gradient(circle at 12% 10%, rgba(109, 40, 217, 0.12), transparent 28%),
-                radial-gradient(circle at 92% 18%, rgba(14, 165, 233, 0.12), transparent 26%),
-                #f8fafc;
             color: #0f172a;
         }
 
@@ -142,7 +168,7 @@
         }
 
         .classroom-back-link:hover {
-            color: #0f766e;
+            color: #059669;
             transform: translateX(-2px);
         }
 
@@ -196,17 +222,18 @@
             border-radius: 999px;
             margin-top: 1.1rem;
             padding: 0.78rem 1.25rem;
-            background: #0f766e;
+            background: #059669;
             color: #ffffff;
             font-weight: 950;
             text-decoration: none;
-            box-shadow: 0 14px 30px rgba(15, 118, 110, 0.22);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 14px 30px rgba(5, 150, 105, 0.22);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
 
         .online-room-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 18px 38px rgba(15, 118, 110, 0.28);
+            background: #047857;
+            box-shadow: 0 18px 38px rgba(5, 150, 105, 0.28);
         }
 
         .classroom-teacher-card {
@@ -243,8 +270,8 @@
             aspect-ratio: 1;
             border-radius: 999px;
             padding: 0.35rem;
-            background: linear-gradient(135deg, #14b8a6, #d1fae5);
-            box-shadow: 0 18px 34px rgba(15, 118, 110, 0.18);
+            background: linear-gradient(135deg, #059669, #d1fae5);
+            box-shadow: 0 18px 34px rgba(5, 150, 105, 0.18);
         }
 
         .classroom-teacher-photo img,
@@ -258,7 +285,7 @@
             align-items: center;
             justify-content: center;
             background: #f8fafc;
-            color: #0f766e;
+            color: #059669;
             font-size: 2.6rem;
             font-weight: 950;
         }
@@ -505,8 +532,8 @@
             border-radius: 999px;
             display: grid;
             place-items: center;
-            background: #ede9fe;
-            color: #6d28d9;
+            background: #d1fae5;
+            color: #059669;
             font-weight: 950;
         }
 
@@ -541,12 +568,24 @@
             justify-content: center;
             text-decoration: none;
             font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .mini-btn:hover {
+            border-color: #059669;
+            color: #059669;
+            background: #ecfdf5;
         }
 
         .mini-btn.primary {
-            background: #6d28d9;
-            border-color: #6d28d9;
+            background: #059669;
+            border-color: #059669;
             color: #ffffff;
+        }
+
+        .mini-btn.primary:hover {
+            background: #047857 !important;
+            border-color: #047857 !important;
         }
 
         .mini-btn.preview {
@@ -625,6 +664,19 @@
             justify-content: flex-end;
         }
 
+        .classroom-section-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.9rem;
+        }
+
+        .classroom-section-heading h2 {
+            margin: 0;
+        }
+
         .upload-panel {
             border: 1px solid #d1fae5;
             border-radius: 0.9rem;
@@ -676,6 +728,406 @@
         .quiz-builder {
             display: grid;
             gap: 1rem;
+        }
+
+        .exam-builder-shell {
+            gap: 0;
+            overflow: hidden;
+            padding: 0;
+            border-color: #e5eeec;
+            border-radius: 1.25rem;
+            background: #ffffff;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+        }
+
+        .exam-builder-heading {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.25rem 1.35rem;
+            border-bottom: 1px solid #dceee9;
+            background:
+                radial-gradient(circle at top right, rgba(94, 234, 212, 0.24), transparent 34%),
+                linear-gradient(135deg, #f0fdfa 0%, #f8fffd 58%, #eff6ff 100%);
+        }
+
+        .exam-builder-heading h3 {
+            margin: 0.2rem 0 0.35rem;
+            color: #0f172a;
+            font-size: 1.18rem;
+        }
+
+        .exam-builder-heading p,
+        .exam-section-heading p,
+        .exam-mode-description {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.82rem;
+            line-height: 1.55;
+        }
+
+        .exam-builder-eyebrow {
+            color: #059669;
+            font-size: 0.68rem;
+            font-weight: 950;
+            letter-spacing: 0.14em;
+        }
+
+        .exam-builder-step-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex: 0 0 auto;
+            border: 1px solid #ccfbf1;
+            border-radius: 999px;
+            padding: 0.45rem 0.72rem;
+            background: rgba(255, 255, 255, 0.8);
+            color: #059669;
+            font-size: 0.74rem;
+            font-weight: 900;
+        }
+
+        .exam-builder-step-pill::before {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #10b981;
+            content: "";
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.14);
+        }
+
+        .exam-builder-section {
+            padding: 1.2rem 1.35rem;
+            border-bottom: 0;
+        }
+
+        .exam-builder-section + .exam-builder-section {
+            padding-top: 1.45rem;
+        }
+
+        .exam-section-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.7rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .exam-section-heading strong {
+            display: block;
+            margin-bottom: 0.15rem;
+            color: #0f172a;
+            font-size: 0.9rem;
+        }
+
+        .exam-section-number {
+            display: grid;
+            width: 30px;
+            height: 30px;
+            flex: 0 0 auto;
+            place-items: center;
+            border-radius: 0.65rem;
+            background: #ccfbf1;
+            color: #059669;
+            font-size: 0.72rem;
+            font-weight: 950;
+        }
+
+        .exam-mode-native {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+
+        .exam-mode-picker {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.85rem;
+        }
+
+        .exam-mode-card {
+            display: grid;
+            grid-template-columns: 48px minmax(0, 1fr) auto;
+            gap: 0.8rem;
+            align-items: center;
+            min-height: 104px;
+            border: 1px solid transparent;
+            border-radius: 1rem;
+            padding: 0.95rem;
+            background: #f8fafc;
+            color: #0f172a;
+            cursor: pointer;
+            font-family: inherit;
+            text-align: left;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
+        }
+
+        .exam-mode-card:hover {
+            border-color: #ccfbf1;
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(5, 150, 105, 0.1);
+        }
+
+        .exam-mode-card.active {
+            border-color: #5eead4;
+            background: linear-gradient(135deg, #f0fdfa, #f8fffd);
+            box-shadow: 0 10px 22px rgba(5, 150, 105, 0.1);
+        }
+
+        .exam-mode-card-icon {
+            display: grid;
+            width: 48px;
+            height: 48px;
+            place-items: center;
+            border-radius: 0.9rem;
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .exam-mode-card.active .exam-mode-card-icon {
+            background: #ccfbf1;
+            color: #059669;
+        }
+
+        .exam-mode-card-icon svg {
+            width: 23px;
+            height: 23px;
+        }
+
+        .exam-mode-card strong {
+            display: block;
+            margin-bottom: 0.2rem;
+            font-size: 0.9rem;
+        }
+
+        .exam-mode-description {
+            display: block;
+        }
+
+        .exam-mode-check {
+            display: grid;
+            width: 22px;
+            height: 22px;
+            place-items: center;
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            color: transparent;
+            font-size: 0.7rem;
+            font-weight: 950;
+        }
+
+        .exam-mode-card.active .exam-mode-check {
+            border-color: #10b981;
+            background: #059669;
+            color: #ffffff;
+        }
+
+        .exam-ai-section {
+            margin: 0 0.9rem;
+            border-radius: 1rem;
+            background:
+                radial-gradient(circle at top right, rgba(45, 212, 191, 0.12), transparent 30%),
+                #f8fffd;
+        }
+
+        .exam-ai-heading {
+            gap: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .exam-ai-heading .exam-section-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.85rem;
+            background: linear-gradient(135deg, #99f6e4, #ccfbf1);
+            box-shadow: 0 8px 18px rgba(5, 150, 105, 0.14);
+            font-size: 0.78rem;
+        }
+
+        .exam-ai-heading strong {
+            margin-bottom: 0.22rem;
+            color: #0f172a;
+            font-size: 1.05rem;
+        }
+
+        .exam-ai-workspace {
+            padding: 0;
+            border: 0;
+            background: transparent;
+        }
+
+        .exam-ai-textarea {
+            min-height: 238px;
+            max-height: 320px;
+            resize: vertical;
+            line-height: 1.55;
+        }
+
+        .exam-builder-shell .upload-field input,
+        .exam-builder-shell .upload-field select,
+        .exam-builder-shell .upload-field textarea {
+            border-color: #e2e8f0;
+            background: rgba(255, 255, 255, 0.94);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .exam-builder-shell .upload-field input:focus,
+        .exam-builder-shell .upload-field select:focus,
+        .exam-builder-shell .upload-field textarea:focus {
+            border-color: #5eead4;
+            box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+        }
+
+        .exam-ai-upload-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+
+        .exam-ai-upload-card {
+            display: grid;
+            min-height: 238px;
+            place-items: center;
+            border: 1.5px dashed #a7f3d0;
+            border-radius: 0.9rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.62);
+            color: #475569;
+            cursor: pointer;
+            text-align: center;
+            transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .exam-ai-upload-card:hover,
+        .exam-ai-upload-card.dragging {
+            border-color: #10b981;
+            background: #f0fdfa;
+            box-shadow: 0 14px 28px rgba(5, 150, 105, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .exam-ai-upload-empty {
+            display: grid;
+            justify-items: center;
+            gap: 0.42rem;
+        }
+
+        .exam-ai-upload-icon {
+            display: grid;
+            width: 54px;
+            height: 54px;
+            place-items: center;
+            border-radius: 1rem;
+            background: #ccfbf1;
+            color: #059669;
+        }
+
+        .exam-ai-upload-icon svg {
+            width: 27px;
+            height: 27px;
+        }
+
+        .exam-ai-upload-empty strong {
+            color: #0f172a;
+            font-size: 0.9rem;
+        }
+
+        .exam-ai-upload-empty span {
+            color: #64748b;
+            font-size: 0.76rem;
+            line-height: 1.5;
+        }
+
+        .exam-ai-upload-empty em {
+            border-radius: 999px;
+            padding: 0.38rem 0.7rem;
+            background: #ecfdf5;
+            color: #047857;
+            font-size: 0.72rem;
+            font-style: normal;
+            font-weight: 900;
+        }
+
+        .exam-ai-upload-card img {
+            width: 100%;
+            max-height: 192px;
+            object-fit: contain;
+        }
+
+        .exam-ai-upload-preview {
+            display: grid;
+            width: 100%;
+            gap: 0.55rem;
+            justify-items: center;
+        }
+
+        .exam-ai-upload-preview span {
+            max-width: 100%;
+            overflow: hidden;
+            color: #059669;
+            font-size: 0.75rem;
+            font-weight: 850;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .exam-ai-actions {
+            justify-content: flex-end;
+            margin-top: 0.75rem;
+        }
+
+        .exam-ai-action-group {
+            display: grid;
+            gap: 0.38rem;
+            justify-items: end;
+        }
+
+        .exam-ai-submit {
+            gap: 0.42rem;
+            border-color: #059669;
+            padding: 0.72rem 1rem;
+            background: linear-gradient(135deg, #059669, #047857);
+            color: #ffffff;
+            box-shadow: 0 10px 20px rgba(5, 150, 105, 0.2);
+        }
+
+        .exam-ai-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 26px rgba(5, 150, 105, 0.26);
+        }
+
+        .exam-ai-submit svg {
+            width: 17px;
+            height: 17px;
+        }
+
+        .exam-ai-note {
+            color: #64748b;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .quiz-card.exam-question-workspace {
+            padding: 0;
+            border: 0;
+            background: transparent;
+        }
+
+        .exam-question-workspace .quiz-question {
+            border: 0;
+            border-left: 3px solid #99f6e4;
+            border-radius: 0.35rem 0.8rem 0.8rem 0.35rem;
+            background: #f8fafc;
+            box-shadow: none;
         }
 
         .quiz-scan-preview {
@@ -817,7 +1269,7 @@
         }
 
         .teacher-action-hint {
-            color: #6d28d9;
+            color: #059669;
             font-weight: 850;
             margin-top: 0.75rem;
         }
@@ -877,8 +1329,22 @@
             .upload-grid,
             .quiz-scan-preview,
             .quiz-card-head,
-            .quiz-option-grid {
+            .quiz-option-grid,
+            .exam-mode-picker {
                 grid-template-columns: 1fr;
+            }
+
+            .exam-builder-heading {
+                display: grid;
+            }
+
+            .exam-mode-card {
+                grid-template-columns: 44px minmax(0, 1fr) auto;
+            }
+
+            .exam-mode-card-icon {
+                width: 44px;
+                height: 44px;
             }
         }
     </style>
@@ -1065,12 +1531,17 @@
                 </section>
 
                 <section class="classroom-card classroom-tab-panel" data-classroom-panel="materials">
-                    <h2>Tài liệu lớp học</h2>
+                    <div class="classroom-section-heading">
+                        <h2>Tài liệu lớp học</h2>
+                        <% if (canManageClassroom) { %>
+                            <button class="mini-btn primary" type="button" data-upload-toggle="class-material-upload" aria-controls="class-material-upload" aria-expanded="false">Đăng tải tài liệu</button>
+                        <% } %>
+                    </div>
                     <% if (canManageClassroom) { %>
-                        <form class="upload-panel" action="${pageContext.request.contextPath}/classroom" method="POST" enctype="multipart/form-data">
+                        <form class="upload-panel" id="class-material-upload" action="${pageContext.request.contextPath}/classroom" method="POST" enctype="multipart/form-data" hidden>
                             <input type="hidden" name="action" value="uploadClassMaterial">
                             <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
-                            <h3>Đăng tải tài liệu nội bộ</h3>
+                            <h3>Đăng tải tài liệu</h3>
                             <div class="upload-grid">
                                 <div class="upload-field">
                                     <label>Tiêu đề</label>
@@ -1082,7 +1553,6 @@
                                         <option value="teaching">Tài liệu giảng dạy</option>
                                         <option value="theory">Lý thuyết</option>
                                         <option value="exam">Đề thi riêng</option>
-                                        <option value="homework">Bài tập về nhà</option>
                                     </select>
                                 </div>
                                 <div class="upload-field full">
@@ -1135,10 +1605,40 @@
                 </section>
 
                 <section class="classroom-card classroom-tab-panel" data-classroom-panel="materials">
-                    <h2>Bài tập về nhà</h2>
+                    <div class="classroom-section-heading">
+                        <h2>Bài tập về nhà</h2>
+                        <% if (canManageClassroom) { %>
+                            <button class="mini-btn primary" type="button" data-upload-toggle="class-homework-upload" aria-controls="class-homework-upload" aria-expanded="false">Đăng bài tập về nhà</button>
+                        <% } %>
+                    </div>
+                    <% if (canManageClassroom) { %>
+                        <form class="upload-panel" id="class-homework-upload" action="${pageContext.request.contextPath}/classroom" method="POST" enctype="multipart/form-data" hidden>
+                            <input type="hidden" name="action" value="uploadClassMaterial">
+                            <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                            <input type="hidden" name="materialCategory" value="homework">
+                            <h3>Đăng bài tập về nhà</h3>
+                            <div class="upload-grid">
+                                <div class="upload-field full">
+                                    <label>Tiêu đề bài tập</label>
+                                    <input type="text" name="materialTitle" placeholder="Ví dụ: Bài tập chương 1" required>
+                                </div>
+                                <div class="upload-field full">
+                                    <label>Mô tả</label>
+                                    <textarea name="materialDescription" rows="2" placeholder="Ghi chú yêu cầu bài tập cho học viên..."></textarea>
+                                </div>
+                                <div class="upload-field full">
+                                    <label>File bài tập</label>
+                                    <input type="file" name="materialFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.webp" required>
+                                </div>
+                            </div>
+                            <div class="review-actions" style="margin-top:0.85rem;">
+                                <button class="mini-btn primary" type="submit">Đăng bài tập</button>
+                            </div>
+                        </form>
+                    <% } %>
                     <div class="resource-list">
                         <% if (classHomework == null || classHomework.isEmpty()) { %>
-                            <div class="empty-state">Chưa có bài tập về nhà. Khi giảng viên đăng file với loại “Bài tập về nhà”, học viên sẽ thấy tại đây.</div>
+                            <div class="empty-state">Chưa có bài tập về nhà nào được đăng tải cho lớp này.</div>
                         <% } else {
                             for (ClassroomMaterial material : classHomework) {
                         %>
@@ -1496,51 +1996,245 @@ D. ...
                 <section class="classroom-card classroom-tab-panel" data-classroom-panel="exams">
                     <h2>Phòng thi lớp học</h2>
                     <% if (canManageClassroom) { %>
-                        <form class="upload-panel" action="${pageContext.request.contextPath}/classroom" method="POST">
-                            <input type="hidden" name="action" value="createClassExam">
+                        <form class="upload-panel quiz-builder exam-builder-shell" action="${pageContext.request.contextPath}/classroom" method="POST" enctype="multipart/form-data" data-exam-builder>
                             <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
-                            <h3>Tạo bài thi lớp học</h3>
-                            <div class="upload-grid">
-                                <div class="upload-field">
-                                    <label>Tiêu đề bài thi</label>
-                                    <input type="text" name="examTitle" placeholder="Ví dụ: Kiểm tra chương 1" required>
+                            <div class="exam-builder-heading">
+                                <div>
+                                    <span class="exam-builder-eyebrow">CLASSROOM EXAM BUILDER</span>
+                                    <h3>Tạo bài thi lớp học</h3>
+                                    <p>Chọn cách soạn đề phù hợp, sau đó rà soát câu hỏi trước khi mở bài thi cho học sinh.</p>
                                 </div>
-                                <div class="upload-field">
-                                    <label>Mã đề</label>
-                                    <input type="text" name="examCode" placeholder="VD: HIPZI-TOAN10-01" required>
+                                <span class="exam-builder-step-pill">Thiết lập đề thi</span>
+                            </div>
+                            <section class="exam-builder-section">
+                                <div class="exam-section-heading">
+                                    <span class="exam-section-number">01</span>
+                                    <div>
+                                        <strong>Chọn cách tạo câu hỏi</strong>
+                                        <p>Nhập trực tiếp từng câu hoặc để AI đọc đề từ ảnh và văn bản.</p>
+                                    </div>
                                 </div>
-                                <div class="upload-field">
-                                    <label>Thời lượng</label>
-                                    <input type="number" name="durationMinutes" min="1" value="45" required>
+                                <select class="exam-mode-native" name="examCreationMode" data-exam-mode aria-label="Cách tạo câu hỏi">
+                                    <option value="manual" <%= "manual".equals(examDraftCreationMode) ? "selected" : "" %>>Nhập tay</option>
+                                    <option value="ai" <%= "ai".equals(examDraftCreationMode) ? "selected" : "" %>>AI scan ảnh hoặc text</option>
+                                </select>
+                                <div class="exam-mode-picker">
+                                    <button class="exam-mode-card" type="button" data-exam-mode-option="manual" aria-pressed="false">
+                                        <span class="exam-mode-card-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M4 19.5V5a2 2 0 0 1 2-2h10l4 4v12.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19.5Z"/>
+                                                <path d="M15 3v5h5M8 12h8M8 16h6"/>
+                                            </svg>
+                                        </span>
+                                        <span>
+                                            <strong>Nhập tay</strong>
+                                            <span class="exam-mode-description">Tự điền câu hỏi, đáp án và thang điểm theo từng câu.</span>
+                                        </span>
+                                        <span class="exam-mode-check">✓</span>
+                                    </button>
+                                    <button class="exam-mode-card" type="button" data-exam-mode-option="ai" aria-pressed="false">
+                                        <span class="exam-mode-card-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/>
+                                                <path d="m12 7 .9 2.1L15 10l-2.1.9L12 13l-.9-2.1L9 10l2.1-.9L12 7ZM17 12l.5 1.2 1.2.5-1.2.5L17 15l-.5-.8-1.2-.5 1.2-.5L17 12Z"/>
+                                            </svg>
+                                        </span>
+                                        <span>
+                                            <strong>Scan bằng AI</strong>
+                                            <span class="exam-mode-description">Tải ảnh hoặc dán text đề để AI điền trước nội dung.</span>
+                                        </span>
+                                        <span class="exam-mode-check">✓</span>
+                                    </button>
                                 </div>
-                                <div class="upload-field">
-                                    <label>Trạng thái</label>
-                                    <select name="examStatus">
-                                        <option value="open">Đang mở</option>
-                                        <option value="draft">Bản nháp</option>
-                                        <option value="closed">Đã đóng</option>
-                                    </select>
+                            </section>
+                            <section class="exam-builder-section">
+                                <div class="exam-section-heading">
+                                    <span class="exam-section-number">02</span>
+                                    <div>
+                                        <strong>Thông tin bài thi</strong>
+                                        <p>Thiết lập mã đề, thời lượng và loại câu hỏi trước khi soạn nội dung.</p>
+                                    </div>
                                 </div>
-                                <div class="upload-field full">
-                                    <label>Gắn file đề đã upload</label>
-                                    <select name="sourceMaterialId">
-                                        <option value="">Không gắn file</option>
-                                        <% if (classExamMaterials != null) {
-                                            for (ClassroomMaterial material : classExamMaterials) {
-                                        %>
-                                            <option value="<%= h(material.getId()) %>"><%= h(material.getTitle()) %></option>
-                                        <%  }
-                                        } %>
-                                    </select>
+                                <div class="upload-grid">
+                                    <div class="upload-field">
+                                        <label>Tiêu đề bài thi</label>
+                                        <input type="text" name="examTitle" placeholder="Ví dụ: Kiểm tra chương 1" value="<%= h(examDraftTitle) %>" required>
+                                    </div>
+                                    <div class="upload-field">
+                                        <label>Mã đề</label>
+                                        <input type="text" name="examCode" placeholder="VD: HIPZI-TOAN10-01" value="<%= h(examDraftCode) %>" required>
+                                    </div>
+                                    <div class="upload-field">
+                                        <label>Thời lượng</label>
+                                        <input type="number" name="durationMinutes" min="1" value="<%= examDraftDuration %>" required>
+                                    </div>
+                                    <div class="upload-field">
+                                        <label>Trạng thái</label>
+                                        <select name="examStatus">
+                                            <option value="open" <%= "open".equals(examDraftStatus) ? "selected" : "" %>>Đang mở</option>
+                                            <option value="draft" <%= "draft".equals(examDraftStatus) ? "selected" : "" %>>Bản nháp</option>
+                                            <option value="closed" <%= "closed".equals(examDraftStatus) ? "selected" : "" %>>Đã đóng</option>
+                                        </select>
+                                    </div>
+                                    <div class="upload-field full">
+                                        <label>Dạng bài thi</label>
+                                        <select name="examType" data-exam-type>
+                                            <option value="multiple_choice" <%= "multiple_choice".equals(examDraftType) ? "selected" : "" %>>Trắc nghiệm</option>
+                                            <option value="essay" <%= "essay".equals(examDraftType) ? "selected" : "" %>>Tự luận</option>
+                                            <option value="flashcard" disabled>Flashcard (sắp triển khai)</option>
+                                        </select>
+                                    </div>
+                                    <div class="upload-field full">
+                                        <label>Mô tả</label>
+                                        <textarea name="examDescription" rows="2" placeholder="Ghi chú, phạm vi kiến thức, quy định làm bài..."><%= h(examDraftDescription) %></textarea>
+                                    </div>
                                 </div>
-                                <div class="upload-field full">
-                                    <label>Mô tả</label>
-                                    <textarea name="examDescription" rows="2" placeholder="Ghi chú, phạm vi kiến thức, quy định làm bài..."></textarea>
+                            </section>
+                            <section class="exam-builder-section exam-ai-section" data-exam-ai-source>
+                                <div class="exam-section-heading exam-ai-heading">
+                                    <span class="exam-section-number">AI</span>
+                                    <div>
+                                        <strong>Đưa đề vào AI</strong>
+                                        <p>Dán nội dung hoặc tải ảnh đề rõ nét. AI sẽ nhận diện câu hỏi và điền trước để bạn rà soát.</p>
+                                    </div>
+                                </div>
+                                <div class="quiz-scan-preview exam-ai-workspace">
+                                    <div class="upload-field">
+                                        <label>Text đề để AI nhận diện</label>
+                                        <textarea class="exam-ai-textarea" name="examSourceText" rows="8" placeholder="Dán câu hỏi tại đây. AI sẽ tự nhận diện nội dung, các lựa chọn và đáp án nếu có.
+
+Ví dụ:
+Câu 1. Mặt trăng là gì?
+A. ...
+B. ...
+C. ...
+D. ...
+Đáp án: B"><%= h(examDraftSourceText) %></textarea>
+                                    </div>
+                                    <div class="upload-field">
+                                        <label>Hoặc tải ảnh đề</label>
+                                        <input class="exam-ai-upload-input" id="exam-source-image" type="file" name="examSourceImage" accept="image/png,image/jpeg,image/webp" capture="environment" data-exam-image-input>
+                                        <label class="exam-ai-upload-card" for="exam-source-image" data-exam-image-dropzone>
+                                            <span class="exam-ai-upload-empty" data-exam-image-preview>
+                                                <span class="exam-ai-upload-icon">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                        <path d="M12 16V4m0 0-4 4m4-4 4 4"/>
+                                                        <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>
+                                                    </svg>
+                                                </span>
+                                                <strong>Kéo thả ảnh vào đây</strong>
+                                                <span>Hỗ trợ PNG, JPG hoặc WEBP. Ưu tiên ảnh rõ nét, không bị nghiêng.</span>
+                                                <em>Chọn ảnh từ máy</em>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="quiz-actions exam-ai-actions" data-exam-ai-actions>
+                                    <div class="exam-ai-action-group">
+                                        <button class="mini-btn exam-ai-submit" type="submit" name="action" value="scanClassExamAi" formnovalidate>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="m12 3 1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3ZM19 15l.7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15Z"/>
+                                            </svg>
+                                            Phân tích bằng AI
+                                        </button>
+                                        <span class="exam-ai-note">AI chỉ điền trước. Hãy kiểm tra lại trước khi lưu.</span>
+                                    </div>
+                                </div>
+                            </section>
+                            <section class="exam-builder-section">
+                                <div class="exam-section-heading">
+                                    <span class="exam-section-number">03</span>
+                                    <div>
+                                        <strong>Rà soát câu hỏi</strong>
+                                        <p>Kiểm tra nội dung và đáp án trước khi tạo bài thi chính thức.</p>
+                                    </div>
+                                </div>
+                                <div class="quiz-card exam-question-workspace">
+                                <div class="quiz-question-list" data-exam-question-list>
+                                    <% if (examDraftQuestions != null && !examDraftQuestions.isEmpty()) {
+                                        int examDraftQuestionIndex = 1;
+                                        for (ClassroomExamQuestion question : examDraftQuestions) {
+                                    %>
+                                        <div class="quiz-question" data-exam-question>
+                                            <h4>Câu <%= examDraftQuestionIndex++ %></h4>
+                                            <div class="upload-grid" style="margin-top:0.65rem;">
+                                                <div class="upload-field full">
+                                                    <label>Nội dung câu hỏi</label>
+                                                    <textarea name="examQuestionText" rows="2" required><%= h(question.getQuestionText()) %></textarea>
+                                                </div>
+                                                <div class="upload-field">
+                                                    <label>Điểm</label>
+                                                    <input type="number" name="examPoints" min="1" value="<%= question.getPoints() > 0 ? question.getPoints() : 1 %>">
+                                                </div>
+                                            </div>
+                                            <div data-exam-multiple-choice-fields>
+                                                <div class="quiz-option-grid">
+                                                    <label>A <input type="text" name="examOptionA" value="<%= h(question.getOptionA()) %>"></label>
+                                                    <label>B <input type="text" name="examOptionB" value="<%= h(question.getOptionB()) %>"></label>
+                                                    <label>C <input type="text" name="examOptionC" value="<%= h(question.getOptionC()) %>"></label>
+                                                    <label>D <input type="text" name="examOptionD" value="<%= h(question.getOptionD()) %>"></label>
+                                                </div>
+                                                <div class="upload-field" style="margin-top:0.75rem;">
+                                                    <label>Đáp án đúng</label>
+                                                    <select name="examCorrectOption">
+                                                        <option value="">Chưa chọn</option>
+                                                        <option value="A" <%= "A".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>A</option>
+                                                        <option value="B" <%= "B".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>B</option>
+                                                        <option value="C" <%= "C".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>C</option>
+                                                        <option value="D" <%= "D".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>D</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="upload-field" data-exam-essay-fields style="margin-top:0.75rem;">
+                                                <label>Đáp án tham khảo</label>
+                                                <textarea name="examReferenceAnswer" rows="2" placeholder="Có thể để trống nếu chưa cần đáp án mẫu."><%= h(question.getReferenceAnswer()) %></textarea>
+                                            </div>
+                                        </div>
+                                    <%  }
+                                    } else { %>
+                                        <div class="quiz-question" data-exam-question>
+                                            <h4>Câu 1</h4>
+                                            <div class="upload-grid" style="margin-top:0.65rem;">
+                                                <div class="upload-field full">
+                                                    <label>Nội dung câu hỏi</label>
+                                                    <textarea name="examQuestionText" rows="2" required></textarea>
+                                                </div>
+                                                <div class="upload-field">
+                                                    <label>Điểm</label>
+                                                    <input type="number" name="examPoints" min="1" value="1">
+                                                </div>
+                                            </div>
+                                            <div data-exam-multiple-choice-fields>
+                                                <div class="quiz-option-grid">
+                                                    <label>A <input type="text" name="examOptionA"></label>
+                                                    <label>B <input type="text" name="examOptionB"></label>
+                                                    <label>C <input type="text" name="examOptionC"></label>
+                                                    <label>D <input type="text" name="examOptionD"></label>
+                                                </div>
+                                                <div class="upload-field" style="margin-top:0.75rem;">
+                                                    <label>Đáp án đúng</label>
+                                                    <select name="examCorrectOption">
+                                                        <option value="">Chưa chọn</option>
+                                                        <option value="A">A</option>
+                                                        <option value="B">B</option>
+                                                        <option value="C">C</option>
+                                                        <option value="D">D</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="upload-field" data-exam-essay-fields style="margin-top:0.75rem;">
+                                                <label>Đáp án tham khảo</label>
+                                                <textarea name="examReferenceAnswer" rows="2" placeholder="Có thể để trống nếu chưa cần đáp án mẫu."></textarea>
+                                            </div>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                <div class="quiz-actions">
+                                    <button class="mini-btn preview" type="button" data-add-exam-question>Thêm câu hỏi</button>
+                                    <button class="mini-btn primary" type="submit" name="action" value="createClassExam">Tạo bài thi</button>
                                 </div>
                             </div>
-                            <div class="quiz-actions">
-                                <button class="mini-btn primary" type="submit">Tạo bài thi</button>
-                            </div>
+                            </section>
                         </form>
                     <% } %>
                     <div class="resource-list">
@@ -1549,9 +2243,8 @@ D. ...
                         <% } else {
                             for (ClassroomExam exam : classroomExams) {
                                 String examHref = request.getContextPath()
-                                        + "/class-exam-room.jsp?classId=" + u(classroom.getId())
-                                        + "&code=" + u(exam.getExamCode())
-                                        + "&title=" + u(exam.getTitle());
+                                        + "/class-exam-room?classId=" + u(classroom.getId())
+                                        + "&code=" + u(exam.getExamCode());
                         %>
                             <div class="resource-item">
                                 <div>
@@ -1561,9 +2254,11 @@ D. ...
                                     <% } %>
                                     <div class="resource-meta">
                                         <span class="resource-chip">Bài thi lớp học</span>
+                                        <span class="resource-chip"><%= h(exam.getExamTypeLabel()) %></span>
                                         <span class="resource-chip"><%= h(exam.getExamCode()) %></span>
                                         <span class="resource-chip"><%= h(exam.getStatusLabel()) %></span>
                                         <span class="resource-chip"><%= exam.getDurationMinutes() %> phút</span>
+                                        <span class="resource-chip"><%= exam.getQuestions() != null ? exam.getQuestions().size() : 0 %> câu</span>
                                     </div>
                                 </div>
                                 <div class="resource-actions">
@@ -1677,6 +2372,21 @@ D. ...
             switchClassroomTab(tabFromHash, true);
         });
 
+        document.querySelectorAll('[data-upload-toggle]').forEach(button => {
+            button.addEventListener('click', () => {
+                const panel = document.getElementById(button.dataset.uploadToggle);
+                if (!panel) return;
+                const willOpen = panel.hidden;
+                panel.hidden = !willOpen;
+                button.dataset.closedLabel ||= button.textContent;
+                button.textContent = willOpen ? 'Đóng biểu mẫu' : button.dataset.closedLabel;
+                button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+                if (willOpen) {
+                    panel.querySelector('input:not([type="hidden"]), textarea, select')?.focus();
+                }
+            });
+        });
+
         document.querySelectorAll('[data-quiz-image-input]').forEach(input => {
             input.addEventListener('change', () => {
                 const preview = input.closest('form')?.querySelector('[data-quiz-image-preview]');
@@ -1739,6 +2449,153 @@ D. ...
                 renumberQuizQuestions(list);
                 list.lastElementChild?.querySelector('textarea')?.focus();
             });
+        });
+
+        function renderExamImagePreview(input) {
+            const preview = input.closest('form')?.querySelector('[data-exam-image-preview]');
+            const file = input.files && input.files[0];
+            if (!preview) return;
+            if (!file) {
+                preview.innerHTML = `
+                    <span class="exam-ai-upload-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 16V4m0 0-4 4m4-4 4 4"/>
+                            <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>
+                        </svg>
+                    </span>
+                    <strong>Kéo thả ảnh vào đây</strong>
+                    <span>Hỗ trợ PNG, JPG hoặc WEBP. Ưu tiên ảnh rõ nét, không bị nghiêng.</span>
+                    <em>Chọn ảnh từ máy</em>
+                `;
+                preview.className = 'exam-ai-upload-empty';
+                return;
+            }
+            const wrapper = document.createElement('span');
+            wrapper.className = 'exam-ai-upload-preview';
+            const img = document.createElement('img');
+            img.alt = file.name || 'Ảnh đề thi';
+            img.src = URL.createObjectURL(file);
+            img.onload = () => URL.revokeObjectURL(img.src);
+            const name = document.createElement('span');
+            name.textContent = file.name || 'Ảnh đề thi đã chọn';
+            wrapper.append(img, name);
+            preview.className = 'exam-ai-upload-preview';
+            preview.replaceChildren(...wrapper.childNodes);
+        }
+
+        document.querySelectorAll('[data-exam-image-input]').forEach(input => {
+            const dropzone = input.closest('.upload-field')?.querySelector('[data-exam-image-dropzone]');
+            input.addEventListener('change', () => renderExamImagePreview(input));
+            if (!dropzone) return;
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, event => {
+                    event.preventDefault();
+                    dropzone.classList.add('dragging');
+                });
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, event => {
+                    event.preventDefault();
+                    dropzone.classList.remove('dragging');
+                });
+            });
+            dropzone.addEventListener('drop', event => {
+                const files = event.dataTransfer?.files;
+                if (!files || !files.length) return;
+                const transfer = new DataTransfer();
+                transfer.items.add(files[0]);
+                input.files = transfer.files;
+                renderExamImagePreview(input);
+            });
+        });
+
+        function renumberExamQuestions(list) {
+            list.querySelectorAll('[data-exam-question] h4').forEach((heading, index) => {
+                heading.textContent = 'Câu ' + (index + 1);
+            });
+        }
+
+        function syncExamBuilder(builder) {
+            if (!builder) return;
+            const type = builder.querySelector('[data-exam-type]')?.value || 'multiple_choice';
+            const mode = builder.querySelector('[data-exam-mode]')?.value || 'manual';
+            const isEssay = type === 'essay';
+            builder.querySelectorAll('[data-exam-mode-option]').forEach(button => {
+                const isActive = button.dataset.examModeOption === mode;
+                button.classList.toggle('active', isActive);
+                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+            builder.querySelectorAll('[data-exam-ai-source], [data-exam-ai-actions]').forEach(element => {
+                element.style.display = mode === 'ai' ? '' : 'none';
+            });
+            builder.querySelectorAll('[data-exam-multiple-choice-fields]').forEach(element => {
+                element.style.display = isEssay ? 'none' : '';
+            });
+            builder.querySelectorAll('[data-exam-essay-fields]').forEach(element => {
+                element.style.display = isEssay ? '' : 'none';
+            });
+        }
+
+        function createExamQuestionTemplate() {
+            return `
+                <div class="quiz-question" data-exam-question>
+                    <h4>Câu</h4>
+                    <div class="upload-grid" style="margin-top:0.65rem;">
+                        <div class="upload-field full">
+                            <label>Nội dung câu hỏi</label>
+                            <textarea name="examQuestionText" rows="2" required></textarea>
+                        </div>
+                        <div class="upload-field">
+                            <label>Điểm</label>
+                            <input type="number" name="examPoints" min="1" value="1">
+                        </div>
+                    </div>
+                    <div data-exam-multiple-choice-fields>
+                        <div class="quiz-option-grid">
+                            <label>A <input type="text" name="examOptionA"></label>
+                            <label>B <input type="text" name="examOptionB"></label>
+                            <label>C <input type="text" name="examOptionC"></label>
+                            <label>D <input type="text" name="examOptionD"></label>
+                        </div>
+                        <div class="upload-field" style="margin-top:0.75rem;">
+                            <label>Đáp án đúng</label>
+                            <select name="examCorrectOption">
+                                <option value="">Chưa chọn</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="upload-field" data-exam-essay-fields style="margin-top:0.75rem;">
+                        <label>Đáp án tham khảo</label>
+                        <textarea name="examReferenceAnswer" rows="2" placeholder="Có thể để trống nếu chưa cần đáp án mẫu."></textarea>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.querySelectorAll('[data-exam-builder]').forEach(builder => {
+            builder.querySelector('[data-exam-type]')?.addEventListener('change', () => syncExamBuilder(builder));
+            builder.querySelector('[data-exam-mode]')?.addEventListener('change', () => syncExamBuilder(builder));
+            builder.querySelectorAll('[data-exam-mode-option]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const select = builder.querySelector('[data-exam-mode]');
+                    if (!select) return;
+                    select.value = button.dataset.examModeOption;
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            });
+            builder.querySelector('[data-add-exam-question]')?.addEventListener('click', () => {
+                const list = builder.querySelector('[data-exam-question-list]');
+                if (!list) return;
+                list.insertAdjacentHTML('beforeend', createExamQuestionTemplate());
+                renumberExamQuestions(list);
+                syncExamBuilder(builder);
+                list.lastElementChild?.querySelector('textarea')?.focus();
+            });
+            syncExamBuilder(builder);
         });
 
         function showToast(message, type = 'success') {
