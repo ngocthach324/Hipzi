@@ -20,7 +20,9 @@ public class ClassroomExamDao {
     public List<ClassroomExam> listByClassroom(String classroomId, boolean openOnly) {
         String sql = "SELECT * FROM classroom_exams "
                 + "WHERE classroom_id = ?::uuid "
-                + (openOnly ? "AND status = 'open' " : "")
+                + (openOnly ? "AND status = 'open' "
+                        + "AND start_at IS NOT NULL AND start_at <= now() "
+                        + "AND end_at IS NOT NULL AND end_at >= now() " : "")
                 + "ORDER BY created_at DESC";
         List<ClassroomExam> exams = new ArrayList<>();
         try (Connection conn = DBContext.getConnection();
@@ -63,8 +65,8 @@ public class ClassroomExamDao {
     public boolean createWithQuestions(ClassroomExam exam, List<ClassroomExamQuestion> questions) {
         String sql = "INSERT INTO classroom_exams "
                 + "(classroom_id, title, description, exam_code, exam_type, creation_mode, raw_source_text, "
-                + "source_material_id, status, duration_minutes, created_by) "
-                + "VALUES (?::uuid, ?, ?, ?, ?, ?, ?, NULLIF(?, '')::uuid, ?, ?, ?::uuid) RETURNING id";
+                + "source_material_id, status, duration_minutes, start_at, end_at, created_by) "
+                + "VALUES (?::uuid, ?, ?, ?, ?, ?, ?, NULLIF(?, '')::uuid, ?, ?, ?, ?, ?::uuid) RETURNING id";
         Connection conn = null;
         try {
             conn = DBContext.getConnection();
@@ -80,7 +82,9 @@ public class ClassroomExamDao {
                 ps.setString(8, exam.getSourceMaterialId());
                 ps.setString(9, normalizeStatus(exam.getStatus()));
                 ps.setInt(10, exam.getDurationMinutes() > 0 ? exam.getDurationMinutes() : 45);
-                ps.setString(11, exam.getCreatedBy());
+                ps.setTimestamp(11, exam.getStartAt());
+                ps.setTimestamp(12, exam.getEndAt());
+                ps.setString(13, exam.getCreatedBy());
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         exam.setId(rs.getString("id"));
@@ -280,6 +284,12 @@ public class ClassroomExamDao {
                     + "AND conrelid = 'classroom_exams'::regclass) THEN "
                     + "ALTER TABLE classroom_exams ADD CONSTRAINT classroom_exams_creation_mode_check "
                     + "CHECK (creation_mode IN ('manual', 'ai')); "
+                    + "END IF; END $$");
+            st.execute("DO $$ BEGIN "
+                    + "IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'classroom_exams_time_window_check' "
+                    + "AND conrelid = 'classroom_exams'::regclass) THEN "
+                    + "ALTER TABLE classroom_exams ADD CONSTRAINT classroom_exams_time_window_check "
+                    + "CHECK (start_at IS NULL OR end_at IS NULL OR end_at > start_at); "
                     + "END IF; END $$");
             st.execute("CREATE TABLE IF NOT EXISTS classroom_exam_questions ("
                     + "id UUID PRIMARY KEY DEFAULT gen_random_uuid(),"

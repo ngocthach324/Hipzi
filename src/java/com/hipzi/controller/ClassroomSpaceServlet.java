@@ -33,6 +33,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -252,7 +255,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
             return;
         } else if ("createClassExam".equals(action)) {
             boolean saved = handleClassExamCreate(request, classroom, user);
-            session.setAttribute("toastMsg", saved ? "Da tao bai thi lop hoc." : "Chua tao duoc bai thi. Vui long kiem tra thong tin va cau hoi.");
+            session.setAttribute("toastMsg", saved ? "Da tao bai thi lop hoc." : "Chua tao duoc bai thi. Vui long kiem tra thong tin, thoi gian mo dong va cau hoi.");
             session.setAttribute("toastType", saved ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
             return;
@@ -410,11 +413,13 @@ public class ClassroomSpaceServlet extends HttpServlet {
         String examType = normalizeClassExamType(request.getParameter("examType"));
         String creationMode = normalizeClassExamCreationMode(request.getParameter("examCreationMode"));
         String rawSourceText = cleanParam(request.getParameter("examSourceText"));
-        String status = cleanParam(request.getParameter("examStatus"));
         String sourceMaterialId = cleanParam(request.getParameter("sourceMaterialId"));
         int duration = parsePositiveInt(request.getParameter("durationMinutes"), 45);
+        Timestamp startAt = parseDateTimeLocal(request.getParameter("examStartAt"));
+        Timestamp endAt = parseDateTimeLocal(request.getParameter("examEndAt"));
         List<ClassroomExamQuestion> questions = collectClassExamQuestions(request, examType);
         if (title.isEmpty() || code.isEmpty() || "flashcard".equals(examType)
+                || startAt == null || endAt == null || !endAt.after(startAt)
                 || questions.isEmpty() || !areClassExamQuestionsValid(questions, examType)) {
             return false;
         }
@@ -429,8 +434,10 @@ public class ClassroomSpaceServlet extends HttpServlet {
         exam.setExamType(examType);
         exam.setCreationMode(creationMode);
         exam.setRawSourceText(rawSourceText);
-        exam.setStatus(status);
+        exam.setStatus("open");
         exam.setDurationMinutes(duration);
+        exam.setStartAt(startAt);
+        exam.setEndAt(endAt);
         exam.setSourceMaterialId(sourceMaterialId);
         exam.setCreatedBy(user.getId());
         exam.setQuestions(questions);
@@ -468,7 +475,8 @@ public class ClassroomSpaceServlet extends HttpServlet {
         session.setAttribute("examDraftCode", normalizeExamCode(request.getParameter("examCode")));
         session.setAttribute("examDraftDescription", cleanParam(request.getParameter("examDescription")));
         session.setAttribute("examDraftType", examType);
-        session.setAttribute("examDraftStatus", cleanParam(request.getParameter("examStatus")));
+        session.setAttribute("examDraftStartAt", cleanParam(request.getParameter("examStartAt")));
+        session.setAttribute("examDraftEndAt", cleanParam(request.getParameter("examEndAt")));
         session.setAttribute("examDraftDuration", parsePositiveInt(request.getParameter("durationMinutes"), 45));
         session.setAttribute("examDraftSourceMaterialId", cleanParam(request.getParameter("sourceMaterialId")));
         session.setAttribute("examDraftSourceText", sourceText);
@@ -888,6 +896,14 @@ public class ClassroomSpaceServlet extends HttpServlet {
             return parsed > 0 ? parsed : defaultValue;
         } catch (NumberFormatException e) {
             return defaultValue;
+        }
+    }
+
+    private Timestamp parseDateTimeLocal(String value) {
+        try {
+            return Timestamp.valueOf(LocalDateTime.parse(cleanParam(value)));
+        } catch (DateTimeParseException e) {
+            return null;
         }
     }
 

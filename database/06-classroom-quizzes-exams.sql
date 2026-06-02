@@ -95,6 +95,10 @@ ALTER TABLE classroom_exams
 ALTER TABLE classroom_exams
     ADD COLUMN IF NOT EXISTS raw_source_text TEXT;
 
+ALTER TABLE classroom_exams
+    ADD COLUMN IF NOT EXISTS start_at TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS end_at TIMESTAMPTZ;
+
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -130,6 +134,13 @@ CREATE INDEX IF NOT EXISTS idx_classroom_exams_classroom
 
 CREATE INDEX IF NOT EXISTS idx_classroom_exams_code
     ON classroom_exams(exam_code);
+
+ALTER TABLE classroom_exams
+    DROP CONSTRAINT IF EXISTS classroom_exams_time_window_check;
+
+ALTER TABLE classroom_exams
+    ADD CONSTRAINT classroom_exams_time_window_check
+    CHECK (start_at IS NULL OR end_at IS NULL OR end_at > start_at);
 
 CREATE TABLE IF NOT EXISTS classroom_exam_questions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

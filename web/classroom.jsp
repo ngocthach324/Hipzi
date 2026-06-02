@@ -13,6 +13,8 @@
 <%@page import="java.util.Map"%>
 <%@page import="java.net.URLEncoder"%>
 <%@page import="java.nio.charset.StandardCharsets"%>
+<%@page import="java.sql.Timestamp"%>
+<%@page import="java.text.SimpleDateFormat"%>
 <%!
     private String h(String value) {
         if (value == null) return "";
@@ -24,6 +26,10 @@
 
     private String u(String value) {
         return URLEncoder.encode(value == null ? "" : value, StandardCharsets.UTF_8);
+    }
+
+    private String formatExamTime(Timestamp value) {
+        return value != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(value) : "Chưa thiết lập";
     }
 %>
 <%
@@ -68,7 +74,8 @@
     String examDraftCode = (String) session.getAttribute("examDraftCode");
     String examDraftDescription = (String) session.getAttribute("examDraftDescription");
     String examDraftType = (String) session.getAttribute("examDraftType");
-    String examDraftStatus = (String) session.getAttribute("examDraftStatus");
+    String examDraftStartAt = (String) session.getAttribute("examDraftStartAt");
+    String examDraftEndAt = (String) session.getAttribute("examDraftEndAt");
     Number examDraftDurationValue = (Number) session.getAttribute("examDraftDuration");
     String examDraftSourceMaterialId = (String) session.getAttribute("examDraftSourceMaterialId");
     String examDraftSourceText = (String) session.getAttribute("examDraftSourceText");
@@ -78,7 +85,8 @@
     session.removeAttribute("examDraftCode");
     session.removeAttribute("examDraftDescription");
     session.removeAttribute("examDraftType");
-    session.removeAttribute("examDraftStatus");
+    session.removeAttribute("examDraftStartAt");
+    session.removeAttribute("examDraftEndAt");
     session.removeAttribute("examDraftDuration");
     session.removeAttribute("examDraftSourceMaterialId");
     session.removeAttribute("examDraftSourceText");
@@ -88,7 +96,8 @@
     examDraftCode = examDraftCode != null ? examDraftCode : "";
     examDraftDescription = examDraftDescription != null ? examDraftDescription : "";
     examDraftType = "essay".equals(examDraftType) ? "essay" : "multiple_choice";
-    examDraftStatus = "draft".equals(examDraftStatus) || "closed".equals(examDraftStatus) ? examDraftStatus : "open";
+    examDraftStartAt = examDraftStartAt != null ? examDraftStartAt : "";
+    examDraftEndAt = examDraftEndAt != null ? examDraftEndAt : "";
     int examDraftDuration = examDraftDurationValue != null ? examDraftDurationValue.intValue() : 45;
     examDraftSourceMaterialId = examDraftSourceMaterialId != null ? examDraftSourceMaterialId : "";
     examDraftSourceText = examDraftSourceText != null ? examDraftSourceText : "";
@@ -2052,7 +2061,7 @@ D. ...
                                     <span class="exam-section-number">02</span>
                                     <div>
                                         <strong>Thông tin bài thi</strong>
-                                        <p>Thiết lập mã đề, thời lượng và loại câu hỏi trước khi soạn nội dung.</p>
+                                        <p>Thiết lập mã đề, thời lượng, thời gian mở đóng và loại câu hỏi trước khi soạn nội dung.</p>
                                     </div>
                                 </div>
                                 <div class="upload-grid">
@@ -2069,12 +2078,12 @@ D. ...
                                         <input type="number" name="durationMinutes" min="1" value="<%= examDraftDuration %>" required>
                                     </div>
                                     <div class="upload-field">
-                                        <label>Trạng thái</label>
-                                        <select name="examStatus">
-                                            <option value="open" <%= "open".equals(examDraftStatus) ? "selected" : "" %>>Đang mở</option>
-                                            <option value="draft" <%= "draft".equals(examDraftStatus) ? "selected" : "" %>>Bản nháp</option>
-                                            <option value="closed" <%= "closed".equals(examDraftStatus) ? "selected" : "" %>>Đã đóng</option>
-                                        </select>
+                                        <label>Thời gian mở đề</label>
+                                        <input type="datetime-local" name="examStartAt" value="<%= h(examDraftStartAt) %>" required>
+                                    </div>
+                                    <div class="upload-field">
+                                        <label>Thời gian đóng đề</label>
+                                        <input type="datetime-local" name="examEndAt" value="<%= h(examDraftEndAt) %>" required>
                                     </div>
                                     <div class="upload-field full">
                                         <label>Dạng bài thi</label>
@@ -2256,7 +2265,8 @@ D. ...
                                         <span class="resource-chip">Bài thi lớp học</span>
                                         <span class="resource-chip"><%= h(exam.getExamTypeLabel()) %></span>
                                         <span class="resource-chip"><%= h(exam.getExamCode()) %></span>
-                                        <span class="resource-chip"><%= h(exam.getStatusLabel()) %></span>
+                                        <span class="resource-chip">Mở: <%= h(formatExamTime(exam.getStartAt())) %></span>
+                                        <span class="resource-chip">Đóng: <%= h(formatExamTime(exam.getEndAt())) %></span>
                                         <span class="resource-chip"><%= exam.getDurationMinutes() %> phút</span>
                                         <span class="resource-chip"><%= exam.getQuestions() != null ? exam.getQuestions().size() : 0 %> câu</span>
                                     </div>

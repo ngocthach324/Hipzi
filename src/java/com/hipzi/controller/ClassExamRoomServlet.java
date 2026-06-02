@@ -39,6 +39,8 @@ public class ClassExamRoomServlet extends HttpServlet {
         String examCode = normalizeExamCode(request.getParameter("code"));
         ClassroomExam exam = null;
         Classroom classroom = null;
+        boolean canEnterExam = false;
+        String availabilityMessage = "";
         String lookupError = "";
 
         if (!examCode.isEmpty()) {
@@ -46,9 +48,11 @@ public class ClassExamRoomServlet extends HttpServlet {
             if (foundExam != null
                     && (classId.isEmpty() || classId.equals(foundExam.getClassroomId()))) {
                 classroom = classroomDao.findById(foundExam.getClassroomId());
-                if (canAccessExam(user, classroom, foundExam)) {
+                if (canViewExam(user, classroom)) {
                     exam = foundExam;
                     classId = foundExam.getClassroomId();
+                    canEnterExam = canEnterExam(user, classroom, foundExam);
+                    availabilityMessage = buildAvailabilityMessage(foundExam, canEnterExam);
                 }
             }
             if (exam == null) {
@@ -59,14 +63,16 @@ public class ClassExamRoomServlet extends HttpServlet {
         request.setAttribute("classExamRoomRequest", Boolean.TRUE);
         request.setAttribute("classroom", classroom);
         request.setAttribute("classroomExam", exam);
+        request.setAttribute("canEnterExam", canEnterExam);
+        request.setAttribute("examAvailabilityMessage", availabilityMessage);
         request.setAttribute("classId", classId);
         request.setAttribute("examCode", examCode);
         request.setAttribute("examLookupError", lookupError);
         request.getRequestDispatcher("/class-exam-room.jsp").forward(request, response);
     }
 
-    private boolean canAccessExam(User user, Classroom classroom, ClassroomExam exam) {
-        if (user == null || classroom == null || exam == null) {
+    private boolean canViewExam(User user, Classroom classroom) {
+        if (user == null || classroom == null) {
             return false;
         }
         if (hasRole(user, "staff") || hasRole(user, "admin")
@@ -76,17 +82,38 @@ public class ClassExamRoomServlet extends HttpServlet {
         ClassroomEnrollment enrollment = enrollmentDao.findByClassroomAndStudent(classroom.getId(), user.getId());
         return hasRole(user, "student")
                 && enrollment != null
-                && "accepted".equals(enrollment.getStatus())
-                && isOpenNow(exam);
+                && "accepted".equals(enrollment.getStatus());
+    }
+
+    private boolean canEnterExam(User user, Classroom classroom, ClassroomExam exam) {
+        if (!canViewExam(user, classroom) || exam == null) {
+            return false;
+        }
+        return hasRole(user, "staff") || hasRole(user, "admin")
+                || (hasRole(user, "teacher") && user.getId().equals(classroom.getTeacherId()))
+                || isOpenNow(exam);
     }
 
     private boolean isOpenNow(ClassroomExam exam) {
-        if (!"open".equals(exam.getStatus())) {
+        if (!"open".equals(exam.getStatus()) || exam.getStartAt() == null || exam.getEndAt() == null) {
             return false;
         }
         Timestamp now = new Timestamp(System.currentTimeMillis());
-        return (exam.getStartAt() == null || !now.before(exam.getStartAt()))
-                && (exam.getEndAt() == null || !now.after(exam.getEndAt()));
+        return !now.before(exam.getStartAt()) && !now.after(exam.getEndAt());
+    }
+
+    private String buildAvailabilityMessage(ClassroomExam exam, boolean canEnterExam) {
+        if (canEnterExam) {
+            return "Đề thi đang trong thời gian làm bài.";
+        }
+        if (exam == null || exam.getStartAt() == null || exam.getEndAt() == null) {
+            return "Đề thi chưa được thiết lập thời gian làm bài.";
+        }
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        if (now.before(exam.getStartAt())) {
+            return "Chưa đến thời gian mở đề.";
+        }
+        return "Đã hết thời gian làm bài.";
     }
 
     private boolean hasRole(User user, String roleName) {

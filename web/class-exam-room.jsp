@@ -1,7 +1,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
+<%@page import="com.hipzi.model.Classroom"%>
 <%@page import="com.hipzi.model.ClassroomExam"%>
 <%@page import="com.hipzi.model.ClassroomExamQuestion"%>
+<%@page import="java.sql.Timestamp"%>
+<%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.util.List"%>
 <%!
     private String h(String value) {
@@ -25,6 +28,10 @@
                     .replace(">", "\\u003e")
                     .replace("&", "\\u0026");
     }
+
+    private String formatExamTime(Timestamp value) {
+        return value != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(value) : "Chưa thiết lập";
+    }
 %>
 <%
     if (!Boolean.TRUE.equals(request.getAttribute("classExamRoomRequest"))) {
@@ -34,17 +41,23 @@
         return;
     }
     User user = (User) session.getAttribute("loggedUser");
+    Classroom classroom = (Classroom) request.getAttribute("classroom");
     ClassroomExam classroomExam = (ClassroomExam) request.getAttribute("classroomExam");
     String classId = (String) request.getAttribute("classId");
     String examCode = (String) request.getAttribute("examCode");
     String examLookupError = (String) request.getAttribute("examLookupError");
+    String examAvailabilityMessage = (String) request.getAttribute("examAvailabilityMessage");
+    boolean canEnterExam = Boolean.TRUE.equals(request.getAttribute("canEnterExam"));
     boolean hasClassExamContext = classroomExam != null;
-    List<ClassroomExamQuestion> examQuestions = hasClassExamContext ? classroomExam.getQuestions() : null;
-    int examQuestionCount = examQuestions != null ? examQuestions.size() : 0;
+    List<ClassroomExamQuestion> storedExamQuestions = hasClassExamContext ? classroomExam.getQuestions() : null;
+    List<ClassroomExamQuestion> examQuestions = canEnterExam ? storedExamQuestions : null;
+    int examQuestionCount = storedExamQuestions != null ? storedExamQuestions.size() : 0;
     int examDurationMinutes = hasClassExamContext ? classroomExam.getDurationMinutes() : 45;
     String examTitle = hasClassExamContext ? classroomExam.getTitle() : "";
     String examType = hasClassExamContext ? classroomExam.getExamType() : "multiple_choice";
-    String examStatusLabel = hasClassExamContext ? classroomExam.getStatusLabel() : "Đang mở";
+    String classroomTitle = classroom != null ? classroom.getTitle() : "";
+    String examStartLabel = hasClassExamContext ? formatExamTime(classroomExam.getStartAt()) : "Chưa thiết lập";
+    String examEndLabel = hasClassExamContext ? formatExamTime(classroomExam.getEndAt()) : "Chưa thiết lập";
     String initials = "H";
     if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
         String[] parts = user.getDisplayName().trim().split("\\s+");
@@ -548,6 +561,11 @@
             padding: 0.5rem 0.72rem;
             font-size: 0.74rem;
             font-weight: 900;
+        }
+
+        .exam-enter-btn.disabled {
+            cursor: not-allowed;
+            background: #94a3b8;
         }
 
         .exam-status-pill {
@@ -1133,15 +1151,23 @@
                             <strong><%= examDurationMinutes %> phút</strong>
                         </div>
                         <div class="exam-meta-item">
-                            <span>Trạng thái</span>
-                            <strong><%= h(examStatusLabel) %></strong>
+                            <span>Lớp học</span>
+                            <strong><%= h(classroomTitle) %></strong>
+                        </div>
+                        <div class="exam-meta-item">
+                            <span>Thời gian mở đề</span>
+                            <strong><%= h(examStartLabel) %></strong>
+                        </div>
+                        <div class="exam-meta-item">
+                            <span>Thời gian đóng đề</span>
+                            <strong><%= h(examEndLabel) %></strong>
                         </div>
                         <div class="exam-meta-item">
                             <span>Quyền truy cập</span>
-                            <strong>Học viên trong lớp</strong>
+                            <strong><%= h(examAvailabilityMessage != null ? examAvailabilityMessage : "Học viên trong lớp") %></strong>
                         </div>
                     </div>
-                    <a href="#" class="exam-enter-btn" id="examEnterBtn">Vào phòng làm bài</a>
+                    <a href="#" class="exam-enter-btn <%= canEnterExam ? "" : "disabled" %>" id="examEnterBtn" aria-disabled="<%= canEnterExam ? "false" : "true" %>"><%= canEnterExam ? "Vào phòng làm bài" : "Chưa thể vào phòng làm bài" %></a>
                 </section>
 
                 <div class="class-exam-points">
@@ -1315,6 +1341,7 @@
         var examType = "<%= js(examType) %>";
         var examDurationMinutes = <%= examDurationMinutes %>;
         var hasLoadedExam = <%= hasClassExamContext && examQuestionCount > 0 ? "true" : "false" %>;
+        var canEnterExam = <%= canEnterExam ? "true" : "false" %>;
         var answers = {};
         var currentQuestion = 0;
         var secondsLeft = examDurationMinutes * 60;
@@ -1547,8 +1574,8 @@
 
         enterBtn.addEventListener('click', function (event) {
             event.preventDefault();
-            if (!hasLoadedExam) {
-                window.alert('Đề thi chưa có câu hỏi hoặc bạn chưa có quyền truy cập.');
+            if (!hasLoadedExam || !canEnterExam) {
+                window.alert("<%= js(examAvailabilityMessage != null && !examAvailabilityMessage.isEmpty() ? examAvailabilityMessage : "Đề thi chưa có câu hỏi hoặc bạn chưa có quyền truy cập.") %>");
                 input.focus();
                 return;
             }
