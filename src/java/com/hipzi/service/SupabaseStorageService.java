@@ -24,7 +24,7 @@ public class SupabaseStorageService {
                 "supabase.url",
                 "https://" + DEFAULT_PROJECT_REF + ".supabase.co"
         ));
-        this.apiKey = firstConfigured("SUPABASE_SERVICE_ROLE_KEY", "supabase.serviceRoleKey", null);
+        this.apiKey = firstConfigured("SUPABASE_SERVICE_ROLE_KEY", "supabase.serviceRoleKey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyeXphamFxYnhicXBzanhqdG16Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODY3MDg4NCwiZXhwIjoyMDk0MjQ2ODg0fQ.NEXCTA3hx5cebrvS9jSgAVcRORcjP9LdYdpP5BwGu94");
         this.bucketName = firstConfigured("SUPABASE_STORAGE_BUCKET", "supabase.storage.bucket", DEFAULT_BUCKET);
     }
 

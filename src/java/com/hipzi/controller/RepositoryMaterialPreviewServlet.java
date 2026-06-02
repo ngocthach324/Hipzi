@@ -31,7 +31,7 @@ public class RepositoryMaterialPreviewServlet extends HttpServlet {
             request.setAttribute("signedUrl", storageService.createSignedUrl(material.getFilePath(), 900));
             request.getRequestDispatcher("/repository-material-preview.jsp").forward(request, response);
         } catch (Exception e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Khong tao duoc link xem truoc tu Supabase Storage.");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Loi Supabase: " + e.getMessage());
         }
     }
 
