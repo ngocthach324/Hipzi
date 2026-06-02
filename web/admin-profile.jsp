@@ -43,7 +43,7 @@
     <title>Bảng điều khiển Quản trị - HIPZI</title>
     <meta name="description" content="Trung tâm quản trị hệ thống, giám sát phân quyền, theo dõi hoạt động và nhật ký kiểm toán HIPZI.">
     <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=3">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=5">
     <style>
         /* ===== OVERRIDE NỀN TẢNG & GIAO DIỆN PREMIUM TƯƠNG TỰ BẢN THIẾT KẾ ===== */
         body {
@@ -3015,6 +3015,6 @@
             });
         }
     </script>
-    <script src="${pageContext.request.contextPath}/assets/js/navbar.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
 </html>

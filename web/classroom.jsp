@@ -31,6 +31,18 @@
     private String formatExamTime(Timestamp value) {
         return value != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(value) : "Chưa thiết lập";
     }
+
+    private String examDatePart(String value) {
+        return value != null && value.length() >= 10 ? value.substring(0, 10) : "";
+    }
+
+    private String examHourPart(String value) {
+        return value != null && value.length() >= 13 ? value.substring(11, 13) : "";
+    }
+
+    private String examMinutePart(String value) {
+        return value != null && value.length() >= 16 ? value.substring(14, 16) : "";
+    }
 %>
 <%
     Classroom classroom = (Classroom) request.getAttribute("classroom");
@@ -118,7 +130,7 @@
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=3">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=5">
     <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
     <style>
         body {
@@ -713,6 +725,16 @@
 
         .upload-field.full {
             grid-column: 1 / -1;
+        }
+
+        .exam-datetime-fields {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 74px 74px;
+            gap: 0.55rem;
+        }
+
+        .exam-datetime-fields select {
+            text-align: center;
         }
 
         .upload-field label {
@@ -2005,7 +2027,7 @@ D. ...
                 <section class="classroom-card classroom-tab-panel" data-classroom-panel="exams">
                     <h2>Phòng thi lớp học</h2>
                     <% if (canManageClassroom) { %>
-                        <form class="upload-panel quiz-builder exam-builder-shell" action="${pageContext.request.contextPath}/classroom" method="POST" enctype="multipart/form-data" data-exam-builder>
+                        <form class="upload-panel quiz-builder exam-builder-shell" action="${pageContext.request.contextPath}/classroom" method="POST" enctype="multipart/form-data" data-exam-builder novalidate>
                             <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
                             <div class="exam-builder-heading">
                                 <div>
@@ -2078,20 +2100,52 @@ D. ...
                                         <input type="number" name="durationMinutes" min="1" value="<%= examDraftDuration %>" required>
                                     </div>
                                     <div class="upload-field">
-                                        <label>Thời gian mở đề</label>
-                                        <input type="datetime-local" name="examStartAt" value="<%= h(examDraftStartAt) %>" required>
-                                    </div>
-                                    <div class="upload-field">
-                                        <label>Thời gian đóng đề</label>
-                                        <input type="datetime-local" name="examEndAt" value="<%= h(examDraftEndAt) %>" required>
-                                    </div>
-                                    <div class="upload-field full">
                                         <label>Dạng bài thi</label>
                                         <select name="examType" data-exam-type>
                                             <option value="multiple_choice" <%= "multiple_choice".equals(examDraftType) ? "selected" : "" %>>Trắc nghiệm</option>
                                             <option value="essay" <%= "essay".equals(examDraftType) ? "selected" : "" %>>Tự luận</option>
                                             <option value="flashcard" disabled>Flashcard (sắp triển khai)</option>
                                         </select>
+                                    </div>
+                                    <div class="upload-field">
+                                        <label>Thời gian mở đề</label>
+                                        <div class="exam-datetime-fields" data-exam-datetime>
+                                            <input type="date" name="examStartDate" value="<%= h(examDatePart(examDraftStartAt)) %>" required>
+                                            <select name="examStartHour" aria-label="Giờ mở đề" required>
+                                                <option value="">Giờ</option>
+                                                <% for (int hour = 0; hour < 24; hour++) {
+                                                    String hourValue = String.format("%02d", hour); %>
+                                                    <option value="<%= hourValue %>" <%= hourValue.equals(examHourPart(examDraftStartAt)) ? "selected" : "" %>><%= hourValue %></option>
+                                                <% } %>
+                                            </select>
+                                            <select name="examStartMinute" aria-label="Phút mở đề" required>
+                                                <option value="">Phút</option>
+                                                <% for (int minute = 0; minute < 60; minute++) {
+                                                    String minuteValue = String.format("%02d", minute); %>
+                                                    <option value="<%= minuteValue %>" <%= minuteValue.equals(examMinutePart(examDraftStartAt)) ? "selected" : "" %>><%= minuteValue %></option>
+                                                <% } %>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="upload-field">
+                                        <label>Thời gian đóng đề</label>
+                                        <div class="exam-datetime-fields" data-exam-datetime>
+                                            <input type="date" name="examEndDate" value="<%= h(examDatePart(examDraftEndAt)) %>" required>
+                                            <select name="examEndHour" aria-label="Giờ đóng đề" required>
+                                                <option value="">Giờ</option>
+                                                <% for (int hour = 0; hour < 24; hour++) {
+                                                    String hourValue = String.format("%02d", hour); %>
+                                                    <option value="<%= hourValue %>" <%= hourValue.equals(examHourPart(examDraftEndAt)) ? "selected" : "" %>><%= hourValue %></option>
+                                                <% } %>
+                                            </select>
+                                            <select name="examEndMinute" aria-label="Phút đóng đề" required>
+                                                <option value="">Phút</option>
+                                                <% for (int minute = 0; minute < 60; minute++) {
+                                                    String minuteValue = String.format("%02d", minute); %>
+                                                    <option value="<%= minuteValue %>" <%= minuteValue.equals(examMinutePart(examDraftEndAt)) ? "selected" : "" %>><%= minuteValue %></option>
+                                                <% } %>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div class="upload-field full">
                                         <label>Mô tả</label>
@@ -2540,6 +2594,9 @@ D. ...
             });
             builder.querySelectorAll('[data-exam-multiple-choice-fields]').forEach(element => {
                 element.style.display = isEssay ? 'none' : '';
+                element.querySelectorAll('input, select').forEach(field => {
+                    field.required = !isEssay;
+                });
             });
             builder.querySelectorAll('[data-exam-essay-fields]').forEach(element => {
                 element.style.display = isEssay ? '' : 'none';
@@ -2634,6 +2691,6 @@ D. ...
         });
         <% } %>
     </script>
-    <script src="${pageContext.request.contextPath}/assets/js/navbar.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
 </html>

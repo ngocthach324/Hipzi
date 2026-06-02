@@ -61,7 +61,7 @@
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=3">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=5">
     <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
     <style>
         body {
@@ -1445,6 +1445,6 @@
         });
         <% } %>
     </script>
-    <script src="${pageContext.request.contextPath}/assets/js/navbar.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
 </html>

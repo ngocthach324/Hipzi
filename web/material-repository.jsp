@@ -38,7 +38,7 @@
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=3">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=5">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/materials.css">
     <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=block">
@@ -205,13 +205,13 @@
             <main class="main-results" id="materials-results">
                 <div class="results-header">
                     <h2>Tài liệu ${currentSubject ne 'Tất cả' ? currentSubject : 'mới nhất'}</h2>
-                    <div class="sort-by" style="display: flex; gap: 0.75rem;">
-                        <select id="type-select" class="sort-select">
+                    <div class="sort-by">
+                        <select id="type-select" class="sort-select" aria-label="Lọc theo loại tài liệu">
                             <option value="Tất cả" ${currentType eq 'Tất cả' ? 'selected' : ''}>Tất cả loại</option>
                             <option value="Lý thuyết" ${currentType eq 'Lý thuyết' ? 'selected' : ''}>Lý thuyết</option>
                             <option value="Đề ôn tập" ${currentType eq 'Đề ôn tập' ? 'selected' : ''}>Đề ôn tập</option>
                         </select>
-                        <select id="sort-select" class="sort-select">
+                        <select id="sort-select" class="sort-select" aria-label="Sắp xếp tài liệu">
                             <option value="newest" <%= "newest".equals(currentSort) ? "selected" : "" %>>Mới nhất</option>
                             <option value="views" <%= "views".equals(currentSort) ? "selected" : "" %>>Xem nhiều nhất</option>
                             <option value="rating" <%= "rating".equals(currentSort) ? "selected" : "" %>>Đánh giá cao</option>
@@ -369,7 +369,7 @@
         </div>
     </footer>
 
-    <script src="${pageContext.request.contextPath}/assets/js/navbar.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
     <script>
     (function () {
         var resultsEl = document.getElementById('materials-results');
@@ -420,9 +420,9 @@
                     if (gridEl) gridEl.innerHTML = html;
                     // Đồng bộ select sau khi render
                     var typeSelect = document.getElementById('type-select');
-                    if (typeSelect) { typeSelect.value = newType; attachTypeSelectEvent(); }
+                    if (typeSelect) { typeSelect.value = newType; attachTypeSelectEvent(); if (window.HipziSelect) window.HipziSelect.refresh(typeSelect); }
                     var sortSelect = document.getElementById('sort-select');
-                    if (sortSelect) { sortSelect.value = newSort; attachSortSelectEvent(); }
+                    if (sortSelect) { sortSelect.value = newSort; attachSortSelectEvent(); if (window.HipziSelect) window.HipziSelect.refresh(sortSelect); }
                     setLoading(false);
                     abortCtrl = null;
                 })

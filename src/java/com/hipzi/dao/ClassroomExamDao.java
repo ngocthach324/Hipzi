@@ -13,6 +13,8 @@ import java.util.List;
 
 public class ClassroomExamDao {
 
+    private final ThreadLocal<String> lastError = new ThreadLocal<>();
+
     public ClassroomExamDao() {
         ensureSchema();
     }
@@ -63,6 +65,7 @@ public class ClassroomExamDao {
     }
 
     public boolean createWithQuestions(ClassroomExam exam, List<ClassroomExamQuestion> questions) {
+        lastError.remove();
         String sql = "INSERT INTO classroom_exams "
                 + "(classroom_id, title, description, exam_code, exam_type, creation_mode, raw_source_text, "
                 + "source_material_id, status, duration_minutes, start_at, end_at, created_by) "
@@ -96,11 +99,16 @@ public class ClassroomExamDao {
             return true;
         } catch (SQLException e) {
             rollbackQuietly(conn);
+            lastError.set(e.getMessage());
             System.err.println("Error in ClassroomExamDao.createWithQuestions: " + e.getMessage());
         } finally {
             closeQuietly(conn);
         }
         return false;
+    }
+
+    public String getLastError() {
+        return lastError.get();
     }
 
     public boolean deleteForClassroom(String examId, String classroomId) {

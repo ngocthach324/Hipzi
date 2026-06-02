@@ -1,91 +1,80 @@
 package com.hipzi.util;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
-import org.apache.tomcat.jdbc.pool.DataSource;
+import java.util.Properties;
 
+/**
+ * Kết nối trực tiếp đến Supabase PostgreSQL qua DriverManager.
+ *
+ * Lý do KHÔNG dùng Tomcat JDBC pool:
+ *   Tomcat JDBC pool dùng static Timer được load từ classloader của Tomcat,
+ *   không phải webapp. Sau mỗi lần hot-reload, Timer bị cancel nhưng vẫn còn
+ *   trong classloader dùng chung → lần tạo pool mới ném IllegalStateException.
+ *
+ * Supabase đã tích hợp PgBouncer (connection pooler) phía server nên không
+ * cần thêm pool tầng ứng dụng khi kết nối qua URL pooler.
+ */
 public class DBContext {
 
-    // UPDATE THESE VALUES WITH YOUR SUPABASE CREDENTIALS
-    // Example JDBC URL from Supabase: 
-    // jdbc:postgresql://db.xxxxxxxxx.supabase.co:5432/postgres
-    private static final String DB_URL = "jdbc:postgresql://aws-1-ap-southeast-2.pooler.supabase.com:5432/postgres";
-    private static final String DB_USER = "postgres.aryzajaqbxbqpsjxjtmz";
-    private static final String DB_PASSWORD = "boicoc25062006"; 
-    
-    // Using PostgreSQL driver
+    private static final String DB_URL      = "jdbc:postgresql://aws-1-ap-southeast-2.pooler.supabase.com:5432/postgres";
+    private static final String DB_USER     = "postgres.aryzajaqbxbqpsjxjtmz";
+    private static final String DB_PASSWORD = "boicoc25062006";
     private static final String DRIVER_CLASS = "org.postgresql.Driver";
-    private static DataSource DATA_SOURCE = createDataSource();
 
     static {
         try {
             Class.forName(DRIVER_CLASS);
         } catch (ClassNotFoundException e) {
-            System.err.println("Error loading PostgreSQL Driver: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("[DBContext] Không tải được PostgreSQL Driver: " + e.getMessage());
         }
     }
 
-    private static DataSource createDataSource() {
-        DataSource ds = new DataSource();
-        ds.setDriverClassName(DRIVER_CLASS);
-        ds.setUrl(DB_URL);
-        ds.setUsername(DB_USER);
-        ds.setPassword(DB_PASSWORD);
-        ds.setInitialSize(1);
-        ds.setMinIdle(1);
-        ds.setMaxIdle(4);
-        ds.setMaxActive(10);
-        ds.setMaxWait(8000);
-        ds.setTestOnBorrow(true);
-        ds.setValidationQuery("SELECT 1");
-        ds.setValidationInterval(30000);
-        ds.setRemoveAbandoned(true);
-        ds.setRemoveAbandonedTimeout(60);
-        return ds;
-    }
-
     /**
-     * Get a connection to the Supabase PostgreSQL database.
-     *
-     * @return Connection object
-     * @throws SQLException if a database access error occurs
+     * Trả về Connection mới đến database.
+     * Caller phải đóng connection sau khi dùng (try-with-resources).
      */
     public static Connection getConnection() throws SQLException {
         long startedAt = System.nanoTime();
+        Properties props = new Properties();
+        props.setProperty("user", DB_USER);
+        props.setProperty("password", DB_PASSWORD);
+        // Tắt autoCommit mặc định để tương thích với code hiện tại
+        props.setProperty("defaultAutoCommit", "true");
+        // Timeout kết nối 10 giây
+        props.setProperty("loginTimeout", "10");
         try {
-            Connection conn = DATA_SOURCE.getConnection();
+            Connection conn = DriverManager.getConnection(DB_URL, props);
             logPerf("DBContext.getConnection", startedAt);
             return conn;
         } catch (SQLException e) {
             logPerf("DBContext.getConnection FAILED", startedAt);
             throw e;
-        } catch (IllegalStateException e) {
-            // Fix for Tomcat JDBC hot-reload issue where internal timer is cancelled
-            System.err.println("DB Pool corrupted: " + e.getMessage() + ". Re-initializing pool...");
-            if (DATA_SOURCE != null) {
-                try { DATA_SOURCE.close(); } catch (Exception ignored) {}
-            }
-            DATA_SOURCE = createDataSource();
-            Connection conn = DATA_SOURCE.getConnection();
-            logPerf("DBContext.getConnection (RECOVERED)", startedAt);
-            return conn;
         }
+    }
+
+    /**
+     * Không còn pool để đóng — giữ method này để AppContextListener biên dịch được.
+     */
+    public static void closePool() {
+        System.out.println("[DBContext] Dùng DriverManager, không có pool để đóng.");
     }
 
     private static void logPerf(String label, long startedAt) {
         long elapsedMs = (System.nanoTime() - startedAt) / 1_000_000L;
-        System.err.println("[PERF] " + label + " " + elapsedMs + "ms");
+        if (elapsedMs > 500) {
+            System.err.println("[PERF SLOW] " + label + " " + elapsedMs + "ms");
+        }
     }
 
     public static void main(String[] args) {
-        // Quick test method
         try (Connection conn = getConnection()) {
             if (conn != null) {
-                System.out.println("Successfully connected to Supabase PostgreSQL!");
+                System.out.println("Kết nối Supabase PostgreSQL thành công!");
             }
         } catch (SQLException e) {
-            System.err.println("Failed to connect to the database.");
+            System.err.println("Kết nối thất bại: " + e.getMessage());
             e.printStackTrace();
         }
     }

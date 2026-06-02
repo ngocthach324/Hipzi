@@ -255,7 +255,11 @@ public class ClassroomSpaceServlet extends HttpServlet {
             return;
         } else if ("createClassExam".equals(action)) {
             boolean saved = handleClassExamCreate(request, classroom, user);
-            session.setAttribute("toastMsg", saved ? "Da tao bai thi lop hoc." : "Chua tao duoc bai thi. Vui long kiem tra thong tin, thoi gian mo dong va cau hoi.");
+            String examError = (String) session.getAttribute("classExamCreateError");
+            session.removeAttribute("classExamCreateError");
+            session.setAttribute("toastMsg", saved
+                    ? "Da tao bai thi lop hoc."
+                    : (examError != null ? examError : "Chua tao duoc bai thi. Vui long kiem tra thong tin, thoi gian mo dong va cau hoi."));
             session.setAttribute("toastType", saved ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
             return;
@@ -407,6 +411,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
     }
 
     private boolean handleClassExamCreate(HttpServletRequest request, Classroom classroom, User user) {
+        request.getSession().removeAttribute("classExamCreateError");
         String title = cleanParam(request.getParameter("examTitle"));
         String code = normalizeExamCode(request.getParameter("examCode"));
         String description = cleanParam(request.getParameter("examDescription"));
@@ -415,16 +420,31 @@ public class ClassroomSpaceServlet extends HttpServlet {
         String rawSourceText = cleanParam(request.getParameter("examSourceText"));
         String sourceMaterialId = cleanParam(request.getParameter("sourceMaterialId"));
         int duration = parsePositiveInt(request.getParameter("durationMinutes"), 45);
-        Timestamp startAt = parseDateTimeLocal(request.getParameter("examStartAt"));
-        Timestamp endAt = parseDateTimeLocal(request.getParameter("examEndAt"));
+        String startAtValue = buildExamDateTimeValue(request, "examStart");
+        String endAtValue = buildExamDateTimeValue(request, "examEnd");
+        Timestamp startAt = parseDateTimeLocal(startAtValue);
+        Timestamp endAt = parseDateTimeLocal(endAtValue);
         List<ClassroomExamQuestion> questions = collectClassExamQuestions(request, examType);
-        if (title.isEmpty() || code.isEmpty() || "flashcard".equals(examType)
-                || startAt == null || endAt == null || !endAt.after(startAt)
-                || questions.isEmpty() || !areClassExamQuestionsValid(questions, examType)) {
-            return false;
+        if (title.isEmpty() || code.isEmpty()) {
+            return rejectClassExam(request, "Vui long nhap tieu de va ma de.");
+        }
+        if ("flashcard".equals(examType)) {
+            return rejectClassExam(request, "Dang flashcard chua duoc ho tro.");
+        }
+        if (startAt == null || endAt == null || !endAt.after(startAt)) {
+            return rejectClassExam(request, "Thoi gian khong hop le. Mo de: "
+                    + startAtValue + ", dong de: " + endAtValue + ".");
+        }
+        if (questions.isEmpty() || !areClassExamQuestionsValid(questions, examType)) {
+            return rejectClassExam(request, "essay".equals(examType)
+                    ? "Moi cau tu luan can co noi dung."
+                    : "Moi cau trac nghiem can noi dung, du 4 lua chon va dap an dung.");
+        }
+        if (examDao.findByCode(code) != null) {
+            return rejectClassExam(request, "Ma de da ton tai. Vui long dung ma de khac.");
         }
         if (!sourceMaterialId.isEmpty() && !isExamMaterialForClassroom(sourceMaterialId, classroom.getId())) {
-            return false;
+            return rejectClassExam(request, "Tai lieu de thi khong thuoc lop hoc nay.");
         }
         ClassroomExam exam = new ClassroomExam();
         exam.setClassroomId(classroom.getId());
@@ -441,7 +461,19 @@ public class ClassroomSpaceServlet extends HttpServlet {
         exam.setSourceMaterialId(sourceMaterialId);
         exam.setCreatedBy(user.getId());
         exam.setQuestions(questions);
-        return examDao.createWithQuestions(exam, questions);
+        boolean saved = examDao.createWithQuestions(exam, questions);
+        if (!saved) {
+            String daoError = cleanParam(examDao.getLastError());
+            return rejectClassExam(request, daoError.isEmpty()
+                    ? "Khong luu duoc bai thi vao database."
+                    : "Khong luu duoc bai thi vao database: " + daoError);
+        }
+        return true;
+    }
+
+    private boolean rejectClassExam(HttpServletRequest request, String message) {
+        request.getSession().setAttribute("classExamCreateError", message);
+        return false;
     }
 
     private boolean handleClassExamAiScan(HttpServletRequest request, HttpSession session) throws Exception {
@@ -475,8 +507,8 @@ public class ClassroomSpaceServlet extends HttpServlet {
         session.setAttribute("examDraftCode", normalizeExamCode(request.getParameter("examCode")));
         session.setAttribute("examDraftDescription", cleanParam(request.getParameter("examDescription")));
         session.setAttribute("examDraftType", examType);
-        session.setAttribute("examDraftStartAt", cleanParam(request.getParameter("examStartAt")));
-        session.setAttribute("examDraftEndAt", cleanParam(request.getParameter("examEndAt")));
+        session.setAttribute("examDraftStartAt", buildExamDateTimeValue(request, "examStart"));
+        session.setAttribute("examDraftEndAt", buildExamDateTimeValue(request, "examEnd"));
         session.setAttribute("examDraftDuration", parsePositiveInt(request.getParameter("durationMinutes"), 45));
         session.setAttribute("examDraftSourceMaterialId", cleanParam(request.getParameter("sourceMaterialId")));
         session.setAttribute("examDraftSourceText", sourceText);
@@ -900,11 +932,32 @@ public class ClassroomSpaceServlet extends HttpServlet {
     }
 
     private Timestamp parseDateTimeLocal(String value) {
+        String cleaned = cleanParam(value);
+        if (cleaned.isEmpty()) {
+            return null;
+        }
+        // datetime-local input gửi lên dạng "yyyy-MM-ddTHH:mm" (không có giây)
+        // LocalDateTime.parse() mặc định yêu cầu cả giây, nên cần bổ sung ":00" nếu thiếu
+        if (cleaned.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}")) {
+            cleaned = cleaned + ":00";
+        }
         try {
-            return Timestamp.valueOf(LocalDateTime.parse(cleanParam(value)));
+            return Timestamp.valueOf(LocalDateTime.parse(cleaned));
         } catch (DateTimeParseException e) {
             return null;
         }
+    }
+
+    private String buildExamDateTimeValue(HttpServletRequest request, String prefix) {
+        String date = cleanParam(request.getParameter(prefix + "Date"));
+        String hour = cleanParam(request.getParameter(prefix + "Hour"));
+        String minute = cleanParam(request.getParameter(prefix + "Minute"));
+        if (!date.matches("\\d{4}-\\d{2}-\\d{2}")
+                || !hour.matches("\\d{2}")
+                || !minute.matches("\\d{2}")) {
+            return "";
+        }
+        return date + "T" + hour + ":" + minute + ":00";
     }
 
     private String buildStorageObjectPath(String classroomId, String originalFileName) {

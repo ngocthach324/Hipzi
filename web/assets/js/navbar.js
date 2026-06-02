@@ -544,3 +544,204 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+(function () {
+    'use strict';
+
+    function shouldSkip(select) {
+        return !select
+            || select.dataset.hipziSelectEnhanced === 'true'
+            || select.matches('[data-native-select], .hipzi-select-native, .exam-mode-native')
+            || select.multiple
+            || select.size > 1;
+    }
+
+    function closeSelect(wrapper) {
+        if (!wrapper) return;
+        wrapper.classList.remove('is-open');
+        var trigger = wrapper.querySelector('.hipzi-select-trigger');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    function closeAll(exceptWrapper) {
+        document.querySelectorAll('.hipzi-select.is-open').forEach(function (wrapper) {
+            if (wrapper !== exceptWrapper) closeSelect(wrapper);
+        });
+    }
+
+    function syncSelect(select) {
+        if (!select || select.dataset.hipziSelectEnhanced !== 'true') return;
+        var wrapper = select.closest('.hipzi-select');
+        if (!wrapper) return;
+        var selectedOption = select.options[select.selectedIndex];
+        var label = wrapper.querySelector('.hipzi-select-label');
+        if (label) label.textContent = selectedOption ? selectedOption.textContent : '';
+        wrapper.classList.toggle('is-disabled', select.disabled);
+        var trigger = wrapper.querySelector('.hipzi-select-trigger');
+        if (trigger) trigger.disabled = select.disabled;
+        wrapper.querySelectorAll('.hipzi-select-option').forEach(function (optionButton) {
+            var selected = optionButton.dataset.value === select.value;
+            optionButton.classList.toggle('is-selected', selected);
+            optionButton.setAttribute('aria-selected', selected ? 'true' : 'false');
+        });
+    }
+
+    function renderOptions(select) {
+        var wrapper = select.closest('.hipzi-select');
+        var menu = wrapper ? wrapper.querySelector('.hipzi-select-menu') : null;
+        if (!menu) return;
+        menu.innerHTML = '';
+        Array.from(select.options).forEach(function (option) {
+            var optionButton = document.createElement('button');
+            optionButton.type = 'button';
+            optionButton.className = 'hipzi-select-option';
+            optionButton.dataset.value = option.value;
+            optionButton.setAttribute('role', 'option');
+            optionButton.disabled = option.disabled;
+
+            var optionLabel = document.createElement('span');
+            optionLabel.textContent = option.textContent;
+            var optionCheck = document.createElement('span');
+            optionCheck.className = 'hipzi-select-check';
+            optionCheck.setAttribute('aria-hidden', 'true');
+            optionCheck.textContent = '\u2713';
+            optionButton.append(optionLabel, optionCheck);
+            optionButton.addEventListener('click', function () {
+                if (option.disabled) return;
+                select.value = option.value;
+                wrapper.classList.remove('is-invalid');
+                syncSelect(select);
+                closeAll();
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            menu.appendChild(optionButton);
+        });
+        syncSelect(select);
+    }
+
+    function enhanceSelect(select) {
+        if (shouldSkip(select)) return;
+        var selectRect = select.getBoundingClientRect();
+        var parentRect = select.parentElement ? select.parentElement.getBoundingClientRect() : null;
+        var shouldFill = select.style.width === '100%'
+            || (parentRect && parentRect.width > 0 && selectRect.width >= parentRect.width * 0.9);
+
+        var wrapper = document.createElement('div');
+        wrapper.className = 'hipzi-select';
+        if (shouldFill) {
+            wrapper.classList.add('hipzi-select--fill');
+        } else if (selectRect.width > 0) {
+            wrapper.style.minWidth = Math.round(selectRect.width) + 'px';
+        }
+
+        var trigger = document.createElement('button');
+        trigger.type = 'button';
+        trigger.className = 'hipzi-select-trigger';
+        trigger.setAttribute('aria-haspopup', 'listbox');
+        trigger.setAttribute('aria-expanded', 'false');
+
+        var label = document.createElement('span');
+        label.className = 'hipzi-select-label';
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 20 20');
+        svg.setAttribute('fill', 'none');
+        svg.setAttribute('stroke', 'currentColor');
+        svg.setAttribute('stroke-width', '2');
+        svg.setAttribute('aria-hidden', 'true');
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'm5 7.5 5 5 5-5');
+        svg.appendChild(path);
+        trigger.append(label, svg);
+
+        var menu = document.createElement('div');
+        menu.className = 'hipzi-select-menu';
+        menu.setAttribute('role', 'listbox');
+        menu.setAttribute('aria-label', select.getAttribute('aria-label') || select.name || 'T\u00f9y ch\u1ecdn');
+
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.append(select, trigger, menu);
+        select.dataset.hipziSelectEnhanced = 'true';
+        select.classList.add('hipzi-select-native');
+        select.setAttribute('aria-hidden', 'true');
+        select.tabIndex = -1;
+
+        trigger.addEventListener('click', function () {
+            var willOpen = !wrapper.classList.contains('is-open');
+            closeAll(wrapper);
+            wrapper.classList.toggle('is-open', willOpen);
+            trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        });
+        trigger.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeSelect(wrapper);
+                return;
+            }
+            if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+            event.preventDefault();
+            closeAll(wrapper);
+            wrapper.classList.add('is-open');
+            trigger.setAttribute('aria-expanded', 'true');
+            var selected = menu.querySelector('.is-selected') || menu.querySelector('.hipzi-select-option');
+            if (selected) selected.focus();
+        });
+        menu.addEventListener('keydown', function (event) {
+            var options = Array.from(menu.querySelectorAll('.hipzi-select-option:not(:disabled)'));
+            var index = options.indexOf(document.activeElement);
+            if (event.key === 'Escape') {
+                closeSelect(wrapper);
+                trigger.focus();
+            } else if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && options.length) {
+                event.preventDefault();
+                var offset = event.key === 'ArrowDown' ? 1 : -1;
+                options[(index + offset + options.length) % options.length].focus();
+            }
+        });
+        select.addEventListener('change', function () {
+            wrapper.classList.remove('is-invalid');
+            syncSelect(select);
+        });
+        select.addEventListener('invalid', function () {
+            wrapper.classList.add('is-invalid');
+            trigger.focus();
+        });
+        renderOptions(select);
+    }
+
+    function enhanceTree(root) {
+        if (!root) return;
+        if (root.matches && root.matches('select')) enhanceSelect(root);
+        if (root.querySelectorAll) root.querySelectorAll('select').forEach(enhanceSelect);
+    }
+
+    function init() {
+        enhanceTree(document);
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('.hipzi-select')) closeAll();
+        });
+        new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                mutation.addedNodes.forEach(function (node) {
+                    if (node.nodeType === Node.ELEMENT_NODE) enhanceTree(node);
+                });
+            });
+        }).observe(document.body, { childList: true, subtree: true });
+    }
+
+    window.HipziSelect = {
+        enhance: enhanceSelect,
+        refresh: function (select) {
+            if (!select) return;
+            if (select.dataset.hipziSelectEnhanced !== 'true') enhanceSelect(select);
+            renderOptions(select);
+        },
+        refreshAll: function () {
+            enhanceTree(document);
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

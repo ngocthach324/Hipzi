@@ -1612,6 +1612,6 @@
             switchTab(stateTab || urlTab || 'tab-tracking', { updateUrl: false });
         });
     </script>
-    <script src="${pageContext.request.contextPath}/assets/js/navbar.js"></script>
+    <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
 </html>

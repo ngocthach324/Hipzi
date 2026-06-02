@@ -18,7 +18,7 @@
                                     <link rel="icon" type="image/png"
                                         href="${pageContext.request.contextPath}/assets/images/favicon.png">
                                     <link rel="stylesheet"
-                                        href="${pageContext.request.contextPath}/assets/css/landing.css?v=3">
+                                        href="${pageContext.request.contextPath}/assets/css/landing.css?v=5">
                                     <style>
                                         /* ===== OVERRIDE N?N T?NG & GIAO DI?N PREMIUM TUONG T? B?N THI?T K? ===== */
                                         body {
@@ -3346,7 +3346,7 @@
                                                         window.addEventListener('load', initStatusWS);
                                                     </script>
                                                     <script
-                                                        src="${pageContext.request.contextPath}/assets/js/navbar.js"></script>
+                                                        src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
                                 </body>
 
                                 </html>
