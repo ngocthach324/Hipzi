@@ -97,7 +97,7 @@ html {
 .filter-card {
     background: var(--surface);
     border-radius: 16px;
-    padding: 1.5rem;
+    padding: 1.25rem;
     box-shadow: 0 4px 15px rgba(0,0,0,0.03);
     border: 1px solid var(--border);
 }
@@ -145,39 +145,99 @@ html {
 
 /* MAIN RESULTS */
 .main-results {
-    min-height: 1200px;
+    min-height: 800px;
+    background: var(--surface);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
+
 .results-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    margin-bottom: 2rem;
+    background: #058c63;
+    padding: 0.85rem 1.25rem; /* Slightly increase header height more */
 }
 
 .results-header h2 {
-    font-size: 1.5rem;
-    color: var(--text-primary);
+    font-size: 1.15rem;
+    color: #ffffff;
+    margin: 0 0 0 80px; /* Push text further to the right */
 }
 
 .sort-by {
     display: flex;
     gap: 0.75rem;
     align-items: center;
+    margin-right: 10px; /* Push sort-by slightly to the left */
+}
+
+/* Custom styles for selects in green header */
+.sort-by .hipzi-select-trigger {
+    background: #ffffff;
+    color: var(--text-primary);
+    border: 1px solid transparent;
+    padding: 0.25rem 0.75rem !important;
+    font-size: 0.85rem !important;
+    min-height: 32px !important;
+    border-radius: 8px !important;
+}
+
+/* Shrink the popup options to match the button (applies to body since it's a popup) */
+.hipzi-select-option {
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.85rem !important;
+    min-width: unset !important;
+}
+
+.sort-by .hipzi-select-btn {
+    background: #ffffff;
+    color: var(--text-primary);
+    border: 1px solid transparent;
+    padding: 0.25rem 0.75rem !important; /* Reduce padding */
+    font-size: 0.85rem !important; /* Reduce font size */
+    min-height: 32px !important; /* Remove any minimum height constraint */
+    border-radius: 8px !important;
+}
+
+.sort-select {
+    background: #ffffff;
+    color: var(--text-primary);
+    border: 1px solid transparent;
+    padding: 0.35rem 0.75rem; /* Reduce padding for fallback select */
+    border-radius: 8px;
+    font-size: 0.85rem; /* Reduce font size */
+    outline: none;
+    cursor: pointer;
+}
+.sort-select:hover {
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* MATERIAL GRID */
+.material-grid-wrapper {
+    padding: 2rem;
+    flex-grow: 1;
+}
+
 .material-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
+    /* Adjust to roughly 4 columns */
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 1.25rem;
 }
 
 /* MATERIAL CARD */
 .material-card {
-    background: var(--surface);
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    padding: 1.5rem;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1; /* Make border more visible (slate-300) */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); /* Subtle persistent shadow */
+    padding: 1.25rem;
     display: flex;
     flex-direction: column;
     transition: all 0.3s ease;

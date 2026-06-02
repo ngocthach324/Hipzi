@@ -178,7 +178,7 @@
                     </ul>
                 </div>
 
-                <div class="filter-card" style="margin-top: 1.5rem;">
+                <div class="filter-card" style="margin-top: 1rem;">
                     <h3>Khối lớp</h3>
                     <ul class="subject-list">
                         <li>
@@ -204,8 +204,7 @@
             <!-- MAIN RESULTS -->
             <main class="main-results" id="materials-results">
                 <div class="results-header">
-                    <h2>Tài liệu ${currentSubject ne 'Tất cả' ? currentSubject : 'mới nhất'}</h2>
-                    <div class="sort-by">
+                    <div class="sort-by" style="margin-left: auto;">
                         <select id="type-select" class="sort-select" aria-label="Lọc theo loại tài liệu">
                             <option value="Tất cả" ${currentType eq 'Tất cả' ? 'selected' : ''}>Tất cả loại</option>
                             <option value="Lý thuyết" ${currentType eq 'Lý thuyết' ? 'selected' : ''}>Lý thuyết</option>
@@ -219,8 +218,9 @@
                     </div>
                 </div>
 
-                <div class="material-grid">
-                    <% 
+                <div class="material-grid-wrapper">
+                    <div class="material-grid">
+                        <% 
                         List<Material> materials = (List<Material>) request.getAttribute("materials");
                         if (materials == null || materials.isEmpty()) { 
                     %>
@@ -253,7 +253,7 @@
                                             <p style="color:#64748b; font-size:0.85rem; line-height:1.55; margin:0.45rem 0 0 0;"><%= h(material.getDescription()) %></p>
                                         <% } %>
                                         <p class="teacher-name">GV: <%= h(material.getTeacherName() != null && !material.getTeacherName().isEmpty() ? material.getTeacherName() : "HIPZI Teacher") %></p>
-                                        <p style="color:#94a3b8; font-size:0.78rem; margin:0.35rem 0 0 0;">
+                                        <p style="color:#475569; font-size:0.78rem; margin:0.35rem 0 0 0;">
                                             <%= h(material.getOriginalFileName()) %>
                                             <% if (material.getFileSize() > 0) { %>
                                                 · <%= formatFileSize(material.getFileSize()) %>
@@ -264,13 +264,14 @@
                                         <% } %>
                                     </div>
                                     <div class="material-card-footer">
-                                        <a href="<%= request.getContextPath() %>/repository-material-preview?id=<%= h(material.getId()) %>" target="_blank" rel="noopener" class="btn btn-primary btn-full" style="border-radius: 9999px; font-weight: 600;">Xem tài liệu</a>
+                                        <a href="<%= request.getContextPath() %>/repository-material-preview?id=<%= h(material.getId()) %>" target="_blank" rel="noopener" class="btn btn-primary btn-full" style="border-radius: 9999px; font-weight: 600; padding: 0.5rem; font-size: 0.9rem;">Xem tài liệu</a>
                                     </div>
                                 </div>
                     <% 
                             } 
                         } 
                     %>
+                    </div>
                 </div>
             </main>
         </div>
@@ -418,6 +419,7 @@
                 .then(function (res) { return res.text(); })
                 .then(function (html) {
                     if (gridEl) gridEl.innerHTML = html;
+
                     // Đồng bộ select sau khi render
                     var typeSelect = document.getElementById('type-select');
                     if (typeSelect) { typeSelect.value = newType; attachTypeSelectEvent(); if (window.HipziSelect) window.HipziSelect.refresh(typeSelect); }
