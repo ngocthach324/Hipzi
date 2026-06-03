@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.List"%>
 <%@page import="com.hipzi.model.Material"%>
 <%@page import="com.hipzi.model.User"%>
@@ -217,7 +217,7 @@
                         <select id="sort-select" class="sort-select" aria-label="Sắp xếp tài liệu">
                             <option value="newest" <%= "newest".equals(currentSort) ? "selected" : "" %>>Mới nhất</option>
                             <option value="views" <%= "views".equals(currentSort) ? "selected" : "" %>>Xem nhiều nhất</option>
-                            <option value="rating" <%= "rating".equals(currentSort) ? "selected" : "" %>>Đánh giá cao</option>
+
                         </select>
                     </div>
                 </div>

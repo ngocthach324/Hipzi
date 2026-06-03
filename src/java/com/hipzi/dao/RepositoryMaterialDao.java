@@ -88,19 +88,17 @@ public class RepositoryMaterialDao {
             params.add(type);
         }
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-            sql.append("AND (lower(rm.title) LIKE lower(?) "
-                    + "OR lower(COALESCE(rm.description, '')) LIKE lower(?) "
-                    + "OR lower(COALESCE(u.display_name, '')) LIKE lower(?)) ");
+            sql.append("AND (rm.title ILIKE ? "
+                    + "OR COALESCE(u.display_name, '') ILIKE ?) ");
             String keyword = "%" + searchQuery.trim() + "%";
-            params.add(keyword);
             params.add(keyword);
             params.add(keyword);
         }
 
         if ("views".equalsIgnoreCase(sort) || "Xem nhiều nhất".equalsIgnoreCase(sort)) {
-            sql.append("ORDER BY rm.view_count DESC, rm.created_at DESC");
+            sql.append("ORDER BY rm.view_count DESC, rm.created_at DESC ");
         } else if ("rating".equalsIgnoreCase(sort) || "Đánh giá cao".equalsIgnoreCase(sort)) {
-            sql.append("ORDER BY rm.rating_average DESC, rm.rating_count DESC, rm.created_at DESC");
+            sql.append("ORDER BY rm.rating_average DESC, rm.rating_count DESC, rm.created_at DESC ");
         } else {
             sql.append("ORDER BY rm.created_at DESC ");
         }
@@ -149,11 +147,9 @@ public class RepositoryMaterialDao {
             params.add(type);
         }
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-            sql.append("AND (lower(rm.title) LIKE lower(?) "
-                    + "OR lower(COALESCE(rm.description, '')) LIKE lower(?) "
-                    + "OR lower(COALESCE(u.display_name, '')) LIKE lower(?)) ");
+            sql.append("AND (rm.title ILIKE ? "
+                    + "OR COALESCE(u.display_name, '') ILIKE ?) ");
             String keyword = "%" + searchQuery.trim() + "%";
-            params.add(keyword);
             params.add(keyword);
             params.add(keyword);
         }
