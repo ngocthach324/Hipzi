@@ -455,17 +455,17 @@
             overflow-y: auto;
         }
 
-        #tab-class-registration {
+        #tab-class-registration, #tab-upload-material {
             overflow-y: auto;
             overflow-x: hidden;
         }
 
-        #tab-class-registration .tab-grouped-container {
+        #tab-class-registration .tab-grouped-container, #tab-upload-material .tab-grouped-container {
             overflow-y: auto;
             overflow-x: hidden;
         }
 
-        #tab-class-registration .tab-body-content {
+        #tab-class-registration .tab-body-content, #tab-upload-material .tab-body-content {
             flex: 0 0 auto;
             min-height: auto;
             overflow: visible;
@@ -2153,6 +2153,7 @@
                                                                 <option value="Lớp 10" <%= "Lớp 10".equals(cls.getGrade()) ? "selected" : "" %>>Lớp 10</option>
                                                                 <option value="Lớp 11" <%= "Lớp 11".equals(cls.getGrade()) ? "selected" : "" %>>Lớp 11</option>
                                                                 <option value="Lớp 12" <%= "Lớp 12".equals(cls.getGrade()) ? "selected" : "" %>>Lớp 12</option>
+                                                                <option value="Ôn thi THPT" <%= "Ôn thi THPT".equals(cls.getGrade()) ? "selected" : "" %>>Ôn thi THPT</option>
                                                             </select>
                                                         </div>
                                                         <div class="form-group-edit">
@@ -2241,6 +2242,7 @@
                                                 <option value="Lớp 10">Lớp 10</option>
                                                 <option value="Lớp 11">Lớp 11</option>
                                                 <option value="Lớp 12">Lớp 12</option>
+                                                <option value="Ôn thi THPT">Ôn thi THPT</option>
                                             </select>
                                         </div>
 

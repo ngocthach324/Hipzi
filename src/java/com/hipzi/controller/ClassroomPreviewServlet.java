@@ -8,7 +8,7 @@ import com.hipzi.model.ClassroomEnrollment;
 import com.hipzi.model.ClassroomMaterial;
 import com.hipzi.model.Role;
 import com.hipzi.model.User;
-import com.hipzi.service.SupabaseStorageService;
+import com.hipzi.service.B2StorageService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -23,7 +23,7 @@ public class ClassroomPreviewServlet extends HttpServlet {
     private final ClassroomDao classroomDao = new ClassroomDao();
     private final ClassroomEnrollmentDao enrollmentDao = new ClassroomEnrollmentDao();
     private final ClassroomMaterialDao materialDao = new ClassroomMaterialDao();
-    private final SupabaseStorageService storageService = new SupabaseStorageService();
+    private final B2StorageService storageService = new B2StorageService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

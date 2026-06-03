@@ -64,3 +64,40 @@
         }
     }
 %>
+<%
+    Integer totalPages = (Integer) request.getAttribute("totalPages");
+    Integer currentPage = (Integer) request.getAttribute("currentPage");
+    if (totalPages != null && totalPages > 1) {
+%>
+    <div class="repo-pagination">
+        <button type="button" class="page-btn" <%= currentPage <= 1 ? "disabled" : "" %> data-page="<%= currentPage - 1 %>">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <%
+            int startPage = Math.max(1, currentPage - 2);
+            int endPage = Math.min(totalPages, currentPage + 2);
+            if (startPage > 1) {
+        %>
+            <button type="button" class="page-btn" data-page="1">1</button>
+            <% if (startPage > 2) { %> <span style="align-self: center; color: #94a3b8;">...</span> <% } %>
+        <%
+            }
+            for (int i = startPage; i <= endPage; i++) {
+        %>
+            <button type="button" class="page-btn <%= i == currentPage ? "active" : "" %>" data-page="<%= i %>"><%= i %></button>
+        <%
+            }
+            if (endPage < totalPages) {
+        %>
+            <% if (endPage < totalPages - 1) { %> <span style="align-self: center; color: #94a3b8;">...</span> <% } %>
+            <button type="button" class="page-btn" data-page="<%= totalPages %>"><%= totalPages %></button>
+        <%
+            }
+        %>
+        <button type="button" class="page-btn" <%= currentPage >= totalPages ? "disabled" : "" %> data-page="<%= currentPage + 1 %>">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+    </div>
+<%
+    }
+%>

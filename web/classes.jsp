@@ -184,6 +184,10 @@
                             <a href="${pageContext.request.contextPath}/classes?subject=${empty param.subject ? 'Tất cả' : param.subject}&grade=Lớp 10"
                                class="${param.grade eq 'Lớp 10' ? 'active' : ''}">Lớp 10</a>
                         </li>
+                        <li>
+                            <a href="${pageContext.request.contextPath}/classes?subject=${empty param.subject ? 'Tất cả' : param.subject}&grade=Ôn thi THPT"
+                               class="${param.grade eq 'Ôn thi THPT' ? 'active' : ''}">Ôn thi THPT</a>
+                        </li>
                     </ul>
                 </div>
             </aside>

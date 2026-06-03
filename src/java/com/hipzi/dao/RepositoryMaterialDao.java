@@ -63,7 +63,7 @@ public class RepositoryMaterialDao {
         return null;
     }
 
-    public List<Material> search(String subject, String grade, String type, String searchQuery, String sort) {
+    public List<Material> search(String subject, String grade, String type, String searchQuery, String sort, int page, int pageSize) {
         long startedAt = System.nanoTime();
         List<Object> params = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
@@ -102,8 +102,10 @@ public class RepositoryMaterialDao {
         } else if ("rating".equalsIgnoreCase(sort) || "Đánh giá cao".equalsIgnoreCase(sort)) {
             sql.append("ORDER BY rm.rating_average DESC, rm.rating_count DESC, rm.created_at DESC");
         } else {
-            sql.append("ORDER BY rm.created_at DESC");
+            sql.append("ORDER BY rm.created_at DESC ");
         }
+
+        sql.append("LIMIT ? OFFSET ?");
 
         List<Material> materials = new ArrayList<>();
         try (Connection conn = DBContext.getConnection();
@@ -111,6 +113,9 @@ public class RepositoryMaterialDao {
             for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
             }
+            int offset = (page - 1) * pageSize;
+            ps.setInt(params.size() + 1, pageSize);
+            ps.setInt(params.size() + 2, offset);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     materials.add(mapRow(rs));
@@ -121,6 +126,52 @@ public class RepositoryMaterialDao {
         }
         logPerf("RepositoryMaterialDao.search rows=" + materials.size() + " params=" + params.size(), startedAt);
         return materials;
+    }
+
+    public int countSearch(String subject, String grade, String type, String searchQuery) {
+        List<Object> params = new ArrayList<>();
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT count(*) ")
+           .append("FROM repository_materials rm ")
+           .append("LEFT JOIN users u ON u.id::text = rm.uploaded_by ")
+           .append("WHERE rm.visibility = 'VISIBLE' AND rm.status = 'APPROVED' ");
+
+        if (!isAll(subject)) {
+            sql.append("AND rm.subject = ? ");
+            params.add(subject);
+        }
+        if (!isAll(grade)) {
+            sql.append("AND rm.grade = ? ");
+            params.add(grade);
+        }
+        if (!isAll(type)) {
+            sql.append("AND rm.material_type = ? ");
+            params.add(type);
+        }
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            sql.append("AND (lower(rm.title) LIKE lower(?) "
+                    + "OR lower(COALESCE(rm.description, '')) LIKE lower(?) "
+                    + "OR lower(COALESCE(u.display_name, '')) LIKE lower(?)) ");
+            String keyword = "%" + searchQuery.trim() + "%";
+            params.add(keyword);
+            params.add(keyword);
+            params.add(keyword);
+        }
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in RepositoryMaterialDao.countSearch: " + e.getMessage());
+        }
+        return 0;
     }
 
     public void incrementViewCount(String id) {

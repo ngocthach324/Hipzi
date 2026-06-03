@@ -2,7 +2,7 @@ package com.hipzi.controller;
 
 import com.hipzi.dao.RepositoryMaterialDao;
 import com.hipzi.model.Material;
-import com.hipzi.service.SupabaseStorageService;
+import com.hipzi.service.B2StorageService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,7 +13,7 @@ import java.io.IOException;
 @WebServlet(name = "RepositoryMaterialPreviewServlet", urlPatterns = {"/repository-material-preview"})
 public class RepositoryMaterialPreviewServlet extends HttpServlet {
     private final RepositoryMaterialDao repositoryMaterialDao = new RepositoryMaterialDao();
-    private final SupabaseStorageService storageService = new SupabaseStorageService();
+    private final B2StorageService storageService = new B2StorageService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

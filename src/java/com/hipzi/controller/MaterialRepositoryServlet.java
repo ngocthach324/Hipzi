@@ -4,7 +4,8 @@ import com.hipzi.dao.RepositoryMaterialDao;
 import com.hipzi.model.Material;
 import com.hipzi.model.Role;
 import com.hipzi.model.User;
-import com.hipzi.service.SupabaseStorageService;
+import com.hipzi.dto.PaginatedResult;
+import com.hipzi.service.B2StorageService;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Locale;
@@ -29,7 +30,7 @@ public class MaterialRepositoryServlet extends HttpServlet {
 
     private final com.hipzi.service.MaterialService materialService = new com.hipzi.service.MaterialService();
     private final RepositoryMaterialDao repositoryMaterialDao = new RepositoryMaterialDao();
-    private final SupabaseStorageService storageService = new SupabaseStorageService();
+    private final B2StorageService storageService = new B2StorageService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -42,6 +43,16 @@ public class MaterialRepositoryServlet extends HttpServlet {
         String searchQuery = request.getParameter("q");
         String sort = request.getParameter("sort");
         
+        int page = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException ignored) {}
+        }
+        int pageSize = 20; // 4 columns * 5 rows
+        
         if (subject == null || subject.isEmpty()) {
             subject = "Tất cả";
         }
@@ -53,18 +64,21 @@ public class MaterialRepositoryServlet extends HttpServlet {
         }
         
         long dataStartedAt = System.nanoTime();
-        List<Material> materials = materialService.getMaterials(subject, grade, type, searchQuery, sort);
+        PaginatedResult<Material> paginatedResult = materialService.getMaterials(subject, grade, type, searchQuery, sort, page, pageSize);
+        List<Material> materials = paginatedResult.getData();
         long dataMs = elapsedMs(dataStartedAt);
         response.addHeader("Server-Timing", "material-data;dur=" + dataMs);
         response.addHeader("X-Hipzi-Perf-Material", "data=" + dataMs + "ms; rows=" + materials.size());
         
         request.setAttribute("materials", materials);
+        request.setAttribute("currentPage", paginatedResult.getCurrentPage());
+        request.setAttribute("totalPages", paginatedResult.getTotalPages());
         request.setAttribute("currentSubject", subject);
         request.setAttribute("currentGrade", grade);
         request.setAttribute("currentType", type);
         request.setAttribute("currentSort", sort == null || sort.isEmpty() ? "newest" : sort);
 
-        // Nếu là AJAX request (từ bộ lọc sidebar), chỉ trả về fragment kết quả
+        // Náº¿u lÃ  AJAX request (tá»« bá»™ lá»c sidebar), chá»‰ tráº£ vá» fragment káº¿t quáº£
         String ajaxParam = request.getParameter("ajax");
         if ("1".equals(ajaxParam)) {
             long forwardStartedAt = System.nanoTime();
@@ -102,7 +116,7 @@ public class MaterialRepositoryServlet extends HttpServlet {
             return;
         }
         if (!hasRole(user, "teacher") && !hasRole(user, "admin") && !hasRole(user, "staff")) {
-            session.setAttribute("toastMsg", "Chỉ tài khoản giảng viên mới có thể đăng tải tài liệu vào kho.");
+            session.setAttribute("toastMsg", "Chá»‰ tÃ i khoáº£n giáº£ng viÃªn má»›i cÃ³ thá»ƒ Ä‘Äƒng táº£i tÃ i liá»‡u vÃ o kho.");
             session.setAttribute("toastType", "error");
             response.sendRedirect(request.getContextPath() + "/teacher-profile?tab=upload-material");
             return;
@@ -131,8 +145,8 @@ public class MaterialRepositoryServlet extends HttpServlet {
         }
 
         session.setAttribute("toastMsg", saved
-                ? "Đã đăng tải tài liệu vào kho tài liệu HIPZI."
-                : "Chưa đăng tải được tài liệu. Vui lòng kiểm tra file và thông tin nhập.");
+                ? "ÄÃ£ Ä‘Äƒng táº£i tÃ i liá»‡u vÃ o kho tÃ i liá»‡u HIPZI."
+                : "ChÆ°a Ä‘Äƒng táº£i Ä‘Æ°á»£c tÃ i liá»‡u. Vui lÃ²ng kiá»ƒm tra file vÃ  thÃ´ng tin nháº­p.");
         session.setAttribute("toastType", saved ? "success" : "error");
         response.sendRedirect(request.getContextPath() + "/teacher-profile?tab=upload-material");
     }

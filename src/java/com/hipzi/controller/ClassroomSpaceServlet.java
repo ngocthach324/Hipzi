@@ -19,7 +19,7 @@ import com.hipzi.model.Role;
 import com.hipzi.model.User;
 import com.hipzi.service.AiQuizParserService;
 import com.hipzi.service.AiClassExamParserService;
-import com.hipzi.service.SupabaseStorageService;
+import com.hipzi.service.B2StorageService;
 import com.hipzi.service.TesseractOcrService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -59,7 +59,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
     private final ClassroomMaterialDao materialDao = new ClassroomMaterialDao();
     private final ClassroomHomeworkSubmissionDao submissionDao = new ClassroomHomeworkSubmissionDao();
     private final ClassroomQuizDao quizDao = new ClassroomQuizDao();
-    private final SupabaseStorageService storageService = new SupabaseStorageService();
+    private final B2StorageService storageService = new B2StorageService();
     private final TesseractOcrService ocrService = new TesseractOcrService();
     private final AiQuizParserService aiQuizParserService = new AiQuizParserService();
     private final AiClassExamParserService aiClassExamParserService = new AiClassExamParserService();
@@ -88,7 +88,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
 
         if (!canManageClassroom && !acceptedStudent) {
             if (session != null) {
-                session.setAttribute("toastMsg", "Bạn cần được giảng viên chấp nhận trước khi vào không gian lớp.");
+                session.setAttribute("toastMsg", "Báº¡n cáº§n Ä‘Æ°á»£c giáº£ng viÃªn cháº¥p nháº­n trÆ°á»›c khi vÃ o khÃ´ng gian lá»›p.");
                 session.setAttribute("toastType", "error");
             }
             response.sendRedirect(request.getContextPath() + "/class-detail?id=" + classId);
@@ -193,7 +193,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
         }
 
         if (!canManageClassroom) {
-            session.setAttribute("toastMsg", "Bạn không có quyền quản lý lớp học này.");
+            session.setAttribute("toastMsg", "Báº¡n khÃ´ng cÃ³ quyá»n quáº£n lÃ½ lá»›p há»c nÃ y.");
             session.setAttribute("toastType", "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId);
             return;
@@ -201,7 +201,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
 
         if ("reviewEnrollment".equals(action)) {
             if (!canReviewEnrollments) {
-                session.setAttribute("toastMsg", "Chỉ giảng viên phụ trách lớp mới có thể duyệt học viên.");
+                session.setAttribute("toastMsg", "Chá»‰ giáº£ng viÃªn phá»¥ trÃ¡ch lá»›p má»›i cÃ³ thá»ƒ duyá»‡t há»c viÃªn.");
                 session.setAttribute("toastType", "error");
                 response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId);
                 return;
@@ -211,8 +211,8 @@ public class ClassroomSpaceServlet extends HttpServlet {
             boolean saved = !enrollmentId.isEmpty()
                     && enrollmentDao.updateStatus(classId, enrollmentId, decision, user.getId());
             session.setAttribute("toastMsg", saved
-                    ? ("accepted".equals(decision) ? "Đã chấp nhận học viên vào lớp." : "Đã từ chối yêu cầu tham gia lớp.")
-                    : "Chưa cập nhật được yêu cầu tham gia lớp.");
+                    ? ("accepted".equals(decision) ? "ÄÃ£ cháº¥p nháº­n há»c viÃªn vÃ o lá»›p." : "ÄÃ£ tá»« chá»‘i yÃªu cáº§u tham gia lá»›p.")
+                    : "ChÆ°a cáº­p nháº­t Ä‘Æ°á»£c yÃªu cáº§u tham gia lá»›p.");
             session.setAttribute("toastType", saved ? "success" : "error");
         } else if ("uploadClassMaterial".equals(action)) {
             boolean saved;
@@ -222,7 +222,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
                 saved = false;
                 System.err.println("Error uploading classroom material to Supabase Storage: " + e.getMessage());
             }
-            session.setAttribute("toastMsg", saved ? "Đã đăng tải tài liệu nội bộ lớp." : "Chưa đăng tải được tài liệu. Vui lòng kiểm tra file và thông tin nhập.");
+            session.setAttribute("toastMsg", saved ? "ÄÃ£ Ä‘Äƒng táº£i tÃ i liá»‡u ná»™i bá»™ lá»›p." : "ChÆ°a Ä‘Äƒng táº£i Ä‘Æ°á»£c tÃ i liá»‡u. Vui lÃ²ng kiá»ƒm tra file vÃ  thÃ´ng tin nháº­p.");
             session.setAttribute("toastType", saved ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-materials");
             return;
@@ -235,7 +235,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
             if (deleted) {
                 deleteStoredFileFromStorage(material);
             }
-            session.setAttribute("toastMsg", deleted ? "Đã xóa tài liệu khỏi lớp." : "Không thể xóa tài liệu này.");
+            session.setAttribute("toastMsg", deleted ? "ÄÃ£ xÃ³a tÃ i liá»‡u khá»i lá»›p." : "KhÃ´ng thá»ƒ xÃ³a tÃ i liá»‡u nÃ y.");
             session.setAttribute("toastType", deleted ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-materials");
             return;
@@ -724,10 +724,10 @@ public class ClassroomSpaceServlet extends HttpServlet {
         if (rawScanText == null || rawScanText.trim().isEmpty()) {
             return questions;
         }
-        Pattern questionStart = Pattern.compile("^\\(?\\s*(?:c(?:a|â)u\\s*)?(\\d+)[\\.|\\)|:]\\s*(.+)$", Pattern.CASE_INSENSITIVE);
+        Pattern questionStart = Pattern.compile("^\\(?\\s*(?:c(?:a|Ã¢)u\\s*)?(\\d+)[\\.|\\)|:]\\s*(.+)$", Pattern.CASE_INSENSITIVE);
         Pattern optionLine = Pattern.compile("^([A-Da-d])\\s*[\\.|\\)|:]\\s*(.+)$");
         Pattern inlineOption = Pattern.compile("(?i)(?:^|\\s)([A-D])\\s*[\\.|\\)]\\s*(.+?)(?=\\s+[A-D]\\s*[\\.|\\)]|$)");
-        Pattern answerLine = Pattern.compile("^(?:đáp\\s*án|dap\\s*an|answer)\\s*[:\\-]?\\s*([A-Da-d]).*$", Pattern.CASE_INSENSITIVE);
+        Pattern answerLine = Pattern.compile("^(?:Ä‘Ã¡p\\s*Ã¡n|dap\\s*an|answer)\\s*[:\\-]?\\s*([A-Da-d]).*$", Pattern.CASE_INSENSITIVE);
         ClassroomQuizQuestion current = null;
 
         String[] lines = normalizeScanTextForParsing(rawScanText).split("\n+");
@@ -745,7 +745,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
             if (optionMatcher.matches()) {
                 if (current == null) {
                     current = new ClassroomQuizQuestion();
-                    current.setQuestionText("Câu hỏi cần kiểm tra lại");
+                    current.setQuestionText("CÃ¢u há»i cáº§n kiá»ƒm tra láº¡i");
                 }
                 if (cleaned.matches("(?i).*\\s+[A-D]\\s*[\\.|\\)].*")) {
                     extractInlineOptions(current, cleaned);
@@ -822,9 +822,9 @@ public class ClassroomSpaceServlet extends HttpServlet {
 
     private String normalizeScanTextForParsing(String rawScanText) {
         String text = rawScanText == null ? "" : rawScanText.replace("\r", "\n");
-        text = text.replaceAll("(?i)\\s+(\\(?\\s*c(?:a|â)u\\s*\\d+[\\.|\\)|:])", "\n$1");
+        text = text.replaceAll("(?i)\\s+(\\(?\\s*c(?:a|Ã¢)u\\s*\\d+[\\.|\\)|:])", "\n$1");
         text = text.replaceAll("(?i)\\s+(\\d+[\\.|\\)]\\s+)", "\n$1");
-        text = text.replaceAll("(?i)\\s+(đáp\\s*án|dap\\s*an|answer)\\s*[:\\-]?", "\n$1: ");
+        text = text.replaceAll("(?i)\\s+(Ä‘Ã¡p\\s*Ã¡n|dap\\s*an|answer)\\s*[:\\-]?", "\n$1: ");
         text = text.replaceAll("\\n{2,}", "\n");
         return text.trim();
     }
@@ -936,8 +936,8 @@ public class ClassroomSpaceServlet extends HttpServlet {
         if (cleaned.isEmpty()) {
             return null;
         }
-        // datetime-local input gửi lên dạng "yyyy-MM-ddTHH:mm" (không có giây)
-        // LocalDateTime.parse() mặc định yêu cầu cả giây, nên cần bổ sung ":00" nếu thiếu
+        // datetime-local input gá»­i lÃªn dáº¡ng "yyyy-MM-ddTHH:mm" (khÃ´ng cÃ³ giÃ¢y)
+        // LocalDateTime.parse() máº·c Ä‘á»‹nh yÃªu cáº§u cáº£ giÃ¢y, nÃªn cáº§n bá»• sung ":00" náº¿u thiáº¿u
         if (cleaned.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}")) {
             cleaned = cleaned + ":00";
         }

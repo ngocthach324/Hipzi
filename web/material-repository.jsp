@@ -197,6 +197,10 @@
                             <a href="${pageContext.request.contextPath}/material-repository?subject=${empty currentSubject ? 'Tất cả' : currentSubject}&grade=Lớp 10&type=${empty currentType ? 'Tất cả' : currentType}#content-area"
                                class="${currentGrade eq 'Lớp 10' ? 'active' : ''}">Lớp 10</a>
                         </li>
+                        <li>
+                            <a href="${pageContext.request.contextPath}/material-repository?subject=${empty currentSubject ? 'Tất cả' : currentSubject}&grade=Ôn thi THPT&type=${empty currentType ? 'Tất cả' : currentType}#content-area"
+                               class="${currentGrade eq 'Ôn thi THPT' ? 'active' : ''}">Ôn thi THPT</a>
+                        </li>
                     </ul>
                 </div>
             </aside>
@@ -220,57 +224,7 @@
 
                 <div class="material-grid-wrapper">
                     <div class="material-grid">
-                        <% 
-                        List<Material> materials = (List<Material>) request.getAttribute("materials");
-                        if (materials == null || materials.isEmpty()) { 
-                    %>
-                            <div class="empty-state">
-                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-                                <h3>Không tìm thấy tài liệu</h3>
-                                <p>Chưa có tài liệu nào cho môn học này. Hãy thử tìm kiếm với từ khóa khác.</p>
-                            </div>
-                    <% 
-                        } else { 
-                            for (Material material : materials) {
-                    %>
-                                <div class="material-card">
-                                    <div class="material-card-header">
-                                        <span class="subject-badge"><%= h(material.getSubject()) %></span>
-                                        <span class="view-count">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                            <%= material.getViewCount() %>
-                                        </span>
-                                    </div>
-                                    <div class="material-card-body">
-                                        <div style="margin-bottom: 0.5rem;">
-                                            <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 500; background-color: <%= "Đề ôn tập".equalsIgnoreCase(material.getType()) ? "#fff4cc" : "#e8f2ff" %>; color: <%= "Đề ôn tập".equalsIgnoreCase(material.getType()) ? "#b27b00" : "#0052cc" %>;">
-                                                <%= h(material.getType() != null ? material.getType() : "Lý thuyết") %>
-                                            </span>
-                                            <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 500; background-color:#ecfdf5; color:#047857; margin-left:0.35rem;"><%= h(material.getGrade()) %></span>
-                                        </div>
-                                        <h3 class="material-title"><%= h(material.getTitle()) %></h3>
-                                        <% if (material.getDescription() != null && !material.getDescription().isEmpty()) { %>
-                                            <p style="color:#64748b; font-size:0.85rem; line-height:1.55; margin:0.45rem 0 0 0;"><%= h(material.getDescription()) %></p>
-                                        <% } %>
-                                        <p class="teacher-name">GV: <%= h(material.getTeacherName() != null && !material.getTeacherName().isEmpty() ? material.getTeacherName() : "HIPZI Teacher") %></p>
-                                        <p style="color:#475569; font-size:0.78rem; margin:0.35rem 0 0 0;">
-                                            <%= h(material.getOriginalFileName()) %>
-                                            <% if (material.getFileSize() > 0) { %>
-                                                · <%= formatFileSize(material.getFileSize()) %>
-                                            <% } %>
-                                        </p>
-                                        <% if (material.getRatingCount() > 0) { %>
-                                            <p style="color:#d97706; font-size:0.8rem; font-weight:700; margin:0.35rem 0 0 0;">★ <%= String.format(java.util.Locale.US, "%.1f", material.getRatingAverage()) %> (<%= material.getRatingCount() %> đánh giá)</p>
-                                        <% } %>
-                                    </div>
-                                    <div class="material-card-footer">
-                                        <a href="<%= request.getContextPath() %>/repository-material-preview?id=<%= h(material.getId()) %>" target="_blank" rel="noopener" class="btn btn-primary btn-full" style="border-radius: 9999px; font-weight: 600; padding: 0.5rem; font-size: 0.9rem;">Xem tài liệu</a>
-                                    </div>
-                                </div>
-                    <% 
-                            } 
-                        } 
-                    %>
+                        <jsp:include page="/WEB-INF/fragments/material-repository-results.jsp" />
                     </div>
                 </div>
             </main>
@@ -393,6 +347,7 @@
             var newType    = targetUrl.searchParams.get('type')    || currentUrl.searchParams.get('type')    || 'T\u1ea5t c\u1ea3';
             var newSort    = targetUrl.searchParams.get('sort')    || currentUrl.searchParams.get('sort')    || 'newest';
             var q          = currentUrl.searchParams.get('q') || '';
+            var page       = targetUrl.searchParams.has('page') ? targetUrl.searchParams.get('page') : (isPopState ? currentUrl.searchParams.get('page') || '1' : '1');
 
             // Cập nhật sidebar active ngay lập tức
             updateSidebarActive(newSubject, newGrade, newType, newSort, q);
@@ -402,6 +357,7 @@
             fetchUrl.searchParams.set('grade', newGrade);
             fetchUrl.searchParams.set('type', newType);
             fetchUrl.searchParams.set('sort', newSort);
+            fetchUrl.searchParams.set('page', page);
             if (q) fetchUrl.searchParams.set('q', q);
             fetchUrl.searchParams.set('ajax', '1');
 
@@ -465,10 +421,25 @@
         }
 
         document.addEventListener('click', function (e) {
+            var pageBtn = e.target.closest('.page-btn');
+            if (pageBtn) {
+                e.preventDefault();
+                if (pageBtn.disabled || pageBtn.classList.contains('active')) return;
+                var page = pageBtn.getAttribute('data-page');
+                var url = new URL(location.href);
+                url.searchParams.set('page', page);
+                applyTwoWayFilter(url.toString(), false);
+                window.scrollTo({ top: document.getElementById('materials-results').offsetTop - 120, behavior: 'smooth' });
+                return;
+            }
+
             var link = e.target.closest('.subject-list a');
             if (!link) return;
             e.preventDefault();
-            applyTwoWayFilter(link.href, false);
+            // When filtering, remove page parameter so it defaults to 1
+            var url = new URL(link.href);
+            url.searchParams.delete('page');
+            applyTwoWayFilter(url.toString(), false);
         });
 
         function attachTypeSelectEvent() {
@@ -478,6 +449,7 @@
                 el.addEventListener('change', function () {
                     var url = new URL(location.href);
                     url.searchParams.set('type', this.value);
+                    url.searchParams.delete('page');
                     applyTwoWayFilter(url.toString(), false);
                 });
             }
@@ -489,6 +461,7 @@
                 el.addEventListener('change', function () {
                     var url = new URL(location.href);
                     url.searchParams.set('sort', this.value);
+                    url.searchParams.delete('page');
                     applyTwoWayFilter(url.toString(), false);
                 });
             }

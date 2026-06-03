@@ -14,7 +14,7 @@ html {
 }
 
 .repo-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -226,9 +226,53 @@ html {
 
 .material-grid {
     display: grid;
-    /* Adjust to roughly 4 columns */
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    /* 4 columns layout */
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 1.25rem;
+}
+
+/* PAGINATION */
+.repo-pagination {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.repo-pagination button {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.repo-pagination button:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.repo-pagination button.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #ffffff;
+}
+
+.repo-pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8fafc;
 }
 
 /* MATERIAL CARD */
