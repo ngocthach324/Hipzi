@@ -2172,17 +2172,6 @@ body::after {
     --icon-hot: #ef4444;
 }
 
-.subject-card--civics {
-    --subject-a: #64748b;
-    --subject-b: #475569;
-    --subject-c: #334155;
-    --subject-shadow: rgba(71, 85, 105, 0.22);
-    --icon-a: #f8fafc;
-    --icon-b: #cbd5e1;
-    --icon-line: #334155;
-    --icon-hot: #f59e0b;
-}
-
 .subject-card--informatics {
     --subject-a: #123485;
     --subject-b: #2563eb;
@@ -2192,6 +2181,17 @@ body::after {
     --icon-b: #93c5fd;
     --icon-line: #1d4ed8;
     --icon-hot: #10b981;
+}
+
+.subject-card--technology {
+    --subject-a: #0f766e;
+    --subject-b: #14b8a6;
+    --subject-c: #115e59;
+    --subject-shadow: rgba(20, 184, 166, 0.22);
+    --icon-a: #ccfbf1;
+    --icon-b: #5eead4;
+    --icon-line: #0f766e;
+    --icon-hot: #f59e0b;
 }
 
 .subject-card:hover::after,
@@ -2640,52 +2640,6 @@ body::after {
     background: linear-gradient(180deg, #fb7185, #ef4444);
     transform: rotate(-45deg);
     box-shadow: none;
-}
-
-.icon-scale-beam {
-    top: 20px;
-    left: 20px;
-    width: 47px;
-    height: 6px;
-    border-radius: 999px;
-    background: linear-gradient(180deg, #fbbf24, #b45309);
-}
-
-.icon-scale-post {
-    top: 17px;
-    left: 41px;
-    width: 6px;
-    height: 39px;
-    border-radius: 999px;
-    background: linear-gradient(180deg, #64748b, #334155);
-}
-
-.icon-scale-post::after {
-    content: "";
-    position: absolute;
-    left: -13px;
-    bottom: -5px;
-    width: 32px;
-    height: 6px;
-    border-radius: 999px;
-    background: #334155;
-}
-
-.icon-scale-pan {
-    top: 36px;
-    width: 24px;
-    height: 12px;
-    border: 3px solid #64748b;
-    border-top: 0;
-    border-radius: 0 0 18px 18px;
-}
-
-.icon-scale-pan--left {
-    left: 15px;
-}
-
-.icon-scale-pan--right {
-    right: 15px;
 }
 
 .icon-laptop-screen {
@@ -5180,4 +5134,3 @@ body::after {
     }
     
 }
-

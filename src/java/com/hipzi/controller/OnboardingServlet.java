@@ -46,7 +46,7 @@ public class OnboardingServlet extends HttpServlet {
         }
 
         request.setAttribute("user", user);
-        request.getRequestDispatcher("/onboarding.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/onboarding.jsp").forward(request, response);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class OnboardingServlet extends HttpServlet {
         if (!ALLOWED_ROLES.contains(selectedRole)) {
             request.setAttribute("errorMsg", "Vui lòng chọn một vai trò hợp lệ.");
             request.setAttribute("user", user);
-            request.getRequestDispatcher("/onboarding.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/onboarding.jsp").forward(request, response);
             return;
         }
 
@@ -78,7 +78,7 @@ public class OnboardingServlet extends HttpServlet {
         if (role == null) {
             request.setAttribute("errorMsg", "Vai trò bạn chọn chưa tồn tại trong hệ thống.");
             request.setAttribute("user", user);
-            request.getRequestDispatcher("/onboarding.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/onboarding.jsp").forward(request, response);
             return;
         }
 
@@ -88,7 +88,7 @@ public class OnboardingServlet extends HttpServlet {
         if (!onboardingCompleted) {
             request.setAttribute("errorMsg", "Chưa thể lưu vai trò. Vui lòng thử lại.");
             request.setAttribute("user", user);
-            request.getRequestDispatcher("/onboarding.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/onboarding.jsp").forward(request, response);
             return;
         }
 

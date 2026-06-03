@@ -55,7 +55,7 @@ public class ClassDetailServlet extends HttpServlet {
         request.setAttribute("learningModules", loadModules(classroom, "learning_content"));
         request.setAttribute("requirementModules", loadModules(classroom, "entry_requirement"));
         request.setAttribute("canEditClassModules", canEditClassModules);
-        request.getRequestDispatcher("/class-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/class-detail.jsp").forward(request, response);
     }
 
     @Override
@@ -129,7 +129,7 @@ public class ClassDetailServlet extends HttpServlet {
     private void handleJoinRequest(HttpServletRequest request, HttpServletResponse response, HttpSession session,
             Classroom classroom, String classId) throws IOException {
         if (session == null || session.getAttribute("loggedUser") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 

@@ -64,7 +64,7 @@ public class VerifyOtpServlet extends HttpServlet {
             if ("login".equals(purpose) || "disable_2fa".equals(purpose)) {
                 resp.sendRedirect(req.getContextPath() + "/login");
             } else {
-                resp.sendRedirect(req.getContextPath() + "/register.jsp?error=session_expired");
+                resp.sendRedirect(req.getContextPath() + "/register?error=session_expired");
             }
             return;
         }
@@ -75,7 +75,7 @@ public class VerifyOtpServlet extends HttpServlet {
 
         if (session != null) session.removeAttribute("otp_error");
 
-        req.getRequestDispatcher("/verify-otp.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/views/verify-otp.jsp").forward(req, resp);
     }
 
     // =========================================================================
@@ -90,13 +90,13 @@ public class VerifyOtpServlet extends HttpServlet {
         String inputOtp = req.getParameter("otp");
 
         if (purpose == null || inputOtp == null || session == null) {
-            resp.sendRedirect(req.getContextPath() + "/register.jsp?error=invalid_request");
+            resp.sendRedirect(req.getContextPath() + "/register?error=invalid_request");
             return;
         }
 
         String email = getEmailFromSession(session, purpose);
         if (email == null) {
-            resp.sendRedirect(req.getContextPath() + "/register.jsp?error=session_expired");
+            resp.sendRedirect(req.getContextPath() + "/register?error=session_expired");
             return;
         }
 
@@ -202,13 +202,13 @@ public class VerifyOtpServlet extends HttpServlet {
 
         String pendingUserId = (String) session.getAttribute("pending_2fa_user_id");
         if (pendingUserId == null) {
-            resp.sendRedirect(req.getContextPath() + "/login.jsp?error=session_expired");
+            resp.sendRedirect(req.getContextPath() + "/login?error=session_expired");
             return;
         }
 
         User user = userDao.findById(pendingUserId);
         if (user == null) {
-            resp.sendRedirect(req.getContextPath() + "/login.jsp?error=user_not_found");
+            resp.sendRedirect(req.getContextPath() + "/login?error=user_not_found");
             return;
         }
 
@@ -255,7 +255,7 @@ public class VerifyOtpServlet extends HttpServlet {
 
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser == null) {
-            resp.sendRedirect(req.getContextPath() + "/login.jsp");
+            resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 

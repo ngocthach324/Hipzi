@@ -38,10 +38,10 @@
                 <p class="teacher-name">Độ khó: <%= h(quiz.getDifficulty()) %> • <%= quiz.getQuestionCount() %> thẻ/câu hỏi</p>
             </div>
             <div class="material-card-footer">
-                <a href="<%= request.getContextPath() %>/login.jsp" class="btn btn-primary btn-full" style="background: var(--color-secondary, #f0a928); border-color: var(--color-secondary, #f0a928); color: #ffffff; font-weight: 600; border-radius: 9999px;">Bắt đầu học</a>
+                <a href="<%= request.getContextPath() %>/login" class="btn btn-primary btn-full" style="background: var(--color-secondary, #f0a928); border-color: var(--color-secondary, #f0a928); color: #ffffff; font-weight: 600; border-radius: 9999px;">Bắt đầu học</a>
             </div>
         </div>
 <%
         }
     }
-%>
+%>

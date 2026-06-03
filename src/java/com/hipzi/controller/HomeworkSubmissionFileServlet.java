@@ -31,7 +31,7 @@ public class HomeworkSubmissionFileServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         User user = session != null ? (User) session.getAttribute("loggedUser") : null;
         if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
@@ -86,4 +86,4 @@ public class HomeworkSubmissionFileServlet extends HttpServlet {
     private String cleanParam(String value) {
         return value == null ? "" : value.trim();
     }
-}
+}

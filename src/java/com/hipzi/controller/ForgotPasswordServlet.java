@@ -28,7 +28,7 @@ public class ForgotPasswordServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher("/forgot-password.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/forgot-password.jsp").forward(request, response);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class ForgotPasswordServlet extends HttpServlet {
         String email = request.getParameter("email");
         if (email == null || email.trim().isEmpty()) {
             request.setAttribute("errorMsg", "Vui lòng nhập email cần khôi phục mật khẩu.");
-            request.getRequestDispatcher("/forgot-password.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/forgot-password.jsp").forward(request, response);
             return;
         }
 
@@ -56,12 +56,12 @@ public class ForgotPasswordServlet extends HttpServlet {
             }
 
             request.setAttribute("successMsg", RESET_SUCCESS_MESSAGE);
-            request.getRequestDispatcher("/forgot-password.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/forgot-password.jsp").forward(request, response);
         } catch (Exception e) {
             System.err.println("ForgotPasswordServlet error: " + e.getMessage());
             request.setAttribute("errorMsg", "Chưa thể gửi mật khẩu mới lúc này. Vui lòng thử lại sau.");
             request.setAttribute("email", normalizedEmail);
-            request.getRequestDispatcher("/forgot-password.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/forgot-password.jsp").forward(request, response);
         }
     }
 

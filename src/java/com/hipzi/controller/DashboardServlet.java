@@ -61,7 +61,7 @@ public class DashboardServlet extends HttpServlet {
         request.setAttribute("currentDateDisplay", currentDateDisplay);
 
         // Chuyển tiếp luồng điều khiển tới giao diện Bảng điều khiển trung tâm theo vai trò
-        String targetJsp = "/student-profile.jsp";
+        String targetJsp = "/student-profile";
         if (roles != null) {
             boolean hasParent = false, hasTeacher = false, hasStaff = false, hasAdmin = false;
             for (Role r : roles) {
@@ -71,10 +71,10 @@ public class DashboardServlet extends HttpServlet {
                 if ("staff".equals(rn)) hasStaff = true;
                 if ("admin".equals(rn)) hasAdmin = true;
             }
-            if (hasAdmin) targetJsp = "/admin-profile.jsp";
-            else if (hasStaff) targetJsp = "/staff-profile.jsp";
-            else if (hasTeacher) targetJsp = "/teacher-profile.jsp";
-            else if (hasParent) targetJsp = "/parent-profile.jsp";
+            if (hasAdmin) targetJsp = "/admin-profile";
+            else if (hasStaff) targetJsp = "/staff-profile";
+            else if (hasTeacher) targetJsp = "/teacher-profile";
+            else if (hasParent) targetJsp = "/parent-profile";
         }
         request.getRequestDispatcher(targetJsp).forward(request, response);
     }

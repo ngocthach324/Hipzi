@@ -26,6 +26,6 @@ public class ExamRoomServlet extends HttpServlet {
         List<Quiz> exams = examRoomService.getFilteredExams(subjectParam, gradeParam, examCategoryParam, searchParam);
         request.setAttribute("exams", exams);
 
-        request.getRequestDispatcher("/exam-room.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/exam-room.jsp").forward(request, response);
     }
 }

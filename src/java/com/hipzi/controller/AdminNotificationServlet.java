@@ -24,7 +24,7 @@ public class AdminNotificationServlet extends HttpServlet {
 
         // Kiểm tra quyền Admin (Cơ bản)
         if (admin == null || !"active".equals(admin.getAccountStatus())) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 

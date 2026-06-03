@@ -47,7 +47,7 @@ public class RegisterOtpServlet extends HttpServlet {
                 || session.getAttribute("pending_register_name") == null
                 || session.getAttribute("pending_register_hash") == null
                 || session.getAttribute("pending_register_role") == null) {
-            resp.sendRedirect(req.getContextPath() + "/register.jsp?error=session_expired");
+            resp.sendRedirect(req.getContextPath() + "/register?error=session_expired");
             return;
         }
 
@@ -57,7 +57,7 @@ public class RegisterOtpServlet extends HttpServlet {
         // --- Kiểm tra email chưa tồn tại ---
         if (userDao.findByEmail(email) != null) {
             session.invalidate();
-            resp.sendRedirect(req.getContextPath() + "/register.jsp?error=email_exists");
+            resp.sendRedirect(req.getContextPath() + "/register?error=email_exists");
             return;
         }
 
@@ -72,7 +72,7 @@ public class RegisterOtpServlet extends HttpServlet {
         } catch (Exception e) {
             System.err.println("[RegisterOtpServlet] Lỗi gửi OTP: " + e.getMessage());
             req.getSession().setAttribute("otp_error", "Không thể gửi mã OTP. Vui lòng thử lại sau.");
-            resp.sendRedirect(req.getContextPath() + "/register.jsp?error=otp_failed");
+            resp.sendRedirect(req.getContextPath() + "/register?error=otp_failed");
         }
     }
 }

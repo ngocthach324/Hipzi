@@ -50,7 +50,7 @@ public class LoginServlet extends HttpServlet {
             session.removeAttribute("otp_error");
         }
 
-        request.getRequestDispatcher("/login.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(request, response);
     }
 
     @Override
@@ -103,12 +103,12 @@ public class LoginServlet extends HttpServlet {
         } catch (UnauthorizedException e) {
             request.setAttribute("errorMsg", e.getMessage());
             request.setAttribute("email", email);
-            request.getRequestDispatcher("/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("errorMsg", "Lỗi kết nối cơ sở dữ liệu hoặc lỗi hệ thống. Vui lòng thử khởi động lại server.");
             request.setAttribute("email", email);
-            request.getRequestDispatcher("/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(request, response);
         }
     }
 

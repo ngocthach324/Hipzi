@@ -35,7 +35,7 @@ public class TeacherListServlet extends HttpServlet {
         request.setAttribute("currentSubject", subject);
         request.setAttribute("currentTeacherType", teacherType);
 
-        request.getRequestDispatcher("/teacher-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/teacher-list.jsp").forward(request, response);
     }
 
     @Override

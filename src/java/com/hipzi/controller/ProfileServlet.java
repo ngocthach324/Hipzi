@@ -95,26 +95,26 @@ public class ProfileServlet extends HttpServlet {
             return;
         }
 
-        String targetJsp = "/student-profile.jsp";
-        if ("/parent-profile".equals(path)) targetJsp = "/parent-profile.jsp";
-        else if ("/teacher-profile".equals(path)) targetJsp = "/teacher-profile.jsp";
-        else if ("/staff-profile".equals(path)) targetJsp = "/staff-profile.jsp";
-        else if ("/admin-profile".equals(path)) targetJsp = "/admin-profile.jsp";
+        String targetJsp = "/WEB-INF/views/student-profile.jsp";
+        if ("/parent-profile".equals(path)) targetJsp = "/WEB-INF/views/parent-profile.jsp";
+        else if ("/teacher-profile".equals(path)) targetJsp = "/WEB-INF/views/teacher-profile.jsp";
+        else if ("/staff-profile".equals(path)) targetJsp = "/WEB-INF/views/staff-profile.jsp";
+        else if ("/admin-profile".equals(path)) targetJsp = "/WEB-INF/views/admin-profile.jsp";
 
         request.setAttribute("user", user);
 
         // Tải dữ liệu caching thống kê nếu truy cập giao diện học viên
-        if ("/student-profile.jsp".equals(targetJsp)) {
+        if ("/WEB-INF/views/student-profile.jsp".equals(targetJsp)) {
             StudentProfile studentProfile = studentProfileService.getProfileByUserId(user.getId());
             request.setAttribute("studentProfile", studentProfile);
-        } else if ("/parent-profile.jsp".equals(targetJsp)) {
+        } else if ("/WEB-INF/views/parent-profile.jsp".equals(targetJsp)) {
             List<ParentStudentLink> trackedStudents = linkDao.findLinksByParentId(user.getId());
             request.setAttribute("trackedStudents", trackedStudents);
-        } else if ("/teacher-profile.jsp".equals(targetJsp)) {
+        } else if ("/WEB-INF/views/teacher-profile.jsp".equals(targetJsp)) {
             TeacherApplication teacherApplication = teacherApplicationDao.findLatestByUserId(user.getId());
             request.setAttribute("teacherApplication", teacherApplication);
             request.setAttribute("teacherClassrooms", classroomDao.findByTeacherId(user.getId()));
-        } else if ("/staff-profile.jsp".equals(targetJsp)) {
+        } else if ("/WEB-INF/views/staff-profile.jsp".equals(targetJsp)) {
             request.setAttribute("teacherApplications", teacherApplicationDao.listForStaffReview());
             
             String searchTeacher = cleanParam(request.getParameter("searchTeacher"));
@@ -131,7 +131,7 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("classTitle", classTitle);
             request.setAttribute("classSubject", classSubject);
             request.setAttribute("classStatus", classStatus);
-        } else if ("/admin-profile.jsp".equals(targetJsp)) {
+        } else if ("/WEB-INF/views/admin-profile.jsp".equals(targetJsp)) {
             request.setAttribute("systemOverview", adminStatsDao.getSystemOverview());
             int adminUserPage = parsePositiveInt(request.getParameter("userPage"), 1);
             int adminUserPageSize = 10;

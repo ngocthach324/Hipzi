@@ -37,7 +37,7 @@ public class TeacherDetailServlet extends HttpServlet {
             request.setAttribute("teacherClassrooms", publicClassrooms(teacher.getUserId()));
         }
 
-        request.getRequestDispatcher("/teacher-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/teacher-detail.jsp").forward(request, response);
     }
 
     private List<Classroom> publicClassrooms(String teacherId) {

@@ -48,7 +48,7 @@ public class ClassroomServlet extends HttpServlet {
         }
 
         long forwardStartedAt = System.nanoTime();
-        request.getRequestDispatcher("/classes.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/classes.jsp").forward(request, response);
         logPerf("ClassroomServlet.doGet ajax=0 rows=" + filteredClasses.size() + " fallback=" + usedFallback, dataMs, elapsedMs(forwardStartedAt), elapsedMs(requestStartedAt));
     }
 

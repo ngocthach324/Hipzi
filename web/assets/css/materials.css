@@ -328,7 +328,18 @@ html {
     line-height: 1.4;
     margin-bottom: 0.5rem;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.material-description {
+    color: #64748b;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    margin: 0.45rem 0 0 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -336,6 +347,7 @@ html {
 .teacher-name {
     color: var(--text-secondary);
     font-size: 0.9rem;
+    padding-top: 4px;
 }
 
 .material-card-footer {

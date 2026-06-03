@@ -88,7 +88,7 @@ public class MaterialRepositoryServlet extends HttpServlet {
         }
 
         long forwardStartedAt = System.nanoTime();
-        request.getRequestDispatcher("/material-repository.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/material-repository.jsp").forward(request, response);
         logPerf("MaterialRepositoryServlet.doGet ajax=0 rows=" + materials.size(), dataMs, elapsedMs(forwardStartedAt), elapsedMs(requestStartedAt));
     }
 
@@ -112,7 +112,7 @@ public class MaterialRepositoryServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         User user = session != null ? (User) session.getAttribute("loggedUser") : null;
         if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
         if (!hasRole(user, "teacher") && !hasRole(user, "admin") && !hasRole(user, "staff")) {
@@ -235,4 +235,4 @@ public class MaterialRepositoryServlet extends HttpServlet {
     private String cleanParam(String value) {
         return value == null ? "" : value.trim();
     }
-}
+}

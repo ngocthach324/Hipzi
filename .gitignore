@@ -1,5 +1,6 @@
 # Thư mục build của NetBeans/Ant
 build/
+dist/
 # File cấu hình cá nhân của NetBeans
 nbproject/private/
 nbbuild/
@@ -15,3 +16,14 @@ Thumbs.db
 .vscode/
 .idea/
 *.iml
+
+# Thư mục chứa dữ liệu không cần thiết / nhạy cảm
+Data/
+database/
+*.sql
+*.sqlite
+*.db
+.env
+
+# Thư mục chứa các tool phụ trợ
+tools/

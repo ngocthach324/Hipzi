@@ -53,16 +53,16 @@ public class RememberMeFilter implements Filter {
             return true;
         }
 
-        return path.equals("/index.jsp")
+        return path.equals("/index")
                 || path.equals("/index.html")
                 || path.equals("/login")
-                || path.equals("/login.jsp")
+                || path.equals("/login")
                 || path.equals("/register")
-                || path.equals("/register.jsp")
+                || path.equals("/register")
                 || path.equals("/forgot-password")
-                || path.equals("/forgot-password.jsp")
+                || path.equals("/forgot-password")
                 || path.equals("/verify-otp")
-                || path.equals("/verify-otp.jsp")
+                || path.equals("/verify-otp")
                 || path.equals("/send-register-otp")
                 || path.equals("/auth/google")
                 || path.equals("/auth/google/callback");

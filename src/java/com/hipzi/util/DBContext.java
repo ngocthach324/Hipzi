@@ -1,21 +1,11 @@
 package com.hipzi.util;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Properties;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
-/**
- * Kết nối trực tiếp đến Supabase PostgreSQL qua DriverManager.
- *
- * Lý do KHÔNG dùng Tomcat JDBC pool:
- *   Tomcat JDBC pool dùng static Timer được load từ classloader của Tomcat,
- *   không phải webapp. Sau mỗi lần hot-reload, Timer bị cancel nhưng vẫn còn
- *   trong classloader dùng chung → lần tạo pool mới ném IllegalStateException.
- *
- * Supabase đã tích hợp PgBouncer (connection pooler) phía server nên không
- * cần thêm pool tầng ứng dụng khi kết nối qua URL pooler.
- */
+import java.sql.Connection;
+import java.sql.SQLException;
+
 public class DBContext {
 
     private static final String DB_URL      = "jdbc:postgresql://aws-1-ap-southeast-2.pooler.supabase.com:5432/postgres";
@@ -23,55 +13,48 @@ public class DBContext {
     private static final String DB_PASSWORD = "boicoc25062006";
     private static final String DRIVER_CLASS = "org.postgresql.Driver";
 
+    private static HikariDataSource dataSource;
+
     static {
         try {
             Class.forName(DRIVER_CLASS);
-        } catch (ClassNotFoundException e) {
-            System.err.println("[DBContext] Không tải được PostgreSQL Driver: " + e.getMessage());
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(DB_URL);
+            config.setUsername(DB_USER);
+            config.setPassword(DB_PASSWORD);
+            config.setDriverClassName(DRIVER_CLASS);
+            config.setAutoCommit(true);
+            config.setConnectionTimeout(10000);
+            config.setMaximumPoolSize(10);
+            config.setMinimumIdle(2);
+            config.setIdleTimeout(300000);
+            
+            dataSource = new HikariDataSource(config);
+            System.out.println("[DBContext] HikariCP initialized successfully.");
+        } catch (Exception e) {
+            System.err.println("[DBContext] Failed to initialize HikariCP: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Trả về Connection mới đến database.
-     * Caller phải đóng connection sau khi dùng (try-with-resources).
-     */
     public static Connection getConnection() throws SQLException {
-        long startedAt = System.nanoTime();
-        Properties props = new Properties();
-        props.setProperty("user", DB_USER);
-        props.setProperty("password", DB_PASSWORD);
-        // Tắt autoCommit mặc định để tương thích với code hiện tại
-        props.setProperty("defaultAutoCommit", "true");
-        // Timeout kết nối 10 giây
-        props.setProperty("loginTimeout", "10");
-        try {
-            Connection conn = DriverManager.getConnection(DB_URL, props);
-            logPerf("DBContext.getConnection", startedAt);
-            return conn;
-        } catch (SQLException e) {
-            logPerf("DBContext.getConnection FAILED", startedAt);
-            throw e;
+        if (dataSource == null) {
+            throw new SQLException("HikariDataSource is not initialized");
         }
+        return dataSource.getConnection();
     }
 
-    /**
-     * Không còn pool để đóng — giữ method này để AppContextListener biên dịch được.
-     */
     public static void closePool() {
-        System.out.println("[DBContext] Dùng DriverManager, không có pool để đóng.");
-    }
-
-    private static void logPerf(String label, long startedAt) {
-        long elapsedMs = (System.nanoTime() - startedAt) / 1_000_000L;
-        if (elapsedMs > 500) {
-            System.err.println("[PERF SLOW] " + label + " " + elapsedMs + "ms");
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
+            System.out.println("[DBContext] HikariCP pool closed.");
         }
     }
 
     public static void main(String[] args) {
         try (Connection conn = getConnection()) {
             if (conn != null) {
-                System.out.println("Kết nối Supabase PostgreSQL thành công!");
+                System.out.println("Kết nối Supabase PostgreSQL thành công qua HikariCP!");
             }
         } catch (SQLException e) {
             System.err.println("Kết nối thất bại: " + e.getMessage());

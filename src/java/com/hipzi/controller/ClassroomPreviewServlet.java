@@ -31,7 +31,7 @@ public class ClassroomPreviewServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         User user = session != null ? (User) session.getAttribute("loggedUser") : null;
         if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
@@ -52,7 +52,7 @@ public class ClassroomPreviewServlet extends HttpServlet {
             request.setAttribute("classroom", classroom);
             request.setAttribute("material", material);
             request.setAttribute("signedUrl", storageService.createSignedUrl(material.getFilePath(), 900));
-            request.getRequestDispatcher("/classroom-preview.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/classroom-preview.jsp").forward(request, response);
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Khong tao duoc link xem truoc tu Supabase Storage.");
         }
@@ -85,4 +85,4 @@ public class ClassroomPreviewServlet extends HttpServlet {
     private String cleanParam(String value) {
         return value == null ? "" : value.trim();
     }
-}
+}

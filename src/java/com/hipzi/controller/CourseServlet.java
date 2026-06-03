@@ -13,7 +13,7 @@ public class CourseServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher("/courses.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/courses.jsp").forward(request, response);
     }
 
     @Override

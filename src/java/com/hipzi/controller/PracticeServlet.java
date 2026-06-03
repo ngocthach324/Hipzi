@@ -34,7 +34,7 @@ public class PracticeServlet extends HttpServlet {
             return;
         }
 
-        request.getRequestDispatcher("/practice.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/practice.jsp").forward(request, response);
     }
 
     @Override

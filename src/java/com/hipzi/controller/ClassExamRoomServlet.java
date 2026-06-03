@@ -31,7 +31,7 @@ public class ClassExamRoomServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         User user = session != null ? (User) session.getAttribute("loggedUser") : null;
         if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
@@ -68,7 +68,7 @@ public class ClassExamRoomServlet extends HttpServlet {
         request.setAttribute("classId", classId);
         request.setAttribute("examCode", examCode);
         request.setAttribute("examLookupError", lookupError);
-        request.getRequestDispatcher("/class-exam-room.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/class-exam-room.jsp").forward(request, response);
     }
 
     private boolean canViewExam(User user, Classroom classroom) {

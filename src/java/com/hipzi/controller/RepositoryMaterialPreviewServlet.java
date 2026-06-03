@@ -29,7 +29,7 @@ public class RepositoryMaterialPreviewServlet extends HttpServlet {
             repositoryMaterialDao.incrementViewCount(material.getId());
             request.setAttribute("material", material);
             request.setAttribute("signedUrl", storageService.createSignedUrl(material.getFilePath(), 900));
-            request.getRequestDispatcher("/repository-material-preview.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/repository-material-preview.jsp").forward(request, response);
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Loi Supabase: " + e.getMessage());
         }
@@ -38,4 +38,4 @@ public class RepositoryMaterialPreviewServlet extends HttpServlet {
     private String cleanParam(String value) {
         return value == null ? "" : value.trim();
     }
-}
+}
