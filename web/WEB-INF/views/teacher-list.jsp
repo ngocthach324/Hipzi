@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.net.URLEncoder"%>
 <%@page import="java.nio.charset.StandardCharsets"%>
 <%@page import="java.util.List"%>
@@ -252,10 +252,10 @@
                 <span>HIPZI</span>
             </a>
             <ul class="nav-links">
-                <li><a href="${pageContext.request.contextPath}/index">Trang chủ</a></li>
+
                 <li><a href="${pageContext.request.contextPath}/material-repository">Kho tài liệu</a></li>
                 <li><a href="${pageContext.request.contextPath}/classes">Lớp học</a></li>
-                <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
+
 
                 <li><a href="${pageContext.request.contextPath}/exam-room">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>

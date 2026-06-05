@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%
     User user = (User) session.getAttribute("loggedUser");
@@ -40,10 +40,10 @@
                <span>HIPZI</span>
             </a>
             <ul class="nav-links">
-                <li><a href="${pageContext.request.contextPath}/index">Trang chủ</a></li>
+
                 <li><a href="<%= request.getContextPath() + (user != null ? "/material-repository" : "/login") %>">Kho tài liệu</a></li>
                 <li><a href="<%= request.getContextPath() + (user != null ? "/classes" : "/login") %>">Lớp học</a></li>
-                <li><a href="<%= request.getContextPath() + (user != null ? "/courses" : "/login") %>">Khóa học</a></li>
+
 
                 <li><a href="<%= request.getContextPath() + (user != null ? "/exam-room" : "/login") %>">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
