@@ -74,6 +74,7 @@
     int homeworkCount = classHomework != null ? classHomework.size() : 0;
     int examCount = classroomExams != null ? classroomExams.size() : 0;
     int quizCount = classroomQuizzes != null ? classroomQuizzes.size() : 0;
+    Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
     String quizDraftTitle = (String) session.getAttribute("quizDraftTitle");
     String quizDraftDescription = (String) session.getAttribute("quizDraftDescription");
     String quizDraftScanText = (String) session.getAttribute("quizDraftScanText");
@@ -140,24 +141,25 @@
 
         .classroom-shell {
             width: 100%;
-            max-width: 1424px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 7rem 1.25rem 4rem;
+            padding: max(0.75rem, calc(7rem - 70px)) 1.25rem 4rem;
             box-sizing: border-box;
-            overflow: hidden;
         }
 
         .classroom-hero {
             position: relative;
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(250px, 0.34fr);
-            gap: 1.25rem;
+            grid-template-columns: minmax(0, 1fr) minmax(260px, 0.38fr);
+            gap: 2rem;
             align-items: stretch;
-            padding: 1.35rem;
+            min-height: 330px;
+            padding: 100px 3.25rem calc(3rem + 40px);
             border: 1px solid rgba(203, 213, 225, 0.72);
             border-radius: 1.15rem;
             background:
-                linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(240, 253, 250, 0.9)),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.16) 45%, rgba(240, 253, 250, 0.12)),
+                url('${pageContext.request.contextPath}/assets/images/classroom-hero.png') center / cover no-repeat,
                 #ffffff;
             color: #0f172a;
             box-shadow: 0 22px 60px rgba(15, 23, 42, 0.08), 0 14px 34px rgba(15, 118, 110, 0.08);
@@ -171,6 +173,7 @@
         .classroom-hero-main {
             display: flex;
             min-width: 0;
+            position: static;
             flex-direction: column;
             justify-content: center;
             padding-right: 0.5rem;
@@ -193,47 +196,6 @@
             transform: translateX(-2px);
         }
 
-        .classroom-hero h1 {
-            margin: 0;
-            font-size: clamp(1.8rem, 3vw, 2.65rem);
-            line-height: 1.12;
-            letter-spacing: 0;
-        }
-
-        .classroom-hero-desc {
-            max-width: 720px;
-            margin: 0.75rem 0 0;
-            color: #64748b;
-            font-size: 0.98rem;
-            font-weight: 650;
-            line-height: 1.55;
-        }
-
-        .classroom-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.55rem;
-            margin-bottom: 0.85rem;
-        }
-
-        .classroom-pill {
-            display: inline-flex;
-            align-items: center;
-            border-radius: 999px;
-            padding: 0.38rem 0.78rem;
-            background: #ecfdf5;
-            border: 1px solid #bbf7d0;
-            color: #047857;
-            font-weight: 900;
-            font-size: 0.78rem;
-        }
-
-        .classroom-pill.muted {
-            background: #f8fafc;
-            border-color: #e2e8f0;
-            color: #475569;
-        }
-
         .online-room-btn {
             display: inline-flex;
             justify-content: center;
@@ -241,7 +203,11 @@
             width: max-content;
             min-width: 0;
             border-radius: 999px;
-            margin-top: 1.1rem;
+            position: absolute;
+            left: 49px;
+            bottom: 32px;
+            z-index: 2;
+            margin-top: 0;
             padding: 0.78rem 1.25rem;
             background: #059669;
             color: #ffffff;
@@ -259,40 +225,26 @@
 
         .classroom-teacher-card {
             display: grid;
-            grid-template-rows: auto 1fr auto;
-            gap: 0.85rem;
-            min-height: 210px;
-            border: 1px solid rgba(148, 163, 184, 0.24);
-            border-radius: 1rem;
-            padding: 1rem;
-            background:
-                linear-gradient(180deg, rgba(240, 253, 250, 0.96), rgba(255, 255, 255, 0.96)),
-                #ffffff;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 18px 36px rgba(15, 118, 110, 0.1);
-        }
-
-        .classroom-teacher-badge {
-            display: inline-flex;
-            width: max-content;
-            align-items: center;
-            border-radius: 999px;
-            padding: 0.34rem 0.7rem;
-            background: #ecfdf5;
-            color: #047857;
-            border: 1px solid #bbf7d0;
-            font-size: 0.75rem;
-            font-weight: 900;
+            place-items: center;
+            min-height: auto;
+            border: 0;
+            border-radius: 0;
+            padding: 0;
+            background: transparent;
+            box-shadow: none;
+            animation: teacherAvatarIn 700ms ease both;
         }
 
         .classroom-teacher-photo {
             align-self: center;
             justify-self: center;
-            width: min(150px, 55%);
+            width: min(255px, 66.3%);
             aspect-ratio: 1;
             border-radius: 999px;
-            padding: 0.35rem;
-            background: linear-gradient(135deg, #059669, #d1fae5);
-            box-shadow: 0 18px 34px rgba(5, 150, 105, 0.18);
+            padding: 0.45rem;
+            background: linear-gradient(135deg, #059669, #ccfbf1);
+            box-shadow: 0 24px 54px rgba(5, 150, 105, 0.18);
+            animation: teacherAvatarFloat 4.8s ease-in-out infinite alternate;
         }
 
         .classroom-teacher-photo img,
@@ -307,7 +259,7 @@
             justify-content: center;
             background: #f8fafc;
             color: #059669;
-            font-size: 2.6rem;
+            font-size: 3.2rem;
             font-weight: 950;
         }
 
@@ -335,7 +287,6 @@
             max-width: 100%;
             margin-top: calc(1.25rem - 15px);
             box-sizing: border-box;
-            overflow: hidden;
         }
         
         .classroom-grid > div {
@@ -353,7 +304,6 @@
             box-shadow: 0 16px 34px rgba(15, 23, 42, 0.05);
             width: 100%;
             box-sizing: border-box;
-            overflow: hidden;
         }
 
         .classroom-card + .classroom-card {
@@ -372,7 +322,6 @@
             border: 1px solid #e2e8f0;
             border-radius: 1.1rem;
             box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
-            overflow: hidden;
             width: 100%;
             box-sizing: border-box;
         }
@@ -385,6 +334,7 @@
             padding: 0.8rem;
             background: #ffffff;
             border-bottom: 1px solid #e2e8f0;
+            border-radius: 1.1rem 1.1rem 0 0;
             scrollbar-width: thin;
         }
 
@@ -467,6 +417,16 @@
         @keyframes classroomTabIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes teacherAvatarIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes teacherAvatarFloat {
+            from { transform: translateY(-4px); }
+            to { transform: translateY(8px); }
         }
 
         .tab-section-title {
@@ -685,6 +645,123 @@
             justify-content: flex-end;
         }
 
+        .class-exam-summary {
+            display: grid;
+            gap: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .class-exam-summary-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .class-exam-summary-head h3 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 1.02rem;
+        }
+
+        .class-exam-summary-head p {
+            margin: 0.18rem 0 0;
+            color: #64748b;
+            font-size: 0.86rem;
+            line-height: 1.55;
+        }
+
+        .class-exam-total {
+            display: inline-flex;
+            align-items: center;
+            margin-left: auto;
+            border-radius: 999px;
+            padding: 0.42rem 0.7rem;
+            background: #ecfdf5;
+            color: #047857;
+            font-size: 0.78rem;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .class-exam-card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.85rem;
+        }
+
+        .class-exam-card {
+            display: grid;
+            gap: 0.85rem;
+            min-width: 0;
+            padding: 1rem;
+            border: 1px solid #dceee9;
+            border-radius: 0.95rem;
+            background:
+                radial-gradient(circle at top right, rgba(94, 234, 212, 0.18), transparent 36%),
+                #ffffff;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+        }
+
+        .class-exam-card-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .class-exam-card h3 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 1rem;
+            line-height: 1.35;
+        }
+
+        .class-exam-card p {
+            margin: 0.28rem 0 0;
+            color: #64748b;
+            font-size: 0.86rem;
+            line-height: 1.55;
+        }
+
+        .class-exam-status {
+            flex: 0 0 auto;
+            border-radius: 999px;
+            padding: 0.34rem 0.62rem;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 0.72rem;
+            font-weight: 950;
+            white-space: nowrap;
+        }
+
+        .class-exam-status.upcoming {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .class-exam-status.closed,
+        .class-exam-status.draft {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .class-exam-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.42rem;
+        }
+
+        .class-exam-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+            margin-top: 0.1rem;
+        }
+
         .classroom-section-heading {
             display: flex;
             align-items: center;
@@ -699,17 +776,18 @@
         }
 
         .upload-panel {
-            border: 1px solid #d1fae5;
+            border: 1px solid #e2e8f0;
             border-radius: 0.9rem;
-            background: #f0fdf4;
+            background: #f8fafc;
             padding: 1rem;
             margin-bottom: 1rem;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
         }
 
         .upload-panel h3 {
             margin: 0 0 0.8rem;
             font-size: 0.98rem;
-            color: #065f46;
+            color: #0f172a;
         }
 
         .upload-grid {
@@ -728,13 +806,26 @@
         }
 
         .exam-datetime-fields {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 74px 74px;
-            gap: 0.55rem;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 0.4rem;
+            min-width: 0;
+        }
+
+        .exam-datetime-fields input[type="date"] {
+            flex: 1 1 90px;
+            min-width: 90px;
+            padding-left: 0.3rem;
+            padding-right: 0.2rem;
         }
 
         .exam-datetime-fields select {
+            flex: 0 0 62px;
+            width: 62px;
             text-align: center;
+            padding-left: 0.15rem;
+            padding-right: 0.15rem;
         }
 
         .upload-field label {
@@ -747,7 +838,7 @@
         .upload-field select,
         .upload-field textarea {
             width: 100%;
-            border: 1px solid #bbf7d0;
+            border: 1px solid #cbd5e1;
             border-radius: 0.72rem;
             padding: 0.7rem 0.85rem;
             outline: none;
@@ -763,7 +854,6 @@
 
         .exam-builder-shell {
             gap: 0;
-            overflow: hidden;
             padding: 0;
             border-color: #e5eeec;
             border-radius: 1.25rem;
@@ -771,13 +861,23 @@
             box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
         }
 
+        .exam-builder-shell .upload-grid {
+            row-gap: 1.1rem;
+            column-gap: 0.95rem;
+        }
+
+        .exam-builder-shell .upload-field {
+            gap: 0.5rem;
+        }
+
         .exam-builder-heading {
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
+            align-items: center;
+            justify-content: center;
             gap: 1rem;
             padding: 1.25rem 1.35rem;
             border-bottom: 1px solid #dceee9;
+            border-radius: 1.25rem 1.25rem 0 0;
             background:
                 radial-gradient(circle at top right, rgba(94, 234, 212, 0.24), transparent 34%),
                 linear-gradient(135deg, #f0fdfa 0%, #f8fffd 58%, #eff6ff 100%);
@@ -808,40 +908,41 @@
         .exam-builder-step-pill {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.5rem;
             flex: 0 0 auto;
-            border: 1px solid #ccfbf1;
+            border: 1px solid #a7f3d0;
             border-radius: 999px;
-            padding: 0.45rem 0.72rem;
-            background: rgba(255, 255, 255, 0.8);
+            padding: 0.65rem 1.25rem;
+            background: #ffffff;
             color: #059669;
-            font-size: 0.74rem;
-            font-weight: 900;
+            font-size: 1.1rem;
+            font-weight: 950;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.08);
         }
 
         .exam-builder-step-pill::before {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 999px;
             background: #10b981;
             content: "";
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.14);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.16);
         }
 
         .exam-builder-section {
-            padding: 1.2rem 1.35rem;
+            padding: 1.45rem 1.35rem;
             border-bottom: 0;
         }
 
         .exam-builder-section + .exam-builder-section {
-            padding-top: 1.45rem;
+            padding-top: 1.65rem;
         }
 
         .exam-section-heading {
             display: flex;
             align-items: flex-start;
             gap: 0.7rem;
-            margin-bottom: 0.9rem;
+            margin-bottom: 1.15rem;
         }
 
         .exam-section-heading strong {
@@ -1001,6 +1102,8 @@
         .exam-builder-shell .upload-field input,
         .exam-builder-shell .upload-field select,
         .exam-builder-shell .upload-field textarea {
+            padding-top: 0.88rem;
+            padding-bottom: 0.88rem;
             border-color: #e2e8f0;
             background: rgba(255, 255, 255, 0.94);
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -1110,29 +1213,38 @@
             white-space: nowrap;
         }
 
-        .exam-ai-actions {
-            justify-content: flex-end;
+        .quiz-actions.exam-ai-actions {
+            justify-content: center;
             margin-top: 0.75rem;
         }
 
         .exam-ai-action-group {
             display: grid;
             gap: 0.38rem;
-            justify-items: end;
+            justify-items: center;
         }
 
         .exam-ai-submit {
             gap: 0.42rem;
             border-color: #059669;
-            padding: 0.72rem 1rem;
+            padding: 0.72rem 1.25rem;
             background: linear-gradient(135deg, #059669, #047857);
             color: #ffffff;
             box-shadow: 0 10px 20px rgba(5, 150, 105, 0.2);
+            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .exam-ai-submit:hover {
-            transform: translateY(-1px);
+            transform: translateY(-2px);
             box-shadow: 0 14px 26px rgba(5, 150, 105, 0.26);
+            color: #ffffff;
+            background: linear-gradient(135deg, #059669, #047857);
+            border-color: #059669;
+        }
+
+        .exam-ai-submit:active {
+            transform: scale(0.96) translateY(0);
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.15);
         }
 
         .exam-ai-submit svg {
@@ -1149,16 +1261,48 @@
 
         .quiz-card.exam-question-workspace {
             padding: 0;
+            padding-bottom: 2.25rem;
             border: 0;
             background: transparent;
         }
 
         .exam-question-workspace .quiz-question {
+            position: relative;
             border: 0;
             border-left: 3px solid #99f6e4;
             border-radius: 0.35rem 0.8rem 0.8rem 0.35rem;
             background: #f8fafc;
             box-shadow: none;
+        }
+
+        .exam-question-workspace .quiz-question[data-removable-exam-question] {
+            padding-right: 3.2rem;
+        }
+
+        .exam-question-remove {
+            position: absolute;
+            top: 0.7rem;
+            right: 0.7rem;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-color: #fecaca;
+            background: #fff7f7;
+            color: #b91c1c;
+            font-size: 1.1rem;
+            line-height: 1;
+            z-index: 2;
+        }
+
+        .exam-question-remove:hover {
+            border-color: #ef4444;
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .exam-question-workspace .quiz-actions {
+            margin-top: calc(0.9rem + 35px);
+            margin-bottom: 1rem;
         }
 
         .quiz-scan-preview {
@@ -1287,7 +1431,20 @@
             flex-wrap: wrap;
             gap: 0.6rem;
             align-items: center;
+            justify-content: flex-end;
             margin-top: 0.9rem;
+        }
+
+        .exam-add-btn {
+            border-color: #a7f3d0 !important;
+            background: #ecfdf5 !important;
+            color: #047857 !important;
+        }
+
+        .exam-create-btn {
+            border-color: #059669 !important;
+            background: #059669 !important;
+            color: #ffffff !important;
         }
 
         .quiz-meta {
@@ -1331,6 +1488,21 @@
         @media (max-width: 900px) {
             .classroom-hero {
                 grid-template-columns: 1fr;
+                min-height: auto;
+                padding: 2rem;
+            }
+
+            .classroom-teacher-card {
+                order: -1;
+            }
+
+            .classroom-teacher-photo {
+                width: min(190px, 62%);
+            }
+
+            .online-room-btn {
+                position: static;
+                margin-top: 1rem;
             }
 
             .info-grid {
@@ -1357,12 +1529,21 @@
             }
 
             .resource-item,
+            .class-exam-card-grid,
             .upload-grid,
             .quiz-scan-preview,
             .quiz-card-head,
             .quiz-option-grid,
             .exam-mode-picker {
                 grid-template-columns: 1fr;
+            }
+
+            .class-exam-card-head {
+                display: grid;
+            }
+
+            .class-exam-actions {
+                justify-content: flex-start;
             }
 
             .exam-builder-heading {
@@ -1427,28 +1608,15 @@
 
         <section class="classroom-hero">
             <div class="classroom-hero-main">
-                <h1><%= h(title) %></h1>
-                <p class="classroom-hero-desc">Không gian học tập của lớp cùng giảng viên <strong><%= h(teacherName) %></strong>. Theo dõi tài liệu, bài tập và trao đổi trong phòng học riêng của HIPZI.</p>
-                <div class="classroom-meta">
-                    <span class="classroom-pill"><%= h(statusLabel) %></span>
-                    <span class="classroom-pill muted"><%= h(subject) %></span>
-                    <span class="classroom-pill muted"><%= h(grade) %></span>
-                    <span class="classroom-pill muted"><%= h(schedule) %></span>
-                </div>
                 <a class="online-room-btn" href="<%= h(onlineRoomHref) %>" target="_blank" rel="noopener">Vào phòng học online</a>
             </div>
             <aside class="classroom-teacher-card" aria-label="Thông tin giảng viên">
-                <span class="classroom-teacher-badge">Giảng viên</span>
                 <div class="classroom-teacher-photo">
                     <% if (!teacherAvatarUrl.isEmpty()) { %>
                         <img src="<%= h(teacherAvatarUrl) %>" alt="">
                     <% } else { %>
                         <div class="classroom-teacher-placeholder"><%= h(teacherName.substring(0, 1).toUpperCase()) %></div>
                     <% } %>
-                </div>
-                <div class="classroom-teacher-meta">
-                    <strong><%= h(teacherName) %></strong>
-                    <span><%= h(subject) %> · <%= h(grade) %></span>
                 </div>
             </aside>
         </section>
@@ -2026,16 +2194,73 @@ D. ...
 
                 <section class="classroom-card classroom-tab-panel" data-classroom-panel="exams">
                     <h2>Phòng thi lớp học</h2>
+                    <div class="class-exam-summary">
+                        <div class="class-exam-summary-head">
+                            <span class="class-exam-total"><%= examCount %> bài thi</span>
+                        </div>
+                        <% if (classroomExams == null || classroomExams.isEmpty()) { %>
+                            <div class="empty-state"><%= canManageClassroom ? "Chưa có bài thi lớp học nào. Hãy thiết lập đề thi đầu tiên cho lớp." : "Lớp chưa có bài thi nào được giảng viên mở." %></div>
+                        <% } else { %>
+                            <div class="class-exam-card-grid">
+                                <% for (ClassroomExam exam : classroomExams) {
+                                    String examHref = request.getContextPath()
+                                            + "/class-exam-room?classId=" + u(classroom.getId())
+                                            + "&code=" + u(exam.getExamCode());
+                                    boolean isExamOpenNow = "open".equals(exam.getStatus())
+                                            && exam.getStartAt() != null
+                                            && exam.getEndAt() != null
+                                            && !currentTimestamp.before(exam.getStartAt())
+                                            && !currentTimestamp.after(exam.getEndAt());
+                                    boolean isExamUpcoming = "open".equals(exam.getStatus())
+                                            && exam.getStartAt() != null
+                                            && currentTimestamp.before(exam.getStartAt());
+                                    String examStatusClass = "draft".equals(exam.getStatus()) ? "draft" : (isExamOpenNow ? "" : (isExamUpcoming ? "upcoming" : "closed"));
+                                    String examStatusLabel = canManageClassroom
+                                            ? exam.getStatusLabel()
+                                            : (isExamOpenNow ? "Đang làm bài" : (isExamUpcoming ? "Sắp mở" : "Đã hết hạn"));
+                                %>
+                                    <article class="class-exam-card">
+                                        <div class="class-exam-card-head">
+                                            <div>
+                                                <h3><%= h(exam.getTitle()) %></h3>
+                                                <% if (exam.getDescription() != null && !exam.getDescription().isEmpty()) { %>
+                                                    <p><%= h(exam.getDescription()) %></p>
+                                                <% } %>
+                                            </div>
+                                            <span class="class-exam-status <%= h(examStatusClass) %>"><%= h(examStatusLabel) %></span>
+                                        </div>
+                                        <div class="class-exam-meta">
+                                            <span class="resource-chip"><%= h(exam.getExamTypeLabel()) %></span>
+                                            <span class="resource-chip"><%= h(exam.getExamCode()) %></span>
+                                            <span class="resource-chip"><%= exam.getDurationMinutes() %> phút</span>
+                                            <span class="resource-chip"><%= exam.getQuestions() != null ? exam.getQuestions().size() : 0 %> câu</span>
+                                            <span class="resource-chip">Mở: <%= h(formatExamTime(exam.getStartAt())) %></span>
+                                            <span class="resource-chip">Đóng: <%= h(formatExamTime(exam.getEndAt())) %></span>
+                                        </div>
+                                        <div class="class-exam-actions">
+                                            <a class="mini-btn primary" href="<%= h(examHref) %>"><%= canManageClassroom ? "Xem phòng thi" : "Vào làm bài" %></a>
+                                            <% if (exam.getSourceMaterialId() != null && !exam.getSourceMaterialId().isEmpty()) { %>
+                                                <a class="mini-btn preview" href="${pageContext.request.contextPath}/classroom-preview?id=<%= h(exam.getSourceMaterialId()) %>" target="_blank" rel="noopener">Xem đề</a>
+                                            <% } %>
+                                            <% if (canManageClassroom) { %>
+                                                <form action="${pageContext.request.contextPath}/classroom" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa bài thi này?');">
+                                                    <input type="hidden" name="action" value="deleteClassExam">
+                                                    <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                                    <input type="hidden" name="examId" value="<%= h(exam.getId()) %>">
+                                                    <button class="mini-btn danger" type="submit">Xóa</button>
+                                                </form>
+                                            <% } %>
+                                        </div>
+                                    </article>
+                                <% } %>
+                            </div>
+                        <% } %>
+                    </div>
                     <% if (canManageClassroom) { %>
                         <form class="upload-panel quiz-builder exam-builder-shell" action="${pageContext.request.contextPath}/classroom" method="POST" enctype="multipart/form-data" data-exam-builder novalidate>
                             <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
                             <div class="exam-builder-heading">
-                                <div>
-                                    <span class="exam-builder-eyebrow">CLASSROOM EXAM BUILDER</span>
-                                    <h3>Tạo bài thi lớp học</h3>
-                                    <p>Chọn cách soạn đề phù hợp, sau đó rà soát câu hỏi trước khi mở bài thi cho học sinh.</p>
-                                </div>
-                                <span class="exam-builder-step-pill">Thiết lập đề thi</span>
+                                <span class="exam-builder-step-pill">Thiết lập đề thi mới</span>
                             </div>
                             <section class="exam-builder-section">
                                 <div class="exam-section-heading">
@@ -2200,7 +2425,6 @@ D. ...
                                             </svg>
                                             Phân tích bằng AI
                                         </button>
-                                        <span class="exam-ai-note">AI chỉ điền trước. Hãy kiểm tra lại trước khi lưu.</span>
                                     </div>
                                 </div>
                             </section>
@@ -2293,56 +2517,13 @@ D. ...
                                     <% } %>
                                 </div>
                                 <div class="quiz-actions">
-                                    <button class="mini-btn preview" type="button" data-add-exam-question>Thêm câu hỏi</button>
-                                    <button class="mini-btn primary" type="submit" name="action" value="createClassExam">Tạo bài thi</button>
+                                    <button class="mini-btn exam-add-btn" type="button" data-add-exam-question>Thêm câu hỏi</button>
+                                    <button class="mini-btn exam-create-btn" type="submit" name="action" value="createClassExam">Tạo bài thi</button>
                                 </div>
                             </div>
                             </section>
                         </form>
                     <% } %>
-                    <div class="resource-list">
-                        <% if (classroomExams == null || classroomExams.isEmpty()) { %>
-                            <div class="empty-state"><%= canManageClassroom ? "Chưa có bài thi lớp học nào." : "Lớp chưa có bài thi nào đang mở." %></div>
-                        <% } else {
-                            for (ClassroomExam exam : classroomExams) {
-                                String examHref = request.getContextPath()
-                                        + "/class-exam-room?classId=" + u(classroom.getId())
-                                        + "&code=" + u(exam.getExamCode());
-                        %>
-                            <div class="resource-item">
-                                <div>
-                                    <strong><%= h(exam.getTitle()) %></strong>
-                                    <% if (exam.getDescription() != null && !exam.getDescription().isEmpty()) { %>
-                                        <span><%= h(exam.getDescription()) %></span>
-                                    <% } %>
-                                    <div class="resource-meta">
-                                        <span class="resource-chip">Bài thi lớp học</span>
-                                        <span class="resource-chip"><%= h(exam.getExamTypeLabel()) %></span>
-                                        <span class="resource-chip"><%= h(exam.getExamCode()) %></span>
-                                        <span class="resource-chip">Mở: <%= h(formatExamTime(exam.getStartAt())) %></span>
-                                        <span class="resource-chip">Đóng: <%= h(formatExamTime(exam.getEndAt())) %></span>
-                                        <span class="resource-chip"><%= exam.getDurationMinutes() %> phút</span>
-                                        <span class="resource-chip"><%= exam.getQuestions() != null ? exam.getQuestions().size() : 0 %> câu</span>
-                                    </div>
-                                </div>
-                                <div class="resource-actions">
-                                    <a class="mini-btn primary" href="<%= h(examHref) %>">Vào phòng thi</a>
-                                    <% if (exam.getSourceMaterialId() != null && !exam.getSourceMaterialId().isEmpty()) { %>
-                                        <a class="mini-btn preview" href="${pageContext.request.contextPath}/classroom-preview?id=<%= h(exam.getSourceMaterialId()) %>" target="_blank" rel="noopener">Xem đề</a>
-                                    <% } %>
-                                    <% if (canManageClassroom) { %>
-                                        <form action="${pageContext.request.contextPath}/classroom" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa bài thi này?');">
-                                            <input type="hidden" name="action" value="deleteClassExam">
-                                            <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
-                                            <input type="hidden" name="examId" value="<%= h(exam.getId()) %>">
-                                            <button class="mini-btn danger" type="submit">Xóa</button>
-                                        </form>
-                                    <% } %>
-                                </div>
-                            </div>
-                        <%  }
-                        } %>
-                    </div>
                 </section>
 
                 <section class="classroom-card classroom-tab-panel" data-classroom-panel="leaderboard">
@@ -2574,8 +2755,28 @@ D. ...
         });
 
         function renumberExamQuestions(list) {
-            list.querySelectorAll('[data-exam-question] h4').forEach((heading, index) => {
-                heading.textContent = 'Câu ' + (index + 1);
+            list.querySelectorAll('[data-exam-question]').forEach((question, index) => {
+                const heading = question.querySelector('h4');
+                if (heading) {
+                    heading.textContent = 'Câu ' + (index + 1);
+                }
+                let removeButton = question.querySelector('[data-remove-exam-question]');
+                if (index === 0) {
+                    question.removeAttribute('data-removable-exam-question');
+                    removeButton?.remove();
+                    return;
+                }
+                question.setAttribute('data-removable-exam-question', 'true');
+                if (!removeButton) {
+                    removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'mini-btn exam-question-remove';
+                    removeButton.dataset.removeExamQuestion = 'true';
+                    removeButton.setAttribute('aria-label', 'Xóa câu hỏi này');
+                    removeButton.title = 'Xóa câu hỏi';
+                    removeButton.textContent = '×';
+                    question.appendChild(removeButton);
+                }
             });
         }
 
@@ -2662,6 +2863,21 @@ D. ...
                 syncExamBuilder(builder);
                 list.lastElementChild?.querySelector('textarea')?.focus();
             });
+            builder.querySelector('[data-exam-question-list]')?.addEventListener('click', event => {
+                const removeButton = event.target.closest('[data-remove-exam-question]');
+                if (!removeButton) return;
+                const list = builder.querySelector('[data-exam-question-list]');
+                const question = removeButton.closest('[data-exam-question]');
+                if (!list || !question) return;
+                question.remove();
+                renumberExamQuestions(list);
+                syncExamBuilder(builder);
+                list.lastElementChild?.querySelector('textarea')?.focus();
+            });
+            const initialExamQuestionList = builder.querySelector('[data-exam-question-list]');
+            if (initialExamQuestionList) {
+                renumberExamQuestions(initialExamQuestionList);
+            }
             syncExamBuilder(builder);
         });
 

@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 
 public class Classroom {
     private String id;
+    private String classCode;
     private String teacherId;
     private String title;
     private String subject;
@@ -39,6 +40,9 @@ public class Classroom {
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+
+    public String getClassCode() { return classCode; }
+    public void setClassCode(String classCode) { this.classCode = classCode; }
 
     public String getTeacherId() { return teacherId; }
     public void setTeacherId(String teacherId) { this.teacherId = teacherId; }

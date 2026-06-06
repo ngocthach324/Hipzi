@@ -69,9 +69,9 @@
         }
 
         .class-detail-shell {
-            max-width: 1180px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: calc(7rem - 20px) 1.25rem 4rem;
+            padding: max(0.75rem, calc(7rem - 70px)) 1.25rem 4rem;
         }
 
         .class-back-link {
@@ -276,6 +276,8 @@
 
         .class-hero-content {
             max-width: 680px;
+            display: grid;
+            gap: 1rem;
         }
 
         .class-hero h1 {
@@ -465,7 +467,8 @@
             border: 1px solid rgba(203, 213, 225, 0.72);
             border-radius: 1.15rem;
             background:
-                linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(240, 253, 250, 0.9)),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.16) 45%, rgba(240, 253, 250, 0.12)),
+                url('${pageContext.request.contextPath}/assets/images/classroom-hero.png') center / cover no-repeat,
                 #ffffff;
             box-shadow: 0 22px 60px rgba(15, 23, 42, 0.08), 0 14px 34px rgba(15, 118, 110, 0.08);
             overflow: hidden;
@@ -477,19 +480,21 @@
         }
 
         .class-hero-band {
-            min-height: auto;
+            min-height: 330px;
             display: grid;
             grid-template-columns: minmax(0, 1fr) minmax(260px, 0.38fr);
-            gap: 1.25rem;
+            gap: 2rem;
             align-items: stretch;
-            padding: 1.35rem;
+            padding: 100px 3.25rem calc(3rem + 40px);
             color: #0f172a;
         }
 
         .class-hero-content {
             max-width: 100%;
+            position: static;
             display: flex;
             flex-direction: column;
+            gap: 1rem;
             justify-content: center;
             animation: none;
         }
@@ -506,7 +511,7 @@
         .class-hero p {
             display: block;
             max-width: 700px;
-            margin: 0.75rem 0 0;
+            margin: 0;
             color: #64748b;
             font-size: 0.98rem;
             line-height: 1.55;
@@ -518,7 +523,7 @@
             align-items: center;
             gap: 0.55rem;
             flex-wrap: wrap;
-            margin-bottom: 0.85rem;
+            margin-bottom: 0;
         }
 
         .class-hero-chip {
@@ -540,7 +545,11 @@
         }
 
         .hero-join-actions {
-            margin-top: 1.1rem;
+            position: absolute;
+            left: 49px;
+            bottom: 32px;
+            z-index: 2;
+            margin-top: 0;
         }
 
         .hero-join-btn {
@@ -574,8 +583,9 @@
 
         .hero-visual {
             min-height: auto;
-            display: block;
-            animation: none;
+            display: grid;
+            place-items: center;
+            animation: teacherAvatarIn 700ms ease both;
         }
 
         .hero-orbit,
@@ -587,24 +597,20 @@
         }
 
         .classroom-visual-card {
-            width: 100%;
+            width: min(255px, 66.3%);
             min-width: 0;
-            height: 100%;
-            min-height: 210px;
-            aspect-ratio: auto;
+            height: auto;
+            min-height: 0;
+            aspect-ratio: 1;
             transform: none;
-            animation: none;
-            border-radius: 1rem;
-            background:
-                linear-gradient(180deg, rgba(240, 253, 250, 0.96), rgba(255, 255, 255, 0.96)),
-                #ffffff;
-            border: 1px solid rgba(148, 163, 184, 0.24);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 18px 36px rgba(15, 118, 110, 0.1);
-            padding: 1rem;
+            animation: teacherAvatarFloat 4.8s ease-in-out infinite alternate;
+            border-radius: 999px;
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            padding: 0;
             color: #0f172a;
-            display: grid;
-            grid-template-rows: auto 1fr auto;
-            gap: 0.85rem;
+            display: block;
         }
 
         .classroom-visual-card::before,
@@ -626,14 +632,12 @@
         }
 
         .teacher-photo-frame {
-            align-self: center;
-            justify-self: center;
-            width: min(150px, 55%);
+            width: 100%;
             aspect-ratio: 1;
             border-radius: 999px;
-            padding: 0.35rem;
-            background: linear-gradient(135deg, #059669, #d1fae5);
-            box-shadow: 0 18px 34px rgba(5, 150, 105, 0.18);
+            padding: 0.45rem;
+            background: linear-gradient(135deg, #059669, #ccfbf1);
+            box-shadow: 0 24px 54px rgba(5, 150, 105, 0.18);
         }
 
         .teacher-photo-frame img,
@@ -650,6 +654,16 @@
             color: #059669;
             font-size: 2.6rem;
             font-weight: 950;
+        }
+
+        @keyframes teacherAvatarIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes teacherAvatarFloat {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
         }
 
         .teacher-photo-meta {
@@ -809,9 +823,26 @@
         }
 
         .content-section h2 {
-            margin: 0 0 1rem;
+            margin: 0;
             font-size: 1.25rem;
             color: #0f172a;
+        }
+
+        .content-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .content-section-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.55rem;
+            flex-wrap: wrap;
         }
 
         .content-section p {
@@ -825,7 +856,12 @@
             gap: 0.8rem;
         }
 
+        .module-list.is-editing .module-delete-form {
+            display: block;
+        }
+
         .module-item {
+            position: relative;
             display: grid;
             grid-template-columns: 42px minmax(0, 1fr);
             gap: 0.8rem;
@@ -860,23 +896,32 @@
             font-size: 0.92rem;
         }
 
-        .module-edit-toggle {
-            margin-top: 0.75rem;
-            border: 1px solid #a7f3d0;
+        .module-delete-form {
+            display: none;
+            position: absolute;
+            top: 0.72rem;
+            right: 0.72rem;
+        }
+
+        .module-delete-btn {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border: 1px solid #fecaca;
             border-radius: 999px;
-            background: #ffffff;
-            color: #059669;
-            font-weight: 850;
+            background: #fff7f7;
+            color: #b91c1c;
             cursor: pointer;
-            padding: 0.45rem 0.8rem;
-            font-size: 0.88rem;
+            font-size: 1.05rem;
+            font-weight: 900;
             line-height: 1;
             transition: all 0.2s ease;
         }
-        .module-edit-toggle:hover {
-            background: #ecfdf5;
-            color: #047857;
-            border-color: #059669;
+
+        .module-delete-btn:hover {
+            background: #fef2f2;
+            border-color: #ef4444;
+            color: #991b1b;
         }
 
         .module-edit-form,
@@ -894,11 +939,11 @@
         }
 
         .module-add-form {
-            display: grid;
             background: #fbfdff;
         }
 
-        .module-edit-form.active {
+        .module-edit-form.active,
+        .module-add-form.active {
             display: grid;
         }
 
@@ -987,17 +1032,6 @@
             border-color: #047857;
         }
 
-        .teacher-only-note {
-            margin: 0 0 1rem;
-            color: #047857;
-            background: #ecfdf5;
-            border: 1px solid #bbf7d0;
-            border-radius: 0.8rem;
-            padding: 0.8rem 0.95rem;
-            font-weight: 750;
-            font-size: 0.9rem;
-        }
-
         .custom-toast-container {
             position: fixed;
             top: 5.5rem;
@@ -1024,52 +1058,119 @@
         }
 
         .teacher-panel {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 1rem;
-            padding: 1.25rem;
             position: sticky;
             top: 6rem;
+            overflow: hidden;
+            background:
+                linear-gradient(#ffffff, #ffffff) padding-box,
+                linear-gradient(135deg, rgba(5, 150, 105, 0.32), rgba(153, 246, 228, 0.08), rgba(15, 23, 42, 0.08)) border-box;
+            border: 1px solid transparent;
+            border-radius: 1.15rem;
+            padding: 1.3rem;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08), 0 14px 34px rgba(5, 150, 105, 0.08);
+            transition: transform 180ms ease, box-shadow 180ms ease;
         }
 
-        .teacher-avatar {
-            width: 58px;
-            height: 58px;
-            border-radius: 50%;
-            background: #d1fae5;
-            color: #059669;
-            display: flex;
+        .teacher-panel::before {
+            content: "";
+            position: absolute;
+            inset: -45% -40% auto auto;
+            width: 180px;
+            aspect-ratio: 1;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.16), transparent 68%);
+            pointer-events: none;
+        }
+
+        .teacher-panel:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1), 0 18px 42px rgba(5, 150, 105, 0.12);
+        }
+
+        .teacher-panel-kicker {
+            position: relative;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
+            gap: 0.45rem;
+            width: max-content;
+            border-radius: 999px;
+            padding: 0.42rem 0.75rem;
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+            font-size: 0.78rem;
             font-weight: 900;
-            font-size: 1.35rem;
-            margin-bottom: 0.9rem;
         }
 
-        .teacher-panel h2 {
+        .teacher-panel-kicker::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #10b981;
+            box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.12);
+        }
+
+        .teacher-panel-heading {
+            position: relative;
+            display: grid;
+            gap: 0.32rem;
+            margin-top: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .teacher-panel-heading h2 {
             margin: 0;
-            font-size: 1.15rem;
+            font-size: 1.25rem;
             color: #0f172a;
+            line-height: 1.22;
         }
 
-        .teacher-panel p {
-            margin: 0.4rem 0 1rem;
+        .teacher-panel-heading p {
+            margin: 0;
             color: #64748b;
             line-height: 1.55;
+            font-weight: 650;
         }
 
         .side-list {
             display: grid;
-            gap: 0.75rem;
-            margin-top: 1rem;
+            gap: 0.65rem;
+            margin-top: 1.05rem;
         }
 
         .side-list div {
-            display: flex;
-            gap: 0.55rem;
+            display: grid;
+            grid-template-columns: minmax(90px, 0.8fr) minmax(0, 1.2fr);
+            gap: 0.85rem;
+            align-items: center;
+            min-height: 46px;
+            padding: 0.72rem 0.8rem;
+            border-radius: 0.85rem;
+            background: linear-gradient(135deg, #f8fafc, #ffffff);
+            border: 1px solid #eef2f7;
             color: #475569;
-            font-weight: 650;
             font-size: 0.9rem;
+            transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+        }
+
+        .side-list div:hover {
+            transform: translateX(3px);
+            border-color: #bbf7d0;
+            background: linear-gradient(135deg, #f0fdfa, #ffffff);
+        }
+
+        .side-list .side-label {
+            color: #64748b;
+            font-size: 0.78rem;
+            font-weight: 850;
+        }
+
+        .side-list .side-value {
+            color: #0f172a;
+            font-weight: 850;
+            line-height: 1.35;
         }
 
         @media (max-width: 980px) {
@@ -1089,6 +1190,7 @@
             }
 
             .class-hero-band {
+                min-height: auto;
                 grid-template-columns: 1fr;
                 gap: 1rem;
                 padding: 1rem;
@@ -1100,7 +1202,13 @@
             }
 
             .classroom-visual-card {
-                min-height: 190px;
+                width: min(190px, 62%);
+                min-height: 0;
+            }
+
+            .hero-join-actions {
+                position: static;
+                margin-top: 1rem;
             }
 
             .class-overview {
@@ -1176,13 +1284,6 @@
         <section class="class-hero">
             <div class="class-hero-band">
                 <div class="class-hero-content">
-                    <div class="class-hero-meta">
-                        <span class="class-hero-chip"><%= h(statusLabel) %></span>
-                        <span class="class-hero-chip muted"><%= h(subject) %></span>
-                        <span class="class-hero-chip muted"><%= h(grade) %></span>
-                    </div>
-                    <h1><%= safeTitle %></h1>
-                    <p>Không gian học tập của lớp cùng giảng viên <strong><%= h(teacherName) %></strong>. Theo dõi tài liệu, bài tập và trao đổi trong phòng học riêng của HIPZI.</p>
                     <div class="hero-join-actions">
                         <% if (canEditClassModules) { %>
                             <a class="hero-join-btn" href="${pageContext.request.contextPath}/classroom?id=<%= h(classroom.getId()) %>">Vào không gian quản lý lớp</a>
@@ -1209,17 +1310,12 @@
                 </div>
                 <div class="hero-visual" aria-hidden="true">
                     <div class="classroom-visual-card">
-                        <span class="teacher-photo-badge">Giảng viên</span>
                         <div class="teacher-photo-frame">
                             <% if (!safeTeacherAvatarUrl.isEmpty()) { %>
                                 <img src="<%= safeTeacherAvatarUrl %>" alt="">
                             <% } else { %>
                                 <div class="teacher-photo-placeholder"><%= safeTeacherName.substring(0, 1).toUpperCase() %></div>
                             <% } %>
-                        </div>
-                        <div class="teacher-photo-meta">
-                            <strong><%= safeTeacherName %></strong>
-                            <span><%= h(subject) %> · <%= h(grade) %></span>
                         </div>
                     </div>
                 </div>
@@ -1234,23 +1330,35 @@
                 </section>
 
                 <section class="content-section">
-                    <h2>Nội dung học tập</h2>
-                    <% if (canEditClassModules) { %>
-                        <p class="teacher-only-note">Bạn đang chỉnh sửa lớp của mình. Các module bên dưới sẽ hiển thị công khai trong trang chi tiết lớp.</p>
-                    <% } %>
-                    <div class="module-list">
+                    <div class="content-section-header">
+                        <h2>Nội dung học tập</h2>
+                        <% if (canEditClassModules) { %>
+                            <div class="content-section-actions">
+                                <button type="button" class="module-mini-btn" data-edit-label="Chỉnh sửa" onclick="toggleSectionModuleForms('learning-modules', this)">Chỉnh sửa</button>
+                                <button type="button" class="module-mini-btn primary" onclick="toggleModuleForm('learning-module-add-form')">Thêm</button>
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="module-list" id="learning-modules">
                         <% if (learningModules != null) {
                             int displayIndex = 1;
                             for (ClassroomModule module : learningModules) {
                                 boolean persisted = module.getId() != null && !module.getId().trim().isEmpty();
                         %>
                             <div class="module-item">
+                                <% if (canEditClassModules && persisted) { %>
+                                    <form class="module-delete-form" action="${pageContext.request.contextPath}/class-detail" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa module này?');">
+                                        <input type="hidden" name="action" value="deleteModule">
+                                        <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                        <input type="hidden" name="moduleId" value="<%= h(module.getId()) %>">
+                                        <button type="submit" class="module-delete-btn" aria-label="Xóa module" title="Xóa module">×</button>
+                                    </form>
+                                <% } %>
                                 <div class="module-number"><%= displayIndex++ %></div>
                                 <div>
                                     <strong><%= h(module.getTitle()) %></strong>
                                     <span><%= h(module.getDescription()) %></span>
                                     <% if (canEditClassModules && persisted) { %>
-                                        <button type="button" class="module-edit-toggle" onclick="toggleModuleForm('module-form-<%= h(module.getId()) %>')">Chỉnh sửa</button>
                                         <form id="module-form-<%= h(module.getId()) %>" class="module-edit-form" action="${pageContext.request.contextPath}/class-detail" method="POST">
                                             <input type="hidden" name="action" value="updateModule">
                                             <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
@@ -1283,7 +1391,7 @@
                     </div>
 
                     <% if (canEditClassModules) { %>
-                        <form class="module-add-form" action="${pageContext.request.contextPath}/class-detail" method="POST">
+                        <form id="learning-module-add-form" class="module-add-form" action="${pageContext.request.contextPath}/class-detail" method="POST">
                             <input type="hidden" name="action" value="addModule">
                             <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
                             <input type="hidden" name="moduleType" value="learning_content">
@@ -1309,20 +1417,35 @@
                 </section>
 
                 <section class="content-section">
-                    <h2>Yêu cầu đầu vào</h2>
-                    <div class="module-list">
+                    <div class="content-section-header">
+                        <h2>Yêu cầu đầu vào</h2>
+                        <% if (canEditClassModules) { %>
+                            <div class="content-section-actions">
+                                <button type="button" class="module-mini-btn" data-edit-label="Chỉnh sửa" onclick="toggleSectionModuleForms('requirement-modules', this)">Chỉnh sửa</button>
+                                <button type="button" class="module-mini-btn primary" onclick="toggleModuleForm('requirement-module-add-form')">Thêm</button>
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="module-list" id="requirement-modules">
                         <% if (requirementModules != null) {
                             int displayIndex = 1;
                             for (ClassroomModule module : requirementModules) {
                                 boolean persisted = module.getId() != null && !module.getId().trim().isEmpty();
                         %>
                             <div class="module-item">
+                                <% if (canEditClassModules && persisted) { %>
+                                    <form class="module-delete-form" action="${pageContext.request.contextPath}/class-detail" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa module này?');">
+                                        <input type="hidden" name="action" value="deleteModule">
+                                        <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                        <input type="hidden" name="moduleId" value="<%= h(module.getId()) %>">
+                                        <button type="submit" class="module-delete-btn" aria-label="Xóa module" title="Xóa module">×</button>
+                                    </form>
+                                <% } %>
                                 <div class="module-number"><%= displayIndex++ %></div>
                                 <div>
                                     <strong><%= h(module.getTitle()) %></strong>
                                     <span><%= h(module.getDescription()) %></span>
                                     <% if (canEditClassModules && persisted) { %>
-                                        <button type="button" class="module-edit-toggle" onclick="toggleModuleForm('module-form-<%= h(module.getId()) %>')">Chỉnh sửa</button>
                                         <form id="module-form-<%= h(module.getId()) %>" class="module-edit-form" action="${pageContext.request.contextPath}/class-detail" method="POST">
                                             <input type="hidden" name="action" value="updateModule">
                                             <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
@@ -1355,7 +1478,7 @@
                     </div>
 
                     <% if (canEditClassModules) { %>
-                        <form class="module-add-form" action="${pageContext.request.contextPath}/class-detail" method="POST">
+                        <form id="requirement-module-add-form" class="module-add-form" action="${pageContext.request.contextPath}/class-detail" method="POST">
                             <input type="hidden" name="action" value="addModule">
                             <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
                             <input type="hidden" name="moduleType" value="entry_requirement">
@@ -1382,29 +1505,31 @@
             </div>
 
             <aside class="teacher-panel">
-                <div class="teacher-avatar"><%= safeTeacherName.substring(0, 1).toUpperCase() %></div>
-                <h2><%= safeTeacherName %></h2>
-                <p><%= safeTeacherSchool %></p>
+                <span class="teacher-panel-kicker">Giảng viên phụ trách</span>
+                <div class="teacher-panel-heading">
+                    <h2><%= safeTeacherName %></h2>
+                    <p><%= safeTeacherSchool %></p>
+                </div>
                 <div class="side-list">
                     <div>
-                        <span>•</span>
-                        <span>Môn phụ trách: <strong><%= safeSubject %></strong></span>
+                        <span class="side-label">Môn</span>
+                        <span class="side-value"><%= safeSubject %></span>
                     </div>
                     <div>
-                        <span>•</span>
-                        <span>Lớp phù hợp: <strong><%= safeGrade %></strong></span>
+                        <span class="side-label">Lớp phù hợp</span>
+                        <span class="side-value"><%= safeGrade %></span>
                     </div>
                     <div>
-                        <span>•</span>
-                        <span>Lịch chính: <strong><%= safeSchedule %></strong></span>
+                        <span class="side-label">Lịch chính</span>
+                        <span class="side-value"><%= safeSchedule %></span>
                     </div>
                     <div>
-                        <span>•</span>
-                        <span>Sĩ số hiện tại: <strong><%= studentCount %> học viên</strong></span>
+                        <span class="side-label">Sĩ số</span>
+                        <span class="side-value"><%= studentCount %> học viên</span>
                     </div>
                     <div>
-                        <span>•</span>
-                        <span>Hỗ trợ qua thông báo và tài liệu sau buổi học.</span>
+                        <span class="side-label">Hỗ trợ</span>
+                        <span class="side-value">Thông báo và tài liệu sau buổi học</span>
                     </div>
                 </div>
             </aside>
@@ -1416,6 +1541,20 @@
             const form = document.getElementById(formId);
             if (form) {
                 form.classList.toggle('active');
+            }
+        }
+
+        function toggleSectionModuleForms(sectionId, button) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            const forms = section.querySelectorAll('.module-edit-form');
+            if (!forms.length) return;
+            const shouldOpen = Array.from(forms).some(form => !form.classList.contains('active'));
+            forms.forEach(form => form.classList.toggle('active', shouldOpen));
+            section.classList.toggle('is-editing', shouldOpen);
+            if (button) {
+                const closedLabel = button.dataset.editLabel || 'Chỉnh sửa';
+                button.textContent = shouldOpen ? 'Đóng chỉnh sửa' : closedLabel;
             }
         }
 
@@ -1447,4 +1586,4 @@
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
-</html>
+</html>

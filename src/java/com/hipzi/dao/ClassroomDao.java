@@ -7,11 +7,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 public class ClassroomDao {
+
+    public ClassroomDao() {
+        ensureSchema();
+    }
 
     public List<Classroom> findByTeacherId(String teacherId) {
         String sql = "SELECT c.*, u.display_name AS teacher_name, u.avatar_url AS teacher_avatar_url, "
@@ -66,7 +73,7 @@ public class ClassroomDao {
     public List<Classroom> listPublic(String subjectFilter, String gradeFilter, String searchQuery) {
         long startedAt = System.nanoTime();
         StringBuilder sql = new StringBuilder(
-                "SELECT c.id, c.teacher_id, c.title, c.subject, c.grade_level, c.description, "
+                "SELECT c.id, c.class_code, c.teacher_id, c.title, c.subject, c.grade_level, c.description, "
                 + "c.student_count, c.status, c.schedule_days, c.start_time, c.end_time, "
                 + "c.created_at, c.updated_at, "
                 + "u.display_name AS teacher_name, u.avatar_url AS teacher_avatar_url, "
@@ -181,14 +188,19 @@ public class ClassroomDao {
     }
 
     public boolean create(Classroom classroom) {
+        if (classroom.getClassCode() == null || classroom.getClassCode().trim().isEmpty()) {
+            classroom.setClassCode("HPZ-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(Locale.ROOT));
+        }
         String sql = "INSERT INTO classrooms "
-                + "(teacher_id, title, subject, grade_level, description, schedule_days, start_time, end_time, status) "
-                + "VALUES (?::uuid, ?, ?, ?, ?, ?, ?::time, ?::time, ?)";
+                + "(teacher_id, class_code, title, subject, grade_level, description, schedule_days, start_time, end_time, status) "
+                + "VALUES (?::uuid, ?, ?, ?, ?, ?, ?, ?::time, ?::time, ?)";
 
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            bindEditableFields(ps, classroom, 1, true);
+            ps.setString(1, classroom.getTeacherId());
+            ps.setString(2, classroom.getClassCode());
+            bindEditableFields(ps, classroom, 3, false);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error in ClassroomDao.create: " + e.getMessage());
@@ -261,6 +273,7 @@ public class ClassroomDao {
     private Classroom mapRow(ResultSet rs) throws SQLException {
         Classroom classroom = new Classroom();
         classroom.setId(rs.getString("id"));
+        classroom.setClassCode(readOptionalString(rs, "class_code"));
         classroom.setTeacherId(rs.getString("teacher_id"));
         classroom.setTitle(rs.getString("title"));
         classroom.setSubject(rs.getString("subject"));
@@ -298,5 +311,18 @@ public class ClassroomDao {
     private void logPerf(String label, long startedAt) {
         long elapsedMs = (System.nanoTime() - startedAt) / 1_000_000L;
         System.err.println("[PERF] " + label + " " + elapsedMs + "ms");
+    }
+
+    private void ensureSchema() {
+        try (Connection conn = DBContext.getConnection();
+             Statement st = conn.createStatement()) {
+            st.execute("ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS class_code VARCHAR(20)");
+            st.execute("UPDATE classrooms "
+                    + "SET class_code = 'HPZ-' || upper(substring(id::text from 1 for 6)) "
+                    + "WHERE class_code IS NULL OR trim(class_code) = ''");
+            st.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_classrooms_class_code_unique ON classrooms(class_code)");
+        } catch (SQLException e) {
+            System.err.println("Error in ClassroomDao.ensureSchema: " + e.getMessage());
+        }
     }
 }

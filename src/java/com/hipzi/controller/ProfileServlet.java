@@ -486,6 +486,9 @@ public class ProfileServlet extends HttpServlet {
     private Classroom buildClassroomFromRequest(HttpServletRequest request, String teacherId, String classId) {
         Classroom classroom = new Classroom();
         classroom.setId(classId);
+        if (classId == null || classId.trim().isEmpty()) {
+            classroom.setClassCode(generateClassCode());
+        }
         classroom.setTeacherId(teacherId);
         classroom.setTitle(cleanParam(request.getParameter("className")));
         classroom.setSubject(cleanParam(request.getParameter("classSubject")));
@@ -639,5 +642,9 @@ public class ProfileServlet extends HttpServlet {
         } catch (Exception e) {
             return fallback;
         }
+    }
+
+    private String generateClassCode() {
+        return java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
     }
 }

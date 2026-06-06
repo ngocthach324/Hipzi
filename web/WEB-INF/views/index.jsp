@@ -46,7 +46,7 @@
 
 
                 <li><a href="<%= request.getContextPath() + (user != null ? "/exam-room" : "/login") %>">Phòng thi</a></li>
-                <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
+                <li><a href="<%= request.getContextPath() + (user != null ? "/index#ai-roadmap" : "/login") %>">Hipzi AI</a></li>
             </ul>
             
             <% if (user != null) { %>
@@ -122,7 +122,7 @@
                         <span>Cập nhật liên tục theo chương trình học</span>
                     </li>
                 </ul>
-                <a href="${pageContext.request.contextPath}/login" class="feature-link">
+                <a href="<%= request.getContextPath() + (user != null ? "/material-repository" : "/login") %>" class="feature-link">
                     <span>Khám phá ngay</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
@@ -149,7 +149,7 @@
                         <span>Luyện đề trắc nghiệm thực chiến</span>
                     </li>
                 </ul>
-                <a href="${pageContext.request.contextPath}/login" class="feature-link" style="color: var(--primary);">
+                <a href="<%= request.getContextPath() + (user != null ? "/index#ai-roadmap" : "/login") %>" class="feature-link" style="color: var(--primary);">
                     <span>Trải nghiệm ngay</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
@@ -158,26 +158,26 @@
             <!-- Card 3 -->
             <div class="feature-card">
                 <div class="feature-icon icon-secondary">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 7h6"></path><path d="M9 11h6"></path><path d="M9 15h3"></path><path d="M14 16l1.5 1.5L19 14"></path></svg>
                 </div>
-                <h3>Kết nối Giảng viên chất lượng</h3>
-                <p>Tìm kiếm và đồng hành cùng các Giảng viên phù hợp nhất với mục tiêu học tập.</p>
+                <h3>Phòng thi trực tuyến</h3>
+                <p>Luyện đề, làm bài kiểm tra trong lớp và tham gia các kỳ thi chung của HIPZI trong một không gian tập trung.</p>
                 <ul class="feature-list">
                     <li>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 6-6"/></svg>
-                        <span>Hồ sơ năng lực minh bạch, rõ ràng</span>
+                        <span>Luyện đề mở theo từng mục tiêu</span>
                     </li>
                     <li>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 6-6"/></svg>
-                        <span>Tương thích với phong cách truyền đạt</span>
+                        <span>Bài kiểm tra lớp học rõ thời hạn</span>
                     </li>
                     <li>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 6-6"/></svg>
-                        <span>Hỗ trợ giải đáp thắc mắc tận tâm</span>
+                        <span>Kỳ thi chung có kết quả minh bạch</span>
                     </li>
                 </ul>
-                <a href="${pageContext.request.contextPath}/register" class="feature-link" style="color: var(--secondary-hover);">
-                    <span>Kết nối ngay</span>
+                <a href="<%= request.getContextPath() + (user != null ? "/exam-room" : "/login") %>" class="feature-link" style="color: var(--secondary-hover);">
+                    <span>Vào phòng thi</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
             </div>

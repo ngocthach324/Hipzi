@@ -70,6 +70,20 @@ public class ClassroomModuleDao {
         return false;
     }
 
+    public boolean deleteForClassroom(String moduleId, String classroomId) {
+        String sql = "DELETE FROM classroom_modules WHERE id = ?::uuid AND classroom_id = ?::uuid";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, moduleId);
+            ps.setString(2, classroomId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error in ClassroomModuleDao.deleteForClassroom: " + e.getMessage());
+        }
+        return false;
+    }
+
     private String normalizeModuleType(String moduleType) {
         if ("entry_requirement".equals(moduleType)) {
             return "entry_requirement";

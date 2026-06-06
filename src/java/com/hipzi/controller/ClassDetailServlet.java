@@ -90,6 +90,17 @@ public class ClassDetailServlet extends HttpServlet {
         }
 
         String moduleType = normalizeModuleType(request.getParameter("moduleType"));
+        if ("deleteModule".equals(action)) {
+            String moduleId = cleanParam(request.getParameter("moduleId"));
+            boolean deleted = !moduleId.isEmpty() && classroomModuleDao.deleteForClassroom(moduleId, classId);
+            if (session != null) {
+                session.setAttribute("toastMsg", deleted ? "Đã xóa module khỏi lớp." : "Không thể xóa module này.");
+                session.setAttribute("toastType", deleted ? "success" : "error");
+            }
+            response.sendRedirect(request.getContextPath() + "/class-detail?id=" + classId);
+            return;
+        }
+
         String moduleTitle = cleanParam(request.getParameter("moduleTitle"));
         String moduleDescription = cleanParam(request.getParameter("moduleDescription"));
         int sortOrder = parsePositiveInt(request.getParameter("sortOrder"), 1);

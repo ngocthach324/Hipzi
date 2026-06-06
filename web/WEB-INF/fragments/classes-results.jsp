@@ -14,18 +14,27 @@
     } else {
         for (Classroom cls : classrooms) {
             String statusLabel = cls.getStatusLabel();
+            String classCode = cls.getClassCode();
+            boolean hasClassCode = classCode != null && !classCode.trim().isEmpty();
 %>
         <div class="material-card class-card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
             <div>
                 <div class="material-card-header" style="margin-bottom: 0.75rem;">
-                    <span class="subject-badge" style="background: #d1fae5; color: #059669;"><%= cls.getSubject() %></span>
+                    <div>
+                        <span class="subject-badge" style="background: #d1fae5; color: #059669;"><%= cls.getSubject() %></span>
+                    </div>
+                    <% if (hasClassCode) { %>
+                        <span style="font-size:0.75rem; font-weight:800; color:var(--primary); border: 1px solid var(--primary); background:#ecfdf5; padding:0.18rem 0.55rem; border-radius:999px;">
+                            Mã: <%= classCode %>
+                        </span>
+                    <% } else { %>
                     <span style="font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; background-color: <%= "Đang mở".equalsIgnoreCase(statusLabel) ? "#dcfce7" : "#fef9c3" %>; color: <%= "Đang mở".equalsIgnoreCase(statusLabel) ? "#15803d" : "#a16207" %>;">
                         <%= statusLabel %>
                     </span>
+                    <% } %>
                 </div>
                 <h3 class="material-title" style="font-size: 1.15rem; margin-bottom: 0.5rem;"><%= cls.getTitle() %></h3>
-                <p class="teacher-name" style="font-weight: 600; color: #334155; margin-bottom: 0.25rem;"><%= cls.getTeacherName() %></p>
-                <p class="material-description" style="margin-bottom: 1rem;"><%= cls.getTeacherSchool() %></p>
+                <p class="teacher-name" style="font-weight: 600; color: #334155; margin-bottom: 1rem;">GV: <%= cls.getTeacherName() %></p>
 
                 <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: 0.85rem; color: #475569;">
                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">

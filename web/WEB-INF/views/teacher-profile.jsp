@@ -2095,78 +2095,116 @@
                             </div>
 
                             <% if (teacherClassrooms != null && !teacherClassrooms.isEmpty()) { %>
-                                <div style="display:flex; flex-direction:column; gap:1rem; padding-top:1.25rem;">
+                                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1.25rem; padding-top:1.25rem;">
                                     <% for (Classroom cls : teacherClassrooms) {
                                         String startValue = cls.getStartTime() != null ? cls.getStartTime().toLocalTime().toString().substring(0, 5) : "";
                                         String endValue = cls.getEndTime() != null ? cls.getEndTime().toLocalTime().toString().substring(0, 5) : "";
                                     %>
-                                        <div style="border:1px solid #e2e8f0; border-radius:0.9rem; padding:1.1rem; background:#ffffff;">
-                                            <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap;">
-                                                <div style="min-width:240px; flex:1;">
-                                                    <div style="display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap; margin-bottom:0.55rem;">
-                                                        <span class="subject-badge" style="background:#ecfdf5; color:#047857;"><%= cls.getSubject() %></span>
-                                                        <span style="font-size:0.75rem; font-weight:800; padding:0.2rem 0.65rem; border-radius:999px; background:#f8fafc; color:#475569;"><%= cls.getStatusLabel() %></span>
-                                                        <% if (cls.getGrade() != null && !cls.getGrade().isEmpty()) { %>
-                                                            <span style="font-size:0.75rem; font-weight:800; color:#64748b;"><%= cls.getGrade() %></span>
-                                                        <% } %>
-                                                    </div>
-                                                    <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin:0 0 0.45rem 0;"><%= cls.getTitle() %></h3>
-                                                    <p style="display:flex; align-items:center; gap:0.45rem; color:#047857; font-weight:700; margin:0 0 0.5rem 0; font-size:0.9rem;">
-                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                                        <span><%= cls.getSchedule() %></span>
-                                                    </p>
-                                                    <% if (cls.getDescription() != null && !cls.getDescription().isEmpty()) { %>
-                                                        <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.55; margin:0;"><%= cls.getDescription() %></p>
+                                        <div style="border:1px solid #e2e8f0; border-radius:0.9rem; padding:1.5rem 1.25rem; background:#ffffff; display:flex; flex-direction:column; justify-content:space-between; height:100%; min-height:260px; box-sizing:border-box; overflow:hidden;">
+                                            <div style="display:flex; flex-direction:column;">
+                                                <div style="display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap; margin-bottom:0.75rem;">
+                                                    <span class="subject-badge" style="background:#ecfdf5; color:#047857;"><%= cls.getSubject() %></span>
+                                                    <% if (cls.getGrade() != null && !cls.getGrade().isEmpty()) { %>
+                                                        <span style="font-size:0.75rem; font-weight:800; color:#64748b;"><%= cls.getGrade() %></span>
                                                     <% } %>
                                                 </div>
-                                                <form action="${pageContext.request.contextPath}/teacher-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa lớp học này?');">
+                                                <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-main); margin:0 0 0.75rem 0; line-height:1.4;"><%= cls.getTitle() %></h3>
+                                                <% if (cls.getClassCode() != null && !cls.getClassCode().isEmpty()) { %>
+                                                    <div style="margin:0 0 1.25rem 0;">
+                                                        <span style="font-size:0.85rem; font-weight:700; color:var(--primary); border: 1px solid var(--primary); background:#eff6ff; padding:0.25rem 0.75rem; border-radius:0.5rem;">Mã: <%= cls.getClassCode() %></span>
+                                                    </div>
+                                                <% } %>
+                                                
+                                                <div style="display:flex; flex-direction:column; gap:0.65rem; margin-bottom:1.5rem;">
+                                                    <% if (cls.getScheduleDays() != null && !cls.getScheduleDays().isEmpty()) { %>
+                                                    <p style="display:flex; align-items:center; gap:0.5rem; color:var(--text-main); font-weight:600; margin:0; font-size:0.95rem;">
+                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                                        <span><%= cls.getScheduleDays().replace(",", " -") %></span>
+                                                    </p>
+                                                    <% } %>
+                                                    <% if (!startValue.isEmpty() && !endValue.isEmpty()) { %>
+                                                    <p style="display:flex; align-items:center; gap:0.5rem; color:var(--text-main); font-weight:600; margin:0; font-size:0.95rem;">
+                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                                        <span><%= startValue %> - <%= endValue %></span>
+                                                    </p>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+
+                                            <div style="display:flex; align-items:center; gap:0.75rem;">
+                                                <button type="button" class="btn-card-edit" style="padding:0.4rem 0.75rem;" onclick="document.getElementById('edit-class-<%= cls.getId() %>').style.display = 'flex'" title="Chỉnh sửa lớp học">
+                                                    <span>Chỉnh sửa</span>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                                </button>
+                                                <form action="${pageContext.request.contextPath}/teacher-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa lớp học này?');" style="margin:0;">
                                                     <input type="hidden" name="action" value="deleteClass">
                                                     <input type="hidden" name="classId" value="<%= cls.getId() %>">
-                                                    <button type="submit" class="btn-card-edit-light" style="color:#dc2626; border-color:#fecaca;" title="Xóa lớp học">
+                                                    <button type="submit" class="btn-card-edit" style="background:#EF4444; border-color:#EF4444; color:#ffffff; padding:0.4rem 0.75rem;" onmouseover="this.style.backgroundColor='#DC2626'; this.style.borderColor='#DC2626'" onmouseout="this.style.backgroundColor='#EF4444'; this.style.borderColor='#EF4444'" title="Xóa lớp học">
                                                         <span>Xóa</span>
                                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
                                                     </button>
                                                 </form>
                                             </div>
-
-                                            <details style="margin-top:1rem;">
-                                                <summary style="cursor:pointer; font-weight:800; color:var(--primary); font-size:0.9rem;">Chỉnh sửa lớp học</summary>
-                                                <form action="${pageContext.request.contextPath}/teacher-profile" method="POST" class="form-edit-layout" style="padding:1rem 0 0 0;">
+                                        </div>
+                                            <div id="edit-class-<%= cls.getId() %>" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15, 23, 42, 0.4); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+                                                <div style="background:#ffffff; width:90%; max-width:600px; border-radius:1rem; padding:2rem; box-shadow:0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position:relative; max-height:95vh; overflow-y:auto;">
+                                                <form action="${pageContext.request.contextPath}/teacher-profile" method="POST" class="form-edit-layout" style="padding:0;">
                                                     <input type="hidden" name="action" value="updateClass">
                                                     <input type="hidden" name="classId" value="<%= cls.getId() %>">
-                                                    <div class="form-grid-2">
-                                                        <div class="form-group-edit">
-                                                            <label>Tên lớp học</label>
-                                                            <input type="text" name="className" value="<%= cls.getTitle() %>" required>
+                                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                                                        <h3 style="margin:0; font-size:1.25rem; font-weight:800; color:var(--text-main);">Chỉnh sửa lớp học</h3>
+                                                        <div style="display:flex; gap:0.75rem;">
+                                                            <button type="button" onclick="document.getElementById('edit-class-<%= cls.getId() %>').style.display='none'" class="btn-card-edit-light" style="padding:0.5rem 1rem;">Hủy</button>
+                                                            <button type="submit" class="btn-card-edit" style="padding:0.5rem 1rem;">Lưu thay đổi</button>
                                                         </div>
-                                                        <div class="form-group-edit">
-                                                            <label>Môn học</label>
-                                                            <select name="classSubject" style="width:100%; padding:0.75rem 1rem; border-radius:0.75rem; border:1px solid var(--border-dark); outline:none;" required>
-                                                                <% for (String subject : registeredSubjects) { %>
-                                                                    <option value="<%= subject %>" <%= subject.equalsIgnoreCase(cls.getSubject()) ? "selected" : "" %>><%= subject %></option>
-                                                                <% } %>
-                                                            </select>
+                                                    </div>
+                                                    <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                                                        <div class="form-group-edit" style="margin:0;">
+                                                            <label style="margin-bottom:0.25rem;">Tên lớp học</label>
+                                                            <input type="text" name="className" value="<%= cls.getTitle() %>" required style="padding:0.5rem 1rem;">
                                                         </div>
-                                                        <div class="form-group-edit">
-                                                            <label>Khối lớp</label>
-                                                            <select name="classGrade" required>
-                                                                <option value="Lớp 10" <%= "Lớp 10".equals(cls.getGrade()) ? "selected" : "" %>>Lớp 10</option>
-                                                                <option value="Lớp 11" <%= "Lớp 11".equals(cls.getGrade()) ? "selected" : "" %>>Lớp 11</option>
-                                                                <option value="Lớp 12" <%= "Lớp 12".equals(cls.getGrade()) ? "selected" : "" %>>Lớp 12</option>
-                                                                <option value="Ôn thi THPT" <%= "Ôn thi THPT".equals(cls.getGrade()) ? "selected" : "" %>>Ôn thi THPT</option>
-                                                            </select>
+                                                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                                                            <div class="form-group-edit" style="margin:0;">
+                                                                <label style="margin-bottom:0.25rem;">Môn học</label>
+                                                                <select name="classSubject" style="width:100%; padding:0.5rem 1rem; border-radius:0.5rem; border:1px solid var(--border-dark); outline:none;" required>
+                                                                    <% for (String subject : registeredSubjects) { %>
+                                                                        <option value="<%= subject %>" <%= subject.equalsIgnoreCase(cls.getSubject()) ? "selected" : "" %>><%= subject %></option>
+                                                                    <% } %>
+                                                                </select>
+                                                            </div>
+                                                            <div class="form-group-edit" style="margin:0;">
+                                                                <label style="margin-bottom:0.25rem;">Khối lớp</label>
+                                                                <select name="classGrade" style="width:100%; padding:0.5rem 1rem; border-radius:0.5rem; border:1px solid var(--border-dark); outline:none;" required>
+                                                                    <option value="Lớp 10" <%= "Lớp 10".equals(cls.getGrade()) ? "selected" : "" %>>Lớp 10</option>
+                                                                    <option value="Lớp 11" <%= "Lớp 11".equals(cls.getGrade()) ? "selected" : "" %>>Lớp 11</option>
+                                                                    <option value="Lớp 12" <%= "Lớp 12".equals(cls.getGrade()) ? "selected" : "" %>>Lớp 12</option>
+                                                                    <option value="Ôn thi THPT" <%= "Ôn thi THPT".equals(cls.getGrade()) ? "selected" : "" %>>Ôn thi THPT</option>
+                                                                </select>
+                                                            </div>
                                                         </div>
-                                                        <div class="form-group-edit">
-                                                            <label>Trạng thái</label>
-                                                            <select name="classStatus" style="width:100%; padding:0.75rem 1rem; border-radius:0.75rem; border:1px solid var(--border-dark); outline:none;">
-                                                                <option value="open" <%= "open".equals(cls.getStatus()) || "Đang mở".equals(cls.getStatus()) ? "selected" : "" %>>Đang mở</option>
-                                                                <option value="upcoming" <%= "upcoming".equals(cls.getStatus()) || "Sắp khai giảng".equals(cls.getStatus()) ? "selected" : "" %>>Sắp khai giảng</option>
-                                                                <option value="closed" <%= "closed".equals(cls.getStatus()) ? "selected" : "" %>>Đã đóng</option>
-                                                            </select>
+                                                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                                                            <div class="form-group-edit" style="margin:0;">
+                                                                <label style="margin-bottom:0.25rem;">Trạng thái</label>
+                                                                <select name="classStatus" style="width:100%; padding:0.5rem 1rem; border-radius:0.5rem; border:1px solid var(--border-dark); outline:none;">
+                                                                    <option value="open" <%= "open".equals(cls.getStatus()) || "Đang mở".equals(cls.getStatus()) ? "selected" : "" %>>Đang mở</option>
+                                                                    <option value="upcoming" <%= "upcoming".equals(cls.getStatus()) || "Sắp khai giảng".equals(cls.getStatus()) ? "selected" : "" %>>Sắp khai giảng</option>
+                                                                    <option value="closed" <%= "closed".equals(cls.getStatus()) ? "selected" : "" %>>Đã đóng</option>
+                                                                </select>
+                                                            </div>
+                                                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                                                                <div class="form-group-edit" style="margin:0;">
+                                                                    <label style="margin-bottom:0.25rem;">Giờ bắt đầu</label>
+                                                                    <input type="text" name="startTime" class="class-time-input" value="<%= startValue %>" placeholder="__:__" inputmode="numeric" maxlength="5" pattern="^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$" title="Nhập giờ dạng HH:mm, từ 00:00 đến 24:00" required style="padding:0.5rem;">
+                                                                </div>
+                                                                <div class="form-group-edit" style="margin:0;">
+                                                                    <label style="margin-bottom:0.25rem;">Giờ kết thúc</label>
+                                                                    <input type="text" name="endTime" class="class-time-input" value="<%= endValue %>" placeholder="__:__" inputmode="numeric" maxlength="5" pattern="^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$" title="Nhập giờ dạng HH:mm, từ 00:00 đến 24:00" required style="padding:0.5rem;">
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <div class="form-group-edit">
-                                                            <label>Thứ học</label>
-                                                            <div class="class-day-options">
+                                                        <div class="form-group-edit" style="margin:0;">
+                                                            <label style="margin-bottom:0.25rem;">Thứ học</label>
+                                                            <div class="class-day-options" style="gap:0.5rem;">
                                                                 <label class="class-day-option"><input type="checkbox" name="scheduleDays" value="Thứ 2" <%= cls.getScheduleDays() != null && cls.getScheduleDays().contains("Thứ 2") ? "checked" : "" %>> Thứ 2</label>
                                                                 <label class="class-day-option"><input type="checkbox" name="scheduleDays" value="Thứ 3" <%= cls.getScheduleDays() != null && cls.getScheduleDays().contains("Thứ 3") ? "checked" : "" %>> Thứ 3</label>
                                                                 <label class="class-day-option"><input type="checkbox" name="scheduleDays" value="Thứ 4" <%= cls.getScheduleDays() != null && cls.getScheduleDays().contains("Thứ 4") ? "checked" : "" %>> Thứ 4</label>
@@ -2176,27 +2214,14 @@
                                                                 <label class="class-day-option"><input type="checkbox" name="scheduleDays" value="Chủ nhật" <%= cls.getScheduleDays() != null && cls.getScheduleDays().contains("Chủ nhật") ? "checked" : "" %>> Chủ nhật</label>
                                                             </div>
                                                         </div>
-                                                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-                                                            <div class="form-group-edit">
-                                                                <label>Giờ bắt đầu</label>
-                                                                <input type="text" name="startTime" class="class-time-input" value="<%= startValue %>" placeholder="__:__" inputmode="numeric" maxlength="5" pattern="^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$" title="Nhập giờ dạng HH:mm, từ 00:00 đến 24:00" required>
-                                                            </div>
-                                                            <div class="form-group-edit">
-                                                                <label>Giờ kết thúc</label>
-                                                                <input type="text" name="endTime" class="class-time-input" value="<%= endValue %>" placeholder="__:__" inputmode="numeric" maxlength="5" pattern="^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$" title="Nhập giờ dạng HH:mm, từ 00:00 đến 24:00" required>
-                                                            </div>
+                                                        <div class="form-group-edit full-span" style="margin:0;">
+                                                            <label style="margin-bottom:0.25rem;">Mô tả ngắn</label>
+                                                            <textarea name="classDescription" rows="2" style="padding:0.5rem 1rem;"><%= cls.getDescription() != null ? cls.getDescription() : "" %></textarea>
                                                         </div>
-                                                        <div class="form-group-edit full-span">
-                                                            <label>Mô tả ngắn</label>
-                                                            <textarea name="classDescription" rows="3"><%= cls.getDescription() != null ? cls.getDescription() : "" %></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-actions-row">
-                                                        <button type="submit" class="btn-card-edit" style="padding:0.75rem 1.5rem;">Lưu thay đổi</button>
                                                     </div>
                                                 </form>
-                                            </details>
-                                        </div>
+                                                </div>
+                                            </div>
                                     <% } %>
                                 </div>
                             <% } else { %>

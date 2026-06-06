@@ -30,21 +30,10 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=5">
     <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
     <style>
-        html,
-        body {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        body {
-            background: linear-gradient(135deg, #e8f3f6 0%, #f7fbfc 46%, #ffffff 100%);
-        }
-
         .exam-gateway {
-            padding: 5.55rem 1.5rem 1.25rem;
-            height: 100vh;
+            padding: 5.55rem 1.5rem 3rem;
+            min-height: 100vh;
             box-sizing: border-box;
-            overflow: hidden;
         }
 
         .exam-gateway-inner {
@@ -98,7 +87,7 @@
 
         .exam-card-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1rem;
         }
 
@@ -292,7 +281,7 @@
             <section class="exam-hero" aria-labelledby="exam-room-title">
                 <div class="exam-kicker">Phòng thi HIPZI</div>
                 <h1 id="exam-room-title">Chọn hạng mục thi phù hợp</h1>
-                <p>Phòng thi được chia thành ba khu vực riêng để học viên luyện đề mở, làm bài kiểm tra trong lớp hoặc tham gia các kỳ thi chung do HIPZI tổ chức.</p>
+                <p>Phòng thi được chia thành hai khu vực riêng để học viên luyện đề mở hoặc tham gia các kỳ thi chung do HIPZI tổ chức. Bài thi lớp học nằm trong tab Phòng thi của từng lớp.</p>
             </section>
 
             <section class="exam-card-grid" aria-label="Các hạng mục thi trong HIPZI">
@@ -304,18 +293,6 @@
                     </div>
                     <div class="exam-card-bottom">
                         <span>Khám phá thi thử</span>
-                        <span class="exam-card-arrow" aria-hidden="true">›</span>
-                    </div>
-                </a>
-
-                <a class="exam-entry-card" href="${pageContext.request.contextPath}/class-exam-room" data-tone="class" aria-label="Mở hạng mục Bài thi lớp học">
-                    <div>
-                        <div class="exam-card-code">Kiểm tra lớp học</div>
-                        <h2>Bài thi lớp học</h2>
-                        <p>Làm bài kiểm tra riêng theo lớp và theo dõi tiến độ học tập.</p>
-                    </div>
-                    <div class="exam-card-bottom">
-                        <span>Vào bài thi lớp học</span>
                         <span class="exam-card-arrow" aria-hidden="true">›</span>
                     </div>
                 </a>
@@ -337,4 +314,4 @@
 
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
-</html>
+</html>

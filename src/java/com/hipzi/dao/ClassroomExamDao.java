@@ -22,9 +22,7 @@ public class ClassroomExamDao {
     public List<ClassroomExam> listByClassroom(String classroomId, boolean openOnly) {
         String sql = "SELECT * FROM classroom_exams "
                 + "WHERE classroom_id = ?::uuid "
-                + (openOnly ? "AND status = 'open' "
-                        + "AND start_at IS NOT NULL AND start_at <= now() "
-                        + "AND end_at IS NOT NULL AND end_at >= now() " : "")
+                + (openOnly ? "AND status = 'open' " : "")
                 + "ORDER BY created_at DESC";
         List<ClassroomExam> exams = new ArrayList<>();
         try (Connection conn = DBContext.getConnection();
