@@ -2,9 +2,13 @@
 <%@ page import="com.hipzi.model.User" %>
 <%@ page import="com.hipzi.model.Classroom" %>
 <%@ page import="com.hipzi.model.ClassroomExam" %>
+<%@ page import="com.hipzi.model.ClassroomExamAttempt" %>
 <%@ page import="com.hipzi.model.ClassroomExamQuestion" %>
+<%@ page import="com.hipzi.model.ClassroomExamAnswer" %>
+<%@ page import="com.hipzi.dto.ClassroomExamAnswerDetailDto" %>
 <%@ page import="com.hipzi.dto.ClassroomExamAttemptDto" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <%
     User user = (User) session.getAttribute("loggedUser");
@@ -17,6 +21,9 @@
     ClassroomExam exam = (ClassroomExam) request.getAttribute("exam");
     List<ClassroomExamQuestion> questions = (List<ClassroomExamQuestion>) request.getAttribute("questions");
     List<ClassroomExamAttemptDto> attempts = (List<ClassroomExamAttemptDto>) request.getAttribute("attempts");
+    Map<String, List<ClassroomExamAttempt>> attemptHistories = (Map<String, List<ClassroomExamAttempt>>) request.getAttribute("attemptHistories");
+    ClassroomExamAttemptDto selectedAttempt = (ClassroomExamAttemptDto) request.getAttribute("selectedAttempt");
+    List<ClassroomExamAnswerDetailDto> selectedAnswers = (List<ClassroomExamAnswerDetailDto>) request.getAttribute("selectedAnswers");
 
     String initials = "U";
     if (user.getDisplayName() != null && !user.getDisplayName().trim().isEmpty()) {
@@ -26,19 +33,22 @@
 
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     int totalQuestions = questions != null ? questions.size() : 0;
-    int totalAttempts = attempts != null ? attempts.size() : 0;
+    int totalStudents = attempts != null ? attempts.size() : 0;
 
     double avgScore = 0;
     int violationSum = 0;
     int completedCount = 0;
-    if (attempts != null && totalAttempts > 0) {
+    int startedCount = 0;
+    if (attempts != null && totalStudents > 0) {
         double scoreSum = 0;
         int validScores = 0;
         for (ClassroomExamAttemptDto dto : attempts) {
             violationSum += dto.getAttempt().getViolationCount();
-            if ("completed".equals(dto.getAttempt().getStatus())) completedCount++;
-            if (dto.getAttempt().getScore() != null) {
-                scoreSum += dto.getAttempt().getScore();
+            String attemptStatus = dto.getAttempt().getStatus();
+            if (dto.getBestScore() != null) completedCount++;
+            if ("completed".equals(attemptStatus) || "in_progress".equals(attemptStatus)) startedCount++;
+            if (dto.getBestScore() != null) {
+                scoreSum += dto.getBestScore();
                 validScores++;
             }
         }
@@ -53,6 +63,15 @@
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
                 .replace("'", "&#39;");
+    }
+
+    private String optionText(ClassroomExamQuestion q, String option) {
+        if (q == null || option == null) return "";
+        if ("A".equalsIgnoreCase(option)) return q.getOptionA();
+        if ("B".equalsIgnoreCase(option)) return q.getOptionB();
+        if ("C".equalsIgnoreCase(option)) return q.getOptionC();
+        if ("D".equalsIgnoreCase(option)) return q.getOptionD();
+        return "";
     }
 %>
 <!DOCTYPE html>
@@ -229,7 +248,7 @@
         .hero-status-badge.upcoming { background: rgba(245,158,11,.25); color: #fcd34d; border: 1px solid rgba(245,158,11,.35); }
 
         .main-content {
-            max-width: 1140px;
+            max-width: 1320px;
             margin: 0 auto;
             width: 100%;
             padding: 2rem 1.5rem 4rem;
@@ -314,9 +333,100 @@
         .card-header-title { font-size: 0.95rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 0.5rem; }
         .card-header-title svg { color: var(--primary); }
 
-        .card-search { display: flex; align-items: center; gap: 0.5rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 0.45rem 0.8rem; }
-        .card-search input { background: none; border: none; outline: none; font-size: 0.85rem; font-family: var(--font); color: var(--text); width: 180px; }
+        .result-tools { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; }
+        .score-filter,
+        .card-search {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-height: 44px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0 0.85rem;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 6px 16px rgba(15,23,42,.04);
+            transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+        .score-filter { position: relative; min-width: 248px; padding: 0 2.4rem 0 0.85rem; cursor: pointer; }
+        .score-filter:focus-within,
+        .card-search:focus-within {
+            border-color: rgba(15,118,110,.45);
+            box-shadow: 0 0 0 4px rgba(15,118,110,.08), 0 8px 22px rgba(15,23,42,.06);
+            background: #fff;
+        }
+        .score-filter-trigger,
+        .card-search input { background: transparent; border: 0; outline: 0; box-shadow: none; font-size: 0.85rem; font-family: var(--font); color: var(--text); }
+        .score-filter-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            min-height: 42px;
+            padding: 0;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .score-filter-menu {
+            position: absolute;
+            z-index: 50;
+            top: calc(100% + 8px);
+            left: 0;
+            width: 100%;
+            padding: 0.35rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 18px 38px rgba(15,23,42,.14);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-6px);
+            transition: opacity .16s, transform .16s, visibility .16s;
+        }
+        .score-filter.is-open .score-filter-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .score-filter-option {
+            width: 100%;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 0;
+            border-radius: 9px;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: var(--font);
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-align: left;
+            padding: 0 0.7rem;
+            cursor: pointer;
+        }
+        .score-filter-option:hover,
+        .score-filter-option.is-selected {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+        }
+        .score-filter::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-right: 2px solid var(--text-muted);
+            border-bottom: 2px solid var(--text-muted);
+            transform: rotate(45deg);
+            position: absolute;
+            right: 1.05rem;
+            top: 50%;
+            margin-top: -6px;
+            pointer-events: none;
+        }
+        .card-search input { width: 240px; }
         .card-search input::placeholder { color: var(--text-muted); }
+        .score-filter svg,
         .card-search svg { color: var(--text-muted); flex-shrink: 0; }
 
         .attempts-table { width: 100%; border-collapse: collapse; }
@@ -368,7 +478,12 @@
         .q-opt.correct .q-opt-key { background: var(--success); color: #fff; }
         .q-opt-text { line-height: 1.5; padding-top: 0.05rem; }
 
-        @media (max-width: 768px) { .attempts-table { display: block; overflow-x: auto; } .card-search { display: none; } }
+        @media (max-width: 768px) {
+            .attempts-table { display: block; overflow-x: auto; }
+            .card-header { align-items: flex-start; flex-direction: column; }
+            .result-tools, .card-search, .score-filter { width: 100%; }
+            .card-search input { width: 100%; }
+        }
 
         /* Transparent navbar overrides when over the dark green hero */
         .navbar:not(.scrolled) {
@@ -413,9 +528,40 @@
         }
         .student-row-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+            grid-template-columns: minmax(260px, 2fr) minmax(110px, 0.8fr) minmax(95px, 0.7fr) minmax(105px, 0.8fr) minmax(95px, 0.7fr) minmax(310px, 1.45fr);
             align-items: center;
             gap: 1rem;
+        }
+        .student-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+        }
+        .grant-attempt-form { display: inline-flex; margin: 0; }
+        .btn-grant-attempt {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            height: 36px;
+            padding: 0 0.95rem;
+            border-radius: 999px;
+            border: 1px solid #bae6fd;
+            background: #ecfeff;
+            color: #0e7490;
+            font-family: var(--font);
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .15s, border-color .15s;
+            white-space: nowrap;
+        }
+        .btn-grant-attempt:hover {
+            transform: translateY(-1px);
+            border-color: #67e8f9;
+            box-shadow: 0 8px 18px rgba(14,116,144,.14);
         }
         .student-list-header {
             padding: 0 1.5rem 0.8rem;
@@ -440,6 +586,19 @@
         .status-not-started { background: #f1f3f5; color: #868e96; }
         .status-in-progress { background: #e7f5ff; color: #228be6; }
         .status-completed { background: #ebfbee; color: #40c057; }
+        .attempt-count-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 68px;
+            padding: 0.26rem 0.72rem;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.84rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
         .student-list-header > div:first-child {
             text-align: left;
             padding-left: 55px;
@@ -536,6 +695,228 @@
         .history-table tr:last-child td {
             border-bottom: none;
         }
+        .attempt-detail-card {
+            margin-top: 1.25rem;
+            border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            background: var(--surface);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        .attempt-detail-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface-2);
+        }
+        .attempt-detail-header h3 { margin: 0 0 0.35rem; font-size: 1.05rem; }
+        .attempt-detail-header p { margin: 0; color: var(--text-muted); font-size: 0.88rem; }
+        .attempt-detail-body {
+            display: grid;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+        }
+        .detail-history-card {
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            padding: 1rem;
+        }
+        .detail-history-title {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin-bottom: 0.85rem;
+            color: var(--text);
+            font-weight: 800;
+            font-size: 0.95rem;
+        }
+        .history-detail-link,
+        .history-current-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 30px;
+            padding: 0 0.75rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .history-detail-link {
+            background: var(--primary);
+            color: #fff;
+        }
+        .history-current-chip {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+        }
+        .answer-detail-card {
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            background: #fff;
+            padding: 1rem;
+        }
+        .answer-detail-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .answer-detail-title { font-weight: 700; color: var(--text); }
+        .answer-status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 0.22rem 0.62rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .answer-status.correct { background: var(--success-light); color: #047857; }
+        .answer-status.wrong { background: var(--danger-light); color: #991b1b; }
+        .answer-status.pending { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+        .answer-question-text {
+            color: var(--text-2);
+            line-height: 1.6;
+            margin-bottom: 0.9rem;
+        }
+        .answer-option-list {
+            display: grid;
+            gap: 0.45rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .answer-option {
+            display: grid;
+            grid-template-columns: 28px minmax(0, 1fr);
+            gap: 0.6rem;
+            align-items: start;
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            padding: 0.58rem 0.7rem;
+            color: var(--text-2);
+            background: var(--surface-2);
+        }
+        .answer-option.selected { border-color: #38bdf8; background: #e0f2fe; }
+        .answer-option.correct { border-color: var(--success); background: var(--success-light); }
+        .answer-option-key {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: var(--border);
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+        .feedback-form {
+            border-top: 1px solid var(--border);
+            padding: 1.25rem 1.5rem;
+            background: #fff;
+        }
+        .feedback-form label {
+            display: block;
+            margin-bottom: 0.55rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .feedback-form textarea {
+            width: 100%;
+            min-height: 130px;
+            resize: vertical;
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            padding: 0.9rem 1rem;
+            font-family: var(--font);
+            font-size: 0.95rem;
+            color: var(--text);
+            outline: none;
+        }
+        .feedback-form textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+        }
+        .feedback-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0.9rem;
+        }
+        body.modal-open {
+            overflow: hidden;
+        }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            background: rgba(15, 23, 42, 0.42);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-panel {
+            width: min(980px, 100%);
+            max-height: calc(100vh - 2.5rem);
+            overflow: auto;
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: var(--r-lg);
+            background: #fff;
+            box-shadow: 0 28px 90px rgba(15, 23, 42, 0.24);
+        }
+        .modal-overlay .attempt-detail-card {
+            width: min(1080px, 100%);
+            max-height: calc(100vh - 2.5rem);
+            margin: 0;
+            overflow: auto;
+            box-shadow: 0 28px 90px rgba(15, 23, 42, 0.24);
+        }
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.1rem 1.3rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface-2);
+        }
+        .modal-head h3 {
+            margin: 0;
+            font-size: 1rem;
+        }
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+        .modal-body {
+            padding: 1.2rem 1.3rem;
+        }
+        .modal-body .student-history-pane {
+            display: block;
+            padding: 0;
+            border: 0;
+            background: transparent;
+        }
     </style>
 </head>
 <body>
@@ -628,8 +1009,8 @@
                 </div>
                 <div class="stat-body">
                     <div class="stat-label">Lượt nộp bài</div>
-                    <div class="stat-value"><%= totalAttempts %></div>
-                    <div class="stat-sub"><%= completedCount %> hoàn thành</div>
+                    <div class="stat-value"><%= completedCount %></div>
+                    <div class="stat-sub"><%= startedCount %>/<%= totalStudents %> học viên đã bắt đầu</div>
                 </div>
             </div>
             <div class="stat-card">
@@ -638,8 +1019,8 @@
                 </div>
                 <div class="stat-body">
                     <div class="stat-label">Điểm trung bình</div>
-                    <div class="stat-value"><%= totalAttempts > 0 ? String.format("%.1f", avgScore) : "—" %></div>
-                    <% if (exam.getMaxScore() != null && totalAttempts > 0) { %>
+                    <div class="stat-value"><%= completedCount > 0 ? String.format("%.1f", avgScore) : "—" %></div>
+                    <% if (exam.getMaxScore() != null && completedCount > 0) { %>
                     <div class="stat-sub">trên <%= String.format("%.0f", exam.getMaxScore()) %> điểm</div>
                     <% } else { %><div class="stat-sub">Chưa có dữ liệu</div><% } %>
                 </div>
@@ -670,7 +1051,7 @@
             <button class="tab-btn active" data-pane="pane-submissions" role="tab">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                 Danh sách bài nộp
-                <span class="tab-count"><%= totalAttempts %></span>
+                <span class="tab-count"><%= totalStudents %></span>
             </button>
             <button class="tab-btn" data-pane="pane-questions" role="tab">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -686,9 +1067,22 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                         Kết quả học viên
                     </div>
-                    <div class="card-search">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <input type="text" id="search-attempts" placeholder="Tìm học viên..." autocomplete="off">
+                    <div class="result-tools">
+                        <div class="score-filter" id="score-sort-control">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+                            <button type="button" class="score-filter-trigger" id="score-sort-trigger" data-value="default" aria-haspopup="listbox" aria-expanded="false">
+                                <span id="score-sort-label">Sắp xếp mặc định</span>
+                            </button>
+                            <div class="score-filter-menu" id="score-sort-menu" role="listbox" aria-label="Sắp xếp theo điểm">
+                                <button type="button" class="score-filter-option is-selected" data-value="default" role="option" aria-selected="true">Sắp xếp mặc định</button>
+                                <button type="button" class="score-filter-option" data-value="score_desc" role="option" aria-selected="false">Điểm cao đến thấp</button>
+                                <button type="button" class="score-filter-option" data-value="score_asc" role="option" aria-selected="false">Điểm thấp đến cao</button>
+                            </div>
+                        </div>
+                        <div class="card-search">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" id="search-attempts" placeholder="Tìm học viên..." autocomplete="off">
+                        </div>
                     </div>
                 </div>
 
@@ -709,28 +1103,33 @@
                         <div class="student-list-header student-row-grid">
                             <div>Học viên</div>
                             <div>Trạng thái</div>
+                            <div>Lượt làm</div>
                             <div>Vi phạm</div>
                             <div>Điểm số</div>
                             <div>Thao tác</div>
                         </div>
 
-                        <% for (ClassroomExamAttemptDto dto : attempts) {
+                        <% int rowIndex = 0;
+                           for (ClassroomExamAttemptDto dto : attempts) {
                             String sName = dto.getStudentName() != null ? dto.getStudentName() : "Unknown";
                             String sEmail = dto.getStudentEmail() != null ? dto.getStudentEmail() : "";
                             String sInitials = "H";
                             String sAvatar = dto.getStudentAvatar() != null ? dto.getStudentAvatar() : "";
                             int viols = dto.getAttempt().getViolationCount();
-                            double sc = dto.getAttempt().getScore() != null ? dto.getAttempt().getScore() : 0.0;
+                            Double bestScore = dto.getBestScore();
+                            double sc = bestScore != null ? bestScore : 0.0;
                             String statusStr = dto.getAttempt().getStatus();
                             String badgeClass = "status-not-started";
                             String badgeText = "Chưa làm";
-                            if ("completed".equals(statusStr)) {
-                                badgeClass = "status-completed";
-                                badgeText = "Đã làm";
-                            } else if ("in_progress".equals(statusStr)) {
+                            boolean hasCompletedScore = bestScore != null;
+                            if ("in_progress".equals(statusStr)) {
                                 badgeClass = "status-in-progress";
                                 badgeText = "Đang làm";
+                            } else if (hasCompletedScore) {
+                                badgeClass = "status-completed";
+                                badgeText = "Đã làm";
                             }
+                            int attemptCount = dto.getAttemptCount();
                             
                             String subTime = dto.getAttempt().getSubmittedAt() != null ? sdf.format(dto.getAttempt().getSubmittedAt()) : ("completed".equals(statusStr) ? "Đã nộp" : "Chưa có");
                             String startTime = dto.getAttempt().getStartedAt() != null ? sdf.format(dto.getAttempt().getStartedAt()) : "Chưa bắt đầu";
@@ -754,7 +1153,7 @@
                                 else scoreChipClass = "low";
                             }
                         %>
-                        <div class="student-result-card attempt-row">
+                        <div class="student-result-card attempt-row" data-score="<%= bestScore != null ? String.format(java.util.Locale.US, "%.4f", bestScore) : "-1" %>" data-original-index="<%= rowIndex++ %>">
                             <div class="student-summary-row student-row-grid">
                                 <div class="student-info">
                                     <% if (sAvatar != null && !sAvatar.isEmpty()) { %>
@@ -773,6 +1172,10 @@
                                 </div>
 
                                 <div class="student-stat">
+                                    <span class="attempt-count-chip"><%= attemptCount %> lượt</span>
+                                </div>
+
+                                <div class="student-stat">
                                     <span class="violation-chip <%= viols > 0 ? "flagged" : "safe" %>" style="font-size:0.85rem; padding:0.2rem 0.6rem;">
                                         <% if (viols > 0) { %>
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -784,7 +1187,7 @@
                                 </div>
 
                                 <div class="student-stat">
-                                    <% if ("completed".equals(statusStr)) { %>
+                                    <% if (hasCompletedScore) { %>
                                         <span class="score-chip <%= scoreChipClass %>" style="font-size:0.95rem; font-weight:700;"><%= String.format("%.2f", sc) %></span>
                                     <% } else { %>
                                         <span style="color: var(--text-muted);">-</span>
@@ -792,11 +1195,17 @@
                                 </div>
 
                                 <div class="student-actions">
-                                    <button type="button" class="btn-history" onclick="toggleHistory(this)">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                        Lịch sử
-                                    </button>
-                                    <a href="#" class="btn btn-primary" style="display:inline-flex; align-items:center; justify-content:center; gap:0.4rem; padding:0 1.2rem; font-size:0.85rem; font-weight:500; border-radius:50px; white-space:nowrap; height:36px; text-decoration:none; color:#fff; background:var(--primary); border:none; cursor:pointer; transition:all 0.2s;">
+                                    <form class="grant-attempt-form" method="post" action="${pageContext.request.contextPath}/class-exam-manage">
+                                        <input type="hidden" name="action" value="grantExtraAttempt">
+                                        <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                        <input type="hidden" name="code" value="<%= h(exam.getExamCode()) %>">
+                                        <input type="hidden" name="studentId" value="<%= h(dto.getAttempt().getStudentId()) %>">
+                                        <button type="submit" class="btn-grant-attempt" title="Cấp thêm 1 lượt làm bài">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                            Thêm lượt
+                                        </button>
+                                    </form>
+                                    <a href="${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>&attemptId=<%= h(dto.getAttempt().getId() != null ? dto.getAttempt().getId() : "") %>#attempt-detail" class="btn btn-primary" style="display:inline-flex; align-items:center; justify-content:center; gap:0.4rem; padding:0 1.2rem; font-size:0.85rem; font-weight:500; border-radius:50px; white-space:nowrap; height:36px; text-decoration:none; color:#fff; background:<%= dto.getAttempt().getId() != null ? "var(--primary)" : "#94a3b8" %>; border:none; cursor:<%= dto.getAttempt().getId() != null ? "pointer" : "not-allowed" %>; transition:all 0.2s; <%= dto.getAttempt().getId() != null ? "" : "opacity:0.72; pointer-events:none;" %>">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                                         Chi tiết
                                     </a>
@@ -815,13 +1224,48 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td style="font-weight:600;">Lượt 1</td>
-                                            <td><%= startTime %></td>
-                                            <td><%= subTime %></td>
-                                            <td><%= durationMins %> phút</td>
-                                            <td><span class="score-chip <%= scoreChipClass %>"><%= String.format("%.2f", sc) %></span></td>
-                                        </tr>
+                                        <%
+                                            List<ClassroomExamAttempt> histories = attemptHistories != null
+                                                    ? attemptHistories.get(dto.getAttempt().getStudentId())
+                                                    : null;
+                                            if (histories == null || histories.isEmpty()) {
+                                        %>
+                                            <tr>
+                                                <td colspan="5" style="color:var(--text-muted);">Chưa có lượt làm nào</td>
+                                            </tr>
+                                        <% } else {
+                                            for (int hi = 0; hi < histories.size(); hi++) {
+                                                ClassroomExamAttempt item = histories.get(hi);
+                                                String itemStart = item.getStartedAt() != null ? sdf.format(item.getStartedAt()) : "Chưa bắt đầu";
+                                                String itemSubmit = item.getSubmittedAt() != null ? sdf.format(item.getSubmittedAt()) : ("completed".equals(item.getStatus()) ? "Đã nộp" : "Đang làm");
+                                                long itemDurationMs = item.getSubmittedAt() != null && item.getStartedAt() != null
+                                                        ? item.getSubmittedAt().getTime() - item.getStartedAt().getTime()
+                                                        : 0;
+                                                long itemDurationMins = Math.max(1, itemDurationMs / 60000);
+                                                Double itemScore = item.getScore();
+                                                String itemScoreClass = "pending";
+                                                if (itemScore != null && exam.getMaxScore() != null && exam.getMaxScore() > 0) {
+                                                    double itemPct = itemScore / exam.getMaxScore();
+                                                    if (itemPct >= 0.8) itemScoreClass = "high";
+                                                    else if (itemPct >= 0.5) itemScoreClass = "medium";
+                                                    else itemScoreClass = "low";
+                                                }
+                                        %>
+                                            <tr>
+                                                <td style="font-weight:600;">Lượt <%= hi + 1 %></td>
+                                                <td><%= itemStart %></td>
+                                                <td><%= itemSubmit %></td>
+                                                <td><%= item.getSubmittedAt() != null ? (itemDurationMins + " phút") : "-" %></td>
+                                                <td>
+                                                    <% if (itemScore != null) { %>
+                                                        <span class="score-chip <%= itemScoreClass %>"><%= String.format("%.2f", itemScore) %></span>
+                                                    <% } else { %>
+                                                        <span class="score-chip pending">-</span>
+                                                    <% } %>
+                                                </td>
+                                            </tr>
+                                        <%  }
+                                        } %>
                                     </tbody>
                                 </table>
                             </div>
@@ -831,6 +1275,172 @@
                 </div>
             </div>
         </div>
+
+        <% if (selectedAttempt != null) {
+            String selectedStatus = selectedAttempt.getAttempt().getStatus();
+            Double selectedScore = selectedAttempt.getAttempt().getScore();
+            String selectedFeedback = selectedAttempt.getAttempt().getTeacherFeedback() != null
+                    ? selectedAttempt.getAttempt().getTeacherFeedback()
+                    : "";
+            List<ClassroomExamAttempt> selectedHistories = attemptHistories != null
+                    ? attemptHistories.get(selectedAttempt.getAttempt().getStudentId())
+                    : null;
+        %>
+        <div class="modal-overlay active" id="attemptDetailModal">
+        <section class="attempt-detail-card" id="attempt-detail" role="dialog" aria-modal="true" aria-label="Chi tiết bài làm">
+            <div class="attempt-detail-header">
+                <div>
+                    <h3>Chi tiết bài làm của <%= h(selectedAttempt.getStudentName()) %></h3>
+                    <p>
+                        <%= h(selectedAttempt.getStudentEmail()) %>
+                        · Trạng thái: <%= "completed".equals(selectedStatus) ? "Đã làm" : ("in_progress".equals(selectedStatus) ? "Đang làm" : "Chưa làm") %>
+                        · Điểm: <%= selectedScore != null ? String.format("%.2f", selectedScore) : "-" %>
+                        · Vi phạm: <%= selectedAttempt.getAttempt().getViolationCount() %> lần
+                    </p>
+                </div>
+                <a href="${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>"
+                   class="btn-history" style="text-decoration:none;">Đóng chi tiết</a>
+            </div>
+
+            <div class="attempt-detail-body">
+                <section class="detail-history-card">
+                    <div class="detail-history-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Lịch sử các lượt làm
+                    </div>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Lượt làm</th>
+                                <th>Bắt đầu lúc</th>
+                                <th>Hoàn thành lúc</th>
+                                <th>Thời gian làm</th>
+                                <th>Điểm số</th>
+                                <th>Chi tiết</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (selectedHistories == null || selectedHistories.isEmpty()) { %>
+                                <tr>
+                                    <td colspan="6" style="color:var(--text-muted);">Chưa có lịch sử làm bài</td>
+                                </tr>
+                            <% } else {
+                                for (int hi = 0; hi < selectedHistories.size(); hi++) {
+                                    ClassroomExamAttempt item = selectedHistories.get(hi);
+                                    String itemStart = item.getStartedAt() != null ? sdf.format(item.getStartedAt()) : "Chưa bắt đầu";
+                                    String itemSubmit = item.getSubmittedAt() != null ? sdf.format(item.getSubmittedAt()) : ("completed".equals(item.getStatus()) ? "Đã nộp" : "Đang làm");
+                                    long itemDurationMs = item.getSubmittedAt() != null && item.getStartedAt() != null
+                                            ? item.getSubmittedAt().getTime() - item.getStartedAt().getTime()
+                                            : 0;
+                                    long itemDurationMins = Math.max(1, itemDurationMs / 60000);
+                                    Double itemScore = item.getScore();
+                                    String itemScoreClass = "pending";
+                                    if (itemScore != null && exam.getMaxScore() != null && exam.getMaxScore() > 0) {
+                                        double itemPct = itemScore / exam.getMaxScore();
+                                        if (itemPct >= 0.8) itemScoreClass = "high";
+                                        else if (itemPct >= 0.5) itemScoreClass = "medium";
+                                        else itemScoreClass = "low";
+                                    }
+                                    boolean viewingThisAttempt = item.getId() != null && item.getId().equals(selectedAttempt.getAttempt().getId());
+                            %>
+                                <tr>
+                                    <td style="font-weight:700;">Lượt <%= hi + 1 %></td>
+                                    <td><%= itemStart %></td>
+                                    <td><%= itemSubmit %></td>
+                                    <td><%= item.getSubmittedAt() != null ? (itemDurationMins + " phút") : "-" %></td>
+                                    <td>
+                                        <% if (itemScore != null) { %>
+                                            <span class="score-chip <%= itemScoreClass %>"><%= String.format("%.2f", itemScore) %></span>
+                                        <% } else { %>
+                                            <span class="score-chip pending">-</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (viewingThisAttempt) { %>
+                                            <span class="history-current-chip">Đang xem</span>
+                                        <% } else if (item.getId() != null) { %>
+                                            <a class="history-detail-link" href="${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>&attemptId=<%= h(item.getId()) %>#attempt-detail">Xem lượt này</a>
+                                        <% } else { %>
+                                            <span style="color:var(--text-muted);">-</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <%  }
+                            } %>
+                        </tbody>
+                    </table>
+                </section>
+
+                <% if (selectedAnswers == null || selectedAnswers.isEmpty()) { %>
+                    <div class="empty-state" style="padding: 2rem;">
+                        <h3>Chưa có dữ liệu câu trả lời</h3>
+                        <p>Học viên chưa nộp câu trả lời hoặc dữ liệu bài làm chưa được lưu.</p>
+                    </div>
+                <% } else {
+                    for (int i = 0; i < selectedAnswers.size(); i++) {
+                        ClassroomExamAnswerDetailDto detail = selectedAnswers.get(i);
+                        ClassroomExamQuestion q = detail.getQuestion();
+                        ClassroomExamAnswer ans = detail.getAnswer();
+                        String selected = ans != null ? ans.getSelectedOption() : "";
+                        String correct = q != null && q.getCorrectOption() != null ? q.getCorrectOption().toUpperCase() : "";
+                        boolean answered = selected != null && !selected.trim().isEmpty();
+                        boolean isCorrectAnswer = ans != null && ans.getId() != null && ans.isCorrect();
+                        String statusClass = !answered ? "pending" : (isCorrectAnswer ? "correct" : "wrong");
+                        String statusText = !answered ? "Chưa trả lời" : (isCorrectAnswer ? "Đúng" : "Sai");
+                %>
+                    <article class="answer-detail-card">
+                        <div class="answer-detail-top">
+                            <div class="answer-detail-title">Câu <%= i + 1 %> · <%= q != null && q.getPoints() != null ? String.format("%.2f", q.getPoints()) : "1.00" %> điểm</div>
+                            <span class="answer-status <%= statusClass %>"><%= statusText %></span>
+                        </div>
+                        <div class="answer-question-text"><%= h(q != null ? q.getQuestionText() : "") %></div>
+
+                        <ul class="answer-option-list">
+                            <% String[] keys = {"A", "B", "C", "D"};
+                               for (String key : keys) {
+                                   String optionValue = optionText(q, key);
+                                   if (optionValue == null || optionValue.trim().isEmpty()) {
+                                       continue;
+                                   }
+                                   String optionClass = "";
+                                   if (key.equalsIgnoreCase(correct)) optionClass += " correct";
+                                   if (answered && key.equalsIgnoreCase(selected)) optionClass += " selected";
+                            %>
+                            <li class="answer-option<%= optionClass %>">
+                                <span class="answer-option-key"><%= key %></span>
+                                <span><%= h(optionValue) %>
+                                    <% if (answered && key.equalsIgnoreCase(selected)) { %>
+                                        <strong> · Học viên chọn</strong>
+                                    <% } %>
+                                    <% if (key.equalsIgnoreCase(correct)) { %>
+                                        <strong> · Đáp án đúng</strong>
+                                    <% } %>
+                                </span>
+                            </li>
+                            <% } %>
+                        </ul>
+                    </article>
+                <%  }
+                } %>
+            </div>
+
+            <form class="feedback-form" method="post" action="${pageContext.request.contextPath}/class-exam-manage">
+                <input type="hidden" name="action" value="saveFeedback">
+                <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                <input type="hidden" name="code" value="<%= h(exam.getExamCode()) %>">
+                <input type="hidden" name="attemptId" value="<%= h(selectedAttempt.getAttempt().getId()) %>">
+                <label for="teacherFeedback">Feedback gửi cho học viên</label>
+                <textarea id="teacherFeedback" name="teacherFeedback" placeholder="Nhập nhận xét, gợi ý ôn tập hoặc lời nhắn cho học viên..."><%= h(selectedFeedback) %></textarea>
+                <% if (selectedAttempt.getAttempt().getFeedbackAt() != null) { %>
+                    <p style="margin:0.6rem 0 0;color:var(--text-muted);font-size:0.85rem;">Đã lưu lần gần nhất lúc <%= sdf.format(selectedAttempt.getAttempt().getFeedbackAt()) %></p>
+                <% } %>
+                <div class="feedback-actions">
+                    <button type="submit" class="btn btn-primary" style="display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 1.2rem;border-radius:999px;border:0;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;">Lưu feedback</button>
+                </div>
+            </form>
+        </section>
+        </div>
+        <% } %>
 
         <div id="pane-questions" class="tab-pane">
             <% if (questions == null || questions.isEmpty()) { %>
@@ -884,6 +1494,16 @@
 
     </main>
 
+    <div class="modal-overlay" id="historyModal" aria-hidden="true">
+        <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle">
+            <div class="modal-head">
+                <h3 id="historyModalTitle">Lịch sử làm bài</h3>
+                <button type="button" class="modal-close" onclick="closeHistoryModal()" aria-label="Đóng">×</button>
+            </div>
+            <div class="modal-body" id="historyModalBody"></div>
+        </section>
+    </div>
+
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
     <script>
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -896,26 +1516,118 @@
         });
 
         const searchInput = document.getElementById('search-attempts');
-        if (searchInput) {
-            searchInput.addEventListener('input', () => {
-                const q = searchInput.value.trim().toLowerCase();
-                document.querySelectorAll('.attempt-row').forEach(row => {
-                    const name = row.querySelector('[data-search-key]')?.textContent.toLowerCase() || '';
-                    row.style.display = name.includes(q) ? '' : 'none';
-                });
+        const sortControl = document.getElementById('score-sort-control');
+        const sortTrigger = document.getElementById('score-sort-trigger');
+        const sortLabel = document.getElementById('score-sort-label');
+        const sortOptions = document.querySelectorAll('.score-filter-option');
+        const resultList = document.querySelector('.student-result-list');
+
+        function applyResultTools() {
+            const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            const sortMode = sortTrigger ? sortTrigger.dataset.value : 'default';
+            const rows = Array.from(document.querySelectorAll('.attempt-row'));
+
+            rows.sort((a, b) => {
+                if (sortMode === 'score_desc' || sortMode === 'score_asc') {
+                    const scoreA = Number(a.dataset.score || '-1');
+                    const scoreB = Number(b.dataset.score || '-1');
+                    const diff = sortMode === 'score_desc' ? scoreB - scoreA : scoreA - scoreB;
+                    if (diff !== 0) return diff;
+                }
+                return Number(a.dataset.originalIndex || '0') - Number(b.dataset.originalIndex || '0');
+            });
+
+            rows.forEach(row => {
+                const name = row.querySelector('[data-search-key]')?.textContent.toLowerCase() || '';
+                const email = row.querySelector('.stu-email')?.textContent.toLowerCase() || '';
+                row.style.display = (name + ' ' + email).includes(q) ? '' : 'none';
+                if (resultList) resultList.appendChild(row);
             });
         }
+
+        if (searchInput) searchInput.addEventListener('input', applyResultTools);
+        if (sortTrigger && sortControl) {
+            sortTrigger.addEventListener('click', event => {
+                event.stopPropagation();
+                const isOpen = sortControl.classList.toggle('is-open');
+                sortTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+        }
+        sortOptions.forEach(option => {
+            option.addEventListener('click', event => {
+                event.stopPropagation();
+                const value = option.dataset.value || 'default';
+                if (sortTrigger) sortTrigger.dataset.value = value;
+                if (sortLabel) sortLabel.textContent = option.textContent.trim();
+                sortOptions.forEach(item => {
+                    const selected = item === option;
+                    item.classList.toggle('is-selected', selected);
+                    item.setAttribute('aria-selected', selected ? 'true' : 'false');
+                });
+                sortControl?.classList.remove('is-open');
+                sortTrigger?.setAttribute('aria-expanded', 'false');
+                applyResultTools();
+            });
+        });
+        document.addEventListener('click', event => {
+            if (!sortControl || sortControl.contains(event.target)) return;
+            sortControl.classList.remove('is-open');
+            sortTrigger?.setAttribute('aria-expanded', 'false');
+        });
 
         function toggleHistory(btn) {
             const card = btn.closest('.student-result-card');
             const pane = card.querySelector('.student-history-pane');
-            pane.classList.toggle('active');
-            if (pane.classList.contains('active')) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
+            const modal = document.getElementById('historyModal');
+            const body = document.getElementById('historyModalBody');
+            const title = document.getElementById('historyModalTitle');
+            const studentName = card.querySelector('[data-search-key]')?.textContent.trim() || 'học viên';
+            if (!pane || !modal || !body || !title) return;
+            const content = pane.cloneNode(true);
+            content.classList.add('active');
+            body.replaceChildren(content);
+            title.textContent = 'Lịch sử làm bài - ' + studentName;
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
         }
+
+        function closeHistoryModal() {
+            const modal = document.getElementById('historyModal');
+            const body = document.getElementById('historyModalBody');
+            if (!modal || !body) return;
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
+            body.replaceChildren();
+            document.body.classList.remove('modal-open');
+        }
+
+        document.getElementById('historyModal')?.addEventListener('click', event => {
+            if (event.target.id === 'historyModal') {
+                closeHistoryModal();
+            }
+        });
+
+        document.getElementById('attemptDetailModal')?.addEventListener('click', event => {
+            if (event.target.id === 'attemptDetailModal') {
+                window.location.href = '${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>';
+            }
+        });
+
+        if (document.getElementById('attemptDetailModal')) {
+            document.body.classList.add('modal-open');
+        }
+
+        document.addEventListener('keydown', event => {
+            if (event.key !== 'Escape') return;
+            if (document.getElementById('historyModal')?.classList.contains('active')) {
+                closeHistoryModal();
+                return;
+            }
+            if (document.getElementById('attemptDetailModal')) {
+                window.location.href = '${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>';
+            }
+        });
     </script>
 </body>
 </html>

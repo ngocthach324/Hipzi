@@ -9,6 +9,8 @@ public class ClassroomExamAttemptDto implements Serializable {
     private String studentName;
     private String studentEmail;
     private String studentAvatar;
+    private int attemptCount;
+    private Double bestScore;
 
     public ClassroomExamAttemptDto() {
     }
@@ -50,5 +52,21 @@ public class ClassroomExamAttemptDto implements Serializable {
 
     public void setStudentAvatar(String studentAvatar) {
         this.studentAvatar = studentAvatar;
+    }
+
+    public int getAttemptCount() {
+        return attemptCount;
+    }
+
+    public void setAttemptCount(int attemptCount) {
+        this.attemptCount = attemptCount;
+    }
+
+    public Double getBestScore() {
+        return bestScore;
+    }
+
+    public void setBestScore(Double bestScore) {
+        this.bestScore = bestScore;
     }
 }

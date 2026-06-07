@@ -52,9 +52,13 @@ public class ClassExamStartServlet extends HttpServlet {
                 return;
             }
 
-            examDao.startAttempt(examId, user.getId());
-            // Always return success to not block the user
-            out.print("{\"success\":true,\"message\":\"Đã đánh dấu bắt đầu.\"}");
+            String attemptId = examDao.startAttempt(examId, user.getId());
+            if (attemptId == null || attemptId.trim().isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_CONFLICT);
+                out.print("{\"success\":false,\"message\":\"Bạn đã dùng hết lượt làm bài. Vui lòng liên hệ giáo viên để được cấp thêm lượt.\"}");
+                return;
+            }
+            out.print("{\"success\":true,\"attemptId\":\"" + attemptId + "\",\"message\":\"Đã đánh dấu bắt đầu.\"}");
 
         } catch (Exception e) {
             System.err.println("Error in ClassExamStartServlet: " + e.getMessage());

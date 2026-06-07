@@ -55,19 +55,13 @@ public class ClassExamSubmitServlet extends HttpServlet {
 
             String body = sb.toString().trim();
             String examId = extractJsonString(body, "examId");
+            String attemptId = extractJsonString(body, "attemptId");
             int violationCount = extractJsonInt(body, "violationCount");
             Map<String, String> answers = extractAnswersMap(body);
 
             if (examId == null || examId.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 out.print("{\"success\":false,\"message\":\"Dữ liệu nộp bài không hợp lệ.\"}");
-                return;
-            }
-
-            // Check if already submitted
-            if (examDao.hasStudentSubmitted(examId, user.getId())) {
-                response.setStatus(HttpServletResponse.SC_CONFLICT);
-                out.print("{\"success\":false,\"message\":\"Bạn đã nộp bài thi này rồi.\"}");
                 return;
             }
 
@@ -125,6 +119,7 @@ public class ClassExamSubmitServlet extends HttpServlet {
             totalScore = Math.round(totalScore * 100.0) / 100.0;
 
             ClassroomExamAttempt attempt = new ClassroomExamAttempt();
+            attempt.setId(attemptId);
             attempt.setExamId(exam.getId());
             attempt.setStudentId(user.getId());
             attempt.setScore(totalScore);

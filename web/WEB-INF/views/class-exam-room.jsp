@@ -1351,6 +1351,7 @@
         var examDurationMinutes = <%= examDurationMinutes %>;
         var hasLoadedExam = <%= hasClassExamContext && examQuestionCount > 0 ? "true" : "false" %>;
         var canEnterExam = <%= canEnterExam ? "true" : "false" %>;
+        var activeAttemptId = '';
         var answers = {};
         var currentQuestion = 0;
         var secondsLeft = examDurationMinutes * 60;
@@ -1557,6 +1558,7 @@
 
             var payload = {
                 examId: "<%= hasClassExamContext ? classroomExam.getId() : "" %>",
+                attemptId: activeAttemptId,
                 violationCount: violations.length,
                 answers: (function() {
                     // Convert index-keyed {0: 'A'} to UUID-keyed {'uuid': 'A'}
@@ -1620,6 +1622,7 @@
             violations = [];
             lastViolationAt = 0;
             fullscreenReady = false;
+            activeAttemptId = '';
             violationCount.textContent = '0';
             persistViolations();
             renderTimer();
@@ -1635,7 +1638,21 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ examId: "<%= hasClassExamContext ? classroomExam.getId() : "" %>" })
-            }).catch(function(e) { console.warn("Lỗi đồng bộ trạng thái bắt đầu làm bài:", e); });
+            }).then(function(response) {
+                return response.json().then(function(data) {
+                    if (!response.ok || !data.success) {
+                        throw new Error(data.message || 'Không thể bắt đầu lượt làm bài.');
+                    }
+                    activeAttemptId = data.attemptId || '';
+                });
+            }).catch(function(e) {
+                console.warn("Lỗi đồng bộ trạng thái bắt đầu làm bài:", e);
+                window.alert(e.message || "Không thể bắt đầu lượt làm bài.");
+                examRunning = false;
+                if (timerInterval) clearInterval(timerInterval);
+                workspace.classList.remove('active');
+                document.body.classList.remove('exam-running');
+            });
 
             timerInterval = setInterval(function () {
                 secondsLeft -= 1;
@@ -1781,4 +1798,4 @@
     })();
     </script>
 </body>
-</html>
+</html>

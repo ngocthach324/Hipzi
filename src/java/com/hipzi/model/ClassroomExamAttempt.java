@@ -14,6 +14,9 @@ public class ClassroomExamAttempt implements Serializable {
     private String status;
     private Timestamp startedAt;
     private Timestamp submittedAt;
+    private String teacherFeedback;
+    private String feedbackBy;
+    private Timestamp feedbackAt;
 
     public ClassroomExamAttempt() {
     }
@@ -88,5 +91,29 @@ public class ClassroomExamAttempt implements Serializable {
 
     public void setSubmittedAt(Timestamp submittedAt) {
         this.submittedAt = submittedAt;
+    }
+
+    public String getTeacherFeedback() {
+        return teacherFeedback;
+    }
+
+    public void setTeacherFeedback(String teacherFeedback) {
+        this.teacherFeedback = teacherFeedback;
+    }
+
+    public String getFeedbackBy() {
+        return feedbackBy;
+    }
+
+    public void setFeedbackBy(String feedbackBy) {
+        this.feedbackBy = feedbackBy;
+    }
+
+    public Timestamp getFeedbackAt() {
+        return feedbackAt;
+    }
+
+    public void setFeedbackAt(Timestamp feedbackAt) {
+        this.feedbackAt = feedbackAt;
     }
 }

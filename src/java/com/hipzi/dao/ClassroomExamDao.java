@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import com.hipzi.dto.ClassroomExamAnswerDetailDto;
 import com.hipzi.dto.ClassroomExamAttemptDto;
 import com.hipzi.model.ClassroomExamAttempt;
 import com.hipzi.model.ClassroomExamAnswer;
@@ -296,23 +297,54 @@ public class ClassroomExamDao {
 
     public List<ClassroomExamAttemptDto> listAttempts(String examId) {
         List<ClassroomExamAttemptDto> attempts = new ArrayList<>();
-        // Fetch ALL accepted students in the classroom and LEFT JOIN their attempts
-        String sql = "SELECT u.id as user_id, u.full_name, u.email, u.avatar_url, "
+        // Fetch all accepted students, their latest attempt, total attempt count, and best completed score for this exam.
+        String sql = "SELECT u.id as user_id, u.display_name AS student_name, u.email, u.avatar_url, "
                    + "a.id as attempt_id, a.exam_id, a.score, a.total_questions, "
-                   + "a.violation_count, a.status, a.started_at, a.submitted_at "
+                   + "a.violation_count, a.status, a.started_at, a.submitted_at, "
+                   + "a.teacher_feedback, a.feedback_by, a.feedback_at, "
+                   + "COALESCE(ac.attempt_count, 0) AS attempt_count, ac.best_score "
                    + "FROM classroom_enrollments ce "
                    + "JOIN users u ON ce.student_id = u.id "
                    + "JOIN classroom_exams e ON e.classroom_id = ce.classroom_id "
-                   + "LEFT JOIN classroom_exam_attempts a ON a.student_id = u.id AND a.exam_id = e.id "
+                   + "LEFT JOIN LATERAL ("
+                   + "SELECT * FROM classroom_exam_attempts a "
+                   + "WHERE a.student_id = u.id AND a.exam_id = e.id "
+                   + "ORDER BY a.started_at DESC NULLS LAST, a.submitted_at DESC NULLS LAST "
+                   + "LIMIT 1"
+                   + ") a ON true "
+                   + "LEFT JOIN LATERAL ("
+                   + "SELECT COUNT(*) AS attempt_count, MAX(a2.score) FILTER (WHERE a2.status = 'completed') AS best_score FROM classroom_exam_attempts a2 "
+                   + "WHERE a2.student_id = u.id AND a2.exam_id = e.id"
+                   + ") ac ON true "
                    + "WHERE e.id = ?::uuid AND ce.status = 'accepted' "
-                   + "ORDER BY a.started_at DESC NULLS LAST, u.full_name ASC";
+                   + "ORDER BY a.started_at DESC NULLS LAST, u.display_name ASC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, examId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     ClassroomExamAttemptDto dto = new ClassroomExamAttemptDto();
-                    dto.setStudentName(rs.getString("full_name"));
+                    ClassroomExamAttempt attempt = new ClassroomExamAttempt();
+                    attempt.setId(rs.getString("attempt_id"));
+                    attempt.setExamId(rs.getString("exam_id") != null ? rs.getString("exam_id") : examId);
+                    attempt.setStudentId(rs.getString("user_id"));
+                    double score = rs.getDouble("score");
+                    attempt.setScore(rs.wasNull() ? null : score);
+                    attempt.setTotalQuestions(rs.getInt("total_questions"));
+                    attempt.setViolationCount(rs.getInt("violation_count"));
+                    String status = rs.getString("status");
+                    attempt.setStatus(status != null ? status : "not_started");
+                    attempt.setStartedAt(rs.getTimestamp("started_at"));
+                    attempt.setSubmittedAt(rs.getTimestamp("submitted_at"));
+                    attempt.setTeacherFeedback(rs.getString("teacher_feedback"));
+                    attempt.setFeedbackBy(rs.getString("feedback_by"));
+                    attempt.setFeedbackAt(rs.getTimestamp("feedback_at"));
+
+                    dto.setAttempt(attempt);
+                    dto.setAttemptCount(rs.getInt("attempt_count"));
+                    double bestScore = rs.getDouble("best_score");
+                    dto.setBestScore(rs.wasNull() ? null : bestScore);
+                    dto.setStudentName(rs.getString("student_name"));
                     dto.setStudentEmail(rs.getString("email"));
                     dto.setStudentAvatar(rs.getString("avatar_url"));
                     
@@ -323,6 +355,158 @@ public class ClassroomExamDao {
             lastError.set("Database error loading attempts: " + e.getMessage());
         }
         return attempts;
+    }
+
+    public ClassroomExamAttemptDto findAttemptDto(String examId, String attemptId) {
+        String sql = "SELECT u.id as user_id, u.display_name AS student_name, u.email, u.avatar_url, "
+                   + "a.id as attempt_id, a.exam_id, a.score, a.total_questions, "
+                   + "a.violation_count, a.status, a.started_at, a.submitted_at, "
+                   + "a.teacher_feedback, a.feedback_by, a.feedback_at, "
+                   + "COALESCE(ac.attempt_count, 0) AS attempt_count, ac.best_score "
+                   + "FROM classroom_exam_attempts a "
+                   + "JOIN users u ON u.id = a.student_id "
+                   + "LEFT JOIN LATERAL ("
+                   + "SELECT COUNT(*) AS attempt_count, MAX(a2.score) FILTER (WHERE a2.status = 'completed') AS best_score FROM classroom_exam_attempts a2 "
+                   + "WHERE a2.student_id = a.student_id AND a2.exam_id = a.exam_id"
+                   + ") ac ON true "
+                   + "WHERE a.exam_id = ?::uuid AND a.id = ?::uuid "
+                   + "LIMIT 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, examId);
+            ps.setString(2, attemptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapAttemptDto(rs, examId);
+                }
+            }
+        } catch (SQLException e) {
+            lastError.set("Database error loading selected attempt: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public List<ClassroomExamAnswerDetailDto> listAnswerDetails(String attemptId) {
+        List<ClassroomExamAnswerDetailDto> details = new ArrayList<>();
+        String sql = "SELECT q.*, ans.id AS answer_id, ans.attempt_id, ans.selected_option, ans.is_correct "
+                   + "FROM classroom_exam_attempts a "
+                   + "JOIN classroom_exam_questions q ON q.exam_id = a.exam_id "
+                   + "LEFT JOIN classroom_exam_answers ans ON ans.attempt_id = a.id AND ans.question_id = q.id "
+                   + "WHERE a.id = ?::uuid "
+                   + "ORDER BY q.sort_order ASC";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, attemptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ClassroomExamQuestion question = new ClassroomExamQuestion();
+                    question.setId(rs.getString("id"));
+                    question.setExamId(rs.getString("exam_id"));
+                    question.setQuestionText(rs.getString("question_text"));
+                    question.setOptionA(rs.getString("option_a"));
+                    question.setOptionB(rs.getString("option_b"));
+                    question.setOptionC(rs.getString("option_c"));
+                    question.setOptionD(rs.getString("option_d"));
+                    question.setCorrectOption(rs.getString("correct_option"));
+                    question.setReferenceAnswer(rs.getString("reference_answer"));
+                    double points = rs.getDouble("points");
+                    question.setPoints(rs.wasNull() ? null : points);
+                    question.setSortOrder(rs.getInt("sort_order"));
+                    question.setCreatedAt(rs.getTimestamp("created_at"));
+
+                    ClassroomExamAnswer answer = new ClassroomExamAnswer();
+                    answer.setId(rs.getString("answer_id"));
+                    answer.setAttemptId(rs.getString("attempt_id"));
+                    answer.setQuestionId(question.getId());
+                    answer.setSelectedOption(rs.getString("selected_option"));
+                    answer.setCorrect(rs.getBoolean("is_correct"));
+
+                    details.add(new ClassroomExamAnswerDetailDto(question, answer));
+                }
+            }
+        } catch (SQLException e) {
+            lastError.set("Database error loading answer details: " + e.getMessage());
+        }
+        return details;
+    }
+
+    public boolean updateAttemptFeedback(String examId, String attemptId, String feedback, String reviewerId) {
+        String sql = "UPDATE classroom_exam_attempts SET "
+                   + "teacher_feedback = ?, feedback_by = ?::uuid, feedback_at = now() "
+                   + "WHERE id = ?::uuid AND exam_id = ?::uuid";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, feedback);
+            ps.setString(2, reviewerId);
+            ps.setString(3, attemptId);
+            ps.setString(4, examId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            lastError.set("Database error saving attempt feedback: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public List<ClassroomExamAttempt> listStudentAttempts(String examId, String studentId) {
+        List<ClassroomExamAttempt> attempts = new ArrayList<>();
+        String sql = "SELECT * FROM classroom_exam_attempts "
+                + "WHERE exam_id = ?::uuid AND student_id = ?::uuid "
+                + "ORDER BY started_at ASC";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, examId);
+            ps.setString(2, studentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ClassroomExamAttempt attempt = new ClassroomExamAttempt();
+                    attempt.setId(rs.getString("id"));
+                    attempt.setExamId(rs.getString("exam_id"));
+                    attempt.setStudentId(rs.getString("student_id"));
+                    double score = rs.getDouble("score");
+                    attempt.setScore(rs.wasNull() ? null : score);
+                    attempt.setTotalQuestions(rs.getInt("total_questions"));
+                    attempt.setViolationCount(rs.getInt("violation_count"));
+                    attempt.setStatus(rs.getString("status"));
+                    attempt.setStartedAt(rs.getTimestamp("started_at"));
+                    attempt.setSubmittedAt(rs.getTimestamp("submitted_at"));
+                    attempt.setTeacherFeedback(rs.getString("teacher_feedback"));
+                    attempt.setFeedbackBy(rs.getString("feedback_by"));
+                    attempt.setFeedbackAt(rs.getTimestamp("feedback_at"));
+                    attempts.add(attempt);
+                }
+            }
+        } catch (SQLException e) {
+            lastError.set("Database error loading student attempt history: " + e.getMessage());
+        }
+        return attempts;
+    }
+
+    private ClassroomExamAttemptDto mapAttemptDto(ResultSet rs, String fallbackExamId) throws SQLException {
+        ClassroomExamAttemptDto dto = new ClassroomExamAttemptDto();
+        ClassroomExamAttempt attempt = new ClassroomExamAttempt();
+        attempt.setId(rs.getString("attempt_id"));
+        attempt.setExamId(rs.getString("exam_id") != null ? rs.getString("exam_id") : fallbackExamId);
+        attempt.setStudentId(rs.getString("user_id"));
+        double score = rs.getDouble("score");
+        attempt.setScore(rs.wasNull() ? null : score);
+        attempt.setTotalQuestions(rs.getInt("total_questions"));
+        attempt.setViolationCount(rs.getInt("violation_count"));
+        String status = rs.getString("status");
+        attempt.setStatus(status != null ? status : "not_started");
+        attempt.setStartedAt(rs.getTimestamp("started_at"));
+        attempt.setSubmittedAt(rs.getTimestamp("submitted_at"));
+        attempt.setTeacherFeedback(rs.getString("teacher_feedback"));
+        attempt.setFeedbackBy(rs.getString("feedback_by"));
+        attempt.setFeedbackAt(rs.getTimestamp("feedback_at"));
+
+        dto.setAttempt(attempt);
+        dto.setAttemptCount(rs.getInt("attempt_count"));
+        double bestScore = rs.getDouble("best_score");
+        dto.setBestScore(rs.wasNull() ? null : bestScore);
+        dto.setStudentName(rs.getString("student_name"));
+        dto.setStudentEmail(rs.getString("email"));
+        dto.setStudentAvatar(rs.getString("avatar_url"));
+        return dto;
     }
 
     public boolean hasStudentSubmitted(String examId, String studentId) {
@@ -342,73 +526,118 @@ public class ClassroomExamDao {
         return false;
     }
 
-    public boolean startAttempt(String examId, String studentId) {
-        String checkSql = "SELECT id FROM classroom_exam_attempts WHERE exam_id = ?::uuid AND student_id = ?::uuid";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
-            psCheck.setString(1, examId);
-            psCheck.setString(2, studentId);
-            try (ResultSet rs = psCheck.executeQuery()) {
-                if (rs.next()) {
-                    return true; // Already started or completed, don't insert again
+    public String startAttempt(String examId, String studentId) {
+        String activeSql = "SELECT id FROM classroom_exam_attempts "
+                + "WHERE exam_id = ?::uuid AND student_id = ?::uuid AND status = 'in_progress' "
+                + "ORDER BY started_at DESC LIMIT 1";
+        String countSql = "SELECT "
+                + "(SELECT COUNT(*) FROM classroom_exam_attempts WHERE exam_id = ?::uuid AND student_id = ?::uuid) AS used_count, "
+                + "(1 + (SELECT COUNT(*) FROM classroom_exam_attempt_grants WHERE exam_id = ?::uuid AND student_id = ?::uuid)) AS allowed_count";
+        String insertSql = "INSERT INTO classroom_exam_attempts (exam_id, student_id, status, started_at) "
+                + "VALUES (?::uuid, ?::uuid, 'in_progress', now()) RETURNING id";
+        try (Connection conn = DBContext.getConnection()) {
+            try (PreparedStatement psActive = conn.prepareStatement(activeSql)) {
+                psActive.setString(1, examId);
+                psActive.setString(2, studentId);
+                try (ResultSet rs = psActive.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getString("id");
+                    }
                 }
             }
-            
-            String insertSql = "INSERT INTO classroom_exam_attempts (exam_id, student_id, status, started_at) VALUES (?::uuid, ?::uuid, 'in_progress', now())";
+
+            try (PreparedStatement psCount = conn.prepareStatement(countSql)) {
+                psCount.setString(1, examId);
+                psCount.setString(2, studentId);
+                psCount.setString(3, examId);
+                psCount.setString(4, studentId);
+                try (ResultSet rs = psCount.executeQuery()) {
+                    if (rs.next() && rs.getInt("used_count") >= rs.getInt("allowed_count")) {
+                        return null;
+                    }
+                }
+            }
+
             try (PreparedStatement psInsert = conn.prepareStatement(insertSql)) {
                 psInsert.setString(1, examId);
                 psInsert.setString(2, studentId);
-                return psInsert.executeUpdate() > 0;
+                try (ResultSet rs = psInsert.executeQuery()) {
+                    return rs.next() ? rs.getString("id") : null;
+                }
             }
         } catch (SQLException e) {
             lastError.set("Database error starting attempt: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean grantExtraAttempt(String examId, String studentId, String grantedBy) {
+        String sql = "INSERT INTO classroom_exam_attempt_grants (exam_id, student_id, granted_by) "
+                + "VALUES (?::uuid, ?::uuid, ?::uuid)";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, examId);
+            ps.setString(2, studentId);
+            ps.setString(3, grantedBy);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            lastError.set("Database error granting extra attempt: " + e.getMessage());
         }
         return false;
     }
 
     public boolean insertAttempt(ClassroomExamAttempt attempt) {
-        String checkSql = "SELECT id FROM classroom_exam_attempts WHERE exam_id = ?::uuid AND student_id = ?::uuid";
-        String existingId = null;
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
-            psCheck.setString(1, attempt.getExamId());
-            psCheck.setString(2, attempt.getStudentId());
-            try (ResultSet rs = psCheck.executeQuery()) {
-                if (rs.next()) {
-                    existingId = rs.getString("id");
+        String attemptId = attempt.getId();
+        String findActiveSql = "SELECT id FROM classroom_exam_attempts "
+                + "WHERE exam_id = ?::uuid AND student_id = ?::uuid AND status = 'in_progress' "
+                + "ORDER BY started_at DESC LIMIT 1";
+        String updateSql = "UPDATE classroom_exam_attempts SET score = ?, total_questions = ?, violation_count = ?, "
+                + "status = 'completed', submitted_at = now() "
+                + "WHERE id = ?::uuid AND exam_id = ?::uuid AND student_id = ?::uuid AND status = 'in_progress'";
+        try (Connection conn = DBContext.getConnection()) {
+            if (attemptId == null || attemptId.trim().isEmpty()) {
+                try (PreparedStatement psFind = conn.prepareStatement(findActiveSql)) {
+                    psFind.setString(1, attempt.getExamId());
+                    psFind.setString(2, attempt.getStudentId());
+                    try (ResultSet rs = psFind.executeQuery()) {
+                        if (rs.next()) {
+                            attemptId = rs.getString("id");
+                        }
+                    }
                 }
             }
-            
-            if (existingId != null) {
-                String updateSql = "UPDATE classroom_exam_attempts SET score = ?, total_questions = ?, violation_count = ?, status = 'completed', submitted_at = now() WHERE id = ?::uuid";
+
+            if (attemptId != null && !attemptId.trim().isEmpty()) {
                 try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
                     if (attempt.getScore() != null) psUpdate.setDouble(1, attempt.getScore());
                     else psUpdate.setNull(1, java.sql.Types.NUMERIC);
                     psUpdate.setInt(2, attempt.getTotalQuestions());
                     psUpdate.setInt(3, attempt.getViolationCount());
-                    psUpdate.setString(4, existingId);
+                    psUpdate.setString(4, attemptId);
+                    psUpdate.setString(5, attempt.getExamId());
+                    psUpdate.setString(6, attempt.getStudentId());
                     if (psUpdate.executeUpdate() > 0) {
-                        attempt.setId(existingId);
+                        attempt.setId(attemptId);
                         return true;
                     }
                 }
-            } else {
-                String insertSql = "INSERT INTO classroom_exam_attempts (exam_id, student_id, score, total_questions, violation_count, status, started_at, submitted_at) "
-                                 + "VALUES (?::uuid, ?::uuid, ?, ?, ?, 'completed', COALESCE(?, now()), now()) RETURNING id";
-                try (PreparedStatement psInsert = conn.prepareStatement(insertSql)) {
-                    psInsert.setString(1, attempt.getExamId());
-                    psInsert.setString(2, attempt.getStudentId());
-                    if (attempt.getScore() != null) psInsert.setDouble(3, attempt.getScore());
-                    else psInsert.setNull(3, java.sql.Types.NUMERIC);
-                    psInsert.setInt(4, attempt.getTotalQuestions());
-                    psInsert.setInt(5, attempt.getViolationCount());
-                    psInsert.setTimestamp(6, attempt.getStartedAt());
-                    try (ResultSet rs = psInsert.executeQuery()) {
-                        if (rs.next()) {
-                            attempt.setId(rs.getString("id"));
-                            return true;
-                        }
-                    }
+            }
+
+            String newAttemptId = startAttempt(attempt.getExamId(), attempt.getStudentId());
+            if (newAttemptId == null || newAttemptId.trim().isEmpty()) {
+                return false;
+            }
+            try (PreparedStatement psInsert = conn.prepareStatement(updateSql)) {
+                if (attempt.getScore() != null) psInsert.setDouble(1, attempt.getScore());
+                else psInsert.setNull(1, java.sql.Types.NUMERIC);
+                psInsert.setInt(2, attempt.getTotalQuestions());
+                psInsert.setInt(3, attempt.getViolationCount());
+                psInsert.setString(4, newAttemptId);
+                psInsert.setString(5, attempt.getExamId());
+                psInsert.setString(6, attempt.getStudentId());
+                if (psInsert.executeUpdate() > 0) {
+                    attempt.setId(newAttemptId);
+                    return true;
                 }
             }
         } catch (SQLException e) {
@@ -517,6 +746,17 @@ public class ClassroomExamDao {
                     + "started_at TIMESTAMPTZ NOT NULL DEFAULT now(),"
                     + "submitted_at TIMESTAMPTZ"
                     + ")");
+            st.execute("ALTER TABLE classroom_exam_attempts ADD COLUMN IF NOT EXISTS teacher_feedback TEXT");
+            st.execute("ALTER TABLE classroom_exam_attempts ADD COLUMN IF NOT EXISTS feedback_by UUID REFERENCES users(id) ON DELETE SET NULL");
+            st.execute("ALTER TABLE classroom_exam_attempts ADD COLUMN IF NOT EXISTS feedback_at TIMESTAMPTZ");
+            st.execute("DROP INDEX IF EXISTS idx_classroom_exam_attempts_unique");
+            st.execute("CREATE TABLE IF NOT EXISTS classroom_exam_attempt_grants ("
+                    + "id UUID PRIMARY KEY DEFAULT gen_random_uuid(),"
+                    + "exam_id UUID NOT NULL REFERENCES classroom_exams(id) ON DELETE CASCADE,"
+                    + "student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"
+                    + "granted_by UUID REFERENCES users(id) ON DELETE SET NULL,"
+                    + "granted_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+                    + ")");
             st.execute("CREATE TABLE IF NOT EXISTS classroom_exam_answers ("
                     + "id UUID PRIMARY KEY DEFAULT gen_random_uuid(),"
                     + "attempt_id UUID NOT NULL REFERENCES classroom_exam_attempts(id) ON DELETE CASCADE,"
@@ -527,7 +767,8 @@ public class ClassroomExamDao {
             st.execute("CREATE INDEX IF NOT EXISTS idx_classroom_exams_classroom ON classroom_exams(classroom_id, status, created_at DESC)");
             st.execute("CREATE INDEX IF NOT EXISTS idx_classroom_exams_code ON classroom_exams(exam_code)");
             st.execute("CREATE INDEX IF NOT EXISTS idx_classroom_exam_questions_exam ON classroom_exam_questions(exam_id, sort_order)");
-            st.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_classroom_exam_attempts_unique ON classroom_exam_attempts(exam_id, student_id)");
+            st.execute("CREATE INDEX IF NOT EXISTS idx_classroom_exam_attempts_student ON classroom_exam_attempts(student_id, exam_id, started_at DESC)");
+            st.execute("CREATE INDEX IF NOT EXISTS idx_classroom_exam_attempt_grants_exam_student ON classroom_exam_attempt_grants(exam_id, student_id, granted_at DESC)");
         } catch (SQLException e) {
             System.err.println("Error ensuring classroom_exams schema: " + e.getMessage());
         }
