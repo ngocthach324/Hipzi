@@ -1286,7 +1286,7 @@
                 <div class="class-hero-content">
                     <div class="hero-join-actions">
                         <% if (canEditClassModules) { %>
-                            <a class="hero-join-btn" href="${pageContext.request.contextPath}/classroom?id=<%= h(classroom.getId()) %>">Vào không gian quản lý lớp</a>
+                            <a class="hero-join-btn" href="${pageContext.request.contextPath}/classroom?id=<%= h(classroom.getId()) %>">Quản lý lớp</a>
                         <% } else if ("closed".equals(status)) { %>
                             <a class="hero-join-btn secondary" href="${pageContext.request.contextPath}/classes">Tìm lớp khác</a>
                         <% } else if (user == null) { %>

@@ -39,6 +39,15 @@ public class RememberMeFilter implements Filter {
             }
 
             if (!loggedIn && !isPublicPage(httpRequest)) {
+                String path = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length());
+                if (path.startsWith("/api/")) {
+                    // API request: trả về JSON 401 thay vì redirect HTML
+                    httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    httpResponse.setContentType("application/json");
+                    httpResponse.setCharacterEncoding("UTF-8");
+                    httpResponse.getWriter().print("{\"success\":false,\"message\":\"Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.\"}");
+                    return;
+                }
                 httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
                 return;
             }

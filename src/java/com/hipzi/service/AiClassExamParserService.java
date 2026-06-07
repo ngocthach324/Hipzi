@@ -198,7 +198,11 @@ public class AiClassExamParserService {
                 question.setCorrectOption(normalizeOption(SimpleJson.asString(questionMap, "correctOption")));
             }
             question.setReferenceAnswer(SimpleJson.asString(questionMap, "referenceAnswer").trim());
-            question.setPoints(readPositiveInt(questionMap.get("points"), 1));
+            try {
+                question.setPoints(Double.parseDouble(String.valueOf(questionMap.get("points"))));
+            } catch (NumberFormatException | NullPointerException e) {
+                question.setPoints(1.0);
+            }
             question.setSortOrder(order++);
             questions.add(question);
         }

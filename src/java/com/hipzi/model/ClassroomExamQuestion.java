@@ -12,7 +12,7 @@ public class ClassroomExamQuestion {
     private String optionD;
     private String correctOption;
     private String referenceAnswer;
-    private int points = 1;
+    private Double points = 1.0;
     private int sortOrder;
     private Timestamp createdAt;
 
@@ -43,8 +43,8 @@ public class ClassroomExamQuestion {
     public String getReferenceAnswer() { return referenceAnswer; }
     public void setReferenceAnswer(String referenceAnswer) { this.referenceAnswer = referenceAnswer; }
 
-    public int getPoints() { return points; }
-    public void setPoints(int points) { this.points = points; }
+    public Double getPoints() { return points; }
+    public void setPoints(Double points) { this.points = points != null ? points : 1.0; }
 
     public int getSortOrder() { return sortOrder; }
     public void setSortOrder(int sortOrder) { this.sortOrder = sortOrder; }

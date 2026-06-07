@@ -263,6 +263,16 @@ public class ClassroomSpaceServlet extends HttpServlet {
             session.setAttribute("toastType", saved ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
             return;
+        } else if ("updateClassExam".equals(action)) {
+            boolean updated = handleClassExamUpdate(request, classroom);
+            String updateError = (String) session.getAttribute("classExamUpdateError");
+            session.removeAttribute("classExamUpdateError");
+            session.setAttribute("toastMsg", updated 
+                    ? "Da cap nhat thong tin bai thi." 
+                    : (updateError != null ? updateError : "Khong cap nhat duoc bai thi."));
+            session.setAttribute("toastType", updated ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
+            return;
         } else if ("deleteClassExam".equals(action)) {
             String examId = cleanParam(request.getParameter("examId"));
             boolean deleted = !examId.isEmpty() && examDao.deleteForClassroom(examId, classId);
@@ -420,6 +430,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
         String rawSourceText = cleanParam(request.getParameter("examSourceText"));
         String sourceMaterialId = cleanParam(request.getParameter("sourceMaterialId"));
         int duration = parsePositiveInt(request.getParameter("durationMinutes"), 45);
+        Double maxScore = parsePositiveDouble(request.getParameter("examMaxScore"), 10.0);
         String startAtValue = buildExamDateTimeValue(request, "examStart");
         String endAtValue = buildExamDateTimeValue(request, "examEnd");
         Timestamp startAt = parseDateTimeLocal(startAtValue);
@@ -455,6 +466,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
         exam.setCreationMode(creationMode);
         exam.setRawSourceText(rawSourceText);
         exam.setStatus("open");
+        exam.setMaxScore(maxScore);
         exam.setDurationMinutes(duration);
         exam.setStartAt(startAt);
         exam.setEndAt(endAt);
@@ -473,6 +485,54 @@ public class ClassroomSpaceServlet extends HttpServlet {
 
     private boolean rejectClassExam(HttpServletRequest request, String message) {
         request.getSession().setAttribute("classExamCreateError", message);
+        return false;
+    }
+
+    private boolean handleClassExamUpdate(HttpServletRequest request, Classroom classroom) {
+        request.getSession().removeAttribute("classExamUpdateError");
+        String examId = cleanParam(request.getParameter("examId"));
+        String title = cleanParam(request.getParameter("examTitle"));
+        String code = normalizeExamCode(request.getParameter("examCode"));
+        String description = cleanParam(request.getParameter("examDescription"));
+        int duration = parsePositiveInt(request.getParameter("durationMinutes"), 45);
+        Double maxScore = parsePositiveDouble(request.getParameter("examMaxScore"), 10.0);
+        String startAtValue = buildExamDateTimeValue(request, "examStart");
+        String endAtValue = buildExamDateTimeValue(request, "examEnd");
+        Timestamp startAt = parseDateTimeLocal(startAtValue);
+        Timestamp endAt = parseDateTimeLocal(endAtValue);
+        
+        if (examId.isEmpty()) return rejectClassExamUpdate(request, "Thieu ID bai thi.");
+        if (title.isEmpty() || code.isEmpty()) {
+            return rejectClassExamUpdate(request, "Vui long nhap tieu de va ma de.");
+        }
+        if (startAt == null || endAt == null || !endAt.after(startAt)) {
+            return rejectClassExamUpdate(request, "Thoi gian khong hop le. Mo de: " + startAtValue + ", dong de: " + endAtValue + ".");
+        }
+        
+        ClassroomExam existing = examDao.findByCode(code);
+        if (existing != null && !existing.getId().equals(examId)) {
+            return rejectClassExamUpdate(request, "Ma de da ton tai. Vui long dung ma de khac.");
+        }
+        
+        ClassroomExam exam = new ClassroomExam();
+        exam.setId(examId);
+        exam.setTitle(title);
+        exam.setExamCode(code);
+        exam.setDescription(description);
+        exam.setMaxScore(maxScore);
+        exam.setDurationMinutes(duration);
+        exam.setStartAt(startAt);
+        exam.setEndAt(endAt);
+        
+        boolean updated = examDao.updateMetadata(exam);
+        if (!updated) {
+            return rejectClassExamUpdate(request, "Loi khi luu vao database.");
+        }
+        return true;
+    }
+
+    private boolean rejectClassExamUpdate(HttpServletRequest request, String message) {
+        request.getSession().setAttribute("classExamUpdateError", message);
         return false;
     }
 
@@ -510,6 +570,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
         session.setAttribute("examDraftStartAt", buildExamDateTimeValue(request, "examStart"));
         session.setAttribute("examDraftEndAt", buildExamDateTimeValue(request, "examEnd"));
         session.setAttribute("examDraftDuration", parsePositiveInt(request.getParameter("durationMinutes"), 45));
+        session.setAttribute("examDraftMaxScore", parsePositiveDouble(request.getParameter("examMaxScore"), 10.0));
         session.setAttribute("examDraftSourceMaterialId", cleanParam(request.getParameter("sourceMaterialId")));
         session.setAttribute("examDraftSourceText", sourceText);
         session.setAttribute("examDraftCreationMode", "ai");
@@ -546,7 +607,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
                 question.setCorrectOption(normalizeQuestionOption(valueAt(correctOptions, i)));
             }
             question.setReferenceAnswer(valueAt(referenceAnswers, i));
-            question.setPoints(parsePositiveInt(valueAt(pointValues, i), 1));
+            question.setPoints(parsePositiveDouble(valueAt(pointValues, i), 1.0));
             question.setSortOrder(questions.size() + 1);
             questions.add(question);
         }
@@ -927,6 +988,15 @@ public class ClassroomSpaceServlet extends HttpServlet {
             int parsed = Integer.parseInt(cleanParam(value));
             return parsed > 0 ? parsed : defaultValue;
         } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    private Double parsePositiveDouble(String value, Double defaultValue) {
+        try {
+            Double parsed = Double.parseDouble(cleanParam(value));
+            return parsed > 0 ? parsed : defaultValue;
+        } catch (NumberFormatException | NullPointerException e) {
             return defaultValue;
         }
     }

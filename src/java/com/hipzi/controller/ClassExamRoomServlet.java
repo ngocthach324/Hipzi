@@ -53,6 +53,7 @@ public class ClassExamRoomServlet extends HttpServlet {
                     classId = foundExam.getClassroomId();
                     canEnterExam = canEnterExam(user, classroom, foundExam);
                     availabilityMessage = buildAvailabilityMessage(foundExam, canEnterExam);
+                    exam.setQuestions(examDao.getQuestionsByExamId(exam.getId()));
                 }
             }
             if (exam == null) {
@@ -95,11 +96,17 @@ public class ClassExamRoomServlet extends HttpServlet {
     }
 
     private boolean isOpenNow(ClassroomExam exam) {
-        if (!"open".equals(exam.getStatus()) || exam.getStartAt() == null || exam.getEndAt() == null) {
+        if (!"open".equals(exam.getStatus())) {
             return false;
         }
         Timestamp now = new Timestamp(System.currentTimeMillis());
-        return !now.before(exam.getStartAt()) && !now.after(exam.getEndAt());
+        if (exam.getStartAt() != null && now.before(exam.getStartAt())) {
+            return false;
+        }
+        if (exam.getEndAt() != null && now.after(exam.getEndAt())) {
+            return false;
+        }
+        return true;
     }
 
     private String buildAvailabilityMessage(ClassroomExam exam, boolean canEnterExam) {

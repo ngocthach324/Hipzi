@@ -1106,13 +1106,21 @@
             </a>
         </div>
 
+        <% if (!hasClassExamContext) { %>
         <section class="class-exam-intro">
             <h1>Nhập mã đề thi lớp học</h1>
             <p>Mỗi bài thi lớp học chỉ mở cho học viên hợp lệ trong lớp. Hãy nhập đúng mã đề thi do giảng viên cung cấp để xem thông tin bài, thời lượng và trạng thái làm bài.</p>
         </section>
+        <% } else { %>
+        <section class="class-exam-intro" style="text-align: center;">
+            <h1>Chuẩn bị làm bài thi</h1>
+            <p>Vui lòng đảm bảo kết nối mạng ổn định và chuẩn bị sẵn sàng trước khi vào phòng thi. Thời gian sẽ bắt đầu đếm ngược ngay khi bạn click bắt đầu.</p>
+        </section>
+        <% } %>
 
-        <div class="class-exam-shell">
+        <div class="class-exam-shell" <%= hasClassExamContext ? "style=\"max-width: 720px;\"" : "" %>>
             <section class="class-exam-hero">
+                <% if (!hasClassExamContext) { %>
                 <section class="exam-code-panel">
                     <div class="exam-code-title">
                         <span class="exam-code-icon" aria-hidden="true">
@@ -1137,8 +1145,9 @@
                         <div class="exam-code-help">Mã đề được giáo viên cung cấp trong lớp học. Vui lòng nhập đúng chữ hoa, số và dấu gạch ngang nếu có.</div>
                     </form>
                 </section>
+                <% } %>
 
-                <section class="exam-result-panel <%= hasClassExamContext ? "active" : "" %>" id="classExamResult" aria-live="polite">
+                <section class="exam-result-panel <%= hasClassExamContext ? "active" : "" %>" id="classExamResult" aria-live="polite" <%= hasClassExamContext ? "style=\"margin-top: 0; padding-top: 0;\"" : "" %>>
                     <div class="exam-found-label">Đã tìm thấy bài thi</div>
                     <h2 id="examResultTitle"><%= h(examTitle != null && !examTitle.trim().isEmpty() ? examTitle : "Bài kiểm tra lớp học") %></h2>
                     <div class="exam-meta-list">
@@ -1351,8 +1360,10 @@
         var violations = [];
         var lastViolationAt = 0;
         var toastTimeout = null;
+        var isAutoStart = "<%= "true".equals(request.getParameter("autoStart")) %>" === "true";
 
-        if (!form || !input || !result) return;
+        // Nếu là autoStart, không cần form/input/result – chạy thẳng vào exam
+        if (!isAutoStart && (!form || !input || !result)) return;
 
         function syncSubmitState() {
             if (submit) submit.disabled = input.value.trim().length === 0;
@@ -1499,7 +1510,7 @@
             submitOverlay.classList.remove('active');
         }
 
-        function requestExamFullscreen() {
+        function requestExamFullscreen(isInitial) {
             if (!workspace.requestFullscreen) {
                 hideLock();
                 return Promise.resolve();
@@ -1508,13 +1519,30 @@
                 fullscreenReady = true;
                 hideLock();
             }).catch(function () {
-                showLock('Trình duyệt chưa cho phép toàn màn hình. Hãy bấm nút bên dưới để tiếp tục.');
+                var title = document.querySelector('#examLockOverlay h2');
+                if (isInitial) {
+                    if (title) {
+                        title.textContent = 'Sẵn sàng làm bài';
+                        title.style.color = '#0f766e';
+                    }
+                    returnFullscreenBtn.textContent = 'Bắt đầu toàn màn hình';
+                    showLock('Nhấn nút bên dưới để cấp quyền toàn màn hình và làm bài.');
+                } else {
+                    if (title) {
+                        title.textContent = 'Đã ghi nhận rời không gian làm bài';
+                        title.style.color = '';
+                    }
+                    returnFullscreenBtn.textContent = 'Quay lại toàn màn hình';
+                    showLock('Trình duyệt chưa cho phép toàn màn hình. Hãy bấm nút bên dưới để tiếp tục.');
+                }
             });
         }
 
+        var examSubmitting = false;
+
         function finishExam(autoSubmit) {
-            if (!examRunning) return;
-            examRunning = false;
+            if (!examRunning || examSubmitting) return;
+            examSubmitting = true;
             clearInterval(timerInterval);
             document.body.classList.remove('exam-running');
             workspace.classList.remove('active');
@@ -1523,9 +1551,66 @@
             if (document.fullscreenElement && document.exitFullscreen) {
                 document.exitFullscreen().catch(function () {});
             }
-            window.alert((autoSubmit ? 'Đã hết giờ. ' : '') + 'Đã nộp bài. Trả lời '
-                    + answeredCount() + '/' + examQuestions.length + ' câu. Vi phạm ghi nhận: '
-                    + violations.length + '.');
+            
+            examSubmitBtn.disabled = true;
+            examSubmitBtn.textContent = 'Đang nộp...';
+
+            var payload = {
+                examId: "<%= hasClassExamContext ? classroomExam.getId() : "" %>",
+                violationCount: violations.length,
+                answers: (function() {
+                    // Convert index-keyed {0: 'A'} to UUID-keyed {'uuid': 'A'}
+                    var uuidAnswers = {};
+                    Object.keys(answers).forEach(function(indexStr) {
+                        var idx = parseInt(indexStr, 10);
+                        if (examQuestions[idx]) {
+                            uuidAnswers[examQuestions[idx].id] = answers[indexStr];
+                        }
+                    });
+                    return uuidAnswers;
+                })()
+            };
+
+            fetch('<%= request.getContextPath() %>/api/class-exam/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(function(res) {
+                if (res.status === 401) {
+                    throw new Error('SESSION_EXPIRED');
+                }
+                return res.json();
+            })
+            .then(function(data) {
+                examRunning = false;
+                examSubmitting = false;
+                if (data.success) {
+                    window.alert((autoSubmit ? 'Đã hết giờ. ' : '') + 'Nộp bài thành công!\nĐiểm của bạn: ' + data.score + '\nVi phạm ghi nhận: ' + violations.length);
+                } else {
+                    window.alert('Thông báo: ' + data.message);
+                }
+                <% if (classId != null && !classId.trim().isEmpty()) { %>
+                    window.location.href = "<%= request.getContextPath() %>/classroom?id=<%= h(classId) %>#tab-exams";
+                <% } else { %>
+                    window.location.href = "<%= request.getContextPath() %>/exam-room";
+                <% } %>
+            })
+            .catch(function(err) {
+                examSubmitting = false;
+                if (err && err.message === 'SESSION_EXPIRED') {
+                    window.alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để nộp bài.');
+                    window.location.href = '<%= request.getContextPath() %>/login';
+                    return;
+                }
+                window.alert('Lỗi mạng: Không thể nộp bài, hệ thống sẽ lưu tạm. Vui lòng kiểm tra kết nối và ấn Nộp lại.');
+                examSubmitBtn.disabled = false;
+                examSubmitBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg> Nộp bài';
+                document.body.classList.add('exam-running');
+                workspace.classList.add('active');
+            });
         }
 
         function startExam() {
@@ -1543,7 +1628,15 @@
             workspace.classList.add('active');
             examRunning = true;
             window.history.pushState({ hipziClassExam: true }, '', window.location.href);
-            requestExamFullscreen();
+            requestExamFullscreen(true);
+            
+            // Notify server that exam has started
+            fetch('<%= request.getContextPath() %>/api/class-exam/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ examId: "<%= hasClassExamContext ? classroomExam.getId() : "" %>" })
+            }).catch(function(e) { console.warn("Lỗi đồng bộ trạng thái bắt đầu làm bài:", e); });
+
             timerInterval = setInterval(function () {
                 secondsLeft -= 1;
                 renderTimer();
@@ -1553,34 +1646,40 @@
             }, 1000);
         }
 
-        input.addEventListener('input', function () {
+        if (input) {
+            input.addEventListener('input', function () {
+                syncSubmitState();
+                if (input.value.trim()) {
+                    error.classList.remove('active');
+                }
+            });
             syncSubmitState();
-            if (input.value.trim()) {
-                error.classList.remove('active');
-            }
-        });
+        }
 
-        syncSubmitState();
+        if (form) {
+            form.addEventListener('submit', function (event) {
+                var code = input.value.trim();
+                if (!code) {
+                    event.preventDefault();
+                    error.classList.add('active');
+                    result.classList.remove('active');
+                    input.focus();
+                }
+            });
+        }
 
-        form.addEventListener('submit', function (event) {
-            var code = input.value.trim();
-            if (!code) {
+        if (enterBtn) {
+            enterBtn.addEventListener('click', function (event) {
                 event.preventDefault();
-                error.classList.add('active');
-                result.classList.remove('active');
-                input.focus();
-            }
-        });
+                if (!hasLoadedExam || !canEnterExam) {
+                    window.alert("<%= js(examAvailabilityMessage != null && !examAvailabilityMessage.isEmpty() ? examAvailabilityMessage : "Đề thi chưa có câu hỏi hoặc bạn chưa có quyền truy cập.") %>");
+                    if (input) input.focus();
+                    return;
+                }
+                startExam();
+            });
+        }
 
-        enterBtn.addEventListener('click', function (event) {
-            event.preventDefault();
-            if (!hasLoadedExam || !canEnterExam) {
-                window.alert("<%= js(examAvailabilityMessage != null && !examAvailabilityMessage.isEmpty() ? examAvailabilityMessage : "Đề thi chưa có câu hỏi hoặc bạn chưa có quyền truy cập.") %>");
-                input.focus();
-                return;
-            }
-            startExam();
-        });
 
         prevBtn.addEventListener('click', function () {
             if (currentQuestion > 0) {
@@ -1667,6 +1766,18 @@
         workspace.addEventListener('contextmenu', function (event) {
             if (examRunning) event.preventDefault();
         });
+
+        if (isAutoStart) {
+            if (hasLoadedExam && canEnterExam) {
+                var pageEl = document.querySelector('.class-exam-page');
+                var navEl = document.querySelector('.navbar');
+                if (pageEl) pageEl.style.display = 'none';
+                if (navEl) navEl.style.display = 'none';
+                startExam();
+            } else {
+                window.alert("<%= js(examAvailabilityMessage != null && !examAvailabilityMessage.isEmpty() ? examAvailabilityMessage : "Đề thi chưa có câu hỏi hoặc bạn chưa có quyền truy cập.") %>");
+            }
+        }
     })();
     </script>
 </body>

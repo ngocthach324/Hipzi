@@ -21,6 +21,7 @@ public class ClassroomExam {
     private String createdBy;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private Double maxScore = 10.0;
     private List<ClassroomExamQuestion> questions = new ArrayList<>();
 
     public String getId() { return id; }
@@ -70,6 +71,9 @@ public class ClassroomExam {
 
     public Timestamp getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
+
+    public Double getMaxScore() { return maxScore; }
+    public void setMaxScore(Double maxScore) { this.maxScore = maxScore != null ? maxScore : 10.0; }
 
     public List<ClassroomExamQuestion> getQuestions() { return questions; }
     public void setQuestions(List<ClassroomExamQuestion> questions) {
