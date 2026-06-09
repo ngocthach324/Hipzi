@@ -130,7 +130,14 @@ public class GoogleOAuthServlet extends HttpServlet {
                 return;
             }
 
-            response.sendRedirect(request.getContextPath() + profilePathFromRoles(user.getRoles()));
+            String redirectUrl = (String) session.getAttribute("redirectUrl");
+            if (redirectUrl != null) {
+                session.removeAttribute("redirectUrl");
+                response.sendRedirect(redirectUrl);
+                return;
+            }
+
+            response.sendRedirect(request.getContextPath() + "/index");
         } catch (Exception ex) {
             redirectWithOAuthError(request, response, ex.getMessage());
         }

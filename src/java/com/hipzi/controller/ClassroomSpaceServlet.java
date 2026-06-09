@@ -6,8 +6,10 @@ import com.hipzi.dao.ClassroomExamDao;
 import com.hipzi.dao.ClassroomHomeworkSubmissionDao;
 import com.hipzi.dao.ClassroomMaterialDao;
 import com.hipzi.dao.ClassroomQuizDao;
+import com.hipzi.dao.ClassroomRuleDao;
 import com.hipzi.dto.ClassroomExamAttemptDto;
 import com.hipzi.model.Classroom;
+import com.hipzi.model.ClassroomRule;
 import com.hipzi.model.ClassroomEnrollment;
 import com.hipzi.model.ClassroomExam;
 import com.hipzi.model.ClassroomExamQuestion;
@@ -60,6 +62,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
     private final ClassroomMaterialDao materialDao = new ClassroomMaterialDao();
     private final ClassroomHomeworkSubmissionDao submissionDao = new ClassroomHomeworkSubmissionDao();
     private final ClassroomQuizDao quizDao = new ClassroomQuizDao();
+    private final ClassroomRuleDao ruleDao = new ClassroomRuleDao();
     private final B2StorageService storageService = new B2StorageService();
     private final TesseractOcrService ocrService = new TesseractOcrService();
     private final AiQuizParserService aiQuizParserService = new AiQuizParserService();
@@ -118,6 +121,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
         request.setAttribute("classHomework", filterMaterialsByCategory(allMaterials, "homework"));
         request.setAttribute("classExamMaterials", filterMaterialsByCategory(allMaterials, "exam"));
         request.setAttribute("classroomExams", examDao.listByClassroom(classId, !canManageClassroom));
+        request.setAttribute("classroomRules", ruleDao.findByClassroomId(classId));
         request.setAttribute("classroomQuizzes", classroomQuizzes);
         request.setAttribute("latestQuizAttempts", latestQuizAttempts);
         request.setAttribute("classExamAttemptUsage", classExamAttemptUsage);
@@ -333,6 +337,36 @@ public class ClassroomSpaceServlet extends HttpServlet {
             session.setAttribute("toastMsg", deleted ? "Da xoa de luyen tap." : "Khong the xoa de nay.");
             session.setAttribute("toastType", deleted ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
+            return;
+        } else if ("addClassroomRule".equals(action)) {
+            ClassroomRule rule = new ClassroomRule();
+            rule.setClassroomId(classId);
+            rule.setTitle(cleanParam(request.getParameter("ruleTitle")));
+            rule.setRuleText(cleanParam(request.getParameter("ruleText")));
+            rule.setSortOrder(parsePositiveInt(request.getParameter("sortOrder"), 1));
+            boolean created = ruleDao.create(rule);
+            session.setAttribute("toastMsg", created ? "Ä Ã£ thÃªm ná»™i quy." : "KhÃ´ng thá»ƒ thÃªm ná»™i quy.");
+            session.setAttribute("toastType", created ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-rules");
+            return;
+        } else if ("updateClassroomRule".equals(action)) {
+            ClassroomRule rule = new ClassroomRule();
+            rule.setId(cleanParam(request.getParameter("ruleId")));
+            rule.setClassroomId(classId);
+            rule.setTitle(cleanParam(request.getParameter("ruleTitle")));
+            rule.setRuleText(cleanParam(request.getParameter("ruleText")));
+            rule.setSortOrder(parsePositiveInt(request.getParameter("sortOrder"), 1));
+            boolean updated = !rule.getId().isEmpty() && ruleDao.updateForClassroom(rule);
+            session.setAttribute("toastMsg", updated ? "Ä Ã£ cáº­p nháº­t ná»™i quy." : "KhÃ´ng thá»ƒ cáº­p nháº­t ná»™i quy.");
+            session.setAttribute("toastType", updated ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-rules");
+            return;
+        } else if ("deleteClassroomRule".equals(action)) {
+            String ruleId = cleanParam(request.getParameter("ruleId"));
+            boolean deleted = !ruleId.isEmpty() && ruleDao.deleteForClassroom(ruleId, classId);
+            session.setAttribute("toastMsg", deleted ? "Ä Ã£ xÃ³a ná»™i quy." : "KhÃ´ng thá»ƒ xÃ³a ná»™i quy.");
+            session.setAttribute("toastType", deleted ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-rules");
             return;
         }
 

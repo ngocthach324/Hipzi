@@ -41,12 +41,12 @@
             </a>
             <ul class="nav-links">
 
-                <li><a href="<%= request.getContextPath() + (user != null ? "/material-repository" : "/login") %>">Kho tài liệu</a></li>
-                <li><a href="<%= request.getContextPath() + (user != null ? "/classes" : "/login") %>">Lớp học</a></li>
+                <li><a href="<%= request.getContextPath() + "/material-repository" %>">Kho tài liệu</a></li>
+                <li><a href="<%= request.getContextPath() + "/classes" %>">Lớp học</a></li>
 
 
-                <li><a href="<%= request.getContextPath() + (user != null ? "/exam-room" : "/login") %>">Phòng thi</a></li>
-                <li><a href="<%= request.getContextPath() + (user != null ? "/index#ai-roadmap" : "/login") %>">Hipzi AI</a></li>
+                <li><a href="<%= request.getContextPath() + "/exam-room" %>">Phòng thi</a></li>
+                <li><a href="<%= request.getContextPath() + "/index#ai-roadmap" %>">Hipzi AI</a></li>
             </ul>
             
             <% if (user != null) { %>
@@ -122,7 +122,7 @@
                         <span>Cập nhật liên tục theo chương trình học</span>
                     </li>
                 </ul>
-                <a href="<%= request.getContextPath() + (user != null ? "/material-repository" : "/login") %>" class="feature-link">
+                <a href="<%= request.getContextPath() + "/material-repository" %>" class="feature-link">
                     <span>Khám phá ngay</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
@@ -149,7 +149,7 @@
                         <span>Luyện đề trắc nghiệm thực chiến</span>
                     </li>
                 </ul>
-                <a href="<%= request.getContextPath() + (user != null ? "/index#ai-roadmap" : "/login") %>" class="feature-link" style="color: var(--primary);">
+                <a href="<%= request.getContextPath() + "/index#ai-roadmap" %>" class="feature-link" style="color: var(--primary);">
                     <span>Trải nghiệm ngay</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
@@ -176,7 +176,7 @@
                         <span>Kỳ thi chung có kết quả minh bạch</span>
                     </li>
                 </ul>
-                <a href="<%= request.getContextPath() + (user != null ? "/exam-room" : "/login") %>" class="feature-link" style="color: var(--secondary-hover);">
+                <a href="<%= request.getContextPath() + "/exam-room" %>" class="feature-link" style="color: var(--secondary-hover);">
                     <span>Vào phòng thi</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>

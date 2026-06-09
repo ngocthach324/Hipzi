@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8" %>
+<%@page contentType="text/html" pageEncoding="UTF-8" %>
     <%@page import="com.hipzi.model.StudentProfile" %>
         <%@page import="com.hipzi.model.User" %>
             <%@page import="com.hipzi.model.Role" %>
@@ -1518,17 +1518,11 @@
                                                             </a>
                                                             <ul class="nav-links">
                                                                 <li><a
-                                                                        href="${pageContext.request.contextPath}/index">Trang
-                                                                        chủ</a></li>
-                                                                <li><a
                                                                         href="${pageContext.request.contextPath}/material-repository">Kho
                                                                         tài liệu</a></li>
                                                                 <li><a
                                                                         href="${pageContext.request.contextPath}/classes">Lớp
                                                                         học</a></li>
-                                                                <li><a
-                                                                        href="${pageContext.request.contextPath}/practice">Luyện
-                                                                        tập</a></li>
                                                                 <li><a
                                                                         href="${pageContext.request.contextPath}/exam-room">Phòng
                                                                         thi</a></li>

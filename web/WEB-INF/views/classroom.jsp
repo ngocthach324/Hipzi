@@ -2531,24 +2531,129 @@ D. ...
                 </section>
 
                 <section class="classroom-card classroom-tab-panel" data-classroom-panel="rules">
-                    <h2>Nội quy lớp học</h2>
-                    <div class="resource-list">
-                        <div class="resource-item">
-                            <strong>Tôn trọng giờ học</strong>
-                            <span>Học viên nên vào lớp đúng giờ, chuẩn bị thiết bị và tài liệu trước buổi học.</span>
-                        </div>
-                        <div class="resource-item">
-                            <strong>Hoàn thành bài luyện tập</strong>
-                            <span>Bài tập sau buổi học giúp giảng viên theo dõi tiến độ và điều chỉnh lộ trình phù hợp.</span>
-                        </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0;">Nội quy lớp học</h2>
                         <% if (canManageClassroom) { %>
-                            <div class="teacher-action-hint">Giảng viên có thể tùy chỉnh nội quy riêng cho lớp ở bước tiếp theo.</div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button type="button" class="btn btn-outline" style="border-radius: 999px; color: #059669; border: 1.5px solid #a7f3d0; padding: 0.4rem 1.2rem; font-weight: 700; background: transparent; cursor: pointer;" onclick="openManageRulesModal()">Chỉnh sửa</button>
+                                <button type="button" class="btn btn-primary" style="border-radius: 999px; background: #059669; color: white; border: none; padding: 0.4rem 1.2rem; font-weight: 700; cursor: pointer;" onclick="openAddRuleModal()">Thêm</button>
+                            </div>
+                        <% } %>
+                    </div>
+                    
+                    <div class="resource-list">
+                        <% 
+                        List<com.hipzi.model.ClassroomRule> classroomRules = (List<com.hipzi.model.ClassroomRule>) request.getAttribute("classroomRules");
+                        if (classroomRules != null && !classroomRules.isEmpty()) {
+                            for (com.hipzi.model.ClassroomRule rule : classroomRules) {
+                        %>
+                        <div class="resource-item">
+                            <strong><%= h(rule.getTitle()) %></strong>
+                            <span><%= h(rule.getRuleText()) %></span>
+                        </div>
+                        <%  }
+                        } else { %>
+                        <div class="empty-state">Chưa có nội quy nào được thiết lập.</div>
+                        <% } %>
+                        <% if (canManageClassroom && (classroomRules == null || classroomRules.isEmpty())) { %>
+                            <div class="teacher-action-hint">Hãy thêm nội quy để học viên nắm rõ yêu cầu của lớp.</div>
                         <% } %>
                     </div>
                 </section>
             </div>
         </section>
     </main>
+
+    <div id="class-rule-add-modal" class="exam-modal-overlay" hidden>
+        <div class="exam-modal-content">
+            <div class="exam-modal-header">
+                <h3>Thêm nội quy mới</h3>
+                <button class="exam-modal-close" type="button" onclick="closeAddRuleModal()">&times;</button>
+            </div>
+            <form action="${pageContext.request.contextPath}/classroom" method="POST" class="upload-grid">
+                <input type="hidden" name="action" value="addClassroomRule">
+                <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                <div class="upload-field full">
+                    <label>Tiêu đề</label>
+                    <input type="text" name="ruleTitle" placeholder="Ví dụ: Tôn trọng giờ học" required>
+                </div>
+                <div class="upload-field full">
+                    <label>Nội dung chi tiết</label>
+                    <textarea name="ruleText" rows="3" placeholder="Ví dụ: Học viên nên vào lớp đúng giờ..." required></textarea>
+                </div>
+                <div class="upload-field">
+                    <label>Thứ tự sắp xếp</label>
+                    <input type="number" name="sortOrder" value="1" min="1" required>
+                </div>
+                <div class="upload-field full" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                    <button type="button" class="btn" style="background: #f1f5f9; color: #475569;" onclick="closeAddRuleModal()">Hủy</button>
+                    <button type="submit" class="btn btn-primary" style="background: #10b981; color: #ffffff; border-color: #10b981;">Lưu nội quy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="class-rule-manage-modal" class="exam-modal-overlay" hidden>
+        <div class="exam-modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+            <div class="exam-modal-header" style="position: sticky; top: 0; background: white; z-index: 10;">
+                <h3>Chỉnh sửa nội quy</h3>
+                <button class="exam-modal-close" type="button" onclick="closeManageRulesModal()">&times;</button>
+            </div>
+            <div style="margin-top: 1rem;">
+                <% 
+                List<com.hipzi.model.ClassroomRule> manageClassroomRules = (List<com.hipzi.model.ClassroomRule>) request.getAttribute("classroomRules");
+                if (manageClassroomRules != null && !manageClassroomRules.isEmpty()) {
+                    for (com.hipzi.model.ClassroomRule rule : manageClassroomRules) { %>
+                <form action="${pageContext.request.contextPath}/classroom" method="POST" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem;">
+                    <input type="hidden" name="action" value="updateClassroomRule">
+                    <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                    <input type="hidden" name="ruleId" value="<%= h(rule.getId()) %>">
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <div class="upload-field" style="flex: 1; min-width: 200px;">
+                            <label>Tiêu đề</label>
+                            <input type="text" name="ruleTitle" value="<%= h(rule.getTitle()) %>" required>
+                        </div>
+                        <div class="upload-field" style="width: 80px;">
+                            <label>Thứ tự</label>
+                            <input type="number" name="sortOrder" value="<%= rule.getSortOrder() %>" min="1" required>
+                        </div>
+                        <div class="upload-field" style="flex: 2; min-width: 250px;">
+                            <label>Nội dung</label>
+                            <input type="text" name="ruleText" value="<%= h(rule.getRuleText()) %>" required>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; width: 100%; justify-content: flex-end; align-items: center;">
+                            <button type="submit" class="btn" style="border-radius: 999px; padding: 0.4rem 1.2rem; font-weight: 600; font-size: 0.85rem; background: #059669; color: white; border: none; cursor: pointer;">Cập nhật</button>
+                            <button type="button" class="btn" style="border-radius: 999px; padding: 0.4rem 1.2rem; font-weight: 600; font-size: 0.85rem; background: #ef4444; color: white; border: none; cursor: pointer;" onclick="if(confirm('Bạn có chắc chắn muốn xóa nội quy này?')) { this.nextElementSibling.submit(); }">Xóa</button>
+                        </div>
+                    </div>
+                </form>
+                <form action="${pageContext.request.contextPath}/classroom" method="POST" style="display:none;">
+                    <input type="hidden" name="action" value="deleteClassroomRule">
+                    <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                    <input type="hidden" name="ruleId" value="<%= h(rule.getId()) %>">
+                </form>
+                <%  }
+                } else { %>
+                <p style="text-align: center; color: #64748b;">Chưa có nội quy nào để chỉnh sửa.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openAddRuleModal() {
+            document.getElementById('class-rule-add-modal').removeAttribute('hidden');
+        }
+        function closeAddRuleModal() {
+            document.getElementById('class-rule-add-modal').setAttribute('hidden', '');
+        }
+        function openManageRulesModal() {
+            document.getElementById('class-rule-manage-modal').removeAttribute('hidden');
+        }
+        function closeManageRulesModal() {
+            document.getElementById('class-rule-manage-modal').setAttribute('hidden', '');
+        }
+    </script>
 
     <style>
         .exam-modal-overlay {

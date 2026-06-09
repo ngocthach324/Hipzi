@@ -33,9 +33,14 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
-            List<com.hipzi.model.Role> roles = user.getRoles();
+            String redirectUrl = (String) session.getAttribute("redirectUrl");
+            if (redirectUrl != null) {
+                session.removeAttribute("redirectUrl");
+                response.sendRedirect(redirectUrl);
+                return;
+            }
 
-            response.sendRedirect(request.getContextPath() + "/" + resolveProfileUrl(roles));
+            response.sendRedirect(request.getContextPath() + "/index");
             return;
         }
 
@@ -99,7 +104,14 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
-            response.sendRedirect(request.getContextPath() + "/" + resolveProfileUrl(roles));
+            String redirectUrl = (String) session.getAttribute("redirectUrl");
+            if (redirectUrl != null) {
+                session.removeAttribute("redirectUrl");
+                response.sendRedirect(redirectUrl);
+                return;
+            }
+
+            response.sendRedirect(request.getContextPath() + "/index");
         } catch (UnauthorizedException e) {
             request.setAttribute("errorMsg", e.getMessage());
             request.setAttribute("email", email);

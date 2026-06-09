@@ -48,6 +48,17 @@ public class RememberMeFilter implements Filter {
                     httpResponse.getWriter().print("{\"success\":false,\"message\":\"Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.\"}");
                     return;
                 }
+                
+                if (session == null) {
+                    session = httpRequest.getSession(true);
+                }
+                String fullPath = httpRequest.getRequestURI();
+                String queryString = httpRequest.getQueryString();
+                if (queryString != null) {
+                    fullPath += "?" + queryString;
+                }
+                session.setAttribute("redirectUrl", fullPath);
+                
                 httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
                 return;
             }
