@@ -22,6 +22,7 @@ public class ClassroomExam {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private Double maxScore = 10.0;
+    private int attemptLimit = 1;
     private List<ClassroomExamQuestion> questions = new ArrayList<>();
 
     public String getId() { return id; }
@@ -74,6 +75,9 @@ public class ClassroomExam {
 
     public Double getMaxScore() { return maxScore; }
     public void setMaxScore(Double maxScore) { this.maxScore = maxScore != null ? maxScore : 10.0; }
+
+    public int getAttemptLimit() { return attemptLimit; }
+    public void setAttemptLimit(int attemptLimit) { this.attemptLimit = attemptLimit > 0 ? attemptLimit : 1; }
 
     public List<ClassroomExamQuestion> getQuestions() { return questions; }
     public void setQuestions(List<ClassroomExamQuestion> questions) {

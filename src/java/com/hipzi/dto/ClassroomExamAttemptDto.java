@@ -10,6 +10,7 @@ public class ClassroomExamAttemptDto implements Serializable {
     private String studentEmail;
     private String studentAvatar;
     private int attemptCount;
+    private int allowedAttemptCount = 1;
     private Double bestScore;
 
     public ClassroomExamAttemptDto() {
@@ -60,6 +61,14 @@ public class ClassroomExamAttemptDto implements Serializable {
 
     public void setAttemptCount(int attemptCount) {
         this.attemptCount = attemptCount;
+    }
+
+    public int getAllowedAttemptCount() {
+        return allowedAttemptCount;
+    }
+
+    public void setAllowedAttemptCount(int allowedAttemptCount) {
+        this.allowedAttemptCount = allowedAttemptCount > 0 ? allowedAttemptCount : 1;
     }
 
     public Double getBestScore() {

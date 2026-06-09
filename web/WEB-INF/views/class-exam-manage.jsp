@@ -34,25 +34,85 @@
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     int totalQuestions = questions != null ? questions.size() : 0;
     int totalStudents = attempts != null ? attempts.size() : 0;
+    int maxAttemptCount = 0;
+    if (attempts != null) {
+        for (ClassroomExamAttemptDto dto : attempts) {
+            if (dto != null && dto.getAttemptCount() > maxAttemptCount) {
+                maxAttemptCount = dto.getAttemptCount();
+            }
+        }
+    }
+    String attemptView = request.getParameter("attemptView");
+    int selectedAttemptRound = 0;
+    if (attemptView != null && !"all".equalsIgnoreCase(attemptView)) {
+        try {
+            selectedAttemptRound = Integer.parseInt(attemptView);
+            if (selectedAttemptRound < 1 || selectedAttemptRound > maxAttemptCount) {
+                selectedAttemptRound = 0;
+            }
+        } catch (NumberFormatException ignored) {
+            selectedAttemptRound = 0;
+        }
+    }
+    String selectedAttemptViewValue = selectedAttemptRound > 0 ? String.valueOf(selectedAttemptRound) : "all";
 
     double avgScore = 0;
     int violationSum = 0;
     int completedCount = 0;
     int startedCount = 0;
+    int scoredStudentCount = 0;
+    long avgDurationMs = 0;
+    int durationCount = 0;
     if (attempts != null && totalStudents > 0) {
         double scoreSum = 0;
-        int validScores = 0;
         for (ClassroomExamAttemptDto dto : attempts) {
-            violationSum += dto.getAttempt().getViolationCount();
-            String attemptStatus = dto.getAttempt().getStatus();
-            if (dto.getBestScore() != null) completedCount++;
-            if ("completed".equals(attemptStatus) || "in_progress".equals(attemptStatus)) startedCount++;
-            if (dto.getBestScore() != null) {
-                scoreSum += dto.getBestScore();
-                validScores++;
+            List<ClassroomExamAttempt> histories = attemptHistories != null && dto.getAttempt() != null
+                    ? attemptHistories.get(dto.getAttempt().getStudentId())
+                    : null;
+            if (selectedAttemptRound > 0) {
+                ClassroomExamAttempt selectedRoundAttempt = attemptAt(histories, selectedAttemptRound);
+                if (selectedRoundAttempt != null) {
+                    violationSum += selectedRoundAttempt.getViolationCount();
+                    if ("completed".equals(selectedRoundAttempt.getStatus())) completedCount++;
+                    if ("completed".equals(selectedRoundAttempt.getStatus()) || "in_progress".equals(selectedRoundAttempt.getStatus())) startedCount++;
+                    if (selectedRoundAttempt.getScore() != null) {
+                        scoreSum += selectedRoundAttempt.getScore();
+                        scoredStudentCount++;
+                    }
+                    Long selectedDuration = completedDurationMillis(selectedRoundAttempt);
+                    if (selectedDuration != null) {
+                        avgDurationMs += selectedDuration;
+                        durationCount++;
+                    }
+                }
+            } else {
+                boolean hasCompletedAttempt = false;
+                if (histories != null) {
+                    for (ClassroomExamAttempt item : histories) {
+                        violationSum += item.getViolationCount();
+                        if ("completed".equals(item.getStatus())) {
+                            hasCompletedAttempt = true;
+                        }
+                    }
+                } else if (dto.getAttempt() != null) {
+                    violationSum += dto.getAttempt().getViolationCount();
+                    hasCompletedAttempt = "completed".equals(dto.getAttempt().getStatus());
+                }
+                if (hasCompletedAttempt) completedCount++;
+                if (dto.getAttemptCount() > 0) startedCount++;
+                if (dto.getBestScore() != null) {
+                    scoreSum += dto.getBestScore();
+                    scoredStudentCount++;
+                }
+                Long bestDuration = bestCompletedDurationMillis(histories);
+                if (bestDuration != null) {
+                    avgDurationMs += bestDuration;
+                    durationCount++;
+                }
             }
         }
-        if (validScores > 0) avgScore = scoreSum / validScores;
+        if (scoredStudentCount > 0) avgScore = scoreSum / scoredStudentCount;
+        if (durationCount > 0) avgDurationMs = avgDurationMs / durationCount;
     }
 %>
 <%!
@@ -72,6 +132,56 @@
         if ("C".equalsIgnoreCase(option)) return q.getOptionC();
         if ("D".equalsIgnoreCase(option)) return q.getOptionD();
         return "";
+    }
+
+    private Long bestCompletedDurationMillis(List<ClassroomExamAttempt> histories) {
+        if (histories == null || histories.isEmpty()) return null;
+        Double bestScore = null;
+        Long bestDuration = null;
+        for (ClassroomExamAttempt item : histories) {
+            if (item == null
+                    || !"completed".equals(item.getStatus())
+                    || item.getScore() == null
+                    || item.getStartedAt() == null
+                    || item.getSubmittedAt() == null) {
+                continue;
+            }
+            long duration = item.getSubmittedAt().getTime() - item.getStartedAt().getTime();
+            if (duration < 0) continue;
+            double score = item.getScore();
+            if (bestScore == null
+                    || score > bestScore
+                    || (Math.abs(score - bestScore) < 0.0001 && (bestDuration == null || duration < bestDuration))) {
+                bestScore = score;
+                bestDuration = duration;
+            }
+        }
+        return bestDuration;
+    }
+
+    private ClassroomExamAttempt attemptAt(List<ClassroomExamAttempt> histories, int round) {
+        if (histories == null || round < 1 || round > histories.size()) return null;
+        return histories.get(round - 1);
+    }
+
+    private Long completedDurationMillis(ClassroomExamAttempt attempt) {
+        if (attempt == null
+                || !"completed".equals(attempt.getStatus())
+                || attempt.getStartedAt() == null
+                || attempt.getSubmittedAt() == null) {
+            return null;
+        }
+        long duration = attempt.getSubmittedAt().getTime() - attempt.getStartedAt().getTime();
+        return duration >= 0 ? duration : null;
+    }
+
+    private String formatDuration(long millis) {
+        if (millis <= 0) return "0 phút";
+        long minutes = (long) Math.ceil(millis / 60000.0);
+        if (minutes < 60) return minutes + " phút";
+        long hours = minutes / 60;
+        long rest = minutes % 60;
+        return rest > 0 ? hours + " giờ " + rest + " phút" : hours + " giờ";
     }
 %>
 <!DOCTYPE html>
@@ -334,7 +444,39 @@
         .card-header-title svg { color: var(--primary); }
 
         .result-tools { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; }
-        .score-filter,
+        .attempt-view-form {
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+        .attempt-view-select {
+            min-width: 190px;
+            min-height: 44px;
+            appearance: none;
+            background:
+                linear-gradient(45deg, transparent 50%, var(--text-muted) 50%) calc(100% - 18px) 19px / 7px 7px no-repeat,
+                linear-gradient(135deg, var(--text-muted) 50%, transparent 50%) calc(100% - 13px) 19px / 7px 7px no-repeat,
+                linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 6px 16px rgba(15,23,42,.04);
+            color: var(--text);
+            cursor: pointer;
+            font-family: var(--font);
+            font-size: 0.85rem;
+            font-weight: 700;
+            outline: 0;
+            padding: 0 2.4rem 0 0.85rem;
+            transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+        .attempt-view-select:focus {
+            border-color: rgba(15,118,110,.45);
+            box-shadow: 0 0 0 4px rgba(15,118,110,.08), 0 8px 22px rgba(15,23,42,.06);
+            background:
+                linear-gradient(45deg, transparent 50%, var(--text-muted) 50%) calc(100% - 18px) 19px / 7px 7px no-repeat,
+                linear-gradient(135deg, var(--text-muted) 50%, transparent 50%) calc(100% - 13px) 19px / 7px 7px no-repeat,
+                #fff;
+        }
         .card-search {
             display: flex;
             align-items: center;
@@ -347,86 +489,14 @@
             box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 6px 16px rgba(15,23,42,.04);
             transition: border-color .2s, box-shadow .2s, background .2s;
         }
-        .score-filter { position: relative; min-width: 248px; padding: 0 2.4rem 0 0.85rem; cursor: pointer; }
-        .score-filter:focus-within,
         .card-search:focus-within {
             border-color: rgba(15,118,110,.45);
             box-shadow: 0 0 0 4px rgba(15,118,110,.08), 0 8px 22px rgba(15,23,42,.06);
             background: #fff;
         }
-        .score-filter-trigger,
         .card-search input { background: transparent; border: 0; outline: 0; box-shadow: none; font-size: 0.85rem; font-family: var(--font); color: var(--text); }
-        .score-filter-trigger {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            width: 100%;
-            min-height: 42px;
-            padding: 0;
-            font-weight: 700;
-            text-align: left;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .score-filter-menu {
-            position: absolute;
-            z-index: 50;
-            top: calc(100% + 8px);
-            left: 0;
-            width: 100%;
-            padding: 0.35rem;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background: #fff;
-            box-shadow: 0 18px 38px rgba(15,23,42,.14);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-6px);
-            transition: opacity .16s, transform .16s, visibility .16s;
-        }
-        .score-filter.is-open .score-filter-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        .score-filter-option {
-            width: 100%;
-            min-height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 0;
-            border-radius: 9px;
-            background: transparent;
-            color: var(--text-muted);
-            font-family: var(--font);
-            font-size: 0.84rem;
-            font-weight: 700;
-            text-align: left;
-            padding: 0 0.7rem;
-            cursor: pointer;
-        }
-        .score-filter-option:hover,
-        .score-filter-option.is-selected {
-            background: var(--primary-light);
-            color: var(--primary-dark);
-        }
-        .score-filter::after {
-            content: '';
-            width: 8px;
-            height: 8px;
-            border-right: 2px solid var(--text-muted);
-            border-bottom: 2px solid var(--text-muted);
-            transform: rotate(45deg);
-            position: absolute;
-            right: 1.05rem;
-            top: 50%;
-            margin-top: -6px;
-            pointer-events: none;
-        }
         .card-search input { width: 240px; }
         .card-search input::placeholder { color: var(--text-muted); }
-        .score-filter svg,
         .card-search svg { color: var(--text-muted); flex-shrink: 0; }
 
         .attempts-table { width: 100%; border-collapse: collapse; }
@@ -481,7 +551,7 @@
         @media (max-width: 768px) {
             .attempts-table { display: block; overflow-x: auto; }
             .card-header { align-items: flex-start; flex-direction: column; }
-            .result-tools, .card-search, .score-filter { width: 100%; }
+            .result-tools, .attempt-view-form, .attempt-view-select, .card-search { width: 100%; }
             .card-search input { width: 100%; }
         }
 
@@ -1008,7 +1078,7 @@
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
                 <div class="stat-body">
-                    <div class="stat-label">Lượt nộp bài</div>
+                    <div class="stat-label">Học viên đã nộp</div>
                     <div class="stat-value"><%= completedCount %></div>
                     <div class="stat-sub"><%= startedCount %>/<%= totalStudents %> học viên đã bắt đầu</div>
                 </div>
@@ -1019,10 +1089,8 @@
                 </div>
                 <div class="stat-body">
                     <div class="stat-label">Điểm trung bình</div>
-                    <div class="stat-value"><%= completedCount > 0 ? String.format("%.1f", avgScore) : "—" %></div>
-                    <% if (exam.getMaxScore() != null && completedCount > 0) { %>
-                    <div class="stat-sub">trên <%= String.format("%.0f", exam.getMaxScore()) %> điểm</div>
-                    <% } else { %><div class="stat-sub">Chưa có dữ liệu</div><% } %>
+                    <div class="stat-value"><%= scoredStudentCount > 0 ? String.format("%.1f", avgScore) : "—" %></div>
+                    <div class="stat-sub"><%= scoredStudentCount > 0 ? (selectedAttemptRound > 0 ? ("theo lượt " + selectedAttemptRound) : "theo lượt điểm cao nhất") : "Chưa có dữ liệu" %></div>
                 </div>
             </div>
             <div class="stat-card">
@@ -1032,17 +1100,17 @@
                 <div class="stat-body">
                     <div class="stat-label">Tổng vi phạm</div>
                     <div class="stat-value"><%= violationSum %></div>
-                    <div class="stat-sub">trong tất cả bài thi</div>
+                    <div class="stat-sub"><%= selectedAttemptRound > 0 ? ("trong lượt " + selectedAttemptRound) : "trong tất cả lượt làm" %></div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon amber">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 </div>
                 <div class="stat-body">
-                    <div class="stat-label">Số câu hỏi</div>
-                    <div class="stat-value"><%= totalQuestions %></div>
-                    <div class="stat-sub">câu trắc nghiệm</div>
+                    <div class="stat-label">Thời gian trung bình</div>
+                    <div class="stat-value"><%= durationCount > 0 ? formatDuration(avgDurationMs) : "—" %></div>
+                    <div class="stat-sub"><%= durationCount > 0 ? (selectedAttemptRound > 0 ? ("theo lượt " + selectedAttemptRound) : "theo lượt điểm cao nhất") : "Chưa có dữ liệu" %></div>
                 </div>
             </div>
         </div>
@@ -1068,17 +1136,21 @@
                         Kết quả học viên
                     </div>
                     <div class="result-tools">
-                        <div class="score-filter" id="score-sort-control">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
-                            <button type="button" class="score-filter-trigger" id="score-sort-trigger" data-value="default" aria-haspopup="listbox" aria-expanded="false">
-                                <span id="score-sort-label">Sắp xếp mặc định</span>
-                            </button>
-                            <div class="score-filter-menu" id="score-sort-menu" role="listbox" aria-label="Sắp xếp theo điểm">
-                                <button type="button" class="score-filter-option is-selected" data-value="default" role="option" aria-selected="true">Sắp xếp mặc định</button>
-                                <button type="button" class="score-filter-option" data-value="score_desc" role="option" aria-selected="false">Điểm cao đến thấp</button>
-                                <button type="button" class="score-filter-option" data-value="score_asc" role="option" aria-selected="false">Điểm thấp đến cao</button>
-                            </div>
-                        </div>
+                        <form class="attempt-view-form" method="get" action="${pageContext.request.contextPath}/class-exam-manage">
+                            <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                            <input type="hidden" name="code" value="<%= h(exam.getExamCode()) %>">
+                            <select class="attempt-view-select" name="attemptView" aria-label="Chọn lượt làm" onchange="this.form.submit()">
+                                <option value="all" <%= "all".equals(selectedAttemptViewValue) ? "selected" : "" %>>Tổng số lượt</option>
+                                <% for (int attemptOption = 1; attemptOption <= maxAttemptCount; attemptOption++) { %>
+                                    <option value="<%= attemptOption %>" <%= selectedAttemptRound == attemptOption ? "selected" : "" %>>Lượt <%= attemptOption %></option>
+                                <% } %>
+                            </select>
+                        </form>
+                        <select class="attempt-view-select" id="score-sort-trigger" aria-label="Sắp xếp theo điểm">
+                            <option value="default" selected>Sắp xếp mặc định</option>
+                            <option value="score_desc">Điểm cao đến thấp</option>
+                            <option value="score_asc">Điểm thấp đến cao</option>
+                        </select>
                         <div class="card-search">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                             <input type="text" id="search-attempts" placeholder="Tìm học viên..." autocomplete="off">
@@ -1115,31 +1187,40 @@
                             String sEmail = dto.getStudentEmail() != null ? dto.getStudentEmail() : "";
                             String sInitials = "H";
                             String sAvatar = dto.getStudentAvatar() != null ? dto.getStudentAvatar() : "";
-                            int viols = dto.getAttempt().getViolationCount();
+                            List<ClassroomExamAttempt> studentHistories = attemptHistories != null
+                                    ? attemptHistories.get(dto.getAttempt().getStudentId())
+                                    : null;
+                            ClassroomExamAttempt rowAttempt = selectedAttemptRound > 0
+                                    ? attemptAt(studentHistories, selectedAttemptRound)
+                                    : dto.getAttempt();
+                            int viols = 0;
+                            if (selectedAttemptRound > 0) {
+                                viols = rowAttempt != null ? rowAttempt.getViolationCount() : 0;
+                            } else if (studentHistories != null) {
+                                for (ClassroomExamAttempt item : studentHistories) {
+                                    viols += item.getViolationCount();
+                                }
+                            } else {
+                                viols = dto.getAttempt().getViolationCount();
+                            }
                             Double bestScore = dto.getBestScore();
-                            double sc = bestScore != null ? bestScore : 0.0;
-                            String statusStr = dto.getAttempt().getStatus();
+                            Double displayScore = selectedAttemptRound > 0 && rowAttempt != null ? rowAttempt.getScore() : bestScore;
+                            double sc = displayScore != null ? displayScore : 0.0;
+                            String statusStr = rowAttempt != null && rowAttempt.getStatus() != null ? rowAttempt.getStatus() : "not_started";
                             String badgeClass = "status-not-started";
                             String badgeText = "Chưa làm";
-                            boolean hasCompletedScore = bestScore != null;
+                            boolean hasCompletedScore = displayScore != null;
                             if ("in_progress".equals(statusStr)) {
                                 badgeClass = "status-in-progress";
                                 badgeText = "Đang làm";
-                            } else if (hasCompletedScore) {
+                            } else if ("completed".equals(statusStr) || hasCompletedScore) {
                                 badgeClass = "status-completed";
                                 badgeText = "Đã làm";
                             }
                             int attemptCount = dto.getAttemptCount();
-                            
-                            String subTime = dto.getAttempt().getSubmittedAt() != null ? sdf.format(dto.getAttempt().getSubmittedAt()) : ("completed".equals(statusStr) ? "Đã nộp" : "Chưa có");
-                            String startTime = dto.getAttempt().getStartedAt() != null ? sdf.format(dto.getAttempt().getStartedAt()) : "Chưa bắt đầu";
-                            
-                            long durationMs = 0;
-                            if (dto.getAttempt().getSubmittedAt() != null && dto.getAttempt().getStartedAt() != null) {
-                                durationMs = dto.getAttempt().getSubmittedAt().getTime() - dto.getAttempt().getStartedAt().getTime();
-                            }
-                            long durationMins = durationMs / 60000;
-                            if (durationMins == 0 && durationMs > 0) durationMins = 1;
+                            int allowedAttemptCount = dto.getAllowedAttemptCount();
+                            String attemptCountText = selectedAttemptRound > 0 ? String.valueOf(selectedAttemptRound) : (attemptCount + "/" + allowedAttemptCount);
+                            String detailAttemptId = rowAttempt != null ? rowAttempt.getId() : null;
 
                             if (sName != null && !sName.trim().isEmpty()) {
                                 sInitials = String.valueOf(sName.trim().charAt(0)).toUpperCase();
@@ -1153,7 +1234,7 @@
                                 else scoreChipClass = "low";
                             }
                         %>
-                        <div class="student-result-card attempt-row" data-score="<%= bestScore != null ? String.format(java.util.Locale.US, "%.4f", bestScore) : "-1" %>" data-original-index="<%= rowIndex++ %>">
+                        <div class="student-result-card attempt-row" data-score="<%= displayScore != null ? String.format(java.util.Locale.US, "%.4f", displayScore) : "-1" %>" data-original-index="<%= rowIndex++ %>">
                             <div class="student-summary-row student-row-grid">
                                 <div class="student-info">
                                     <% if (sAvatar != null && !sAvatar.isEmpty()) { %>
@@ -1172,7 +1253,7 @@
                                 </div>
 
                                 <div class="student-stat">
-                                    <span class="attempt-count-chip"><%= attemptCount %> lượt</span>
+                                    <span class="attempt-count-chip"><%= attemptCountText %></span>
                                 </div>
 
                                 <div class="student-stat">
@@ -1199,13 +1280,14 @@
                                         <input type="hidden" name="action" value="grantExtraAttempt">
                                         <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
                                         <input type="hidden" name="code" value="<%= h(exam.getExamCode()) %>">
+                                        <input type="hidden" name="attemptView" value="<%= h(selectedAttemptViewValue) %>">
                                         <input type="hidden" name="studentId" value="<%= h(dto.getAttempt().getStudentId()) %>">
                                         <button type="submit" class="btn-grant-attempt" title="Cấp thêm 1 lượt làm bài">
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                                             Thêm lượt
                                         </button>
                                     </form>
-                                    <a href="${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>&attemptId=<%= h(dto.getAttempt().getId() != null ? dto.getAttempt().getId() : "") %>#attempt-detail" class="btn btn-primary" style="display:inline-flex; align-items:center; justify-content:center; gap:0.4rem; padding:0 1.2rem; font-size:0.85rem; font-weight:500; border-radius:50px; white-space:nowrap; height:36px; text-decoration:none; color:#fff; background:<%= dto.getAttempt().getId() != null ? "var(--primary)" : "#94a3b8" %>; border:none; cursor:<%= dto.getAttempt().getId() != null ? "pointer" : "not-allowed" %>; transition:all 0.2s; <%= dto.getAttempt().getId() != null ? "" : "opacity:0.72; pointer-events:none;" %>">
+                                    <a href="${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>&attemptView=<%= h(selectedAttemptViewValue) %>&attemptId=<%= h(detailAttemptId != null ? detailAttemptId : "") %>" class="btn btn-primary" style="display:inline-flex; align-items:center; justify-content:center; gap:0.4rem; padding:0 1.2rem; font-size:0.85rem; font-weight:500; border-radius:50px; white-space:nowrap; height:36px; text-decoration:none; color:#fff; background:<%= detailAttemptId != null ? "var(--primary)" : "#94a3b8" %>; border:none; cursor:<%= detailAttemptId != null ? "pointer" : "not-allowed" %>; transition:all 0.2s; <%= detailAttemptId != null ? "" : "opacity:0.72; pointer-events:none;" %>">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                                         Chi tiết
                                     </a>
@@ -1225,16 +1307,18 @@
                                     </thead>
                                     <tbody>
                                         <%
-                                            List<ClassroomExamAttempt> histories = attemptHistories != null
-                                                    ? attemptHistories.get(dto.getAttempt().getStudentId())
-                                                    : null;
-                                            if (histories == null || histories.isEmpty()) {
+                                            List<ClassroomExamAttempt> histories = studentHistories;
+                                            boolean missingSelectedHistory = selectedAttemptRound > 0
+                                                    && (histories == null || histories.size() < selectedAttemptRound);
+                                            if (histories == null || histories.isEmpty() || missingSelectedHistory) {
                                         %>
                                             <tr>
-                                                <td colspan="5" style="color:var(--text-muted);">Chưa có lượt làm nào</td>
+                                                <td colspan="5" style="color:var(--text-muted);"><%= selectedAttemptRound > 0 ? "Chưa có lượt làm này" : "Chưa có lượt làm nào" %></td>
                                             </tr>
                                         <% } else {
-                                            for (int hi = 0; hi < histories.size(); hi++) {
+                                            int historyStart = selectedAttemptRound > 0 ? selectedAttemptRound - 1 : 0;
+                                            int historyEnd = selectedAttemptRound > 0 ? selectedAttemptRound : histories.size();
+                                            for (int hi = historyStart; hi < historyEnd; hi++) {
                                                 ClassroomExamAttempt item = histories.get(hi);
                                                 String itemStart = item.getStartedAt() != null ? sdf.format(item.getStartedAt()) : "Chưa bắt đầu";
                                                 String itemSubmit = item.getSubmittedAt() != null ? sdf.format(item.getSubmittedAt()) : ("completed".equals(item.getStatus()) ? "Đã nộp" : "Đang làm");
@@ -1298,7 +1382,7 @@
                         · Vi phạm: <%= selectedAttempt.getAttempt().getViolationCount() %> lần
                     </p>
                 </div>
-                <a href="${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>"
+                <a href="${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>&attemptView=<%= h(selectedAttemptViewValue) %>"
                    class="btn-history" style="text-decoration:none;">Đóng chi tiết</a>
             </div>
 
@@ -1320,12 +1404,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% if (selectedHistories == null || selectedHistories.isEmpty()) { %>
+                            <% if (selectedHistories == null || selectedHistories.isEmpty()
+                                    || (selectedAttemptRound > 0 && selectedHistories.size() < selectedAttemptRound)) { %>
                                 <tr>
-                                    <td colspan="6" style="color:var(--text-muted);">Chưa có lịch sử làm bài</td>
+                                    <td colspan="6" style="color:var(--text-muted);"><%= selectedAttemptRound > 0 ? "Chưa có lượt làm này" : "Chưa có lịch sử làm bài" %></td>
                                 </tr>
                             <% } else {
-                                for (int hi = 0; hi < selectedHistories.size(); hi++) {
+                                int selectedHistoryStart = selectedAttemptRound > 0 ? Math.min(selectedAttemptRound - 1, selectedHistories.size()) : 0;
+                                int selectedHistoryEnd = selectedAttemptRound > 0 ? Math.min(selectedAttemptRound, selectedHistories.size()) : selectedHistories.size();
+                                for (int hi = selectedHistoryStart; hi < selectedHistoryEnd; hi++) {
                                     ClassroomExamAttempt item = selectedHistories.get(hi);
                                     String itemStart = item.getStartedAt() != null ? sdf.format(item.getStartedAt()) : "Chưa bắt đầu";
                                     String itemSubmit = item.getSubmittedAt() != null ? sdf.format(item.getSubmittedAt()) : ("completed".equals(item.getStatus()) ? "Đã nộp" : "Đang làm");
@@ -1359,7 +1446,7 @@
                                         <% if (viewingThisAttempt) { %>
                                             <span class="history-current-chip">Đang xem</span>
                                         <% } else if (item.getId() != null) { %>
-                                            <a class="history-detail-link" href="${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>&attemptId=<%= h(item.getId()) %>#attempt-detail">Xem lượt này</a>
+                                            <a class="history-detail-link" href="${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>&attemptView=<%= h(selectedAttemptViewValue) %>&attemptId=<%= h(item.getId()) %>">Xem lượt này</a>
                                         <% } else { %>
                                             <span style="color:var(--text-muted);">-</span>
                                         <% } %>
@@ -1428,6 +1515,7 @@
                 <input type="hidden" name="action" value="saveFeedback">
                 <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
                 <input type="hidden" name="code" value="<%= h(exam.getExamCode()) %>">
+                <input type="hidden" name="attemptView" value="<%= h(selectedAttemptViewValue) %>">
                 <input type="hidden" name="attemptId" value="<%= h(selectedAttempt.getAttempt().getId()) %>">
                 <label for="teacherFeedback">Feedback gửi cho học viên</label>
                 <textarea id="teacherFeedback" name="teacherFeedback" placeholder="Nhập nhận xét, gợi ý ôn tập hoặc lời nhắn cho học viên..."><%= h(selectedFeedback) %></textarea>
@@ -1516,15 +1604,12 @@
         });
 
         const searchInput = document.getElementById('search-attempts');
-        const sortControl = document.getElementById('score-sort-control');
         const sortTrigger = document.getElementById('score-sort-trigger');
-        const sortLabel = document.getElementById('score-sort-label');
-        const sortOptions = document.querySelectorAll('.score-filter-option');
         const resultList = document.querySelector('.student-result-list');
 
         function applyResultTools() {
             const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
-            const sortMode = sortTrigger ? sortTrigger.dataset.value : 'default';
+            const sortMode = sortTrigger ? sortTrigger.value : 'default';
             const rows = Array.from(document.querySelectorAll('.attempt-row'));
 
             rows.sort((a, b) => {
@@ -1546,34 +1631,9 @@
         }
 
         if (searchInput) searchInput.addEventListener('input', applyResultTools);
-        if (sortTrigger && sortControl) {
-            sortTrigger.addEventListener('click', event => {
-                event.stopPropagation();
-                const isOpen = sortControl.classList.toggle('is-open');
-                sortTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-            });
+        if (sortTrigger) {
+            sortTrigger.addEventListener('change', applyResultTools);
         }
-        sortOptions.forEach(option => {
-            option.addEventListener('click', event => {
-                event.stopPropagation();
-                const value = option.dataset.value || 'default';
-                if (sortTrigger) sortTrigger.dataset.value = value;
-                if (sortLabel) sortLabel.textContent = option.textContent.trim();
-                sortOptions.forEach(item => {
-                    const selected = item === option;
-                    item.classList.toggle('is-selected', selected);
-                    item.setAttribute('aria-selected', selected ? 'true' : 'false');
-                });
-                sortControl?.classList.remove('is-open');
-                sortTrigger?.setAttribute('aria-expanded', 'false');
-                applyResultTools();
-            });
-        });
-        document.addEventListener('click', event => {
-            if (!sortControl || sortControl.contains(event.target)) return;
-            sortControl.classList.remove('is-open');
-            sortTrigger?.setAttribute('aria-expanded', 'false');
-        });
 
         function toggleHistory(btn) {
             const card = btn.closest('.student-result-card');
@@ -1610,7 +1670,7 @@
 
         document.getElementById('attemptDetailModal')?.addEventListener('click', event => {
             if (event.target.id === 'attemptDetailModal') {
-                window.location.href = '${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>';
+                window.location.href = '${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>&attemptView=<%= h(selectedAttemptViewValue) %>';
             }
         });
 
@@ -1625,7 +1685,20 @@
                 return;
             }
             if (document.getElementById('attemptDetailModal')) {
-                window.location.href = '${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>';
+                window.location.href = '${pageContext.request.contextPath}/class-exam-manage?classId=<%= h(classroom.getId()) %>&code=<%= h(exam.getExamCode()) %>&attemptView=<%= h(selectedAttemptViewValue) %>';
+            }
+        });
+
+        const scrollKey = 'scrollPos_' + new URLSearchParams(window.location.search).get('classId') + '_' + new URLSearchParams(window.location.search).get('code');
+        window.addEventListener('beforeunload', () => {
+            sessionStorage.setItem(scrollKey, window.scrollY);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const pos = sessionStorage.getItem(scrollKey);
+            if (pos) {
+                sessionStorage.removeItem(scrollKey);
+                setTimeout(() => window.scrollTo({ top: parseInt(pos, 10), behavior: 'instant' }), 0);
             }
         });
     </script>

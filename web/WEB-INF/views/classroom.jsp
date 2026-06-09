@@ -9,6 +9,7 @@
 <%@page import="com.hipzi.model.ClassroomQuiz"%>
 <%@page import="com.hipzi.model.ClassroomQuizAttempt"%>
 <%@page import="com.hipzi.model.ClassroomQuizQuestion"%>
+<%@page import="com.hipzi.dto.ClassroomExamAttemptDto"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="java.util.Map"%>
 <%@page import="java.net.URLEncoder"%>
@@ -59,6 +60,7 @@
     List<ClassroomHomeworkSubmission> homeworkSubmissions = (List<ClassroomHomeworkSubmission>) request.getAttribute("homeworkSubmissions");
     List<ClassroomQuiz> classroomQuizzes = (List<ClassroomQuiz>) request.getAttribute("classroomQuizzes");
     Map<String, ClassroomQuizAttempt> latestQuizAttempts = (Map<String, ClassroomQuizAttempt>) request.getAttribute("latestQuizAttempts");
+    Map<String, ClassroomExamAttemptDto> classExamAttemptUsage = (Map<String, ClassroomExamAttemptDto>) request.getAttribute("classExamAttemptUsage");
 
     String title = classroom != null ? classroom.getTitle() : "Lớp học HIPZI";
     String subject = classroom != null ? classroom.getSubject() : "Môn học";
@@ -90,6 +92,8 @@
     String examDraftStartAt = (String) session.getAttribute("examDraftStartAt");
     String examDraftEndAt = (String) session.getAttribute("examDraftEndAt");
     Number examDraftDurationValue = (Number) session.getAttribute("examDraftDuration");
+    Number examDraftAttemptLimitValue = (Number) session.getAttribute("examDraftAttemptLimit");
+    Number examDraftMaxScoreValue = (Number) session.getAttribute("examDraftMaxScore");
     String examDraftSourceMaterialId = (String) session.getAttribute("examDraftSourceMaterialId");
     String examDraftSourceText = (String) session.getAttribute("examDraftSourceText");
     String examDraftCreationMode = (String) session.getAttribute("examDraftCreationMode");
@@ -101,6 +105,8 @@
     session.removeAttribute("examDraftStartAt");
     session.removeAttribute("examDraftEndAt");
     session.removeAttribute("examDraftDuration");
+    session.removeAttribute("examDraftAttemptLimit");
+    session.removeAttribute("examDraftMaxScore");
     session.removeAttribute("examDraftSourceMaterialId");
     session.removeAttribute("examDraftSourceText");
     session.removeAttribute("examDraftCreationMode");
@@ -112,6 +118,8 @@
     examDraftStartAt = examDraftStartAt != null ? examDraftStartAt : "";
     examDraftEndAt = examDraftEndAt != null ? examDraftEndAt : "";
     int examDraftDuration = examDraftDurationValue != null ? examDraftDurationValue.intValue() : 45;
+    int examDraftAttemptLimit = examDraftAttemptLimitValue != null ? examDraftAttemptLimitValue.intValue() : 1;
+    double examDraftMaxScore = examDraftMaxScoreValue != null ? examDraftMaxScoreValue.doubleValue() : 10.0;
     examDraftSourceMaterialId = examDraftSourceMaterialId != null ? examDraftSourceMaterialId : "";
     examDraftSourceText = examDraftSourceText != null ? examDraftSourceText : "";
     examDraftCreationMode = "ai".equals(examDraftCreationMode) ? "ai" : "manual";
@@ -859,24 +867,42 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            gap: 0.4rem;
+            gap: 0.5rem;
         }
 
         .class-exam-code {
             display: inline-flex;
             align-items: center;
-            font-size: 0.95rem;
+            align-self: flex-start;
+            font-size: 0.88rem;
             color: #475569;
-            background: #f1f5f9;
-            padding: 0.2rem 0.55rem;
-            border-radius: 6px;
             font-weight: 600;
+        }
+
+        .class-exam-code strong {
+            background: #f1f5f9;
+            border-radius: 6px;
+            padding: 0.2rem 0.5rem;
+            line-height: 1.25;
+            margin-left: -0.5rem;
+            font-weight: 700;
+        }
+
+        .class-exam-attempt-badge {
+            flex-shrink: 0;
+            border-radius: 999px;
+            padding: 0.34rem 0.62rem;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.72rem;
+            font-weight: 950;
+            white-space: nowrap;
         }
 
         .class-exam-card h3 {
             margin: 0;
             color: #0f172a;
-            font-size: 1rem;
+            font-size: 1.08rem;
             line-height: 1.35;
         }
 
@@ -2131,12 +2157,17 @@
                                             && currentTimestamp.before(exam.getStartAt());
                                     String examStatusClass = "draft".equals(exam.getStatus()) ? "draft" : (isExamOpenNow ? "" : (isExamUpcoming ? "upcoming" : "closed"));
                                     String examStatusLabel = "draft".equals(exam.getStatus()) ? "Bản nháp" : (isExamOpenNow ? "Đang mở" : (isExamUpcoming ? "Chưa mở" : "Đã đóng"));
+                                    ClassroomExamAttemptDto examUsage = classExamAttemptUsage != null ? classExamAttemptUsage.get(exam.getId()) : null;
+                                    int usedAttempts = examUsage != null ? examUsage.getAttemptCount() : 0;
+                                    int allowedAttempts = examUsage != null ? examUsage.getAllowedAttemptCount() : Math.max(1, exam.getAttemptLimit());
+                                    boolean hasActiveAttempt = examUsage != null && examUsage.getAttempt() != null && "in_progress".equals(examUsage.getAttempt().getStatus());
+                                    boolean outOfAttempts = usedAttempts >= allowedAttempts && !hasActiveAttempt;
                                 %>
                                     <article class="class-exam-card">
                                         <div class="class-exam-card-left">
                                             <div class="class-exam-card-head">
                                                 <h3><%= h(exam.getTitle()) %></h3>
-                                                <span class="class-exam-code">Mã đề: <%= h(exam.getExamCode()) %></span>
+                                                <span class="class-exam-code"><strong>Mã đề: <%= h(exam.getExamCode()) %></strong></span>
                                             </div>
                                             <div class="class-exam-meta">
                                                 <span class="resource-chip" style="background:transparent; padding:0; color:#475569; font-weight:500; font-size: 0.95rem;">Mở: <%= h(formatExamTime(exam.getStartAt())) %></span>
@@ -2145,6 +2176,9 @@
                                         </div>
                                         <div class="class-exam-card-right">
                                             <div style="display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; width: 100%;">
+                                                <% if (!canManageClassroom) { %>
+                                                    <span class="class-exam-attempt-badge">Lượt làm: <%= usedAttempts %>/<%= allowedAttempts %></span>
+                                                <% } %>
                                                 <span class="class-exam-status <%= h(examStatusClass) %>"><%= h(examStatusLabel) %></span>
                                                 <% if (canManageClassroom) { %>
                                                     <form action="${pageContext.request.contextPath}/classroom" method="POST" style="display:inline; margin:0; line-height: 1;" onsubmit="return confirm('Bạn chắc chắn muốn xóa bài thi này?');">
@@ -2161,7 +2195,12 @@
                                                 <% if (canManageClassroom) { %>
                                                     <a class="mini-btn primary" href="<%= h(manageHref) %>">Quản lý</a>
                                                 <% } else { %>
-                                                    <button type="button" class="mini-btn primary" onclick="openExamRulesModal('<%= h(examHref + "&autoStart=true") %>')">Vào làm bài</button>
+                                                    <% if (outOfAttempts) { %>
+                                                        <button type="button" class="mini-btn preview" disabled style="cursor:not-allowed; opacity:0.78;">Đã hết lượt làm bài</button>
+                                                        <button type="button" class="mini-btn primary" disabled title="Phát triển sau" style="cursor:not-allowed; opacity:0.78;">Xem kết quả</button>
+                                                    <% } else { %>
+                                                        <button type="button" class="mini-btn primary" onclick="openExamRulesModal('<%= h(examHref + "&autoStart=true") %>')">Vào làm bài</button>
+                                                    <% } %>
                                                 <% } %>
                                                 <% if (exam.getSourceMaterialId() != null && !exam.getSourceMaterialId().isEmpty()) { %>
                                                     <a class="mini-btn preview" href="${pageContext.request.contextPath}/classroom-preview?id=<%= h(exam.getSourceMaterialId()) %>" target="_blank" rel="noopener">Xem đề</a>
@@ -2259,7 +2298,7 @@
                                     </div>
                                     <div class="upload-field">
                                         <label>Tổng điểm tối đa</label>
-                                        <input type="number" name="examMaxScore" id="createExamMaxScore" step="0.01" min="0" value="<%= session.getAttribute("examDraftMaxScore") != null ? session.getAttribute("examDraftMaxScore") : 10.0 %>" required>
+                                        <input type="number" name="examMaxScore" id="createExamMaxScore" step="0.01" min="0" value="<%= examDraftMaxScore %>" required>
                                     </div>
                                     <div class="upload-field">
                                         <label>Dạng bài thi</label>
@@ -2268,6 +2307,10 @@
                                             <option value="essay" <%= "essay".equals(examDraftType) ? "selected" : "" %>>Tự luận</option>
                                             <option value="flashcard" disabled>Flashcard (sắp triển khai)</option>
                                         </select>
+                                    </div>
+                                    <div class="upload-field">
+                                        <label>Số lượt làm</label>
+                                        <input type="number" name="attemptLimit" min="1" value="<%= examDraftAttemptLimit %>" required>
                                     </div>
                                     <div class="upload-field">
                                         <label>Thời gian mở đề</label>
@@ -2544,6 +2587,7 @@ D. ...
                 <input type="hidden" name="action" value="updateClassExam">
                 <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
                 <input type="hidden" name="examId" id="editExamId">
+                <input type="hidden" name="examMaxScore" id="editExamMaxScore">
                 <div class="upload-field full">
                     <label>Tiêu đề bài thi</label>
                     <input type="text" name="examTitle" id="editExamTitle" required>
@@ -2555,10 +2599,6 @@ D. ...
                 <div class="upload-field">
                     <label>Thời lượng (phút)</label>
                     <input type="number" name="durationMinutes" id="editExamDuration" min="1" required>
-                </div>
-                <div class="upload-field">
-                    <label>Tổng điểm tối đa</label>
-                    <input type="number" name="examMaxScore" id="editExamMaxScore" step="0.01" min="0" required>
                 </div>
                 <div class="upload-field full">
                     <label>Thời gian mở đề</label>

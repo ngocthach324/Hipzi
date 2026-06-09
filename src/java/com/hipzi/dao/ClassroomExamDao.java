@@ -9,7 +9,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,8 +76,8 @@ public class ClassroomExamDao {
         lastError.remove();
         String sql = "INSERT INTO classroom_exams "
                 + "(classroom_id, title, description, exam_code, exam_type, creation_mode, raw_source_text, "
-                + "source_material_id, status, max_score, duration_minutes, start_at, end_at, created_by) "
-                + "VALUES (?::uuid, ?, ?, ?, ?, ?, ?, NULLIF(?, '')::uuid, ?, ?, ?, ?, ?, ?::uuid) RETURNING id";
+                + "source_material_id, status, max_score, attempt_limit, duration_minutes, start_at, end_at, created_by) "
+                + "VALUES (?::uuid, ?, ?, ?, ?, ?, ?, NULLIF(?, '')::uuid, ?, ?, ?, ?, ?, ?, ?::uuid) RETURNING id";
         Connection conn = null;
         try {
             conn = DBContext.getConnection();
@@ -91,10 +93,11 @@ public class ClassroomExamDao {
                 ps.setString(8, exam.getSourceMaterialId());
                 ps.setString(9, normalizeStatus(exam.getStatus()));
                 ps.setDouble(10, exam.getMaxScore() != null && exam.getMaxScore() > 0 ? exam.getMaxScore() : 10.0);
-                ps.setInt(11, exam.getDurationMinutes() > 0 ? exam.getDurationMinutes() : 45);
-                ps.setTimestamp(12, exam.getStartAt());
-                ps.setTimestamp(13, exam.getEndAt());
-                ps.setString(14, exam.getCreatedBy());
+                ps.setInt(11, exam.getAttemptLimit() > 0 ? exam.getAttemptLimit() : 1);
+                ps.setInt(12, exam.getDurationMinutes() > 0 ? exam.getDurationMinutes() : 45);
+                ps.setTimestamp(13, exam.getStartAt());
+                ps.setTimestamp(14, exam.getEndAt());
+                ps.setString(15, exam.getCreatedBy());
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         exam.setId(rs.getString("id"));
@@ -171,6 +174,7 @@ public class ClassroomExamDao {
         exam.setCreatedBy(rs.getString("created_by"));
         exam.setCreatedAt(rs.getTimestamp("created_at"));
         exam.setUpdatedAt(rs.getTimestamp("updated_at"));
+        exam.setAttemptLimit(rs.getInt("attempt_limit"));
         return exam;
     }
 
@@ -302,7 +306,9 @@ public class ClassroomExamDao {
                    + "a.id as attempt_id, a.exam_id, a.score, a.total_questions, "
                    + "a.violation_count, a.status, a.started_at, a.submitted_at, "
                    + "a.teacher_feedback, a.feedback_by, a.feedback_at, "
-                   + "COALESCE(ac.attempt_count, 0) AS attempt_count, ac.best_score "
+                   + "COALESCE(ac.attempt_count, 0) AS attempt_count, "
+                   + "(GREATEST(e.attempt_limit, 1) + COALESCE(gc.grant_count, 0)) AS allowed_attempt_count, "
+                   + "ac.best_score "
                    + "FROM classroom_enrollments ce "
                    + "JOIN users u ON ce.student_id = u.id "
                    + "JOIN classroom_exams e ON e.classroom_id = ce.classroom_id "
@@ -316,6 +322,10 @@ public class ClassroomExamDao {
                    + "SELECT COUNT(*) AS attempt_count, MAX(a2.score) FILTER (WHERE a2.status = 'completed') AS best_score FROM classroom_exam_attempts a2 "
                    + "WHERE a2.student_id = u.id AND a2.exam_id = e.id"
                    + ") ac ON true "
+                   + "LEFT JOIN LATERAL ("
+                   + "SELECT COUNT(*) AS grant_count FROM classroom_exam_attempt_grants g "
+                   + "WHERE g.student_id = u.id AND g.exam_id = e.id"
+                   + ") gc ON true "
                    + "WHERE e.id = ?::uuid AND ce.status = 'accepted' "
                    + "ORDER BY a.started_at DESC NULLS LAST, u.display_name ASC";
         try (Connection conn = DBContext.getConnection();
@@ -342,6 +352,7 @@ public class ClassroomExamDao {
 
                     dto.setAttempt(attempt);
                     dto.setAttemptCount(rs.getInt("attempt_count"));
+                    dto.setAllowedAttemptCount(rs.getInt("allowed_attempt_count"));
                     double bestScore = rs.getDouble("best_score");
                     dto.setBestScore(rs.wasNull() ? null : bestScore);
                     dto.setStudentName(rs.getString("student_name"));
@@ -362,13 +373,20 @@ public class ClassroomExamDao {
                    + "a.id as attempt_id, a.exam_id, a.score, a.total_questions, "
                    + "a.violation_count, a.status, a.started_at, a.submitted_at, "
                    + "a.teacher_feedback, a.feedback_by, a.feedback_at, "
-                   + "COALESCE(ac.attempt_count, 0) AS attempt_count, ac.best_score "
+                   + "COALESCE(ac.attempt_count, 0) AS attempt_count, "
+                   + "(GREATEST(e.attempt_limit, 1) + COALESCE(gc.grant_count, 0)) AS allowed_attempt_count, "
+                   + "ac.best_score "
                    + "FROM classroom_exam_attempts a "
+                   + "JOIN classroom_exams e ON e.id = a.exam_id "
                    + "JOIN users u ON u.id = a.student_id "
                    + "LEFT JOIN LATERAL ("
                    + "SELECT COUNT(*) AS attempt_count, MAX(a2.score) FILTER (WHERE a2.status = 'completed') AS best_score FROM classroom_exam_attempts a2 "
                    + "WHERE a2.student_id = a.student_id AND a2.exam_id = a.exam_id"
                    + ") ac ON true "
+                   + "LEFT JOIN LATERAL ("
+                   + "SELECT COUNT(*) AS grant_count FROM classroom_exam_attempt_grants g "
+                   + "WHERE g.student_id = a.student_id AND g.exam_id = a.exam_id"
+                   + ") gc ON true "
                    + "WHERE a.exam_id = ?::uuid AND a.id = ?::uuid "
                    + "LIMIT 1";
         try (Connection conn = DBContext.getConnection();
@@ -501,12 +519,77 @@ public class ClassroomExamDao {
 
         dto.setAttempt(attempt);
         dto.setAttemptCount(rs.getInt("attempt_count"));
+        dto.setAllowedAttemptCount(rs.getInt("allowed_attempt_count"));
         double bestScore = rs.getDouble("best_score");
         dto.setBestScore(rs.wasNull() ? null : bestScore);
         dto.setStudentName(rs.getString("student_name"));
         dto.setStudentEmail(rs.getString("email"));
         dto.setStudentAvatar(rs.getString("avatar_url"));
         return dto;
+    }
+
+    public Map<String, ClassroomExamAttemptDto> listAttemptUsageForStudent(String classroomId, String studentId) {
+        Map<String, ClassroomExamAttemptDto> usageByExam = new HashMap<>();
+        String sql = "SELECT e.id AS exam_id, "
+                + "a.id AS attempt_id, a.score, a.total_questions, a.violation_count, a.status, a.started_at, a.submitted_at, "
+                + "a.teacher_feedback, a.feedback_by, a.feedback_at, "
+                + "COALESCE(ac.attempt_count, 0) AS attempt_count, "
+                + "(GREATEST(e.attempt_limit, 1) + COALESCE(gc.grant_count, 0)) AS allowed_attempt_count, "
+                + "ac.best_score "
+                + "FROM classroom_exams e "
+                + "LEFT JOIN LATERAL ("
+                + "SELECT * FROM classroom_exam_attempts a "
+                + "WHERE a.student_id = ?::uuid AND a.exam_id = e.id "
+                + "ORDER BY a.started_at DESC NULLS LAST, a.submitted_at DESC NULLS LAST "
+                + "LIMIT 1"
+                + ") a ON true "
+                + "LEFT JOIN LATERAL ("
+                + "SELECT COUNT(*) AS attempt_count, MAX(a2.score) FILTER (WHERE a2.status = 'completed') AS best_score "
+                + "FROM classroom_exam_attempts a2 "
+                + "WHERE a2.student_id = ?::uuid AND a2.exam_id = e.id"
+                + ") ac ON true "
+                + "LEFT JOIN LATERAL ("
+                + "SELECT COUNT(*) AS grant_count FROM classroom_exam_attempt_grants g "
+                + "WHERE g.student_id = ?::uuid AND g.exam_id = e.id"
+                + ") gc ON true "
+                + "WHERE e.classroom_id = ?::uuid";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, studentId);
+            ps.setString(2, studentId);
+            ps.setString(3, studentId);
+            ps.setString(4, classroomId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ClassroomExamAttemptDto dto = new ClassroomExamAttemptDto();
+                    ClassroomExamAttempt attempt = new ClassroomExamAttempt();
+                    attempt.setId(rs.getString("attempt_id"));
+                    attempt.setExamId(rs.getString("exam_id"));
+                    attempt.setStudentId(studentId);
+                    double score = rs.getDouble("score");
+                    attempt.setScore(rs.wasNull() ? null : score);
+                    attempt.setTotalQuestions(rs.getInt("total_questions"));
+                    attempt.setViolationCount(rs.getInt("violation_count"));
+                    String status = rs.getString("status");
+                    attempt.setStatus(status != null ? status : "not_started");
+                    attempt.setStartedAt(rs.getTimestamp("started_at"));
+                    attempt.setSubmittedAt(rs.getTimestamp("submitted_at"));
+                    attempt.setTeacherFeedback(rs.getString("teacher_feedback"));
+                    attempt.setFeedbackBy(rs.getString("feedback_by"));
+                    attempt.setFeedbackAt(rs.getTimestamp("feedback_at"));
+
+                    dto.setAttempt(attempt);
+                    dto.setAttemptCount(rs.getInt("attempt_count"));
+                    dto.setAllowedAttemptCount(rs.getInt("allowed_attempt_count"));
+                    double bestScore = rs.getDouble("best_score");
+                    dto.setBestScore(rs.wasNull() ? null : bestScore);
+                    usageByExam.put(attempt.getExamId(), dto);
+                }
+            }
+        } catch (SQLException e) {
+            lastError.set("Database error loading student attempt usage: " + e.getMessage());
+        }
+        return usageByExam;
     }
 
     public boolean hasStudentSubmitted(String examId, String studentId) {
@@ -532,7 +615,8 @@ public class ClassroomExamDao {
                 + "ORDER BY started_at DESC LIMIT 1";
         String countSql = "SELECT "
                 + "(SELECT COUNT(*) FROM classroom_exam_attempts WHERE exam_id = ?::uuid AND student_id = ?::uuid) AS used_count, "
-                + "(1 + (SELECT COUNT(*) FROM classroom_exam_attempt_grants WHERE exam_id = ?::uuid AND student_id = ?::uuid)) AS allowed_count";
+                + "(COALESCE((SELECT GREATEST(attempt_limit, 1) FROM classroom_exams WHERE id = ?::uuid), 1) "
+                + "+ (SELECT COUNT(*) FROM classroom_exam_attempt_grants WHERE exam_id = ?::uuid AND student_id = ?::uuid)) AS allowed_count";
         String insertSql = "INSERT INTO classroom_exam_attempts (exam_id, student_id, status, started_at) "
                 + "VALUES (?::uuid, ?::uuid, 'in_progress', now()) RETURNING id";
         try (Connection conn = DBContext.getConnection()) {
@@ -550,7 +634,8 @@ public class ClassroomExamDao {
                 psCount.setString(1, examId);
                 psCount.setString(2, studentId);
                 psCount.setString(3, examId);
-                psCount.setString(4, studentId);
+                psCount.setString(4, examId);
+                psCount.setString(5, studentId);
                 try (ResultSet rs = psCount.executeQuery()) {
                     if (rs.next() && rs.getInt("used_count") >= rs.getInt("allowed_count")) {
                         return null;
@@ -691,6 +776,7 @@ public class ClassroomExamDao {
                     + "source_material_id UUID REFERENCES classroom_materials(id) ON DELETE SET NULL,"
                     + "status VARCHAR(20) NOT NULL DEFAULT 'open' CHECK (status IN ('draft', 'open', 'closed')),"
                     + "max_score NUMERIC(5,2) NOT NULL DEFAULT 10 CHECK (max_score > 0),"
+                    + "attempt_limit INTEGER NOT NULL DEFAULT 1 CHECK (attempt_limit > 0),"
                     + "duration_minutes INTEGER NOT NULL DEFAULT 45 CHECK (duration_minutes > 0),"
                     + "start_at TIMESTAMPTZ,"
                     + "end_at TIMESTAMPTZ,"
@@ -702,6 +788,7 @@ public class ClassroomExamDao {
             st.execute("ALTER TABLE classroom_exams ADD COLUMN IF NOT EXISTS creation_mode VARCHAR(20) NOT NULL DEFAULT 'manual'");
             st.execute("ALTER TABLE classroom_exams ADD COLUMN IF NOT EXISTS raw_source_text TEXT");
             st.execute("ALTER TABLE classroom_exams ADD COLUMN IF NOT EXISTS max_score NUMERIC(5,2) NOT NULL DEFAULT 10 CHECK (max_score > 0)");
+            st.execute("ALTER TABLE classroom_exams ADD COLUMN IF NOT EXISTS attempt_limit INTEGER NOT NULL DEFAULT 1 CHECK (attempt_limit > 0)");
             st.execute("DO $$ BEGIN "
                     + "IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'classroom_exams_exam_type_check' "
                     + "AND conrelid = 'classroom_exams'::regclass) THEN "

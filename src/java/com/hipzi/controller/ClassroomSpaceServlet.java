@@ -6,6 +6,7 @@ import com.hipzi.dao.ClassroomExamDao;
 import com.hipzi.dao.ClassroomHomeworkSubmissionDao;
 import com.hipzi.dao.ClassroomMaterialDao;
 import com.hipzi.dao.ClassroomQuizDao;
+import com.hipzi.dto.ClassroomExamAttemptDto;
 import com.hipzi.model.Classroom;
 import com.hipzi.model.ClassroomEnrollment;
 import com.hipzi.model.ClassroomExam;
@@ -101,6 +102,9 @@ public class ClassroomSpaceServlet extends HttpServlet {
         Map<String, ClassroomQuizAttempt> latestQuizAttempts = acceptedStudent
                 ? quizDao.latestAttemptsForStudent(classId, user.getId())
                 : new LinkedHashMap<String, ClassroomQuizAttempt>();
+        Map<String, ClassroomExamAttemptDto> classExamAttemptUsage = acceptedStudent
+                ? examDao.listAttemptUsageForStudent(classId, user.getId())
+                : new LinkedHashMap<String, ClassroomExamAttemptDto>();
         request.setAttribute("classroom", classroom);
         request.setAttribute("canManageClassroom", canManageClassroom);
         request.setAttribute("canReviewEnrollments", canReviewEnrollments);
@@ -116,6 +120,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
         request.setAttribute("classroomExams", examDao.listByClassroom(classId, !canManageClassroom));
         request.setAttribute("classroomQuizzes", classroomQuizzes);
         request.setAttribute("latestQuizAttempts", latestQuizAttempts);
+        request.setAttribute("classExamAttemptUsage", classExamAttemptUsage);
         request.setAttribute("homeworkSubmissions", canManageClassroom
                 ? submissionDao.listByClassroom(classId)
                 : submissionDao.listByClassroomAndStudent(classId, user.getId()));
@@ -430,6 +435,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
         String rawSourceText = cleanParam(request.getParameter("examSourceText"));
         String sourceMaterialId = cleanParam(request.getParameter("sourceMaterialId"));
         int duration = parsePositiveInt(request.getParameter("durationMinutes"), 45);
+        int attemptLimit = parsePositiveInt(request.getParameter("attemptLimit"), 1);
         Double maxScore = parsePositiveDouble(request.getParameter("examMaxScore"), 10.0);
         String startAtValue = buildExamDateTimeValue(request, "examStart");
         String endAtValue = buildExamDateTimeValue(request, "examEnd");
@@ -467,6 +473,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
         exam.setRawSourceText(rawSourceText);
         exam.setStatus("open");
         exam.setMaxScore(maxScore);
+        exam.setAttemptLimit(attemptLimit);
         exam.setDurationMinutes(duration);
         exam.setStartAt(startAt);
         exam.setEndAt(endAt);
@@ -570,6 +577,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
         session.setAttribute("examDraftStartAt", buildExamDateTimeValue(request, "examStart"));
         session.setAttribute("examDraftEndAt", buildExamDateTimeValue(request, "examEnd"));
         session.setAttribute("examDraftDuration", parsePositiveInt(request.getParameter("durationMinutes"), 45));
+        session.setAttribute("examDraftAttemptLimit", parsePositiveInt(request.getParameter("attemptLimit"), 1));
         session.setAttribute("examDraftMaxScore", parsePositiveDouble(request.getParameter("examMaxScore"), 10.0));
         session.setAttribute("examDraftSourceMaterialId", cleanParam(request.getParameter("sourceMaterialId")));
         session.setAttribute("examDraftSourceText", sourceText);
@@ -1152,4 +1160,4 @@ public class ClassroomSpaceServlet extends HttpServlet {
     private String cleanParam(String value) {
         return value == null ? "" : value.trim();
     }
-}
+}

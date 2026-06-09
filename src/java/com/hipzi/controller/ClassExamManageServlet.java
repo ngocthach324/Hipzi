@@ -131,6 +131,8 @@ public class ClassExamManageServlet extends HttpServlet {
         String classId = cleanParam(request.getParameter("classId"));
         String examCode = cleanParam(request.getParameter("code"));
         String attemptId = cleanParam(request.getParameter("attemptId"));
+        String attemptView = cleanParam(request.getParameter("attemptView"));
+        String attemptViewSuffix = !attemptView.isEmpty() ? "&attemptView=" + url(attemptView) : "";
 
         Classroom classroom = !classId.isEmpty() ? classDao.findById(classId) : null;
         if (classroom == null || examCode.isEmpty()) {
@@ -166,6 +168,7 @@ public class ClassExamManageServlet extends HttpServlet {
             session.setAttribute("toastType", saved ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/class-exam-manage?classId=" + url(classId)
                     + "&code=" + url(foundExam.getExamCode())
+                    + attemptViewSuffix
                     + (!attemptId.isEmpty() ? "&attemptId=" + url(attemptId) + "#attempt-detail" : ""));
             return;
         }
@@ -177,12 +180,14 @@ public class ClassExamManageServlet extends HttpServlet {
             session.setAttribute("toastMsg", granted ? "Đã thêm 1 lượt làm bài cho học viên." : "Chưa thêm được lượt làm bài.");
             session.setAttribute("toastType", granted ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/class-exam-manage?classId=" + url(classId)
-                    + "&code=" + url(foundExam.getExamCode()));
+                    + "&code=" + url(foundExam.getExamCode())
+                    + attemptViewSuffix);
             return;
         }
 
         response.sendRedirect(request.getContextPath() + "/class-exam-manage?classId=" + url(classId)
-                + "&code=" + url(foundExam.getExamCode()));
+                + "&code=" + url(foundExam.getExamCode())
+                + attemptViewSuffix);
     }
 
     private ClassroomExam findExamByClassAndCode(String classId, String examCode) {
