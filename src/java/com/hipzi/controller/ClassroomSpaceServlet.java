@@ -23,7 +23,12 @@ import com.hipzi.model.User;
 import com.hipzi.service.AiQuizParserService;
 import com.hipzi.service.AiClassExamParserService;
 import com.hipzi.service.B2StorageService;
+import com.hipzi.service.DatalabOcrService;
+import com.hipzi.service.DocxTextExtractionService;
+import com.hipzi.service.OcrProvider;
+import com.hipzi.service.OcrResult;
 import com.hipzi.service.TesseractOcrService;
+import com.hipzi.service.TesseractOcrProvider;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -65,6 +70,8 @@ public class ClassroomSpaceServlet extends HttpServlet {
     private final ClassroomRuleDao ruleDao = new ClassroomRuleDao();
     private final B2StorageService storageService = new B2StorageService();
     private final TesseractOcrService ocrService = new TesseractOcrService();
+    private final DocxTextExtractionService docxTextExtractionService = new DocxTextExtractionService();
+    private final OcrProvider sourceOcrProvider = createOcrProvider();
     private final AiQuizParserService aiQuizParserService = new AiQuizParserService();
     private final AiClassExamParserService aiClassExamParserService = new AiClassExamParserService();
 
@@ -250,15 +257,20 @@ public class ClassroomSpaceServlet extends HttpServlet {
             return;
         } else if ("scanClassExamAi".equals(action)) {
             boolean scanned;
+            String scanError = "";
             try {
                 scanned = handleClassExamAiScan(request, session);
             } catch (Exception e) {
                 scanned = false;
-                System.err.println("Error scanning classroom exam with AI: " + e.getMessage());
+                scanError = compactErrorMessage(e);
+                System.err.println("Error scanning classroom exam with AI: " + scanError);
+                e.printStackTrace(System.err);
             }
             session.setAttribute("toastMsg", scanned
                     ? "Da phan tich de thi bang AI. Hay kiem tra va chinh sua cau hoi truoc khi luu."
-                    : "Chua phan tich duoc de thi. Kiem tra OPENAI_API_KEY, anh de hoac text de.");
+                    : (!scanError.isEmpty()
+                            ? "Chua phan tich duoc de thi: " + scanError
+                            : "Chua phan tich duoc de thi. Kiem tra DATALAB_API_KEY, OPENAI_API_KEY, file de hoac text de."));
             session.setAttribute("toastType", scanned ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
             return;
@@ -291,15 +303,20 @@ public class ClassroomSpaceServlet extends HttpServlet {
             return;
         } else if ("scanQuizImage".equals(action) || "scanQuizImageAi".equals(action)) {
             boolean scanned;
+            String scanError = "";
             try {
                 scanned = handleQuizImageScan(request, session, "scanQuizImageAi".equals(action));
             } catch (Exception e) {
                 scanned = false;
-                System.err.println("Error scanning classroom quiz image: " + e.getMessage());
+                scanError = compactErrorMessage(e);
+                System.err.println("Error scanning classroom quiz image: " + scanError);
+                e.printStackTrace(System.err);
             }
             session.setAttribute("toastMsg", scanned
                     ? ("scanQuizImageAi".equals(action) ? "Da scan AI. Hay kiem tra lai cau hoi da nhan dien." : "Da scan anh de. Hay kiem tra lai noi dung scan.")
-                    : ("scanQuizImageAi".equals(action) ? "Chua scan AI duoc. Kiem tra OPENAI_API_KEY hoac thu scan mien phi." : "Chua scan duoc anh de. Vui long chon anh ro hon."));
+                    : (!scanError.isEmpty()
+                            ? "Chua scan duoc: " + scanError
+                            : ("scanQuizImageAi".equals(action) ? "Chua scan AI duoc. Kiem tra DATALAB_API_KEY, OPENAI_API_KEY hoac file de." : "Chua scan duoc anh de. Kiem tra DATALAB_API_KEY hoac chon file ro hon.")));
             session.setAttribute("toastType", scanned ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
             return;
@@ -582,25 +599,21 @@ public class ClassroomSpaceServlet extends HttpServlet {
         if ("flashcard".equals(examType)) {
             return false;
         }
-        String sourceText = cleanParam(request.getParameter("examSourceText"));
+        String sourceText = cleanTeacherSourceText(request.getParameter("examSourceText"));
         Part imagePart = request.getPart("examSourceImage");
-        byte[] imageBytes = null;
-        String imageContentType = null;
+        OcrResult ocrResult = null;
         if (imagePart != null && imagePart.getSize() > 0 && imagePart.getSubmittedFileName() != null) {
             String originalFileName = Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
-            if (!isAllowedQuizImage(originalFileName, imagePart.getContentType()) || imagePart.getSize() > 10L * 1024 * 1024) {
+            if (!isAllowedOcrSource(originalFileName, imagePart.getContentType()) || imagePart.getSize() > maxOcrSourceBytes()) {
                 return false;
             }
-            try (java.io.InputStream input = imagePart.getInputStream()) {
-                imageBytes = input.readAllBytes();
-            }
-            imageContentType = imagePart.getContentType();
+            ocrResult = extractOcrFromUploadedPart(imagePart, originalFileName);
         }
-        if (sourceText.isEmpty() && (imageBytes == null || imageBytes.length == 0)) {
+        String aiSourceText = buildAiSourceText(sourceText, ocrResult);
+        if (aiSourceText.trim().isEmpty()) {
             return false;
         }
-        List<ClassroomExamQuestion> questions = aiClassExamParserService.parseQuestions(
-                sourceText, imageBytes, imageContentType, examType);
+        List<ClassroomExamQuestion> questions = aiClassExamParserService.parseQuestions(aiSourceText, examType);
         if (questions.isEmpty()) {
             return false;
         }
@@ -618,6 +631,105 @@ public class ClassroomSpaceServlet extends HttpServlet {
         session.setAttribute("examDraftCreationMode", "ai");
         session.setAttribute("examDraftQuestions", questions);
         return true;
+    }
+
+    private String cleanTeacherSourceText(String rawSourceText) {
+        String cleaned = cleanParam(rawSourceText);
+        if (cleaned.isEmpty() || !cleaned.contains("### OCR ")) {
+            return cleaned;
+        }
+
+        int teacherBlockIndex = cleaned.indexOf("### TEACHER SOURCE TEXT");
+        if (teacherBlockIndex >= 0) {
+            int contentStart = cleaned.indexOf('\n', teacherBlockIndex);
+            if (contentStart < 0) {
+                return "";
+            }
+            int nextBlock = cleaned.indexOf("\n### ", contentStart + 1);
+            String teacherText = nextBlock >= 0
+                    ? cleaned.substring(contentStart + 1, nextBlock)
+                    : cleaned.substring(contentStart + 1);
+            return cleanParam(teacherText);
+        }
+
+        int firstGeneratedBlock = cleaned.indexOf("### OCR ");
+        return firstGeneratedBlock > 0 ? cleanParam(cleaned.substring(0, firstGeneratedBlock)) : "";
+    }
+
+    private OcrProvider createOcrProvider() {
+        String provider = System.getenv("HIPZI_OCR_PROVIDER");
+        if (provider != null && "tesseract".equalsIgnoreCase(provider.trim())) {
+            return new TesseractOcrProvider(ocrService);
+        }
+        return new DatalabOcrService();
+    }
+
+    private OcrResult extractOcrFromUploadedPart(Part part, String originalFileName) throws Exception {
+        byte[] fileBytes;
+        try (java.io.InputStream input = part.getInputStream()) {
+            fileBytes = input.readAllBytes();
+        }
+
+        java.nio.file.Path tempFile = Files.createTempFile("hipzi-ocr-source-", ocrSourceExtension(originalFileName, part.getContentType()));
+        try {
+            Files.write(tempFile, fileBytes);
+            byte[] storedBytes = Files.readAllBytes(tempFile);
+            if (isDocxSource(originalFileName, part.getContentType())) {
+                return docxTextExtractionService.extract(storedBytes, originalFileName);
+            }
+            return sourceOcrProvider.extract(storedBytes, part.getContentType(), originalFileName);
+        } finally {
+            try {
+                Files.deleteIfExists(tempFile);
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
+    private String extractOcrText(byte[] fileBytes, String contentType, String originalFileName) throws Exception {
+        OcrResult result = isDocxSource(originalFileName, contentType)
+                ? docxTextExtractionService.extract(fileBytes, originalFileName)
+                : sourceOcrProvider.extract(fileBytes, contentType, originalFileName);
+        if (result == null) {
+            return "";
+        }
+        if (result.getPlainText() != null && !result.getPlainText().trim().isEmpty()) {
+            return result.getPlainText().trim();
+        }
+        if (result.getMarkdown() != null && !result.getMarkdown().trim().isEmpty()) {
+            return result.getMarkdown().trim();
+        }
+        return "";
+    }
+
+    private String buildAiSourceText(String teacherText, OcrResult ocrResult) {
+        StringBuilder source = new StringBuilder();
+        appendSourceBlock(source, "TEACHER SOURCE TEXT", teacherText);
+        if (ocrResult != null) {
+            appendSourceBlock(source, "OCR PROVIDER", ocrResult.getProvider());
+            appendSourceBlock(source, "OCR MARKDOWN", ocrResult.getMarkdown());
+            appendSourceBlock(source, "OCR PLAIN TEXT", ocrResult.getPlainText());
+            appendSourceBlock(source, "OCR LAYOUT JSON", limitText(ocrResult.getLayoutJson(), 12000));
+        }
+        return source.toString().trim();
+    }
+
+    private void appendSourceBlock(StringBuilder source, String title, String value) {
+        String cleaned = value == null ? "" : value.trim();
+        if (cleaned.isEmpty()) {
+            return;
+        }
+        if (source.length() > 0) {
+            source.append("\n\n");
+        }
+        source.append("### ").append(title).append("\n").append(cleaned);
+    }
+
+    private String limitText(String value, int maxLength) {
+        if (value == null || value.length() <= maxLength) {
+            return value;
+        }
+        return value.substring(0, maxLength) + "\n...[truncated]";
     }
 
     private List<ClassroomExamQuestion> collectClassExamQuestions(HttpServletRequest request, String examType) {
@@ -709,7 +821,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
             }
             storageService.uploadObject(storedRelativePath, fileBytes, imagePart.getContentType());
             if (rawScanText.isEmpty()) {
-                rawScanText = scanQuizImage(fileBytes, originalFileName);
+                rawScanText = extractOcrText(fileBytes, imagePart.getContentType(), originalFileName);
             }
         }
 
@@ -760,7 +872,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
         try (java.io.InputStream input = imagePart.getInputStream()) {
             fileBytes = input.readAllBytes();
         }
-        String scannedText = scanQuizImage(fileBytes, originalFileName);
+        String scannedText = extractOcrText(fileBytes, imagePart.getContentType(), originalFileName);
         if (scannedText == null || scannedText.trim().isEmpty()) {
             return false;
         }
@@ -1142,6 +1254,59 @@ public class ClassroomSpaceServlet extends HttpServlet {
                 && contentType.toLowerCase(Locale.ROOT).startsWith("image/");
     }
 
+    private boolean isAllowedOcrSource(String fileName, String contentType) {
+        String lower = fileName == null ? "" : fileName.toLowerCase(Locale.ROOT);
+        String lowerType = contentType == null ? "" : contentType.toLowerCase(Locale.ROOT);
+        boolean allowedExtension = lower.endsWith(".png")
+                || lower.endsWith(".jpg")
+                || lower.endsWith(".jpeg")
+                || lower.endsWith(".webp")
+                || lower.endsWith(".pdf")
+                || lower.endsWith(".docx");
+        boolean allowedContentType = lowerType.startsWith("image/")
+                || "application/pdf".equals(lowerType)
+                || isDocxSource(fileName, contentType)
+                || lower.endsWith(".pdf");
+        return allowedExtension && allowedContentType;
+    }
+
+    private boolean isDocxSource(String fileName, String contentType) {
+        String lower = fileName == null ? "" : fileName.toLowerCase(Locale.ROOT);
+        String lowerType = contentType == null ? "" : contentType.toLowerCase(Locale.ROOT);
+        return lower.endsWith(".docx")
+                || "application/vnd.openxmlformats-officedocument.wordprocessingml.document".equals(lowerType);
+    }
+
+    private long maxOcrSourceBytes() {
+        String raw = System.getenv("HIPZI_OCR_MAX_FILE_MB");
+        int maxMb = 25;
+        try {
+            if (raw != null && !raw.trim().isEmpty()) {
+                int parsed = Integer.parseInt(raw.trim());
+                if (parsed > 0) {
+                    maxMb = parsed;
+                }
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        return maxMb * 1024L * 1024L;
+    }
+
+    private String ocrSourceExtension(String fileName, String contentType) {
+        String lower = fileName == null ? "" : fileName.toLowerCase(Locale.ROOT);
+        int dotIndex = lower.lastIndexOf('.');
+        if (dotIndex >= 0) {
+            String extension = lower.substring(dotIndex);
+            if (extension.matches("\\.(png|jpg|jpeg|webp|pdf|docx)")) {
+                return extension;
+            }
+        }
+        if (isDocxSource(fileName, contentType)) {
+            return ".docx";
+        }
+        return "application/pdf".equalsIgnoreCase(contentType) ? ".pdf" : ".png";
+    }
+
     private String normalizeMaterialCategory(String category) {
         String cleaned = cleanParam(category);
         if ("homework".equals(cleaned) || "exam".equals(cleaned)
@@ -1193,5 +1358,20 @@ public class ClassroomSpaceServlet extends HttpServlet {
 
     private String cleanParam(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private String compactErrorMessage(Exception exception) {
+        if (exception == null) {
+            return "";
+        }
+        String message = exception.getMessage();
+        if (message == null || message.trim().isEmpty()) {
+            message = exception.getClass().getSimpleName();
+        }
+        message = message.replaceAll("(?i)(bearer\\s+)[A-Za-z0-9._\\-]+", "$1***")
+                .replaceAll("(?i)(api[_ -]?key[\"':=\\s]+)[A-Za-z0-9._\\-]+", "$1***")
+                .replaceAll("\\s+", " ")
+                .trim();
+        return message.length() > 220 ? message.substring(0, 220) + "..." : message;
     }
 }

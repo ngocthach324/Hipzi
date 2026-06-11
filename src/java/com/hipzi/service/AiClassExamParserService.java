@@ -64,7 +64,11 @@ public class AiClassExamParserService {
         request.put("max_output_tokens", 12000);
         request.put("instructions",
                 "Bạn là bộ chuẩn hóa đề thi lớp học cho HIPZI. "
-                + "Chỉ trích xuất nội dung có trong SOURCE TEXT, sửa lỗi OCR nhẹ nhưng không bịa câu hỏi mới. "
+                + "Chỉ trích xuất nội dung có trong SOURCE TEXT, OCR MARKDOWN, OCR PLAIN TEXT, OCR LAYOUT hoặc ảnh đính kèm; "
+                + "sửa lỗi OCR nhẹ nhưng không bịa câu hỏi mới. "
+                + "Ưu tiên giữ cấu trúc câu hỏi, lựa chọn, bảng và thứ tự từ OCR MARKDOWN/LAYOUT khi có. "
+                + "Không bọc nội dung bằng ký hiệu LaTeX $...$. Chuyển ký hiệu toán phổ biến sang dạng dễ đọc trong ô nhập: "
+                + "\\times thành ×, \\frac{a}{b} thành a/b, \\sqrt{x} thành √(x), \\sqrt[3]{x} thành ∛(x), \\angle thành ∠, ^\\circ thành °. "
                 + ("essay".equals(examType)
                         ? "Đề là tự luận. Tách từng câu hỏi vào questionText. Để optionA, optionB, optionC, optionD và correctOption là chuỗi rỗng. "
                         + "Chỉ điền referenceAnswer khi nguồn có đáp án hoặc hướng dẫn rõ ràng. "
@@ -184,20 +188,20 @@ public class AiClassExamParserService {
         int order = 1;
         for (Object item : SimpleJson.asArray(root.get("questions"))) {
             Map<String, Object> questionMap = SimpleJson.asObject(item);
-            String questionText = SimpleJson.asString(questionMap, "questionText").trim();
+            String questionText = normalizeExtractedMathText(SimpleJson.asString(questionMap, "questionText").trim());
             if (questionText.isEmpty()) {
                 continue;
             }
             ClassroomExamQuestion question = new ClassroomExamQuestion();
             question.setQuestionText(questionText);
             if (!"essay".equals(examType)) {
-                question.setOptionA(SimpleJson.asString(questionMap, "optionA").trim());
-                question.setOptionB(SimpleJson.asString(questionMap, "optionB").trim());
-                question.setOptionC(SimpleJson.asString(questionMap, "optionC").trim());
-                question.setOptionD(SimpleJson.asString(questionMap, "optionD").trim());
+                question.setOptionA(normalizeExtractedMathText(SimpleJson.asString(questionMap, "optionA").trim()));
+                question.setOptionB(normalizeExtractedMathText(SimpleJson.asString(questionMap, "optionB").trim()));
+                question.setOptionC(normalizeExtractedMathText(SimpleJson.asString(questionMap, "optionC").trim()));
+                question.setOptionD(normalizeExtractedMathText(SimpleJson.asString(questionMap, "optionD").trim()));
                 question.setCorrectOption(normalizeOption(SimpleJson.asString(questionMap, "correctOption")));
             }
-            question.setReferenceAnswer(SimpleJson.asString(questionMap, "referenceAnswer").trim());
+            question.setReferenceAnswer(normalizeExtractedMathText(SimpleJson.asString(questionMap, "referenceAnswer").trim()));
             try {
                 question.setPoints(Double.parseDouble(String.valueOf(questionMap.get("points"))));
             } catch (NumberFormatException | NullPointerException e) {
@@ -207,6 +211,144 @@ public class AiClassExamParserService {
             questions.add(question);
         }
         return questions;
+    }
+
+    private String normalizeExtractedMathText(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return "";
+        }
+        String text = value.trim();
+
+        text = text.replace("\times", "×")
+                .replace("\text", "text")
+                .replace("\frac{", "\\frac{");
+        text = text.replace('\t', '\\');
+        text = text.replace("\\times", "×")
+                .replace("\\imes", "×")
+                .replace("\\cdot", "·")
+                .replace("\\div", "÷")
+                .replace("\\pm", "±")
+                .replace("\\leq", "≤")
+                .replace("\\geq", "≥")
+                .replace("\\neq", "≠")
+                .replace("\\infty", "∞")
+                .replace("\\angle", "∠")
+                .replace("\\triangle", "△")
+                .replace("\\circ", "°")
+                .replace("\\degree", "°");
+
+        text = replaceIndexedRoots(text);
+        text = replaceSimpleCommand(text, "\\sqrt", "√");
+        text = replaceFractions(text);
+        text = replaceTextCommands(text);
+
+        text = text.replaceAll("\\$+", "")
+                .replaceAll("\\\\left|\\\\right", "")
+                .replaceAll("\\\\\\(|\\\\\\)|\\\\\\[|\\\\\\]", "")
+                .replaceAll("\\s+°", "°")
+                .replaceAll("\\s{2,}", " ")
+                .trim();
+        return text;
+    }
+
+    private String replaceIndexedRoots(String text) {
+        String result = text;
+        int index = result.indexOf("\\sqrt[");
+        while (index >= 0) {
+            int bracketOpen = index + "\\sqrt".length();
+            int bracketClose = result.indexOf(']', bracketOpen + 1);
+            if (bracketClose < 0 || bracketClose + 1 >= result.length() || result.charAt(bracketClose + 1) != '{') {
+                break;
+            }
+            int radicandOpen = bracketClose + 1;
+            int radicandClose = findMatchingBrace(result, radicandOpen);
+            if (radicandClose < 0) {
+                break;
+            }
+            String rootIndex = result.substring(bracketOpen + 1, bracketClose).trim();
+            String radicand = result.substring(radicandOpen + 1, radicandClose);
+            String symbol = "3".equals(rootIndex) ? "∛" : ("4".equals(rootIndex) ? "∜" : rootIndex + "√");
+            result = result.substring(0, index) + symbol + "(" + radicand + ")" + result.substring(radicandClose + 1);
+            index = result.indexOf("\\sqrt[", index + symbol.length() + radicand.length() + 2);
+        }
+        return result;
+    }
+
+    private String replaceSimpleCommand(String text, String command, String replacement) {
+        String result = text;
+        String marker = command + "{";
+        int index = result.indexOf(marker);
+        while (index >= 0) {
+            int open = index + command.length();
+            int close = findMatchingBrace(result, open);
+            if (close < 0) {
+                break;
+            }
+            String inside = result.substring(open + 1, close);
+            result = result.substring(0, index) + replacement + "(" + inside + ")" + result.substring(close + 1);
+            index = result.indexOf(marker, index + replacement.length());
+        }
+        return result;
+    }
+
+    private String replaceFractions(String text) {
+        String result = text;
+        int index = result.indexOf("\\frac{");
+        while (index >= 0) {
+            int numeratorOpen = index + "\\frac".length();
+            int numeratorClose = findMatchingBrace(result, numeratorOpen);
+            if (numeratorClose < 0 || numeratorClose + 1 >= result.length() || result.charAt(numeratorClose + 1) != '{') {
+                break;
+            }
+            int denominatorOpen = numeratorClose + 1;
+            int denominatorClose = findMatchingBrace(result, denominatorOpen);
+            if (denominatorClose < 0) {
+                break;
+            }
+            String numerator = result.substring(numeratorOpen + 1, numeratorClose);
+            String denominator = result.substring(denominatorOpen + 1, denominatorClose);
+            result = result.substring(0, index) + numerator + "/" + denominator + result.substring(denominatorClose + 1);
+            index = result.indexOf("\\frac{", index + numerator.length() + denominator.length() + 1);
+        }
+        return result;
+    }
+
+    private String replaceTextCommands(String text) {
+        String result = text;
+        for (String command : Arrays.asList("\\text", "\\ext", "text", "ext")) {
+            String marker = command + "{";
+            int index = result.indexOf(marker);
+            while (index >= 0) {
+                int open = index + command.length();
+                int close = findMatchingBrace(result, open);
+                if (close < 0) {
+                    break;
+                }
+                String inside = result.substring(open + 1, close);
+                result = result.substring(0, index) + inside + result.substring(close + 1);
+                index = result.indexOf(marker, index + inside.length());
+            }
+        }
+        return result;
+    }
+
+    private int findMatchingBrace(String text, int openIndex) {
+        if (text == null || openIndex < 0 || openIndex >= text.length() || text.charAt(openIndex) != '{') {
+            return -1;
+        }
+        int depth = 0;
+        for (int i = openIndex; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '{') {
+                depth++;
+            } else if (c == '}') {
+                depth--;
+                if (depth == 0) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 
     private String normalizeExamType(String examType) {

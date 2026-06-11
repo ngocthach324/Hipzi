@@ -1613,6 +1613,81 @@
             color: #0f172a;
         }
 
+        .math-preview {
+            display: none;
+            margin-top: 0;
+            padding: 0.88rem 0.85rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.72rem;
+            background: rgba(255, 255, 255, 0.94);
+            color: #0f172a;
+            cursor: default;
+            font-size: 1rem;
+            font-weight: 400;
+            letter-spacing: 0;
+            line-height: 1.45;
+            min-height: 3.05rem;
+            overflow-x: auto;
+            white-space: normal;
+        }
+
+        .math-preview.visible {
+            display: block;
+        }
+
+        .math-source-hidden {
+            display: none !important;
+        }
+
+        .math-preview:focus {
+            border-color: #5eead4;
+            box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+            outline: none;
+        }
+
+        .quiz-option-grid label .math-preview {
+            font-weight: 400;
+        }
+
+        .quiz-option-grid .math-preview {
+            min-height: 3.08rem;
+            padding-top: 0.76rem;
+            padding-bottom: 0.76rem;
+        }
+
+        .math-root {
+            display: inline-flex;
+            align-items: flex-start;
+            white-space: nowrap;
+            margin: 0 0.08rem;
+            vertical-align: -0.12em;
+        }
+
+        .math-root-index {
+            min-width: 0.55em;
+            margin-right: -0.08em;
+            color: #334155;
+            font-size: 0.65em;
+            font-weight: 500;
+            line-height: 1;
+            text-align: right;
+            transform: translate(0.16em, -0.34em);
+        }
+
+        .math-root-symbol {
+            font-size: 1.12em;
+            font-weight: 400;
+            line-height: 1.05;
+        }
+
+        .math-root-radicand {
+            min-height: 1.12em;
+            margin-top: 0.08em;
+            padding: 0.02em 0.22em 0;
+            border-top: 1.5px solid currentColor;
+            line-height: 1.15;
+        }
+
         .quiz-answer-option input[type="radio"] {
             width: auto;
             margin-top: 0.2rem;
@@ -2380,8 +2455,8 @@ D. ...
 Đáp án: B"><%= h(examDraftSourceText) %></textarea>
                                     </div>
                                     <div class="upload-field">
-                                        <label>Hoặc tải ảnh đề</label>
-                                        <input class="exam-ai-upload-input" id="exam-source-image" type="file" name="examSourceImage" accept="image/png,image/jpeg,image/webp" capture="environment" data-exam-image-input>
+                                        <label>Hoặc tải file đề</label>
+                                        <input class="exam-ai-upload-input" id="exam-source-image" type="file" name="examSourceImage" accept="image/png,image/jpeg,image/webp,application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" capture="environment" data-exam-image-input>
                                         <label class="exam-ai-upload-card" for="exam-source-image" data-exam-image-dropzone>
                                             <span class="exam-ai-upload-empty" data-exam-image-preview>
                                                 <span class="exam-ai-upload-icon">
@@ -2391,7 +2466,7 @@ D. ...
                                                     </svg>
                                                 </span>
                                                 <strong>Kéo thả ảnh vào đây</strong>
-                                                <span>Hỗ trợ PNG, JPG hoặc WEBP. Ưu tiên ảnh rõ nét, không bị nghiêng.</span>
+                                                <span>Hỗ trợ PNG, JPG, WEBP, PDF hoặc DOCX. Ưu tiên ảnh rõ nét, không bị nghiêng.</span>
                                                 <em>Chọn ảnh từ máy</em>
                                             </span>
                                         </label>
@@ -3037,7 +3112,7 @@ D. ...
                         </svg>
                     </span>
                     <strong>Kéo thả ảnh vào đây</strong>
-                    <span>Hỗ trợ PNG, JPG hoặc WEBP. Ưu tiên ảnh rõ nét, không bị nghiêng.</span>
+                    <span>Hỗ trợ PNG, JPG, WEBP, PDF hoặc DOCX. Ưu tiên ảnh rõ nét, không bị nghiêng.</span>
                     <em>Chọn ảnh từ máy</em>
                 `;
                 preview.className = 'exam-ai-upload-empty';
@@ -3045,13 +3120,17 @@ D. ...
             }
             const wrapper = document.createElement('span');
             wrapper.className = 'exam-ai-upload-preview';
-            const img = document.createElement('img');
-            img.alt = file.name || 'Ảnh đề thi';
-            img.src = URL.createObjectURL(file);
-            img.onload = () => URL.revokeObjectURL(img.src);
             const name = document.createElement('span');
-            name.textContent = file.name || 'Ảnh đề thi đã chọn';
-            wrapper.append(img, name);
+            name.textContent = file.name || 'File đề thi đã chọn';
+            if (file.type && file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.alt = file.name || 'Ảnh đề thi';
+                img.src = URL.createObjectURL(file);
+                img.onload = () => URL.revokeObjectURL(img.src);
+                wrapper.append(img, name);
+            } else {
+                wrapper.append(name);
+            }
             preview.className = 'exam-ai-upload-preview';
             preview.replaceChildren(...wrapper.childNodes);
         }
@@ -3081,6 +3160,154 @@ D. ...
                 renderExamImagePreview(input);
             });
         });
+
+        const examMathPreviewSelector = [
+            'textarea[name="examQuestionText"]',
+            'textarea[name="examReferenceAnswer"]',
+            'input[name="examOptionA"]',
+            'input[name="examOptionB"]',
+            'input[name="examOptionC"]',
+            'input[name="examOptionD"]'
+        ].join(',');
+
+        function escapeMathHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function findMatchingParen(text, openIndex) {
+            if (!text || text.charAt(openIndex) !== '(') return -1;
+            let depth = 0;
+            for (let i = openIndex; i < text.length; i++) {
+                const char = text.charAt(i);
+                if (char === '(') depth++;
+                if (char === ')') depth--;
+                if (depth === 0) return i;
+            }
+            return -1;
+        }
+
+        function normalizeMathPreviewInput(value) {
+            return String(value || '')
+                .replace(/\\sqrt\[(\d+)\]\{([^{}]+)\}/g, (_, index, inside) => {
+                    if (index === '3') return '\u221b(' + inside + ')';
+                    if (index === '4') return '\u221c(' + inside + ')';
+                    return index + '\u221a(' + inside + ')';
+                })
+                .replace(/\\sqrt\{([^{}]+)\}/g, (_, inside) => '\u221a(' + inside + ')');
+        }
+
+        function renderPlainMathText(value) {
+            return escapeMathHtml(value)
+                .replace(/\^\{([^{}]+)\}/g, '<sup>$1</sup>')
+                .replace(/\^([0-9A-Za-z+\-]+)/g, '<sup>$1</sup>');
+        }
+
+        function rootTokenAt(text, index) {
+            const char = text.charAt(index);
+            const next = text.charAt(index + 1);
+            if (char === '\u221a') return { index: '', length: 1 };
+            if (char === '\u221b') return { index: '3', length: 1 };
+            if (char === '\u221c') return { index: '4', length: 1 };
+            if ((char === '\u00b3' || char === '3') && next === '\u221a') return { index: '3', length: 2 };
+            if ((char === '\u2074' || char === '4') && next === '\u221a') return { index: '4', length: 2 };
+            return null;
+        }
+
+        function renderRootHtml(index, radicandHtml) {
+            const indexHtml = index
+                ? '<span class="math-root-index">' + escapeMathHtml(index) + '</span>'
+                : '';
+            return '<span class="math-root">' + indexHtml
+                + '<span class="math-root-symbol">&radic;</span>'
+                + '<span class="math-root-radicand">' + radicandHtml + '</span>'
+                + '</span>';
+        }
+
+        function renderMathPreviewHtml(value) {
+            const text = normalizeMathPreviewInput(value);
+            let html = '';
+            let plainStart = 0;
+            for (let i = 0; i < text.length; i++) {
+                const token = rootTokenAt(text, i);
+                if (!token) continue;
+                let bodyStart = i + token.length;
+                while (bodyStart < text.length && /\s/.test(text.charAt(bodyStart))) bodyStart++;
+                if (text.charAt(bodyStart) !== '(') continue;
+                const bodyEnd = findMatchingParen(text, bodyStart);
+                if (bodyEnd < 0) continue;
+                html += renderPlainMathText(text.slice(plainStart, i));
+                html += renderRootHtml(token.index, renderMathPreviewHtml(text.slice(bodyStart + 1, bodyEnd)));
+                i = bodyEnd;
+                plainStart = bodyEnd + 1;
+            }
+            html += renderPlainMathText(text.slice(plainStart));
+            return html;
+        }
+
+        function needsMathPreview(value) {
+            return /\\sqrt|\u221a|\u221b|\u221c|\u00b3\u221a|\u2074\u221a/.test(String(value || ''));
+        }
+
+        function syncMathPreview(field) {
+            if (!field) return;
+            let preview = field.nextElementSibling;
+            if (!preview || !preview.matches('[data-math-preview]')) {
+                preview = document.createElement('div');
+                preview.className = 'math-preview';
+                preview.dataset.mathPreview = 'true';
+                preview.setAttribute('role', 'button');
+                preview.setAttribute('tabindex', '0');
+                preview.title = 'Nhấn đúp hoặc Enter để chỉnh sửa';
+                field.insertAdjacentElement('afterend', preview);
+            }
+            const shouldRender = needsMathPreview(field.value) && document.activeElement !== field;
+            field.classList.toggle('math-source-hidden', shouldRender);
+            preview.classList.toggle('visible', shouldRender);
+            preview.setAttribute('aria-hidden', shouldRender ? 'false' : 'true');
+            preview.innerHTML = shouldRender ? renderMathPreviewHtml(field.value) : '';
+        }
+
+        function editMathPreviewField(field) {
+            if (!field) return;
+            const preview = field.nextElementSibling;
+            field.classList.remove('math-source-hidden');
+            preview?.classList.remove('visible');
+            preview?.setAttribute('aria-hidden', 'true');
+            window.setTimeout(() => {
+                field.focus();
+                if (typeof field.selectionStart === 'number') {
+                    const end = field.value.length;
+                    field.setSelectionRange(end, end);
+                }
+            }, 0);
+        }
+
+        function attachMathPreviews(scope) {
+            const root = scope || document;
+            root.querySelectorAll(examMathPreviewSelector).forEach(field => {
+                if (field.dataset.mathPreviewBound === 'true') {
+                    syncMathPreview(field);
+                    return;
+                }
+                field.dataset.mathPreviewBound = 'true';
+                field.addEventListener('input', () => syncMathPreview(field));
+                field.addEventListener('focus', () => syncMathPreview(field));
+                field.addEventListener('blur', () => syncMathPreview(field));
+                syncMathPreview(field);
+                const preview = field.nextElementSibling;
+                preview?.addEventListener('dblclick', () => editMathPreviewField(field));
+                preview?.addEventListener('keydown', event => {
+                    if (event.key !== 'Enter' && event.key !== ' ') return;
+                    event.preventDefault();
+                    editMathPreviewField(field);
+                });
+            });
+        }
 
         function renumberExamQuestions(list) {
             list.querySelectorAll('[data-exam-question]').forEach((question, index) => {
@@ -3194,6 +3421,7 @@ D. ...
                 list.insertAdjacentHTML('beforeend', createExamQuestionTemplate());
                 renumberExamQuestions(list);
                 syncExamBuilder(builder);
+                attachMathPreviews(list.lastElementChild);
                 list.lastElementChild?.querySelector('textarea')?.focus();
             });
             builder.querySelector('[data-exam-question-list]')?.addEventListener('click', event => {
@@ -3212,6 +3440,7 @@ D. ...
                 renumberExamQuestions(initialExamQuestionList);
             }
             syncExamBuilder(builder);
+            attachMathPreviews(builder);
         });
 
         function showToast(message, type = 'success') {
