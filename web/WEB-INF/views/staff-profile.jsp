@@ -2,6 +2,7 @@
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Role"%>
 <%@page import="com.hipzi.model.Classroom"%>
+<%@page import="com.hipzi.model.Course"%>
 <%@page import="com.hipzi.model.TeacherApplication"%>
 <%@page import="com.hipzi.model.Notification"%>
 <%@page import="com.hipzi.service.NotificationService"%>
@@ -1804,6 +1805,8 @@
         List<TeacherApplication> approvedTeachers = (List<TeacherApplication>) request.getAttribute("approvedTeachers");
         List<Classroom> managedClassrooms = (List<Classroom>) request.getAttribute("managedClassrooms");
         List<String> classSubjects = (List<String>) request.getAttribute("classSubjects");
+        List<Course> managedCourses = (List<Course>) request.getAttribute("managedCourses");
+        List<Course> courseSubjects = (List<Course>) request.getAttribute("courseSubjects");
         String searchTeacher = (String) request.getAttribute("searchTeacher");
         if (searchTeacher == null) searchTeacher = "";
         String teacherTypeParam = (String) request.getAttribute("teacherType");
@@ -1814,6 +1817,12 @@
         if (classSubjectParam == null || classSubjectParam.isEmpty()) classSubjectParam = "ALL";
         String classStatusParam = (String) request.getAttribute("classStatus");
         if (classStatusParam == null || classStatusParam.isEmpty()) classStatusParam = "ALL";
+        String courseTitle = (String) request.getAttribute("courseTitle");
+        if (courseTitle == null) courseTitle = "";
+        String courseSubjectParam = (String) request.getAttribute("courseSubject");
+        if (courseSubjectParam == null || courseSubjectParam.isEmpty()) courseSubjectParam = "ALL";
+        String courseStatusParam = (String) request.getAttribute("courseStatus");
+        if (courseStatusParam == null || courseStatusParam.isEmpty()) courseStatusParam = "ALL";
         String activeStaffTab = request.getParameter("tab");
         if (activeStaffTab == null || activeStaffTab.trim().isEmpty()) {
             activeStaffTab = "tab-teacher-approval";
@@ -1825,6 +1834,7 @@
             if (!activeStaffTab.equals("tab-teacher-approval") &&
                 !activeStaffTab.equals("tab-manage-teachers") &&
                 !activeStaffTab.equals("tab-manage-classes") &&
+                !activeStaffTab.equals("tab-manage-courses") &&
                 !activeStaffTab.equals("tab-profile") &&
                 !activeStaffTab.equals("tab-edit") &&
                 !activeStaffTab.equals("tab-security") &&
@@ -1893,6 +1903,7 @@
             <span class="unified-header-tab-title" id="unified-header-title">
                 <%= "tab-manage-teachers".equals(activeStaffTab) ? "Quản lý giảng viên" :
                     "tab-manage-classes".equals(activeStaffTab) ? "Quản lý lớp học" :
+                    "tab-manage-courses".equals(activeStaffTab) ? "Quản lý khóa học" :
                     "tab-profile".equals(activeStaffTab) ? "Hồ sơ cá nhân" :
                     "tab-edit".equals(activeStaffTab) ? "Cập nhật thông tin" :
                     "tab-security".equals(activeStaffTab) ? "Bảo mật và mật khẩu" :
@@ -1936,6 +1947,15 @@
                             <div class="menu-label-group">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
                                 <span>Quản lý lớp học</span>
+                            </div>
+                            <span class="menu-indicator">&rarr;</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a id="nav-tab-manage-courses" class="<%= "tab-manage-courses".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-manage-courses')">
+                            <div class="menu-label-group">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 6.5v12"/><path d="M5 8.5c2.6 0 4.9.5 7 2 2.1-1.5 4.4-2 7-2v11c-2.6 0-4.9.5-7 2-2.1-1.5-4.4-2-7-2z"/></svg>
+                                <span>Quản lý khóa học</span>
                             </div>
                             <span class="menu-indicator">&rarr;</span>
                         </a>
@@ -2317,6 +2337,105 @@
                                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
                                     <span style="font-weight:700; color:var(--text-main);">Không tìm thấy lớp học</span>
                                     <p style="font-size:0.85rem; max-width:420px; margin:0;">Không có lớp học phù hợp với bộ lọc hiện tại.</p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-manage-courses" class="tab-pane <%= "tab-manage-courses".equals(activeStaffTab) ? "active-pane" : "" %>">
+                <div class="tab-grouped-container">
+                    <div class="tab-header-accent">
+                        <div class="tab-header-title-text">Quản lý khóa học</div>
+                        <div class="tab-header-date-pill">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span><%= currentDateDisplay %></span>
+                        </div>
+                    </div>
+                    <div class="tab-body-content">
+                        <div class="section-data-card">
+                            <form method="GET" action="${pageContext.request.contextPath}/profile" style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; background:#f8fafc; padding:1rem; border-radius:0.75rem; border:1px solid #e2e8f0;">
+                                <input type="hidden" name="tab" value="manage-courses">
+                                <input type="text" name="courseTitle" value="<%= h(courseTitle) %>" placeholder="Tìm tên khóa học hoặc giảng viên..." style="flex:1; min-width:220px; padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem;">
+                                <select name="courseSubject" style="padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem; min-width:180px;">
+                                    <option value="ALL" <%= "ALL".equals(courseSubjectParam) ? "selected" : "" %>>Tất cả môn học</option>
+                                    <% if (courseSubjects != null) {
+                                        for (Course subject : courseSubjects) { %>
+                                            <option value="<%= h(subject.getSubjectCode()) %>" <%= subject.getSubjectCode() != null && subject.getSubjectCode().equals(courseSubjectParam) ? "selected" : "" %>><%= h(subject.getSubjectName()) %></option>
+                                    <%  }
+                                    } %>
+                                </select>
+                                <select name="courseStatus" style="padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem; min-width:180px;">
+                                    <option value="ALL" <%= "ALL".equals(courseStatusParam) ? "selected" : "" %>>Tất cả trạng thái</option>
+                                    <option value="pending_review" <%= "pending_review".equals(courseStatusParam) ? "selected" : "" %>>Chờ duyệt</option>
+                                    <option value="approved" <%= "approved".equals(courseStatusParam) ? "selected" : "" %>>Đã duyệt</option>
+                                    <option value="needs_revision" <%= "needs_revision".equals(courseStatusParam) ? "selected" : "" %>>Cần chỉnh sửa</option>
+                                    <option value="rejected" <%= "rejected".equals(courseStatusParam) ? "selected" : "" %>>Từ chối</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.25rem; border-radius:0.5rem; font-weight:700;">Lọc khóa học</button>
+                            </form>
+
+                            <% if (managedCourses != null && !managedCourses.isEmpty()) { %>
+                                <div class="staff-class-list">
+                                    <% for (Course course : managedCourses) {
+                                        String courseStatus = course.getStatus() != null ? course.getStatus() : "pending_review";
+                                        String statusBg = "approved".equals(courseStatus) ? "#dcfce7" : ("rejected".equals(courseStatus) ? "#fee2e2" : ("needs_revision".equals(courseStatus) ? "#ffedd5" : "#fef9c3"));
+                                        String statusColor = "approved".equals(courseStatus) ? "#15803d" : ("rejected".equals(courseStatus) ? "#b91c1c" : ("needs_revision".equals(courseStatus) ? "#c2410c" : "#a16207"));
+                                    %>
+                                        <div class="staff-class-card" style="align-items:stretch;">
+                                            <div style="flex:1;">
+                                                <div style="display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap; margin-bottom:0.55rem;">
+                                                    <span class="subject-badge" style="background:#ecfdf5; color:#047857;"><%= h(course.getSubjectName()) %></span>
+                                                    <span style="font-size:0.75rem; font-weight:800; color:<%= statusColor %>; background:<%= statusBg %>; padding:0.25rem 0.65rem; border-radius:999px;"><%= h(course.getStatusLabel()) %></span>
+                                                    <span style="font-size:0.75rem; font-weight:800; color:#64748b;"><%= h(course.getPriceLabel()) %></span>
+                                                </div>
+                                                <h3 class="staff-class-title"><%= h(course.getTitle()) %></h3>
+                                                <div style="display:flex; gap:1rem; flex-wrap:wrap; color:var(--text-muted); font-size:0.86rem; font-weight:650;">
+                                                    <span>Giảng viên: <strong style="color:var(--text-main);"><%= h(course.getTeacherName()) %></strong></span>
+                                                    <span>Email Drive: <strong style="color:#047857;"><%= h(course.getDriveOwnerEmail()) %></strong></span>
+                                                    <span>Bài học: <strong style="color:var(--text-main);"><%= course.getLessonsCount() %></strong></span>
+                                                    <span>Học viên: <strong style="color:var(--text-main);"><%= course.getStudentsCount() %></strong></span>
+                                                </div>
+                                                <% if (course.getShortDescription() != null && !course.getShortDescription().trim().isEmpty()) { %>
+                                                    <p style="margin:0.75rem 0 0 0; color:var(--text-muted); font-size:0.9rem; line-height:1.55;"><%= h(course.getShortDescription()) %></p>
+                                                <% } %>
+                                                <div style="margin-top:0.8rem; display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center;">
+                                                    <a href="<%= h(course.getGoogleDriveUrl()) %>" target="_blank" rel="noopener" style="color:#047857; font-weight:800; font-size:0.84rem; text-decoration:none;">Mở Google Drive →</a>
+                                                    <% if (course.getSubmittedAt() != null) { %>
+                                                        <span style="color:#94a3b8; font-size:0.8rem; font-weight:700;">Gửi ngày <%= new SimpleDateFormat("dd/MM/yyyy HH:mm").format(course.getSubmittedAt()) %></span>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                            <div style="min-width:280px; display:flex; flex-direction:column; gap:0.75rem;">
+                                                <form action="${pageContext.request.contextPath}/staff-profile" method="POST" style="display:flex; flex-direction:column; gap:0.6rem;">
+                                                    <input type="hidden" name="action" value="reviewCourse">
+                                                    <input type="hidden" name="courseId" value="<%= h(course.getId()) %>">
+                                                    <textarea name="reviewNote" rows="2" placeholder="Ghi chú duyệt hoặc yêu cầu chỉnh sửa..." style="width:100%; resize:vertical; padding:0.65rem 0.75rem; border:1px solid #cbd5e1; border-radius:0.65rem; font-size:0.86rem;"><%= h(course.getReviewNote()) %></textarea>
+                                                    <div style="display:flex; gap:0.45rem; flex-wrap:wrap;">
+                                                        <button type="submit" name="decision" value="approved" class="btn-card-edit-light" style="color:#047857; border-color:#bbf7d0;">Duyệt</button>
+                                                        <button type="submit" name="decision" value="needs_revision" class="btn-card-edit-light" style="color:#c2410c; border-color:#fed7aa;">Yêu cầu sửa</button>
+                                                        <button type="submit" name="decision" value="rejected" class="btn-card-edit-light" style="color:#b91c1c; border-color:#fecaca;">Từ chối</button>
+                                                    </div>
+                                                </form>
+                                                <form action="${pageContext.request.contextPath}/staff-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa tạm khóa học này?');" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                                                    <input type="hidden" name="action" value="deleteManagedCourse">
+                                                    <input type="hidden" name="courseId" value="<%= h(course.getId()) %>">
+                                                    <input type="hidden" name="deleteReason" value="Staff soft delete from profile">
+                                                    <button type="submit" class="btn-card-edit-light" style="color:#dc2626; border-color:#fecaca;" title="Xóa tạm khóa học">
+                                                        <span>Xóa tạm</span>
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            <% } else { %>
+                                <div class="empty-status-panel" style="padding:4rem 2rem;">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 6.5v12"/><path d="M5 8.5c2.6 0 4.9.5 7 2 2.1-1.5 4.4-2 7-2v11c-2.6 0-4.9.5-7 2-2.1-1.5-4.4-2-7-2z"/></svg>
+                                    <span style="font-weight:700; color:var(--text-main);">Không tìm thấy khóa học</span>
+                                    <p style="font-size:0.85rem; max-width:420px; margin:0;">Khóa học do giảng viên gửi sẽ xuất hiện ở đây để staff kiểm tra Google Drive, nội dung và trạng thái hiển thị.</p>
                                 </div>
                             <% } %>
                         </div>
@@ -2985,6 +3104,7 @@
             'tab-teacher-approval': 'Duyệt hồ sơ giảng viên',
             'tab-manage-teachers': 'Quản lý giảng viên',
             'tab-manage-classes': 'Quản lý lớp học',
+            'tab-manage-courses': 'Quản lý khóa học',
             'tab-profile': 'Hồ sơ cá nhân',
             'tab-edit': 'Cập nhật thông tin',
             'tab-security': 'Bảo mật và mật khẩu',

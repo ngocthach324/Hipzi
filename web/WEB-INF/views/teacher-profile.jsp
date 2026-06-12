@@ -455,17 +455,17 @@
             overflow-y: auto;
         }
 
-        #tab-class-registration, #tab-upload-material {
+        #tab-class-registration, #tab-upload-material, #tab-course-registration {
             overflow-y: auto;
             overflow-x: hidden;
         }
 
-        #tab-class-registration .tab-grouped-container, #tab-upload-material .tab-grouped-container {
+        #tab-class-registration .tab-grouped-container, #tab-upload-material .tab-grouped-container, #tab-course-registration .tab-grouped-container {
             overflow-y: auto;
             overflow-x: hidden;
         }
 
-        #tab-class-registration .tab-body-content, #tab-upload-material .tab-body-content {
+        #tab-class-registration .tab-body-content, #tab-upload-material .tab-body-content, #tab-course-registration .tab-body-content {
             flex: 0 0 auto;
             min-height: auto;
             overflow: visible;
@@ -1745,7 +1745,8 @@
 
         <div class="dashboard-unified-header">
             <span class="unified-header-tab-title" id="unified-header-title">
-                <%= "tab-class-registration".equals(initialTeacherTab) ? "Đăng kí lớp học" :
+                <%= "tab-course-registration".equals(initialTeacherTab) ? "Đăng khóa học" :
+                    "tab-class-registration".equals(initialTeacherTab) ? "Đăng kí lớp học" :
                     "tab-profile".equals(initialTeacherTab) ? "Hồ sơ cá nhân" :
                     "tab-edit".equals(initialTeacherTab) ? "Cập nhật thông tin" :
                     "tab-security".equals(initialTeacherTab) ? "Bảo mật và mật khẩu" :
@@ -1779,6 +1780,15 @@
                             <div class="menu-label-group">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
                                 <span>Đăng kí lớp học</span>
+                            </div>
+                            <span class="menu-indicator">&rarr;</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a id="nav-tab-course-registration" class="<%= "tab-course-registration".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-course-registration')">
+                            <div class="menu-label-group">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                                <span>Đăng khóa học</span>
                             </div>
                             <span class="menu-indicator">&rarr;</span>
                         </a>
@@ -2581,6 +2591,181 @@
             </section>
 
             <!-- ========================================== -->
+            <!-- TAB: ĐĂNG KHÓA HỌC                         -->
+            <!-- ========================================== -->
+            <section id="tab-course-registration" class="tab-pane <%= "tab-course-registration".equals(initialTeacherTab) ? "active-pane" : "" %>">
+                <div class="tab-grouped-container">
+                    <div class="tab-header-accent">
+                        <div class="tab-header-title-text">Đăng khóa học</div>
+                        <div class="tab-header-date-pill">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span><%= currentDateDisplay %></span>
+                        </div>
+                    </div>
+                    <div class="tab-body-content">
+                        <div class="section-data-card" style="margin-bottom:1.25rem;">
+                            <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
+                                <div class="card-header-title">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                                    <span>Tạo khóa học mới</span>
+                                </div>
+                            </div>
+
+                            <div style="padding-top:1.25rem;">
+                                <form action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                                    <input type="hidden" name="action" value="registerCourse">
+
+                                    <div class="form-group-edit full-span" style="grid-column:1 / -1; margin:0;">
+                                        <label>Tên khóa học <span style="color:#ef4444;">*</span></label>
+                                        <input type="text" name="courseTitle" placeholder="Ví dụ: Khóa học Tiếng Anh Giao Tiếp Cơ Bản..." required>
+                                    </div>
+
+                                    <div class="form-group-edit" style="margin:0;">
+                                        <label>Môn học <span style="color:#ef4444;">*</span></label>
+                                        <select name="courseSubject" required style="width:100%; padding:0.75rem 1rem; border-radius:0.75rem; border:1px solid var(--border-dark); outline:none;">
+                                            <option value="" disabled selected>-- Chọn môn học --</option>
+                                            <% for (String subject : registeredSubjects) { %>
+                                                <option value="<%= subject %>"><%= subject %></option>
+                                            <% } %>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group-edit" style="margin:0;">
+                                        <label>Khối lớp / Cấp độ <span style="color:#ef4444;">*</span></label>
+                                        <input type="text" name="courseGrade" placeholder="Ví dụ: Lớp 10, IELTS, TOEIC..." required>
+                                    </div>
+
+                                    <div class="form-group-edit" style="margin:0;">
+                                        <label>Giá tiền (VND) <span style="color:#ef4444;">*</span></label>
+                                        <input type="number" name="coursePriceAmount" placeholder="Ví dụ: 500000 (Nhập 0 nếu miễn phí)" value="0" min="0" step="1000" required>
+                                    </div>
+
+                                    <div class="form-group-edit" style="margin:0;">
+                                        <label>Số bài học <span style="color:#ef4444;">*</span></label>
+                                        <input type="number" name="courseLessonsCount" placeholder="Ví dụ: 12" value="1" min="1" required>
+                                    </div>
+
+                                    <div class="form-group-edit" style="margin:0;">
+                                        <label>Thời lượng dự kiến (Giờ)</label>
+                                        <input type="number" name="courseEstimatedHours" placeholder="Ví dụ: 20.5" value="0" min="0" step="0.5">
+                                    </div>
+
+                                    <div class="form-group-edit" style="margin:0;">
+                                        <label>Trình độ yêu cầu</label>
+                                        <input type="text" name="courseLevel" placeholder="Ví dụ: Cơ bản, Trung bình, Nâng cao...">
+                                    </div>
+
+                                    <div class="form-group-edit full-span" style="grid-column:1 / -1; margin:0;">
+                                        <label>Ảnh bìa khóa học</label>
+                                        <input type="file" name="courseThumbnailFile" accept="image/*" style="padding:0.6rem 1rem; border-radius:0.75rem; border:1px solid var(--border-dark);">
+                                    </div>
+
+                                    <div class="form-group-edit full-span" style="grid-column:1 / -1; margin:0;">
+                                        <label>Mô tả ngắn khóa học <span style="color:#ef4444;">*</span></label>
+                                        <textarea name="courseDescription" rows="3" placeholder="Nhập mô tả về khóa học này..." required></textarea>
+                                    </div>
+
+                                    <!-- ===== GOOGLE PICKER SECTION ===== -->
+                                    <div class="form-group-edit full-span" id="picker-section" style="grid-column:1 / -1; margin:0;">
+                                        <label>Nội dung khóa học trên Google Drive <span style="color:#ef4444;">*</span></label>
+                                        
+                                        <% Object teacherGoogleAccount = request.getAttribute("teacherGoogleAccount");
+                                           if (teacherGoogleAccount == null) { %>
+                                            <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:0.85rem; padding:1.25rem; display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+                                                <div style="display:flex; align-items:center; gap:1rem;">
+                                                    <div style="width:40px; height:40px; border-radius:50%; background:#ffe4e6; color:#e11d48; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                                    </div>
+                                                    <div>
+                                                        <strong style="display:block; color:#be123c; font-size:0.95rem; margin-bottom:0.2rem;">Chưa kết nối Google Drive</strong>
+                                                        <span style="color:#e11d48; font-size:0.85rem;">Bạn cần kết nối tài khoản Google Drive để có thể chọn file khóa học.</span>
+                                                    </div>
+                                                </div>
+                                                <a href="${pageContext.request.contextPath}/teacher-drive/connect" style="display:inline-flex; align-items:center; gap:0.5rem; background:#e11d48; color:#ffffff; font-weight:700; font-size:0.85rem; padding:0.6rem 1rem; border-radius:0.5rem; text-decoration:none; white-space:nowrap; transition:all 0.2s ease;">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                                    Kết nối Drive
+                                                </a>
+                                            </div>
+                                        <% } else { %>
+                                            <button type="button" id="btn-open-picker"
+                                                onclick="openGoogleDrivePicker()"
+                                                style="display:inline-flex; align-items:center; gap:0.6rem;
+                                                       padding:0.8rem 1.25rem; border-radius:0.85rem;
+                                                       border:1.5px solid #cbd5e1; background:#ffffff;
+                                                       color:#0f172a; font-weight:700; font-size:0.95rem;
+                                                       cursor:pointer; transition:all 0.2s ease;
+                                                       box-shadow:0 2px 8px rgba(0,0,0,0.05); width:100%;
+                                                       justify-content:center;">
+                                                <svg width="20" height="20" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+                                                    <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0a15.92 15.92 0 003.85 5.55z" fill="#0066da"/>
+                                                    <path d="M43.65 25L29.9 1.2c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a16.06 16.06 0 00-1.2 7.5h27.5z" fill="#00ac47"/>
+                                                    <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25a16.27 16.27 0 001.2-7.5H59.8l5.85 11.75z" fill="#ea4335"/>
+                                                    <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+                                                    <path d="M59.8 50H27.5L13.75 73.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+                                                    <path d="M73.4 26l-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 59.8 50h27.45a15.92 15.92 0 00-1.55-8.25z" fill="#ffba00"/>
+                                                </svg>
+                                                <span id="picker-btn-label">Chọn file / thư mục từ Google Drive</span>
+                                                <svg id="picker-loading-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:none; animation:spin 1s linear infinite; flex-shrink:0;">
+                                                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                                                </svg>
+                                            </button>
+                                        <% } %>
+
+                                        <div id="picker-selected-preview" style="display:none; margin-top:0.85rem; padding:0.9rem 1.1rem; border-radius:0.85rem; border:1px solid #bbf7d0; background:#f0fdf4; display:flex; align-items:center; gap:0.85rem; flex-wrap:wrap;">
+                                            <div id="picker-resource-icon" style="width:40px; height:40px; border-radius:0.65rem; background:#dcfce7; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                            </div>
+                                            <div style="flex:1; min-width:0;">
+                                                <div id="picker-resource-name" style="font-weight:700; color:#0f172a; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</div>
+                                                <div id="picker-resource-url" style="font-size:0.78rem; color:#047857; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</div>
+                                            </div>
+                                            <button type="button" onclick="clearPickerSelection()" title="Xóa lựa chọn"
+                                                style="width:30px; height:30px; border-radius:50%; border:none; background:#fee2e2; color:#dc2626; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;">&times;</button>
+                                        </div>
+
+                                        <button type="button" id="btn-show-manual-input"
+                                            onclick="document.getElementById('manual-drive-inputs').style.display='grid'; this.style.display='none';"
+                                            style="display:inline-flex; align-items:center; gap:0.4rem; background:none; border:none;
+                                                   color:#64748b; font-size:0.8rem; font-weight:600; cursor:pointer; margin-top:0.4rem;
+                                                   padding:0; text-decoration:underline; text-underline-offset:2px;">
+                                            Nhập thủ công URL hoặc ID nếu Picker không hoạt động
+                                        </button>
+
+                                        <div id="manual-drive-inputs" style="display:none; grid-template-columns:1fr 1fr; gap:0.75rem; margin-top:0.75rem;">
+                                            <div style="grid-column:1/-1; display:flex; flex-direction:column; gap:0.35rem;">
+                                                <label style="font-size:0.8rem; font-weight:600; color:#64748b;">URL Google Drive</label>
+                                                <input type="url" id="courseGoogleDriveUrlManual" name="courseGoogleDriveUrl" placeholder="https://drive.google.com/..." required
+                                                    style="padding:0.7rem 1rem; border-radius:0.75rem; border:1px solid #cbd5e1; font-size:0.9rem; outline:none;">
+                                            </div>
+                                            <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                                                <label style="font-size:0.8rem; font-weight:600; color:#64748b;">File ID (nếu là file đơn lẻ)</label>
+                                                <input type="text" id="courseGoogleDriveFileIdManual" name="courseGoogleDriveFileId" placeholder="1aBcDeFgHiJkLm..."
+                                                    style="padding:0.7rem 1rem; border-radius:0.75rem; border:1px solid #cbd5e1; font-size:0.9rem; outline:none;">
+                                            </div>
+                                            <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                                                <label style="font-size:0.8rem; font-weight:600; color:#64748b;">Folder ID (nếu là thư mục)</label>
+                                                <input type="text" id="courseGoogleDriveFolderIdManual" name="courseGoogleDriveFolderId" placeholder="1aBcDeFgHiJkLm..."
+                                                    style="padding:0.7rem 1rem; border-radius:0.75rem; border:1px solid #cbd5e1; font-size:0.9rem; outline:none;">
+                                            </div>
+                                        </div>
+
+                                        <input type="hidden" id="courseGoogleDriveUrlHidden" name="courseGoogleDriveUrl">
+                                        <input type="hidden" id="courseGoogleDriveFileIdHidden" name="courseGoogleDriveFileId">
+                                        <input type="hidden" id="courseGoogleDriveFolderIdHidden" name="courseGoogleDriveFolderId">
+                                    </div>
+                                    <!-- ===== END GOOGLE PICKER SECTION ===== -->
+
+                                    <div class="form-actions-row full-span" style="grid-column:1 / -1; margin-top:1rem;">
+                                        <button type="submit" class="btn-card-edit" style="padding: 0.75rem 1.5rem; width:100%; justify-content:center;">Đăng khóa học</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================== -->
             <!-- TAB 4: ĐĂNG TẢI TÀI LIỆU                   -->
             <!-- ========================================== -->
             <section id="tab-upload-material" class="tab-pane <%= "tab-upload-material".equals(initialTeacherTab) ? "active-pane" : "" %>">
@@ -3312,6 +3497,148 @@
                     input.value = formatClassTimeValue(input.value);
                 }
             });
+        });
+    </script>
+    <!-- ===================================================== -->
+    <!-- GOOGLE PICKER INTEGRATION                              -->
+    <!-- ===================================================== -->
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #btn-open-picker:hover {
+            border-color: #059669 !important;
+            background: #f0fdf4 !important;
+            box-shadow: 0 4px 14px rgba(5,150,105,0.15) !important;
+            transform: translateY(-1px);
+        }
+    </style>
+    <script>
+        var pickerApiLoaded = false;
+        var pickerTokenPending = false;
+
+        function onGapiLoad() {
+            gapi.load('picker', function() { pickerApiLoaded = true; });
+        }
+
+        function openGoogleDrivePicker() {
+            var btn = document.getElementById('btn-open-picker');
+            var spin = document.getElementById('picker-loading-spin');
+            var label = document.getElementById('picker-btn-label');
+            if (pickerTokenPending) return;
+            pickerTokenPending = true;
+            label.textContent = 'Đang xác thực với Google...';
+            spin.style.display = 'block';
+            btn.disabled = true;
+
+            fetch('${pageContext.request.contextPath}/teacher-drive/token', { credentials: 'same-origin' })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.error) { showToast(data.error, 'error'); resetPickerBtn(); return; }
+                    if (!pickerApiLoaded) {
+                        var att = 0, t = setInterval(function() {
+                            att++;
+                            if (pickerApiLoaded) { clearInterval(t); buildAndShowPicker(data.accessToken, data.clientId); }
+                            else if (att > 30) { clearInterval(t); showToast('Google Picker chưa tải xong.', 'error'); resetPickerBtn(); }
+                        }, 200);
+                    } else { buildAndShowPicker(data.accessToken, data.clientId); }
+                })
+                .catch(function() { showToast('Không thể lấy token Drive.', 'error'); resetPickerBtn(); });
+        }
+
+        function buildAndShowPicker(accessToken, clientId) {
+            try {
+                var appId = clientId.split('-')[0];
+                var docsView = new google.picker.DocsView().setIncludeFolders(true).setSelectFolderEnabled(true);
+                var folderView = new google.picker.DocsView(google.picker.ViewId.FOLDERS).setSelectFolderEnabled(true);
+                var picker = new google.picker.PickerBuilder()
+                    .setAppId(appId)
+                    .enableFeature(google.picker.Feature.NAV_HIDDEN)
+                    .enableFeature(google.picker.Feature.MULTISELECT_DISABLED)
+                    .setOAuthToken(accessToken)
+                    .addView(docsView).addView(folderView)
+                    .setTitle('Chọn nội dung khóa học từ Google Drive')
+                    .setCallback(pickerCallback).build();
+                picker.setVisible(true);
+            } catch(e) { showToast('Không thể mở Google Picker: ' + e.message, 'error'); }
+            resetPickerBtn();
+        }
+
+        function pickerCallback(data) {
+            if (data.action !== google.picker.Action.PICKED) return;
+            var doc = data.docs[0]; if (!doc) return;
+            var id = doc.id || '', name = doc.name || id, url = doc.url || '', mime = doc.mimeType || '';
+            var isFolder = (mime === 'application/vnd.google-apps.folder');
+            if (!url) url = isFolder
+                ? 'https://drive.google.com/drive/folders/' + id
+                : 'https://drive.google.com/file/d/' + id + '/view?usp=sharing';
+
+            document.getElementById('courseGoogleDriveUrlHidden').value = url;
+            document.getElementById('courseGoogleDriveFileIdHidden').value = isFolder ? '' : id;
+            document.getElementById('courseGoogleDriveFolderIdHidden').value = isFolder ? id : '';
+
+            var vals = [url, isFolder ? '' : id, isFolder ? id : ''];
+            ['courseGoogleDriveUrlManual','courseGoogleDriveFileIdManual','courseGoogleDriveFolderIdManual']
+                .forEach(function(eid, i) { var el = document.getElementById(eid); if (el) el.value = vals[i]; });
+
+            document.getElementById('picker-selected-preview').style.display = 'flex';
+            document.getElementById('picker-resource-name').textContent = name;
+            document.getElementById('picker-resource-url').textContent = url;
+            var iconEl = document.getElementById('picker-resource-icon');
+            if (isFolder) {
+                iconEl.style.background = '#ede9fe';
+                iconEl.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+            } else {
+                iconEl.style.background = '#dcfce7';
+                iconEl.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+            }
+            document.getElementById('picker-btn-label').textContent = 'Thay đổi lựa chọn';
+            showToast('Đã chọn: ' + name, 'success');
+        }
+
+        function clearPickerSelection() {
+            ['courseGoogleDriveUrlHidden','courseGoogleDriveFileIdHidden','courseGoogleDriveFolderIdHidden',
+             'courseGoogleDriveUrlManual','courseGoogleDriveFileIdManual','courseGoogleDriveFolderIdManual']
+                .forEach(function(eid) { var el = document.getElementById(eid); if (el) el.value = ''; });
+            document.getElementById('picker-selected-preview').style.display = 'none';
+            document.getElementById('picker-btn-label').textContent = 'Chọn file / thư mục từ Google Drive';
+        }
+
+        function resetPickerBtn() {
+            pickerTokenPending = false;
+            var btn = document.getElementById('btn-open-picker');
+            var spin = document.getElementById('picker-loading-spin');
+            var lbl = document.getElementById('picker-btn-label');
+            if (btn) btn.disabled = false;
+            if (spin) spin.style.display = 'none';
+            if (lbl && lbl.textContent.includes('xác thực')) lbl.textContent = 'Chọn file / thư mục từ Google Drive';
+        }
+
+        (function() {
+            var ai = document.querySelector('input[name="action"][value="registerCourse"]');
+            if (!ai) return;
+            var form = ai.closest('form');
+            if (!form) return;
+            form.addEventListener('submit', function() {
+                var md = document.getElementById('manual-drive-inputs');
+                if (!md || md.style.display === 'none') return;
+                [['courseGoogleDriveUrlManual','courseGoogleDriveUrlHidden'],
+                 ['courseGoogleDriveFileIdManual','courseGoogleDriveFileIdHidden'],
+                 ['courseGoogleDriveFolderIdManual','courseGoogleDriveFolderIdHidden']]
+                    .forEach(function(pair) {
+                        var s = document.getElementById(pair[0]);
+                        var d = document.getElementById(pair[1]);
+                        if (s && d && s.value) d.value = s.value;
+                    });
+            });
+        })();
+
+        window.addEventListener('load', function() {
+            if (typeof gapi !== 'undefined') { onGapiLoad(); return; }
+            var a = 0, t = setInterval(function() {
+                a++;
+                if (typeof gapi !== 'undefined') { clearInterval(t); onGapiLoad(); }
+                else if (a > 50) clearInterval(t);
+            }, 200);
         });
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>

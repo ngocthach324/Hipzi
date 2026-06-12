@@ -37,8 +37,6 @@
 
         /* Một background duy nhất cho toàn bộ trang — đồng nhất sau navbar và bên dưới */
         body {
-            background: linear-gradient(160deg, #b2f0e3 0%, #d4f7ee 25%, #e8fbf4 55%, #dcfce7 100%);
-            background-attachment: fixed;
         }
 
         /* ─── HERO SECTION ───────────────────────────────────────────── */
@@ -97,8 +95,30 @@
         .er-hero-title .hl {
             position: relative;
             display: inline-block;
-            color: #0f766e;
+            background: linear-gradient(135deg, #058c63 0%, #0aaf7e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             white-space: nowrap;
+        }
+        .er-hero-title .hl::after {
+            content: attr(data-shine);
+            position: absolute;
+            inset: 0;
+            color: transparent;
+            background: linear-gradient(115deg, transparent 0%, transparent 45%, rgba(255, 255, 255, 0.8) 50%, transparent 55%, transparent 100%);
+            background-size: 240% 100%;
+            background-repeat: no-repeat;
+            -webkit-background-clip: text;
+            background-clip: text;
+            pointer-events: none;
+            animation: heroShine 2.5s linear infinite;
+        }
+        @keyframes heroShine {
+            0% { background-position: 130% 0; opacity: 0; }
+            8% { background-position: 130% 0; opacity: 0.95; }
+            96% { background-position: -130% 0; opacity: 0.95; }
+            100% { background-position: -130% 0; opacity: 0; }
         }
 
         .er-hero-sub {
@@ -381,13 +401,10 @@
         <section class="er-hero" aria-labelledby="er-title">
             <div class="er-hero-inner">
 
-                <div class="er-badge">
-                    <span class="er-badge-dot" aria-hidden="true"></span>
-                    Phòng thi HIPZI
-                </div>
+
 
                 <h1 class="er-hero-title" id="er-title">
-                    Sẵn sàng bứt phá<br><span class="hl">thành tích?</span>
+                    Sẵn sàng bứt phá<br><span class="hl" data-shine="thành tích?">thành tích?</span>
                 </h1>
 
                 <p class="er-hero-sub">

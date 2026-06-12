@@ -1,5 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
+<%@page import="com.hipzi.model.Course"%>
+<%@page import="java.util.List"%>
 <%!
     private String h(String value) {
         if (value == null) return "";
@@ -8,9 +10,26 @@
                     .replace(">", "&gt;")
                     .replace("\"", "&quot;");
     }
+
+    private String initialsFrom(String value) {
+        if (value == null || value.trim().isEmpty()) return "HZ";
+        StringBuilder initials = new StringBuilder();
+        for (String part : value.trim().split("\\s+")) {
+            if (!part.isEmpty()) {
+                initials.append(part.substring(0, 1).toUpperCase());
+            }
+            if (initials.length() >= 2) break;
+        }
+        return initials.length() > 0 ? initials.toString() : "HZ";
+    }
 %>
 <%
     User user = (User) session.getAttribute("loggedUser");
+    List<Course> courses = (List<Course>) request.getAttribute("courses");
+    boolean hasDynamicCourses = courses != null && !courses.isEmpty();
+    boolean showSampleCourses = false;
+    String currentSearch = (String) request.getAttribute("currentSearch");
+    if (currentSearch == null) currentSearch = "";
     String initials = "H";
     if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
         String[] parts = user.getDisplayName().trim().split("\\s+");
@@ -59,12 +78,6 @@
 
         body {
             font-family: var(--font);
-            background: 
-                radial-gradient(circle at 15% 50%, rgba(13,148,136,.12) 0%, transparent 55%),
-                radial-gradient(circle at 85% 20%, rgba(124,58,237,.10) 0%, transparent 50%),
-                radial-gradient(circle at 60% 90%, rgba(245,158,11,.08) 0%, transparent 45%),
-                linear-gradient(135deg, #f0fdf9 0%, #ecfdf5 40%, #ede9fe 100%);
-            background-attachment: fixed;
             color: var(--c-text);
             -webkit-font-smoothing: antialiased;
         }
@@ -75,7 +88,7 @@
         /* Ensure Navbar is transparent when at the top */
         .navbar:not(.scrolled) {
             background: transparent !important;
-            border-bottom: none !important;
+            border-bottom-color: transparent !important;
             box-shadow: none !important;
         }
 
@@ -119,10 +132,32 @@
             animation: fadeSlideDown .65s .08s ease both;
         }
         .hero-title span {
+            position: relative;
+            display: inline-block;
+            white-space: nowrap;
             background: linear-gradient(135deg, #058c63 0%, #0aaf7e 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+        .hero-title span::after {
+            content: attr(data-shine);
+            position: absolute;
+            inset: 0;
+            color: transparent;
+            background: linear-gradient(115deg, transparent 0%, transparent 45%, rgba(255, 255, 255, 0.8) 50%, transparent 55%, transparent 100%);
+            background-size: 240% 100%;
+            background-repeat: no-repeat;
+            -webkit-background-clip: text;
+            background-clip: text;
+            pointer-events: none;
+            animation: heroShine 2.5s linear infinite;
+        }
+        @keyframes heroShine {
+            0% { background-position: 130% 0; opacity: 0; }
+            8% { background-position: 130% 0; opacity: 0.95; }
+            96% { background-position: -130% 0; opacity: 0.95; }
+            100% { background-position: -130% 0; opacity: 0; }
         }
         .hero-subtitle {
             color: #334155;
@@ -890,12 +925,9 @@
 
 <!-- HERO SECTION -->
 <section class="courses-hero">
-    <div class="hero-kicker">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-        Nền tảng khóa học hàng đầu
-    </div>
+
     <h1 class="hero-title">
-        Nâng cao kiến thức cùng <span>giảng viên uy tín</span>
+        Nâng cao kiến thức cùng <span data-shine="giảng viên uy tín">giảng viên uy tín</span>
     </h1>
     <p class="hero-subtitle">
         Hàng trăm khóa học chất lượng cao, từ cơ bản đến nâng cao, học theo tốc độ của riêng bạn.
@@ -910,6 +942,7 @@
                 id="courseSearch"
                 class="search-input"
                 placeholder="Tìm kiếm khóa học, giảng viên, chủ đề..."
+                value="<%= h(currentSearch) %>"
                 autocomplete="off"
             >
             <button class="search-btn" onclick="applySearch()" id="searchBtn">
@@ -994,10 +1027,83 @@
     </div>
 
     <!-- RESULT COUNT -->
-    <p class="result-count" id="resultCount">Hiển thị <strong id="visibleCount">9</strong> khóa học</p>
+    <p class="result-count" id="resultCount">Hiển thị <strong id="visibleCount"><%= hasDynamicCourses ? courses.size() : 0 %></strong> khóa học</p>
 
     <!-- COURSES GRID -->
     <div class="courses-grid" id="coursesGrid">
+
+        <% if (hasDynamicCourses) {
+            for (Course course : courses) {
+                String priceValue = course.getPriceAmount() != null ? course.getPriceAmount().toPlainString() : "0";
+                String ratingValue = course.getRatingAverage() != null ? course.getRatingAverage().toPlainString() : "0";
+                String thumbUrl = course.getThumbnailUrl();
+                String thumbStyle = (thumbUrl != null && !thumbUrl.trim().isEmpty())
+                        ? "background-image:url('" + h(thumbUrl) + "'); background-size:cover; background-position:center;"
+                        : "background:" + h(course.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";
+                int progress = Math.max(0, Math.min(100, course.getViewerProgressPercent()));
+        %>
+        <a href="#" class="course-card" data-cat="<%= h(course.getSubjectCode()) %>" data-price-type="<%= h(course.getPriceType()) %>" data-price="<%= h(priceValue) %>" data-rating="<%= h(ratingValue) %>" data-popular="<%= course.getStudentsCount() %>" data-new="<%= course.isNew() ? "1" : "0" %>">
+            <div class="card-thumb">
+                <div class="card-thumb-bg" style="<%= thumbStyle %>">
+                    <% if (thumbUrl == null || thumbUrl.trim().isEmpty()) { %>
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <% } %>
+                </div>
+                <div class="thumb-badges">
+                    <% if (course.isFree()) { %>
+                        <span class="badge badge-free">Miễn phí</span>
+                    <% } else { %>
+                        <span class="badge badge-paid">Có phí</span>
+                    <% } %>
+                    <% if (course.getBadgeText() != null && !course.getBadgeText().trim().isEmpty()) { %>
+                        <span class="badge badge-hot"><%= h(course.getBadgeText()) %></span>
+                    <% } else if (course.isFeatured()) { %>
+                        <span class="badge badge-hot">Hot</span>
+                    <% } %>
+                </div>
+                <button class="wishlist-btn" onclick="toggleWishlist(event, this)" aria-label="Yêu thích">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="card-subject"><span class="card-subject-dot"></span> <%= h(course.getSubjectName()) %></div>
+                <h3 class="card-title"><%= h(course.getTitle()) %></h3>
+                <div class="card-author">
+                    <div class="author-avatar" style="background:#0f766e"><%= h(initialsFrom(course.getTeacherName())) %></div>
+                    <span class="author-name"><%= h(course.getTeacherName()) %></span>
+                </div>
+                <div class="card-meta">
+                    <div class="meta-rating">
+                        <span class="meta-stars">★★★★★</span>
+                        <span class="meta-rating-val"><%= h(course.getDisplayRating()) %></span>
+                    </div>
+                    <span class="meta-dot"></span>
+                    <span><%= course.getStudentsCount() %> học viên</span>
+                    <span class="meta-dot"></span>
+                    <span class="lessons-chip">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <%= course.getLessonsCount() %> bài học
+                    </span>
+                </div>
+                <% if (course.isViewerEnrolled()) { %>
+                    <div class="card-progress">
+                        <div class="progress-label">
+                            <span>Tiến độ</span>
+                            <strong><%= progress %>%</strong>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" style="--progress:<%= progress %>%"></div>
+                        </div>
+                    </div>
+                <% } %>
+                <div class="card-footer">
+                    <span class="<%= course.isFree() ? "card-price-free" : "card-price-paid" %>"><%= h(course.getPriceLabel()) %></span>
+                    <span class="card-cta <%= course.isViewerEnrolled() ? "enrolled" : "" %>"><%= course.isViewerEnrolled() ? "Tiếp tục học" : (course.isFree() ? "Học ngay" : "Xem chi tiết") %></span>
+                </div>
+            </div>
+        </a>
+        <%  }
+           } else if (showSampleCourses) { %>
 
         <!-- Card 1 -->
         <a href="#" class="course-card" data-cat="english" data-price-type="free" data-price="0" data-rating="4.9" data-popular="950" data-new="0">
@@ -1372,10 +1478,11 @@
             </div>
         </a>
 
+        <% } %>
     </div><!-- /courses-grid -->
 
     <!-- EMPTY STATE -->
-    <div class="empty-state" id="emptyState">
+    <div class="empty-state <%= hasDynamicCourses ? "" : "visible" %>" id="emptyState">
         <div class="empty-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--c-primary)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
         </div>
@@ -1384,7 +1491,7 @@
     </div>
 
     <!-- LOAD MORE -->
-    <div class="load-more-wrap" id="loadMoreWrap">
+    <div class="load-more-wrap" id="loadMoreWrap" style="<%= hasDynamicCourses ? "" : "display:none;" %>">
         <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">
             <span class="spinner" id="loadSpinner"></span>
             <span id="loadMoreText">Xem thêm khóa học</span>

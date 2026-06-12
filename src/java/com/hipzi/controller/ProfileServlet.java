@@ -2,10 +2,13 @@ package com.hipzi.controller;
 
 import com.hipzi.model.Notification;
 import com.hipzi.model.Classroom;
+import com.hipzi.model.Course;
 import com.hipzi.model.StudentProfile;
 import com.hipzi.model.TeacherApplication;
+import com.hipzi.model.TeacherGoogleAccount;
 import com.hipzi.model.User;
 import com.hipzi.service.AuthService;
+import com.hipzi.service.GoogleDriveOAuthService;
 import com.hipzi.service.OtpService;
 import com.hipzi.service.NotificationService;
 import com.hipzi.service.StudentProfileService;
@@ -22,11 +25,16 @@ import com.hipzi.dao.ParentStudentLinkDao;
 import com.hipzi.dao.AdminStatsDao;
 import com.hipzi.dao.AdminUserDao;
 import com.hipzi.dao.ClassroomDao;
+import com.hipzi.dao.CourseDao;
 import com.hipzi.dao.TeacherApplicationDao;
+import com.hipzi.dao.TeacherGoogleAccountDao;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.sql.Time;
 import java.util.List;
+import java.util.Locale;
 
 
 @WebServlet(name = "ProfileServlet", urlPatterns = {"/profile", "/student-profile", "/parent-profile", "/teacher-profile", "/staff-profile", "/admin-profile"})
@@ -45,7 +53,10 @@ public class ProfileServlet extends HttpServlet {
     private final AdminStatsDao adminStatsDao = new AdminStatsDao();
     private final AdminUserDao adminUserDao = new AdminUserDao();
     private final TeacherApplicationDao teacherApplicationDao = new TeacherApplicationDao();
+    private final TeacherGoogleAccountDao teacherGoogleAccountDao = new TeacherGoogleAccountDao();
     private final ClassroomDao classroomDao = new ClassroomDao();
+    private final CourseDao courseDao = new CourseDao();
+    private final GoogleDriveOAuthService googleDriveOAuthService = new GoogleDriveOAuthService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -114,6 +125,8 @@ public class ProfileServlet extends HttpServlet {
             TeacherApplication teacherApplication = teacherApplicationDao.findLatestByUserId(user.getId());
             request.setAttribute("teacherApplication", teacherApplication);
             request.setAttribute("teacherClassrooms", classroomDao.findByTeacherId(user.getId()));
+            request.setAttribute("teacherCourses", courseDao.findByTeacherId(user.getId()));
+            request.setAttribute("teacherGoogleAccount", teacherGoogleAccountDao.findActiveByTeacherId(user.getId()));
         } else if ("/WEB-INF/views/staff-profile.jsp".equals(targetJsp)) {
             request.setAttribute("teacherApplications", teacherApplicationDao.listForStaffReview());
             
@@ -131,6 +144,15 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("classTitle", classTitle);
             request.setAttribute("classSubject", classSubject);
             request.setAttribute("classStatus", classStatus);
+
+            String courseTitle = cleanParam(request.getParameter("courseTitle"));
+            String courseSubject = cleanParam(request.getParameter("courseSubject"));
+            String courseStatus = cleanParam(request.getParameter("courseStatus"));
+            request.setAttribute("managedCourses", courseDao.listForStaff(courseTitle, courseSubject, courseStatus));
+            request.setAttribute("courseSubjects", courseDao.listSubjects());
+            request.setAttribute("courseTitle", courseTitle);
+            request.setAttribute("courseSubject", courseSubject);
+            request.setAttribute("courseStatus", courseStatus);
         } else if ("/WEB-INF/views/admin-profile.jsp".equals(targetJsp)) {
             request.setAttribute("systemOverview", adminStatsDao.getSystemOverview());
             int adminUserPage = parsePositiveInt(request.getParameter("userPage"), 1);
@@ -339,6 +361,75 @@ public class ProfileServlet extends HttpServlet {
                     session.setAttribute("toastMsg", "Không thể xóa lớp học này.");
                     session.setAttribute("toastType", "error");
                 }
+            } else if ("registerCourse".equals(action)) {
+                Course course = buildCourseFromRequest(request, user);
+                TeacherApplication teacherApplication = teacherApplicationDao.findLatestByUserId(user.getId());
+                TeacherGoogleAccount googleAccount = teacherGoogleAccountDao.findActiveByTeacherId(user.getId());
+
+                if (!canManageClassrooms(user, teacherApplication)) {
+                    session.setAttribute("toastMsg", "Hồ sơ giảng viên của bạn cần được phê duyệt trước khi đăng khóa học.");
+                    session.setAttribute("toastType", "error");
+                } else if (googleAccount == null || !googleAccount.isConnected()) {
+                    session.setAttribute("toastMsg", "Vui lòng kết nối Google Drive trước khi đăng khóa học.");
+                    session.setAttribute("toastType", "error");
+                } else if (!isApprovedSubject(teacherApplication, course.getSubjectName())) {
+                    session.setAttribute("toastMsg", "Bạn chỉ được đăng khóa học cho môn đã được phê duyệt trong hồ sơ giảng dạy.");
+                    session.setAttribute("toastType", "error");
+                } else if (!isValidCourse(course)) {
+                    session.setAttribute("toastMsg", "Vui lòng điền đầy đủ tên khóa học, môn học, số bài, giá hợp lệ và link Google Drive.");
+                    session.setAttribute("toastType", "error");
+                } else {
+                    course.setDriveOwnerEmail(googleAccount.getGoogleEmail());
+                    String accessToken = googleDriveOAuthService.accessTokenForTeacher(
+                            user.getId(),
+                            config("GOOGLE_CLIENT_ID"),
+                            config("GOOGLE_CLIENT_SECRET"),
+                            tokenEncryptionKey()
+                    );
+                    googleDriveOAuthService.verifyShareableResource(accessToken, courseDriveResourceId(course));
+                    if (courseDao.createForTeacher(course)) {
+                        session.setAttribute("toastMsg", "Đã gửi khóa học '" + course.getTitle() + "' vào hàng đợi duyệt của nhân viên.");
+                        session.setAttribute("toastType", "success");
+                    } else {
+                        session.setAttribute("toastMsg", "Chưa lưu được khóa học. Vui lòng kiểm tra migration courses.");
+                        session.setAttribute("toastType", "error");
+                    }
+                }
+            } else if ("reviewCourse".equals(action)) {
+                String courseId = cleanParam(request.getParameter("courseId"));
+                String decision = cleanParam(request.getParameter("decision"));
+                String reviewNote = cleanParam(request.getParameter("reviewNote"));
+
+                if (!hasRole(user, "staff") && !hasRole(user, "admin")) {
+                    session.setAttribute("toastMsg", "Bạn không có quyền duyệt khóa học.");
+                    session.setAttribute("toastType", "error");
+                } else if (courseId.isEmpty()
+                        || (!"approved".equals(decision) && !"rejected".equals(decision) && !"needs_revision".equals(decision))) {
+                    session.setAttribute("toastMsg", "Yêu cầu duyệt khóa học không hợp lệ.");
+                    session.setAttribute("toastType", "error");
+                } else if (courseDao.reviewCourse(courseId, decision, reviewNote, user.getId())) {
+                    session.setAttribute("toastMsg", "Đã cập nhật trạng thái khóa học.");
+                    session.setAttribute("toastType", "success");
+                } else {
+                    session.setAttribute("toastMsg", "Không thể cập nhật trạng thái khóa học.");
+                    session.setAttribute("toastType", "error");
+                }
+            } else if ("deleteManagedCourse".equals(action)) {
+                String courseId = cleanParam(request.getParameter("courseId"));
+                String deleteReason = cleanParam(request.getParameter("deleteReason"));
+                if (!hasRole(user, "staff") && !hasRole(user, "admin")) {
+                    session.setAttribute("toastMsg", "Bạn không có quyền xóa khóa học trong khu vực quản lý.");
+                    session.setAttribute("toastType", "error");
+                } else if (courseId.isEmpty()) {
+                    session.setAttribute("toastMsg", "Không tìm thấy khóa học cần xóa.");
+                    session.setAttribute("toastType", "error");
+                } else if (courseDao.softDeleteByStaff(courseId, user.getId(), deleteReason)) {
+                    session.setAttribute("toastMsg", "Đã xóa tạm khóa học khỏi danh sách hiển thị.");
+                    session.setAttribute("toastType", "success");
+                } else {
+                    session.setAttribute("toastMsg", "Không thể xóa khóa học này.");
+                    session.setAttribute("toastType", "error");
+                }
             } else if ("submitTeachingRegistration".equals(action)) {
                 String teacherType = cleanParam(request.getParameter("teacherType"));
                 String institutionName = cleanParam(request.getParameter("institutionName"));
@@ -471,6 +562,10 @@ public class ProfileServlet extends HttpServlet {
             returnPath += "?tab=class-registration";
         } else if ("deleteManagedClass".equals(action)) {
             returnPath += "?tab=manage-classes";
+        } else if ("registerCourse".equals(action)) {
+            returnPath += "?tab=course-registration";
+        } else if ("reviewCourse".equals(action) || "deleteManagedCourse".equals(action)) {
+            returnPath += "?tab=manage-courses";
         } else if ("submitTeachingRegistration".equals(action)) {
             returnPath += "?tab=teaching-registration";
         } else if ("reviewTeacherApplication".equals(action)) {
@@ -481,6 +576,22 @@ public class ProfileServlet extends HttpServlet {
 
     private String cleanParam(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private String config(String name) {
+        String value = getServletContext().getInitParameter(name);
+        if (value == null || value.trim().isEmpty()) {
+            value = getServletContext().getInitParameter(name.toLowerCase().replace('_', '.'));
+        }
+        if (value == null || value.trim().isEmpty()) {
+            value = System.getenv(name);
+        }
+        return value;
+    }
+
+    private String tokenEncryptionKey() {
+        String value = config("HIPZI_TOKEN_ENCRYPTION_KEY");
+        return value == null || value.trim().isEmpty() ? config("TOKEN_ENCRYPTION_KEY") : value;
     }
 
     private Classroom buildClassroomFromRequest(HttpServletRequest request, String teacherId, String classId) {
@@ -507,6 +618,199 @@ public class ProfileServlet extends HttpServlet {
         }
         classroom.setStatus(status);
         return classroom;
+    }
+
+    private Course buildCourseFromRequest(HttpServletRequest request, User user)
+            throws IOException, ServletException {
+        String subjectName = cleanParam(request.getParameter("courseSubject"));
+        BigDecimal priceAmount = parseMoneyParam(request.getParameter("coursePriceAmount"));
+        String subjectCode = subjectCodeFromName(subjectName);
+        String thumbnailUrl = cleanParam(request.getParameter("courseThumbnailUrl"));
+        Part thumbnailPart = request.getPart("courseThumbnailFile");
+        if (thumbnailPart != null && thumbnailPart.getSize() > 0) {
+            thumbnailUrl = saveCourseThumbnailFile(request, user, thumbnailPart);
+        }
+
+        Course course = new Course();
+        course.setTeacherId(user.getId());
+        course.setTitle(cleanParam(request.getParameter("courseTitle")));
+        course.setShortDescription(cleanParam(request.getParameter("courseDescription")));
+        course.setSubjectName(subjectName);
+        course.setSubjectCode(subjectCode);
+        course.setGradeLevel(cleanParam(request.getParameter("courseGrade")));
+        course.setLevelName(cleanParam(request.getParameter("courseLevel")));
+        course.setPriceAmount(priceAmount);
+        course.setPriceType(priceAmount.compareTo(BigDecimal.ZERO) > 0 ? "paid" : "free");
+        course.setCurrency("VND");
+        course.setThumbnailUrl(thumbnailUrl);
+        course.setThumbnailGradient(courseGradientForSubject(subjectCode));
+        course.setBadgeText(cleanParam(request.getParameter("courseBadge")));
+        course.setLessonsCount(parsePositiveInt(request.getParameter("courseLessonsCount"), 0));
+        course.setEstimatedHours(parseDecimalParam(request.getParameter("courseEstimatedHours")));
+        String driveUrl = cleanParam(request.getParameter("courseGoogleDriveUrl"));
+        String fileId = cleanParam(request.getParameter("courseGoogleDriveFileId"));
+        String folderId = cleanParam(request.getParameter("courseGoogleDriveFolderId"));
+        if (fileId.isEmpty() && folderId.isEmpty()) {
+            String extractedId = extractGoogleDriveResourceId(driveUrl);
+            if (driveUrl.contains("/folders/")) {
+                folderId = extractedId;
+            } else {
+                fileId = extractedId;
+            }
+        }
+        course.setGoogleDriveUrl(driveUrl);
+        course.setGoogleDriveFileId(fileId);
+        course.setGoogleDriveFolderId(folderId);
+        course.setDriveOwnerEmail(user.getEmail());
+        course.setAccessInstructions(cleanParam(request.getParameter("courseAccessInstructions")));
+        return course;
+    }
+
+    private boolean isValidCourse(Course course) {
+        return course != null
+                && course.getTitle() != null && !course.getTitle().trim().isEmpty()
+                && course.getSubjectName() != null && !course.getSubjectName().trim().isEmpty()
+                && course.getSubjectCode() != null && !course.getSubjectCode().trim().isEmpty()
+                && course.getLessonsCount() > 0
+                && course.getPriceAmount() != null
+                && course.getPriceAmount().compareTo(BigDecimal.ZERO) >= 0
+                && isValidGoogleCourseUrl(course.getGoogleDriveUrl())
+                && !courseDriveResourceId(course).isEmpty();
+    }
+
+    private String courseDriveResourceId(Course course) {
+        if (course == null) {
+            return "";
+        }
+        String folderId = cleanParam(course.getGoogleDriveFolderId());
+        if (!folderId.isEmpty()) {
+            return folderId;
+        }
+        String fileId = cleanParam(course.getGoogleDriveFileId());
+        if (!fileId.isEmpty()) {
+            return fileId;
+        }
+        return extractGoogleDriveResourceId(course.getGoogleDriveUrl());
+    }
+
+    private String extractGoogleDriveResourceId(String url) {
+        String value = cleanParam(url);
+        if (value.isEmpty()) {
+            return "";
+        }
+        String[] markers = {"/folders/", "/file/d/", "/document/d/", "/spreadsheets/d/", "/presentation/d/", "/forms/d/"};
+        for (String marker : markers) {
+            int start = value.indexOf(marker);
+            if (start >= 0) {
+                start += marker.length();
+                int end = start;
+                while (end < value.length()) {
+                    char c = value.charAt(end);
+                    if (c == '/' || c == '?' || c == '&' || c == '#') {
+                        break;
+                    }
+                    end++;
+                }
+                return value.substring(start, end);
+            }
+        }
+        int idIndex = value.indexOf("id=");
+        if (idIndex >= 0) {
+            int start = idIndex + 3;
+            int end = start;
+            while (end < value.length()) {
+                char c = value.charAt(end);
+                if (c == '&' || c == '#') {
+                    break;
+                }
+                end++;
+            }
+            return value.substring(start, end);
+        }
+        return "";
+    }
+
+    private String saveCourseThumbnailFile(HttpServletRequest request, User user, Part part)
+            throws IOException {
+        String contentType = part.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Logo khóa học phải là file hình ảnh hợp lệ.");
+        }
+
+        String uploadPath = request.getServletContext().getRealPath("/uploads/course-thumbnails");
+        if (uploadPath == null) {
+            throw new IOException("Không thể xác định thư mục tải lên logo khóa học.");
+        }
+        File uploadDir = new File(uploadPath);
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs();
+        }
+
+        String submittedName = part.getSubmittedFileName();
+        String extension = "";
+        if (submittedName != null && submittedName.contains(".")) {
+            extension = submittedName.substring(submittedName.lastIndexOf(".")).replaceAll("[^a-zA-Z0-9.]", "");
+        }
+        String safeFileName = "course_thumb_" + user.getId() + "_" + System.currentTimeMillis() + extension;
+        part.write(uploadPath + File.separator + safeFileName);
+        return request.getContextPath() + "/uploads/course-thumbnails/" + safeFileName;
+    }
+
+    private boolean isValidGoogleCourseUrl(String value) {
+        String url = cleanParam(value).toLowerCase(Locale.ROOT);
+        return (url.startsWith("https://") || url.startsWith("http://"))
+                && (url.contains("drive.google.com") || url.contains("docs.google.com"));
+    }
+
+    private BigDecimal parseMoneyParam(String value) {
+        String cleaned = cleanParam(value).replaceAll("[^0-9]", "");
+        if (cleaned.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        try {
+            return new BigDecimal(cleaned);
+        } catch (NumberFormatException e) {
+            return BigDecimal.ZERO;
+        }
+    }
+
+    private BigDecimal parseDecimalParam(String value) {
+        String cleaned = cleanParam(value).replace(",", ".");
+        if (cleaned.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        try {
+            return new BigDecimal(cleaned);
+        } catch (NumberFormatException e) {
+            return BigDecimal.ZERO;
+        }
+    }
+
+    private String subjectCodeFromName(String subjectName) {
+        String normalized = Normalizer.normalize(cleanParam(subjectName), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase(Locale.ROOT);
+        if (normalized.contains("toan")) return "math";
+        if (normalized.contains("anh") || normalized.contains("english")) return "english";
+        if (normalized.contains("ly") || normalized.contains("vat")) return "physics";
+        if (normalized.contains("hoa")) return "chemistry";
+        if (normalized.contains("van")) return "literature";
+        if (normalized.contains("sinh")) return "biology";
+        if (normalized.contains("lich")) return "history";
+        if (normalized.contains("tin") || normalized.contains("cong nghe")) return "it";
+        return "other";
+    }
+
+    private String courseGradientForSubject(String subjectCode) {
+        if ("math".equals(subjectCode)) return "linear-gradient(135deg,#3b82f6 0%,#6366f1 100%)";
+        if ("english".equals(subjectCode)) return "linear-gradient(135deg,#0f766e 0%,#14b8a6 50%,#7c3aed 100%)";
+        if ("physics".equals(subjectCode)) return "linear-gradient(135deg,#0ea5e9 0%,#8b5cf6 100%)";
+        if ("chemistry".equals(subjectCode)) return "linear-gradient(135deg,#f59e0b 0%,#ef4444 100%)";
+        if ("literature".equals(subjectCode)) return "linear-gradient(135deg,#ec4899 0%,#f97316 100%)";
+        if ("biology".equals(subjectCode)) return "linear-gradient(135deg,#16a34a 0%,#84cc16 100%)";
+        if ("history".equals(subjectCode)) return "linear-gradient(135deg,#92400e 0%,#f59e0b 100%)";
+        if ("it".equals(subjectCode)) return "linear-gradient(135deg,#111827 0%,#2563eb 100%)";
+        return "linear-gradient(135deg,#475569 0%,#14b8a6 100%)";
     }
 
     private Time parseTimeParam(String value) {

@@ -75,6 +75,7 @@ public class RememberMeFilter implements Filter {
 
         return path.equals("/index")
                 || path.equals("/index.html")
+                || path.equals("/courses")
                 || path.equals("/login")
                 || path.equals("/login")
                 || path.equals("/register")

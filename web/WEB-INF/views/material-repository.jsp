@@ -62,7 +62,7 @@
         /* Transparent navbar */
         .navbar:not(.scrolled) {
             background: transparent !important;
-            border-bottom: none !important;
+            border-bottom-color: transparent !important;
             box-shadow: none !important;
         }
 
@@ -110,10 +110,32 @@
             animation: fadeSlideDown .65s .08s ease both;
         }
         .hero-title span {
+            position: relative;
+            display: inline-block;
+            white-space: nowrap;
             background: linear-gradient(135deg, #058c63 0%, #0aaf7e 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+        .hero-title span::after {
+            content: attr(data-shine);
+            position: absolute;
+            inset: 0;
+            color: transparent;
+            background: linear-gradient(115deg, transparent 0%, transparent 45%, rgba(255, 255, 255, 0.8) 50%, transparent 55%, transparent 100%);
+            background-size: 240% 100%;
+            background-repeat: no-repeat;
+            -webkit-background-clip: text;
+            background-clip: text;
+            pointer-events: none;
+            animation: heroShine 2.5s linear infinite;
+        }
+        @keyframes heroShine {
+            0% { background-position: 130% 0; opacity: 0; }
+            8% { background-position: 130% 0; opacity: 0.95; }
+            96% { background-position: -130% 0; opacity: 0.95; }
+            100% { background-position: -130% 0; opacity: 0; }
         }
         .hero-subtitle {
             color: #334155;
@@ -238,12 +260,9 @@
 
     <!-- HERO KHO TÀI LIỆU -->
     <section class="page-hero">
-        <div class="hero-kicker">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5V5a2 2 0 0 1 2-2h11a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2Z"/><path d="M8 7h7"/><path d="M8 11h5"/></svg>
-            Kho tài liệu học tập HIPZI
-        </div>
+
         <h1 class="hero-title">
-            Khám phá kho tài liệu <span>chất lượng cao</span>
+            Khám phá kho tài liệu <span data-shine="chất lượng cao">chất lượng cao</span>
         </h1>
         <p class="hero-subtitle">
             Hàng ngàn tài liệu từ các giảng viên uy tín, phân loại rõ ràng theo môn học — tìm kiếm nhanh, tra cứu dễ dàng.

@@ -58,7 +58,7 @@
         /* Transparent navbar on scroll top */
         .navbar:not(.scrolled) {
             background: transparent !important;
-            border-bottom: none !important;
+            border-bottom-color: transparent !important;
             box-shadow: none !important;
         }
 

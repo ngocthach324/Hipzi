@@ -41,7 +41,7 @@
         }
         .navbar:not(.scrolled) {
             background: transparent !important;
-            border-bottom: none !important;
+            border-bottom-color: transparent !important;
             box-shadow: none !important;
         }
         @keyframes fadeSlideDown {
@@ -86,10 +86,32 @@
             animation: fadeSlideDown .65s .08s ease both;
         }
         .hero-title span {
+            position: relative;
+            display: inline-block;
+            white-space: nowrap;
             background: linear-gradient(135deg, #058c63 0%, #0aaf7e 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+        .hero-title span::after {
+            content: attr(data-shine);
+            position: absolute;
+            inset: 0;
+            color: transparent;
+            background: linear-gradient(115deg, transparent 0%, transparent 45%, rgba(255, 255, 255, 0.8) 50%, transparent 55%, transparent 100%);
+            background-size: 240% 100%;
+            background-repeat: no-repeat;
+            -webkit-background-clip: text;
+            background-clip: text;
+            pointer-events: none;
+            animation: heroShine 2.5s linear infinite;
+        }
+        @keyframes heroShine {
+            0% { background-position: 130% 0; opacity: 0; }
+            8% { background-position: 130% 0; opacity: 0.95; }
+            96% { background-position: -130% 0; opacity: 0.95; }
+            100% { background-position: -130% 0; opacity: 0; }
         }
         .hero-subtitle {
             color: #334155;
@@ -209,12 +231,9 @@
 
     <!-- HERO LỚP HỌC -->
     <section class="page-hero">
-        <div class="hero-kicker">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Hệ thống lớp học trực tuyến HIPZI
-        </div>
+
         <h1 class="hero-title">
-            Lớp học trực tuyến <span>tương tác &amp; hiệu quả</span>
+            Lớp học trực tuyến <span data-shine="tương tác & hiệu quả">tương tác &amp; hiệu quả</span>
         </h1>
         <p class="hero-subtitle">
             Hệ thống các lớp học chất lượng cao do giảng viên hàng đầu dẫn dắt, bám sát lộ trình và mục tiêu điểm số của bạn.
