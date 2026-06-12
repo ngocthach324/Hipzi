@@ -1058,6 +1058,7 @@
 
 
                 <li><a href="${pageContext.request.contextPath}/exam-room" class="active">Phòng thi</a></li>
+                <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
                 <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
             </ul>
 
@@ -1339,6 +1340,7 @@
         %>
             {
                 id: "<%= js(question.getId()) %>",
+                type: "<%= js(question.getQuestionType()) %>",
                 text: "<%= js(question.getQuestionText()) %>",
                 options: ["<%= js(question.getOptionA()) %>", "<%= js(question.getOptionB()) %>", "<%= js(question.getOptionC()) %>", "<%= js(question.getOptionD()) %>"]
             }<%= i + 1 < examQuestions.size() ? "," : "" %>
@@ -1419,10 +1421,11 @@
 
         function renderQuestion() {
             var question = examQuestions[currentQuestion];
+            var questionType = question.type || (examType === 'essay' ? 'essay' : (examType === 'true_false' ? 'true_false' : 'multiple_choice'));
             questionLabel.textContent = 'Câu hỏi ' + (currentQuestion + 1);
             questionText.textContent = question.text;
             optionList.innerHTML = '';
-            if (examType === 'essay') {
+            if (questionType === 'essay') {
                 questionMode.textContent = 'Nhập câu trả lời';
                 var textarea = document.createElement('textarea');
                 textarea.className = 'exam-essay-answer';
@@ -1441,7 +1444,11 @@
                 optionList.appendChild(textarea);
             } else {
                 questionMode.textContent = 'Chọn một đáp án đúng';
-                question.options.forEach(function (option, index) {
+                var isTrueFalse = questionType === 'true_false';
+                questionMode.textContent = isTrueFalse ? 'Chọn Đúng hoặc Sai' : questionMode.textContent;
+                var options = isTrueFalse ? [question.options[0] || 'Đúng', question.options[1] || 'Sai'] : question.options;
+                options.forEach(function (option, index) {
+                    if (!option) return;
                     var key = String.fromCharCode(65 + index);
                     var button = document.createElement('button');
                     button.type = 'button';

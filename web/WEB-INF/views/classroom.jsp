@@ -44,6 +44,110 @@
     private String examMinutePart(String value) {
         return value != null && value.length() >= 16 ? value.substring(14, 16) : "";
     }
+
+    private String normalizeExamTypeView(String value) {
+        if ("essay".equals(value)
+                || "true_false".equals(value)
+                || "mixed_mc_essay".equals(value)
+                || "mixed_mc_true_false".equals(value)) {
+            return value;
+        }
+        return "multiple_choice";
+    }
+
+    private String normalizeQuestionTypeView(String value, String examType) {
+        if ("essay".equals(examType)) return "essay";
+        if ("true_false".equals(examType)) return "true_false";
+        if ("mixed_mc_essay".equals(examType)) return "essay".equals(value) ? "essay" : "multiple_choice";
+        if ("mixed_mc_true_false".equals(examType)) return "true_false".equals(value) ? "true_false" : "multiple_choice";
+        return "multiple_choice";
+    }
+
+    private boolean examTypeUsesQuestionType(String examType, String questionType) {
+        if ("mixed_mc_essay".equals(examType)) return "multiple_choice".equals(questionType) || "essay".equals(questionType);
+        if ("mixed_mc_true_false".equals(examType)) return "multiple_choice".equals(questionType) || "true_false".equals(questionType);
+        return examType.equals(questionType) || ("multiple_choice".equals(examType) && "multiple_choice".equals(questionType));
+    }
+
+    private String questionTypeLabel(String questionType) {
+        if ("essay".equals(questionType)) return "Tự luận";
+        if ("true_false".equals(questionType)) return "Đúng/Sai";
+        return "Trắc nghiệm";
+    }
+
+    private String selectedOption(String actual, String expected) {
+        return expected != null && expected.equalsIgnoreCase(actual) ? " selected" : "";
+    }
+
+    private String renderExamQuestionEditor(ClassroomExamQuestion question, String questionType, int index) {
+        String type = "essay".equals(questionType) || "true_false".equals(questionType) ? questionType : "multiple_choice";
+        String text = question != null ? question.getQuestionText() : "";
+        String optionA = question != null ? question.getOptionA() : "";
+        String optionB = question != null ? question.getOptionB() : "";
+        String optionC = question != null ? question.getOptionC() : "";
+        String optionD = question != null ? question.getOptionD() : "";
+        String correct = question != null ? question.getCorrectOption() : "";
+        String reference = question != null ? question.getReferenceAnswer() : "";
+        double points = question != null && question.getPoints() != null && question.getPoints() > 0 ? question.getPoints() : 1.0;
+        if ("true_false".equals(type)) {
+            optionA = optionA != null && !optionA.trim().isEmpty() ? optionA : "Đúng";
+            optionB = optionB != null && !optionB.trim().isEmpty() ? optionB : "Sai";
+            optionC = "";
+            optionD = "";
+        }
+
+        StringBuilder out = new StringBuilder();
+        out.append("<div class=\"quiz-question\" data-exam-question data-question-type=\"").append(h(type)).append("\">");
+        out.append("<input type=\"hidden\" name=\"examQuestionType\" value=\"").append(h(type)).append("\">");
+        out.append("<h4>Câu ").append(index).append("</h4>");
+        out.append("<div class=\"upload-grid\" style=\"margin-top:0.65rem;\">");
+        out.append("<div class=\"upload-field full\"><label>Nội dung câu hỏi</label>");
+        out.append("<textarea name=\"examQuestionText\" rows=\"2\" required>").append(h(text)).append("</textarea></div>");
+        out.append("<div class=\"upload-field\"><label>Điểm</label>");
+        out.append("<input type=\"number\" name=\"examPoints\" step=\"0.01\" min=\"0\" class=\"exam-question-points\" value=\"").append(points).append("\"></div>");
+        out.append("</div>");
+
+        if ("essay".equals(type)) {
+            out.append("<input type=\"hidden\" name=\"examOptionA\" value=\"\">");
+            out.append("<input type=\"hidden\" name=\"examOptionB\" value=\"\">");
+            out.append("<input type=\"hidden\" name=\"examOptionC\" value=\"\">");
+            out.append("<input type=\"hidden\" name=\"examOptionD\" value=\"\">");
+            out.append("<input type=\"hidden\" name=\"examCorrectOption\" value=\"\">");
+            out.append("<div class=\"upload-field\" data-exam-essay-fields style=\"margin-top:0.75rem;\">");
+            out.append("<label>Đáp án tham khảo</label>");
+            out.append("<textarea name=\"examReferenceAnswer\" rows=\"2\" placeholder=\"Có thể để trống nếu chưa cần đáp án mẫu.\">")
+                    .append(h(reference)).append("</textarea></div>");
+        } else if ("true_false".equals(type)) {
+            out.append("<input type=\"hidden\" name=\"examOptionA\" value=\"").append(h(optionA)).append("\">");
+            out.append("<input type=\"hidden\" name=\"examOptionB\" value=\"").append(h(optionB)).append("\">");
+            out.append("<input type=\"hidden\" name=\"examOptionC\" value=\"\">");
+            out.append("<input type=\"hidden\" name=\"examOptionD\" value=\"\">");
+            out.append("<input type=\"hidden\" name=\"examReferenceAnswer\" value=\"\">");
+            out.append("<div class=\"upload-field\" data-exam-true-false-fields style=\"margin-top:0.75rem;\">");
+            out.append("<label>Đáp án đúng</label><select name=\"examCorrectOption\">");
+            out.append("<option value=\"\">Chưa chọn</option>");
+            out.append("<option value=\"A\"").append(selectedOption(correct, "A")).append(">Đúng</option>");
+            out.append("<option value=\"B\"").append(selectedOption(correct, "B")).append(">Sai</option>");
+            out.append("</select></div>");
+        } else {
+            out.append("<div data-exam-multiple-choice-fields><div class=\"quiz-option-grid\">");
+            out.append("<label>A <input type=\"text\" name=\"examOptionA\" value=\"").append(h(optionA)).append("\"></label>");
+            out.append("<label>B <input type=\"text\" name=\"examOptionB\" value=\"").append(h(optionB)).append("\"></label>");
+            out.append("<label>C <input type=\"text\" name=\"examOptionC\" value=\"").append(h(optionC)).append("\"></label>");
+            out.append("<label>D <input type=\"text\" name=\"examOptionD\" value=\"").append(h(optionD)).append("\"></label>");
+            out.append("</div><div class=\"upload-field\" style=\"margin-top:0.75rem;\">");
+            out.append("<label>Đáp án đúng</label><select name=\"examCorrectOption\">");
+            out.append("<option value=\"\">Chưa chọn</option>");
+            out.append("<option value=\"A\"").append(selectedOption(correct, "A")).append(">A</option>");
+            out.append("<option value=\"B\"").append(selectedOption(correct, "B")).append(">B</option>");
+            out.append("<option value=\"C\"").append(selectedOption(correct, "C")).append(">C</option>");
+            out.append("<option value=\"D\"").append(selectedOption(correct, "D")).append(">D</option>");
+            out.append("</select></div></div>");
+            out.append("<input type=\"hidden\" name=\"examReferenceAnswer\" value=\"\">");
+        }
+        out.append("</div>");
+        return out.toString();
+    }
 %>
 <%
     Classroom classroom = (Classroom) request.getAttribute("classroom");
@@ -114,7 +218,7 @@
     examDraftTitle = examDraftTitle != null ? examDraftTitle : "";
     examDraftCode = examDraftCode != null ? examDraftCode : "";
     examDraftDescription = examDraftDescription != null ? examDraftDescription : "";
-    examDraftType = "essay".equals(examDraftType) ? "essay" : "multiple_choice";
+    examDraftType = normalizeExamTypeView(examDraftType);
     examDraftStartAt = examDraftStartAt != null ? examDraftStartAt : "";
     examDraftEndAt = examDraftEndAt != null ? examDraftEndAt : "";
     int examDraftDuration = examDraftDurationValue != null ? examDraftDurationValue.intValue() : 45;
@@ -1261,6 +1365,27 @@
             color: #ffffff;
         }
 
+        .exam-score-split {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.7rem;
+        }
+
+        .exam-score-split[hidden] {
+            display: none !important;
+        }
+
+        .exam-score-split label {
+            display: grid;
+            gap: 0.35rem;
+        }
+
+        .exam-score-split span {
+            color: #0f172a;
+            font-size: 0.78rem;
+            font-weight: 900;
+        }
+
         .exam-ai-section {
             margin: 0 0.9rem;
             border-radius: 1rem;
@@ -1508,6 +1633,44 @@
             margin-bottom: 1rem;
         }
 
+        .exam-question-type-section {
+            display: grid;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .exam-question-type-head {
+            padding: 0.75rem 0.85rem;
+            border: 1px solid #dbeafe;
+            border-left: 3px solid #14b8a6;
+            border-radius: 0.65rem;
+            background: #f8fafc;
+        }
+
+        .exam-question-type-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: -0.1rem;
+        }
+
+        .exam-question-type-head strong {
+            color: #0f172a;
+            font-size: 0.98rem;
+            font-weight: 900;
+        }
+
+        .exam-question-type-head span {
+            display: block;
+            margin-top: 0.12rem;
+            color: #64748b;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .exam-question-type-section[hidden] {
+            display: none !important;
+        }
+
         .quiz-scan-preview {
             display: grid;
             grid-template-columns: minmax(0, 1fr) minmax(220px, 0.45fr);
@@ -1720,9 +1883,70 @@
         }
 
         .exam-create-btn {
-            border-color: #059669 !important;
-            background: #059669 !important;
+            position: relative;
+            isolation: isolate;
+            min-width: 190px;
+            justify-content: center;
+            border: 0 !important;
+            border-radius: 999px !important;
+            background: linear-gradient(135deg, #059669 0%, #14b8a6 55%, #0f766e 100%) !important;
             color: #ffffff !important;
+            font-size: 1rem;
+            font-weight: 950;
+            letter-spacing: 0;
+            padding: 0.9rem 1.65rem !important;
+            box-shadow: 0 14px 30px rgba(5, 150, 105, 0.26);
+            overflow: hidden;
+            transform: translateY(0);
+            animation: examCreatePulse 2.8s ease-in-out infinite;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+        }
+
+        .exam-create-btn::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            z-index: -1;
+            background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.4) 42%, transparent 70%);
+            transform: translateX(-115%);
+            animation: examCreateShine 3.2s ease-in-out infinite;
+        }
+
+        .exam-create-btn:hover {
+            color: #ffffff !important;
+            filter: saturate(1.08);
+            transform: translateY(-2px);
+            box-shadow: 0 18px 36px rgba(5, 150, 105, 0.34);
+        }
+
+        .exam-create-btn:active {
+            transform: translateY(0) scale(0.98);
+            box-shadow: 0 10px 22px rgba(5, 150, 105, 0.24);
+        }
+
+        .exam-create-actions {
+            justify-content: center;
+            margin-top: 1.45rem;
+            padding-top: 1.05rem;
+            border-top: 1px solid #dbeafe;
+        }
+
+        @keyframes examCreatePulse {
+            0%, 100% {
+                box-shadow: 0 14px 30px rgba(5, 150, 105, 0.24);
+            }
+            50% {
+                box-shadow: 0 18px 38px rgba(20, 184, 166, 0.34);
+            }
+        }
+
+        @keyframes examCreateShine {
+            0%, 42% {
+                transform: translateX(-115%);
+            }
+            70%, 100% {
+                transform: translateX(115%);
+            }
         }
 
         .quiz-meta {
@@ -1856,6 +2080,7 @@
 
 
                 <li><a href="${pageContext.request.contextPath}/exam-room">Phòng thi</a></li>
+                <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
                 <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
             </ul>
             <div class="navbar-user-controls">
@@ -2371,15 +2596,28 @@
                                         <label>Thời lượng (phút)</label>
                                         <input type="number" name="durationMinutes" min="1" value="<%= examDraftDuration %>" required>
                                     </div>
-                                    <div class="upload-field">
-                                        <label>Tổng điểm tối đa</label>
-                                        <input type="number" name="examMaxScore" id="createExamMaxScore" step="0.01" min="0" value="<%= examDraftMaxScore %>" required>
+                                    <div class="upload-field" data-exam-score-field>
+                                        <label data-exam-score-single-label>Tổng điểm tối đa</label>
+                                        <input type="number" name="examMaxScore" id="createExamMaxScore" step="0.01" min="0" value="<%= examDraftMaxScore %>" required data-exam-total-score>
+                                        <div class="exam-score-split" data-exam-score-split hidden>
+                                            <label>
+                                                <span data-exam-score-label="0">Tổng điểm trắc nghiệm</span>
+                                                <input type="number" step="0.01" min="0" value="5.00" data-exam-score-part-input>
+                                            </label>
+                                            <label>
+                                                <span data-exam-score-label="1">Tổng điểm tự luận</span>
+                                                <input type="number" step="0.01" min="0" value="5.00" data-exam-score-part-input>
+                                            </label>
+                                        </div>
                                     </div>
                                     <div class="upload-field">
                                         <label>Dạng bài thi</label>
                                         <select name="examType" data-exam-type>
                                             <option value="multiple_choice" <%= "multiple_choice".equals(examDraftType) ? "selected" : "" %>>Trắc nghiệm</option>
                                             <option value="essay" <%= "essay".equals(examDraftType) ? "selected" : "" %>>Tự luận</option>
+                                            <option value="true_false" <%= "true_false".equals(examDraftType) ? "selected" : "" %>>Đúng/Sai</option>
+                                            <option value="mixed_mc_essay" <%= "mixed_mc_essay".equals(examDraftType) ? "selected" : "" %>>Trắc nghiệm / Tự luận</option>
+                                            <option value="mixed_mc_true_false" <%= "mixed_mc_true_false".equals(examDraftType) ? "selected" : "" %>>Trắc nghiệm / Đúng sai</option>
                                             <option value="flashcard" disabled>Flashcard (sắp triển khai)</option>
                                         </select>
                                     </div>
@@ -2492,90 +2730,43 @@ D. ...
                                     </div>
                                 </div>
                                 <div class="quiz-card exam-question-workspace">
-                                <div class="quiz-question-list" data-exam-question-list>
-                                    <% if (examDraftQuestions != null && !examDraftQuestions.isEmpty()) {
-                                        int examDraftQuestionIndex = 1;
-                                        for (ClassroomExamQuestion question : examDraftQuestions) {
+                                    <% String[] examQuestionSectionTypes = {"multiple_choice", "essay", "true_false"};
+                                       for (String sectionType : examQuestionSectionTypes) {
+                                           int sectionQuestionIndex = 1;
+                                           boolean hasSectionDraft = false;
                                     %>
-                                        <div class="quiz-question" data-exam-question>
-                                            <h4>Câu <%= examDraftQuestionIndex++ %></h4>
-                                            <div class="upload-grid" style="margin-top:0.65rem;">
-                                                <div class="upload-field full">
-                                                    <label>Nội dung câu hỏi</label>
-                                                    <textarea name="examQuestionText" rows="2" required><%= h(question.getQuestionText()) %></textarea>
-                                                </div>
-                                                <div class="upload-field">
-                                                    <label>Điểm</label>
-                                                    <input type="number" name="examPoints" step="0.01" min="0" class="exam-question-points" value="<%= question.getPoints() != null && question.getPoints() > 0 ? question.getPoints() : 1.0 %>">
+                                        <div class="exam-question-type-section" data-exam-question-section="<%= h(sectionType) %>">
+                                            <div class="exam-question-type-head">
+                                                <div>
+                                                    <strong><%= h(questionTypeLabel(sectionType)) %></strong>
+                                                    <span>Quản lý riêng nhóm câu hỏi <%= h(questionTypeLabel(sectionType).toLowerCase()) %>.</span>
                                                 </div>
                                             </div>
-                                            <div data-exam-multiple-choice-fields>
-                                                <div class="quiz-option-grid">
-                                                    <label>A <input type="text" name="examOptionA" value="<%= h(question.getOptionA()) %>"></label>
-                                                    <label>B <input type="text" name="examOptionB" value="<%= h(question.getOptionB()) %>"></label>
-                                                    <label>C <input type="text" name="examOptionC" value="<%= h(question.getOptionC()) %>"></label>
-                                                    <label>D <input type="text" name="examOptionD" value="<%= h(question.getOptionD()) %>"></label>
-                                                </div>
-                                                <div class="upload-field" style="margin-top:0.75rem;">
-                                                    <label>Đáp án đúng</label>
-                                                    <select name="examCorrectOption">
-                                                        <option value="">Chưa chọn</option>
-                                                        <option value="A" <%= "A".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>A</option>
-                                                        <option value="B" <%= "B".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>B</option>
-                                                        <option value="C" <%= "C".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>C</option>
-                                                        <option value="D" <%= "D".equalsIgnoreCase(question.getCorrectOption()) ? "selected" : "" %>>D</option>
-                                                    </select>
-                                                </div>
+                                            <div class="quiz-question-list" data-exam-question-list data-question-type="<%= h(sectionType) %>">
+                                                <% if (examDraftQuestions != null && !examDraftQuestions.isEmpty()) {
+                                                       for (ClassroomExamQuestion question : examDraftQuestions) {
+                                                           String questionType = normalizeQuestionTypeView(question.getQuestionType(), examDraftType);
+                                                           if (!sectionType.equals(questionType)) {
+                                                               continue;
+                                                           }
+                                                           hasSectionDraft = true;
+                                                %>
+                                                    <%= renderExamQuestionEditor(question, sectionType, sectionQuestionIndex++) %>
+                                                <%     }
+                                                   }
+                                                   if (!hasSectionDraft) { %>
+                                                    <%= renderExamQuestionEditor(null, sectionType, 1) %>
+                                                <% } %>
                                             </div>
-                                            <div class="upload-field" data-exam-essay-fields style="margin-top:0.75rem;">
-                                                <label>Đáp án tham khảo</label>
-                                                <textarea name="examReferenceAnswer" rows="2" placeholder="Có thể để trống nếu chưa cần đáp án mẫu."><%= h(question.getReferenceAnswer()) %></textarea>
-                                            </div>
-                                        </div>
-                                    <%  }
-                                    } else { %>
-                                        <div class="quiz-question" data-exam-question>
-                                            <h4>Câu 1</h4>
-                                            <div class="upload-grid" style="margin-top:0.65rem;">
-                                                <div class="upload-field full">
-                                                    <label>Nội dung câu hỏi</label>
-                                                    <textarea name="examQuestionText" rows="2" required></textarea>
-                                                </div>
-                                                <div class="upload-field">
-                                                    <label>Điểm</label>
-                                                    <input type="number" name="examPoints" step="0.01" min="0" class="exam-question-points" value="1.0">
-                                                </div>
-                                            </div>
-                                            <div data-exam-multiple-choice-fields>
-                                                <div class="quiz-option-grid">
-                                                    <label>A <input type="text" name="examOptionA"></label>
-                                                    <label>B <input type="text" name="examOptionB"></label>
-                                                    <label>C <input type="text" name="examOptionC"></label>
-                                                    <label>D <input type="text" name="examOptionD"></label>
-                                                </div>
-                                                <div class="upload-field" style="margin-top:0.75rem;">
-                                                    <label>Đáp án đúng</label>
-                                                    <select name="examCorrectOption">
-                                                        <option value="">Chưa chọn</option>
-                                                        <option value="A">A</option>
-                                                        <option value="B">B</option>
-                                                        <option value="C">C</option>
-                                                        <option value="D">D</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="upload-field" data-exam-essay-fields style="margin-top:0.75rem;">
-                                                <label>Đáp án tham khảo</label>
-                                                <textarea name="examReferenceAnswer" rows="2" placeholder="Có thể để trống nếu chưa cần đáp án mẫu."></textarea>
+                                            <div class="exam-question-type-actions">
+                                                <button class="mini-btn exam-add-btn" type="button" data-add-exam-question data-question-type="<%= h(sectionType) %>">Thêm câu hỏi</button>
                                             </div>
                                         </div>
                                     <% } %>
+                                    <div class="quiz-actions exam-create-actions">
+                                        <button class="mini-btn exam-create-btn" type="submit" name="action" value="createClassExam">Tạo bài thi</button>
+                                    </div>
                                 </div>
-                                <div class="quiz-actions">
-                                    <button class="mini-btn exam-add-btn" type="button" data-add-exam-question>Thêm câu hỏi</button>
-                                    <button class="mini-btn exam-create-btn" type="submit" name="action" value="createClassExam">Tạo bài thi</button>
-                                </div>
-                            </div>
                             </section>
                         </form>
                     <% } %>
@@ -3050,12 +3241,49 @@ D. ...
 
         function recalculateExamPoints(builder) {
             if (!builder) return;
+            const type = builder.querySelector('[data-exam-type]')?.value || 'multiple_choice';
+            const activeTypes = examQuestionTypesFor(type);
+            if (activeTypes.length > 1) {
+                activeTypes.forEach(questionType => {
+                    const section = builder.querySelector(`[data-exam-question-section="${questionType}"]`);
+                    const scoreInput = examScoreInputForType(builder, activeTypes, questionType);
+                    const pointsInputs = section
+                        ? Array.from(section.querySelectorAll('.exam-question-points'))
+                        : [];
+                    if (!pointsInputs.length) return;
+                    const sectionScore = parseExamNumber(scoreInput?.value, 0);
+                    const pointsPerQuestion = (sectionScore / pointsInputs.length).toFixed(2);
+                    pointsInputs.forEach(input => setExamPointValue(input, pointsPerQuestion));
+                });
+                return;
+            }
             const maxScoreInput = builder.querySelector('input[name="examMaxScore"]');
-            const pointsInputs = builder.querySelectorAll('.exam-question-points');
+            const activeSection = builder.querySelector(`[data-exam-question-section="${activeTypes[0]}"]`);
+            const pointsInputs = activeSection
+                ? Array.from(activeSection.querySelectorAll('.exam-question-points'))
+                : Array.from(builder.querySelectorAll('.exam-question-points')).filter(input => !input.disabled);
             if (!maxScoreInput || pointsInputs.length === 0) return;
-            const maxScore = parseFloat(maxScoreInput.value) || 10.0;
+            const maxScore = parseExamNumber(maxScoreInput.value, 10.0);
             const pointsPerQuestion = (maxScore / pointsInputs.length).toFixed(2);
-            pointsInputs.forEach(input => input.value = pointsPerQuestion);
+            pointsInputs.forEach(input => setExamPointValue(input, pointsPerQuestion));
+        }
+
+        function examScoreInputForType(builder, activeTypes, questionType) {
+            const scoreInputs = Array.from(builder.querySelectorAll('[data-exam-score-part-input]'));
+            return builder.querySelector(`[data-exam-score-part-input][data-score-question-type="${questionType}"]`)
+                || scoreInputs[activeTypes.indexOf(questionType)]
+                || null;
+        }
+
+        function parseExamNumber(value, fallback) {
+            const normalized = String(value ?? '').replace(',', '.').trim();
+            const parsed = parseFloat(normalized);
+            return Number.isFinite(parsed) ? parsed : fallback;
+        }
+
+        function setExamPointValue(input, value) {
+            input.value = value;
+            input.setAttribute('value', value);
         }
 
         document.querySelectorAll('[data-add-question]').forEach(button => {
@@ -3164,10 +3392,10 @@ D. ...
         const examMathPreviewSelector = [
             'textarea[name="examQuestionText"]',
             'textarea[name="examReferenceAnswer"]',
-            'input[name="examOptionA"]',
-            'input[name="examOptionB"]',
-            'input[name="examOptionC"]',
-            'input[name="examOptionD"]'
+            'input[name="examOptionA"]:not([type="hidden"])',
+            'input[name="examOptionB"]:not([type="hidden"])',
+            'input[name="examOptionC"]:not([type="hidden"])',
+            'input[name="examOptionD"]:not([type="hidden"])'
         ].join(',');
 
         function escapeMathHtml(value) {
@@ -3333,15 +3561,73 @@ D. ...
                     question.appendChild(removeButton);
                 }
             });
-            const builder = list.closest('[data-exam-builder]');
-            if (builder) recalculateExamPoints(builder);
+        }
+
+        function examScoreLabel(questionType) {
+            if (questionType === 'essay') return 'Tổng điểm tự luận';
+            if (questionType === 'true_false') return 'Tổng điểm đúng/sai';
+            return 'Tổng điểm trắc nghiệm';
+        }
+
+        function syncExamScoreFields(builder, activeTypes) {
+            const totalInput = builder.querySelector('[data-exam-total-score]');
+            const singleLabel = builder.querySelector('[data-exam-score-single-label]');
+            const split = builder.querySelector('[data-exam-score-split]');
+            const partInputs = Array.from(builder.querySelectorAll('[data-exam-score-part-input]'));
+            const partLabels = Array.from(builder.querySelectorAll('[data-exam-score-label]'));
+            if (!totalInput || !split || partInputs.length < 2) return;
+
+            const mixed = activeTypes.length > 1;
+            totalInput.hidden = mixed;
+            if (singleLabel) singleLabel.hidden = mixed;
+            split.hidden = !mixed;
+            if (!mixed) {
+                split.dataset.scoreType = '';
+                partInputs.forEach(input => {
+                    input.dataset.scoreQuestionType = '';
+                    input.disabled = true;
+                });
+                return;
+            }
+
+            const scoreTypeKey = activeTypes.join('|');
+            if (split.dataset.scoreType !== scoreTypeKey) {
+                partInputs.forEach(input => input.value = '5.00');
+                split.dataset.scoreType = scoreTypeKey;
+            }
+
+            partInputs.forEach((input, index) => {
+                const questionType = activeTypes[index] || '';
+                input.dataset.scoreQuestionType = questionType;
+                input.disabled = !questionType;
+                input.closest('label')?.toggleAttribute('hidden', !questionType);
+                if (questionType && !input.value.trim()) {
+                    input.value = '5.00';
+                }
+            });
+            partLabels.forEach((label, index) => {
+                const questionType = activeTypes[index];
+                if (questionType) label.textContent = examScoreLabel(questionType);
+            });
+            syncExamTotalScore(builder);
+        }
+
+        function syncExamTotalScore(builder) {
+            const totalInput = builder.querySelector('[data-exam-total-score]');
+            const split = builder.querySelector('[data-exam-score-split]');
+            if (!totalInput || !split || split.hidden) return;
+            const sum = Array.from(builder.querySelectorAll('[data-exam-score-part-input]'))
+                .filter(input => !input.disabled)
+                .reduce((total, input) => total + parseExamNumber(input.value, 0), 0);
+            totalInput.value = sum.toFixed(2);
         }
 
         function syncExamBuilder(builder) {
             if (!builder) return;
             const type = builder.querySelector('[data-exam-type]')?.value || 'multiple_choice';
             const mode = builder.querySelector('[data-exam-mode]')?.value || 'manual';
-            const isEssay = type === 'essay';
+            const activeTypes = examQuestionTypesFor(type);
+            syncExamScoreFields(builder, activeTypes);
             builder.querySelectorAll('[data-exam-mode-option]').forEach(button => {
                 const isActive = button.dataset.examModeOption === mode;
                 button.classList.toggle('active', isActive);
@@ -3350,20 +3636,31 @@ D. ...
             builder.querySelectorAll('[data-exam-ai-source], [data-exam-ai-actions]').forEach(element => {
                 element.style.display = mode === 'ai' ? '' : 'none';
             });
-            builder.querySelectorAll('[data-exam-multiple-choice-fields]').forEach(element => {
-                element.style.display = isEssay ? 'none' : '';
-                element.querySelectorAll('input, select').forEach(field => {
-                    field.required = !isEssay;
+            builder.querySelectorAll('[data-exam-question-section]').forEach(section => {
+                const sectionType = section.dataset.examQuestionSection || 'multiple_choice';
+                const active = activeTypes.includes(sectionType);
+                section.hidden = !active;
+                section.querySelectorAll('input, textarea, select, button').forEach(field => {
+                    field.disabled = !active;
                 });
             });
-            builder.querySelectorAll('[data-exam-essay-fields]').forEach(element => {
-                element.style.display = isEssay ? '' : 'none';
-            });
+            builder.querySelectorAll('[data-exam-question-list]').forEach(renumberExamQuestions);
+            recalculateExamPoints(builder);
         }
 
-        function createExamQuestionTemplate() {
-            return `
-                <div class="quiz-question" data-exam-question>
+        function examQuestionTypesFor(type) {
+            if (type === 'essay') return ['essay'];
+            if (type === 'true_false') return ['true_false'];
+            if (type === 'mixed_mc_essay') return ['multiple_choice', 'essay'];
+            if (type === 'mixed_mc_true_false') return ['multiple_choice', 'true_false'];
+            return ['multiple_choice'];
+        }
+
+        function createExamQuestionTemplate(questionType) {
+            const type = ['essay', 'true_false', 'multiple_choice'].includes(questionType) ? questionType : 'multiple_choice';
+            const commonStart = `
+                <div class="quiz-question" data-exam-question data-question-type="${type}">
+                    <input type="hidden" name="examQuestionType" value="${type}">
                     <h4>Câu</h4>
                     <div class="upload-grid" style="margin-top:0.65rem;">
                         <div class="upload-field full">
@@ -3374,7 +3671,38 @@ D. ...
                             <label>Điểm</label>
                             <input type="number" name="examPoints" step="0.01" min="0" class="exam-question-points" value="1.0">
                         </div>
+                    </div>`;
+            if (type === 'essay') {
+                return commonStart + `
+                    <input type="hidden" name="examOptionA" value="">
+                    <input type="hidden" name="examOptionB" value="">
+                    <input type="hidden" name="examOptionC" value="">
+                    <input type="hidden" name="examOptionD" value="">
+                    <input type="hidden" name="examCorrectOption" value="">
+                    <div class="upload-field" data-exam-essay-fields style="margin-top:0.75rem;">
+                        <label>Đáp án tham khảo</label>
+                        <textarea name="examReferenceAnswer" rows="2" placeholder="Có thể để trống nếu chưa cần đáp án mẫu."></textarea>
                     </div>
+                </div>`;
+            }
+            if (type === 'true_false') {
+                return commonStart + `
+                    <input type="hidden" name="examOptionA" value="Đúng">
+                    <input type="hidden" name="examOptionB" value="Sai">
+                    <input type="hidden" name="examOptionC" value="">
+                    <input type="hidden" name="examOptionD" value="">
+                    <input type="hidden" name="examReferenceAnswer" value="">
+                    <div class="upload-field" data-exam-true-false-fields style="margin-top:0.75rem;">
+                        <label>Đáp án đúng</label>
+                        <select name="examCorrectOption">
+                            <option value="">Chưa chọn</option>
+                            <option value="A">Đúng</option>
+                            <option value="B">Sai</option>
+                        </select>
+                    </div>
+                </div>`;
+            }
+            return commonStart + `
                     <div data-exam-multiple-choice-fields>
                         <div class="quiz-option-grid">
                             <label>A <input type="text" name="examOptionA"></label>
@@ -3393,12 +3721,8 @@ D. ...
                             </select>
                         </div>
                     </div>
-                    <div class="upload-field" data-exam-essay-fields style="margin-top:0.75rem;">
-                        <label>Đáp án tham khảo</label>
-                        <textarea name="examReferenceAnswer" rows="2" placeholder="Có thể để trống nếu chưa cần đáp án mẫu."></textarea>
-                    </div>
-                </div>
-            `;
+                    <input type="hidden" name="examReferenceAnswer" value="">
+                </div>`;
         }
 
         document.querySelectorAll('[data-exam-builder]').forEach(builder => {
@@ -3415,30 +3739,37 @@ D. ...
             builder.querySelector('input[name="examMaxScore"]')?.addEventListener('input', () => {
                 recalculateExamPoints(builder);
             });
-            builder.querySelector('[data-add-exam-question]')?.addEventListener('click', () => {
-                const list = builder.querySelector('[data-exam-question-list]');
-                if (!list) return;
-                list.insertAdjacentHTML('beforeend', createExamQuestionTemplate());
-                renumberExamQuestions(list);
-                syncExamBuilder(builder);
-                attachMathPreviews(list.lastElementChild);
-                list.lastElementChild?.querySelector('textarea')?.focus();
+            builder.querySelectorAll('[data-exam-score-part-input]').forEach(input => {
+                input.addEventListener('input', () => {
+                    syncExamTotalScore(builder);
+                    recalculateExamPoints(builder);
+                });
             });
-            builder.querySelector('[data-exam-question-list]')?.addEventListener('click', event => {
-                const removeButton = event.target.closest('[data-remove-exam-question]');
-                if (!removeButton) return;
-                const list = builder.querySelector('[data-exam-question-list]');
-                const question = removeButton.closest('[data-exam-question]');
-                if (!list || !question) return;
-                question.remove();
-                renumberExamQuestions(list);
-                syncExamBuilder(builder);
-                list.lastElementChild?.querySelector('textarea')?.focus();
+            builder.querySelectorAll('[data-add-exam-question]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const questionType = button.dataset.questionType || 'multiple_choice';
+                    const section = button.closest('[data-exam-question-section]');
+                    const list = section ? section.querySelector('[data-exam-question-list]') : null;
+                    if (!list) return;
+                    list.insertAdjacentHTML('beforeend', createExamQuestionTemplate(questionType));
+                    renumberExamQuestions(list);
+                    syncExamBuilder(builder);
+                    attachMathPreviews(list.lastElementChild);
+                    list.lastElementChild?.querySelector('textarea')?.focus();
+                });
             });
-            const initialExamQuestionList = builder.querySelector('[data-exam-question-list]');
-            if (initialExamQuestionList) {
-                renumberExamQuestions(initialExamQuestionList);
-            }
+            builder.querySelectorAll('[data-exam-question-list]').forEach(list => {
+                list.addEventListener('click', event => {
+                    const removeButton = event.target.closest('[data-remove-exam-question]');
+                    if (!removeButton) return;
+                    const question = removeButton.closest('[data-exam-question]');
+                    if (!question) return;
+                    question.remove();
+                    renumberExamQuestions(list);
+                    syncExamBuilder(builder);
+                    list.lastElementChild?.querySelector('textarea')?.focus();
+                });
+            });
             syncExamBuilder(builder);
             attachMathPreviews(builder);
         });
@@ -3468,6 +3799,96 @@ D. ...
             showToast("<%= msg.replace("\\", "\\\\").replace("\"", "\\\"") %>", "<%= type != null ? type : "success" %>");
         });
         <% } %>
+    </script>
+    <script>
+        (function () {
+            function examFallbackTypes(type) {
+                if (type === 'essay') return ['essay'];
+                if (type === 'true_false') return ['true_false'];
+                if (type === 'mixed_mc_essay') return ['multiple_choice', 'essay'];
+                if (type === 'mixed_mc_true_false') return ['multiple_choice', 'true_false'];
+                return ['multiple_choice'];
+            }
+
+            function examFallbackNumber(value, fallback) {
+                var parsed = parseFloat(String(value || '').replace(',', '.'));
+                return Number.isFinite(parsed) ? parsed : fallback;
+            }
+
+            function examFallbackPartInput(builder, types, questionType) {
+                var inputs = Array.prototype.slice.call(builder.querySelectorAll('[data-exam-score-part-input]'));
+                for (var i = 0; i < inputs.length; i += 1) {
+                    if (inputs[i].getAttribute('data-score-question-type') === questionType) {
+                        return inputs[i];
+                    }
+                }
+                return inputs[types.indexOf(questionType)] || null;
+            }
+
+            function examFallbackSetPoint(input, value) {
+                input.value = value;
+                input.setAttribute('value', value);
+            }
+
+            function examFallbackSync(builder) {
+                if (!builder) return;
+                var typeSelect = builder.querySelector('[data-exam-type]');
+                var type = typeSelect ? typeSelect.value : 'multiple_choice';
+                var types = examFallbackTypes(type);
+
+                if (types.length > 1) {
+                    for (var i = 0; i < types.length; i += 1) {
+                        var questionType = types[i];
+                        var section = builder.querySelector('[data-exam-question-section="' + questionType + '"]');
+                        var scoreInput = examFallbackPartInput(builder, types, questionType);
+                        if (!section || !scoreInput) continue;
+                        var points = Array.prototype.slice.call(section.querySelectorAll('.exam-question-points'));
+                        if (!points.length) continue;
+                        var perQuestion = (examFallbackNumber(scoreInput.value, 0) / points.length).toFixed(2);
+                        points.forEach(function (input) {
+                            examFallbackSetPoint(input, perQuestion);
+                        });
+                    }
+                    return;
+                }
+
+                var activeSection = builder.querySelector('[data-exam-question-section="' + types[0] + '"]');
+                var maxScoreInput = builder.querySelector('[data-exam-total-score], input[name="examMaxScore"]');
+                if (!activeSection || !maxScoreInput) return;
+                var activePoints = Array.prototype.slice.call(activeSection.querySelectorAll('.exam-question-points'));
+                if (!activePoints.length) return;
+                var activePerQuestion = (examFallbackNumber(maxScoreInput.value, 10) / activePoints.length).toFixed(2);
+                activePoints.forEach(function (input) {
+                    examFallbackSetPoint(input, activePerQuestion);
+                });
+            }
+
+            function examFallbackSyncAll() {
+                document.querySelectorAll('[data-exam-builder]').forEach(function (builder) {
+                    examFallbackSync(builder);
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                examFallbackSyncAll();
+                setTimeout(examFallbackSyncAll, 0);
+            });
+            document.addEventListener('change', function (event) {
+                if (event.target.matches('[data-exam-type], [data-exam-score-part-input], [data-exam-total-score], input[name="examMaxScore"]')) {
+                    setTimeout(examFallbackSyncAll, 0);
+                }
+            });
+            document.addEventListener('input', function (event) {
+                if (event.target.matches('[data-exam-score-part-input], [data-exam-total-score], input[name="examMaxScore"]')) {
+                    examFallbackSync(event.target.closest('[data-exam-builder]'));
+                }
+            });
+            document.addEventListener('click', function (event) {
+                if (event.target.closest('[data-add-exam-question], [data-remove-exam-question]')) {
+                    setTimeout(examFallbackSyncAll, 0);
+                }
+            });
+        })();
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>

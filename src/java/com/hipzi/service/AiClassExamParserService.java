@@ -62,7 +62,10 @@ public class AiClassExamParserService {
         request.put("model", getModel());
         request.put("temperature", 0);
         request.put("max_output_tokens", 12000);
+        String typeInstruction = instructionForExamType(examType);
         request.put("instructions",
+                typeInstruction
+                +
                 "Bạn là bộ chuẩn hóa đề thi lớp học cho HIPZI. "
                 + "Chỉ trích xuất nội dung có trong SOURCE TEXT, OCR MARKDOWN, OCR PLAIN TEXT, OCR LAYOUT hoặc ảnh đính kèm; "
                 + "sửa lỗi OCR nhẹ nhưng không bịa câu hỏi mới. "
@@ -128,10 +131,13 @@ public class AiClassExamParserService {
         question.put("type", "object");
         question.put("additionalProperties", false);
         question.put("required", Arrays.asList(
-                "questionText", "optionA", "optionB", "optionC", "optionD",
+                "questionType", "questionText", "optionA", "optionB", "optionC", "optionD",
                 "correctOption", "referenceAnswer", "points"));
 
         Map<String, Object> questionProperties = new LinkedHashMap<>();
+        Map<String, Object> questionType = stringSchema();
+        questionType.put("enum", Arrays.asList("multiple_choice", "essay", "true_false"));
+        questionProperties.put("questionType", questionType);
         questionProperties.put("questionText", stringSchema());
         questionProperties.put("optionA", stringSchema());
         questionProperties.put("optionB", stringSchema());
@@ -193,13 +199,27 @@ public class AiClassExamParserService {
                 continue;
             }
             ClassroomExamQuestion question = new ClassroomExamQuestion();
+            String questionType = normalizeQuestionType(SimpleJson.asString(questionMap, "questionType"), examType);
+            question.setQuestionType(questionType);
             question.setQuestionText(questionText);
-            if (!"essay".equals(examType)) {
+            if ("multiple_choice".equals(questionType)) {
                 question.setOptionA(normalizeExtractedMathText(SimpleJson.asString(questionMap, "optionA").trim()));
                 question.setOptionB(normalizeExtractedMathText(SimpleJson.asString(questionMap, "optionB").trim()));
                 question.setOptionC(normalizeExtractedMathText(SimpleJson.asString(questionMap, "optionC").trim()));
                 question.setOptionD(normalizeExtractedMathText(SimpleJson.asString(questionMap, "optionD").trim()));
                 question.setCorrectOption(normalizeOption(SimpleJson.asString(questionMap, "correctOption")));
+            } else if ("true_false".equals(questionType)) {
+                question.setOptionA(defaultIfBlank(normalizeExtractedMathText(SimpleJson.asString(questionMap, "optionA").trim()), "Đúng"));
+                question.setOptionB(defaultIfBlank(normalizeExtractedMathText(SimpleJson.asString(questionMap, "optionB").trim()), "Sai"));
+                question.setOptionC("");
+                question.setOptionD("");
+                question.setCorrectOption(normalizeTrueFalseOption(SimpleJson.asString(questionMap, "correctOption")));
+            } else {
+                question.setOptionA("");
+                question.setOptionB("");
+                question.setOptionC("");
+                question.setOptionD("");
+                question.setCorrectOption("");
             }
             question.setReferenceAnswer(normalizeExtractedMathText(SimpleJson.asString(questionMap, "referenceAnswer").trim()));
             try {
@@ -351,8 +371,64 @@ public class AiClassExamParserService {
         return -1;
     }
 
+    private String instructionForExamType(String examType) {
+        if ("essay".equals(examType)) {
+            return "TYPE RULES OVERRIDE: This exam contains essay questions only. "
+                    + "Set questionType=essay for every question. Keep optionA-D and correctOption empty. "
+                    + "Use referenceAnswer only when the source includes a clear sample answer or solution. ";
+        }
+        if ("true_false".equals(examType)) {
+            return "TYPE RULES OVERRIDE: This exam contains true/false questions only. "
+                    + "Set questionType=true_false for every question. Set optionA=Dung, optionB=Sai, optionC-D empty. "
+                    + "correctOption must be A for Dung or B for Sai. ";
+        }
+        if ("mixed_mc_essay".equals(examType)) {
+            return "TYPE RULES OVERRIDE: This exam mixes multiple-choice and essay questions. "
+                    + "Use questionType=multiple_choice for A/B/C/D questions and questionType=essay for open-answer questions. "
+                    + "Essay questions must keep optionA-D and correctOption empty. ";
+        }
+        if ("mixed_mc_true_false".equals(examType)) {
+            return "TYPE RULES OVERRIDE: This exam mixes multiple-choice and true/false questions. "
+                    + "Use questionType=multiple_choice for A/B/C/D questions and questionType=true_false for true/false statements. "
+                    + "True/false questions use optionA=Dung, optionB=Sai, optionC-D empty, correctOption A or B. ";
+        }
+        return "TYPE RULES OVERRIDE: This exam contains multiple-choice questions only. "
+                + "Set questionType=multiple_choice for every question and extract A, B, C, D options. ";
+    }
+
     private String normalizeExamType(String examType) {
-        return "essay".equals(examType) ? "essay" : "multiple_choice";
+        if ("essay".equals(examType)
+                || "true_false".equals(examType)
+                || "mixed_mc_essay".equals(examType)
+                || "mixed_mc_true_false".equals(examType)) {
+            return examType;
+        }
+        return "multiple_choice";
+    }
+
+    private String normalizeQuestionType(String questionType, String examType) {
+        if ("essay".equals(examType)) {
+            return "essay";
+        }
+        if ("true_false".equals(examType)) {
+            return "true_false";
+        }
+        if ("mixed_mc_essay".equals(examType)) {
+            return "essay".equals(questionType) ? "essay" : "multiple_choice";
+        }
+        if ("mixed_mc_true_false".equals(examType)) {
+            return "true_false".equals(questionType) ? "true_false" : "multiple_choice";
+        }
+        return "multiple_choice";
+    }
+
+    private String normalizeTrueFalseOption(String option) {
+        String normalized = normalizeOption(option);
+        return "A".equals(normalized) || "B".equals(normalized) ? normalized : "";
+    }
+
+    private String defaultIfBlank(String value, String fallback) {
+        return value == null || value.trim().isEmpty() ? fallback : value;
     }
 
     private String normalizeOption(String option) {

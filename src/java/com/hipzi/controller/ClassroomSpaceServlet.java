@@ -504,9 +504,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
                     + startAtValue + ", dong de: " + endAtValue + ".");
         }
         if (questions.isEmpty() || !areClassExamQuestionsValid(questions, examType)) {
-            return rejectClassExam(request, "essay".equals(examType)
-                    ? "Moi cau tu luan can co noi dung."
-                    : "Moi cau trac nghiem can noi dung, du 4 lua chon va dap an dung.");
+            return rejectClassExam(request, "Moi cau hoi can noi dung, diem hop le va dap an/cau tra loi dung voi tung dang cau.");
         }
         if (examDao.findByCode(code) != null) {
             return rejectClassExam(request, "Ma de da ton tai. Vui long dung ma de khac.");
@@ -745,20 +743,38 @@ public class ClassroomSpaceServlet extends HttpServlet {
         if (questionTexts == null) {
             return questions;
         }
-        boolean essay = "essay".equals(examType);
+        String fallbackQuestionType = defaultQuestionTypeForExam(examType);
+        String[] questionTypes = request.getParameterValues("examQuestionType");
         for (int i = 0; i < questionTexts.length; i++) {
             String text = cleanParam(questionTexts[i]);
             if (text.isEmpty()) {
                 continue;
             }
+            String questionType = normalizeClassQuestionType(valueAt(questionTypes, i));
+            if (questionType.isEmpty()) {
+                questionType = fallbackQuestionType;
+            }
             ClassroomExamQuestion question = new ClassroomExamQuestion();
+            question.setQuestionType(questionType);
             question.setQuestionText(text);
-            if (!essay) {
+            if ("multiple_choice".equals(questionType)) {
                 question.setOptionA(valueAt(optionAs, i));
                 question.setOptionB(valueAt(optionBs, i));
                 question.setOptionC(valueAt(optionCs, i));
                 question.setOptionD(valueAt(optionDs, i));
                 question.setCorrectOption(normalizeQuestionOption(valueAt(correctOptions, i)));
+            } else if ("true_false".equals(questionType)) {
+                question.setOptionA(defaultIfBlank(valueAt(optionAs, i), "Đúng"));
+                question.setOptionB(defaultIfBlank(valueAt(optionBs, i), "Sai"));
+                question.setOptionC("");
+                question.setOptionD("");
+                question.setCorrectOption(normalizeTrueFalseOption(valueAt(correctOptions, i)));
+            } else {
+                question.setOptionA("");
+                question.setOptionB("");
+                question.setOptionC("");
+                question.setOptionD("");
+                question.setCorrectOption("");
             }
             question.setReferenceAnswer(valueAt(referenceAnswers, i));
             question.setPoints(parsePositiveDouble(valueAt(pointValues, i), 1.0));
@@ -772,17 +788,25 @@ public class ClassroomSpaceServlet extends HttpServlet {
         if (questions == null || questions.isEmpty()) {
             return false;
         }
-        boolean essay = "essay".equals(examType);
         for (ClassroomExamQuestion question : questions) {
-            if (question == null || cleanParam(question.getQuestionText()).isEmpty() || question.getPoints() <= 0) {
+            if (question == null || cleanParam(question.getQuestionText()).isEmpty()
+                    || question.getPoints() == null || question.getPoints() <= 0) {
                 return false;
             }
-            if (!essay) {
+            String questionType = normalizeClassQuestionType(question.getQuestionType());
+            if (!isQuestionTypeAllowedForExam(examType, questionType)) {
+                return false;
+            }
+            if ("multiple_choice".equals(questionType)) {
                 if (cleanParam(question.getOptionA()).isEmpty()
                         || cleanParam(question.getOptionB()).isEmpty()
                         || cleanParam(question.getOptionC()).isEmpty()
                         || cleanParam(question.getOptionD()).isEmpty()
                         || normalizeQuestionOption(question.getCorrectOption()).isEmpty()) {
+                    return false;
+                }
+            } else if ("true_false".equals(questionType)) {
+                if (normalizeTrueFalseOption(question.getCorrectOption()).isEmpty()) {
                     return false;
                 }
             }
@@ -1115,13 +1139,63 @@ public class ClassroomSpaceServlet extends HttpServlet {
         return cleaned.matches("[ABCD]") ? cleaned : "";
     }
 
+    private String normalizeTrueFalseOption(String value) {
+        String cleaned = normalizeQuestionOption(value);
+        return "A".equals(cleaned) || "B".equals(cleaned) ? cleaned : "";
+    }
+
+    private String normalizeClassQuestionType(String value) {
+        String cleaned = cleanParam(value);
+        if ("essay".equals(cleaned) || "true_false".equals(cleaned)) {
+            return cleaned;
+        }
+        if ("multiple_choice".equals(cleaned)) {
+            return cleaned;
+        }
+        return "";
+    }
+
+    private String defaultQuestionTypeForExam(String examType) {
+        if ("essay".equals(examType)) {
+            return "essay";
+        }
+        if ("true_false".equals(examType)) {
+            return "true_false";
+        }
+        return "multiple_choice";
+    }
+
+    private boolean isQuestionTypeAllowedForExam(String examType, String questionType) {
+        if ("mixed_mc_essay".equals(examType)) {
+            return "multiple_choice".equals(questionType) || "essay".equals(questionType);
+        }
+        if ("mixed_mc_true_false".equals(examType)) {
+            return "multiple_choice".equals(questionType) || "true_false".equals(questionType);
+        }
+        if ("essay".equals(examType)) {
+            return "essay".equals(questionType);
+        }
+        if ("true_false".equals(examType)) {
+            return "true_false".equals(questionType);
+        }
+        return "multiple_choice".equals(questionType);
+    }
+
+    private String defaultIfBlank(String value, String fallback) {
+        return cleanParam(value).isEmpty() ? fallback : cleanParam(value);
+    }
+
     private String normalizeQuizStatus(String value) {
         return "published".equals(cleanParam(value)) ? "published" : "draft";
     }
 
     private String normalizeClassExamType(String value) {
         String cleaned = cleanParam(value);
-        if ("essay".equals(cleaned) || "flashcard".equals(cleaned)) {
+        if ("essay".equals(cleaned)
+                || "true_false".equals(cleaned)
+                || "mixed_mc_essay".equals(cleaned)
+                || "mixed_mc_true_false".equals(cleaned)
+                || "flashcard".equals(cleaned)) {
             return cleaned;
         }
         return "multiple_choice";

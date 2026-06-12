@@ -46,6 +46,7 @@
 
 
                 <li><a href="<%= request.getContextPath() + "/exam-room" %>">Phòng thi</a></li>
+                <li><a href="<%= request.getContextPath() + "/courses" %>">Khóa học</a></li>
                 <li><a href="<%= request.getContextPath() + "/index#ai-roadmap" %>">Hipzi AI</a></li>
             </ul>
             

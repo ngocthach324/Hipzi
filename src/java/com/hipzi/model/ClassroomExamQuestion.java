@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 public class ClassroomExamQuestion {
     private String id;
     private String examId;
+    private String questionType = "multiple_choice";
     private String questionText;
     private String optionA;
     private String optionB;
@@ -21,6 +22,13 @@ public class ClassroomExamQuestion {
 
     public String getExamId() { return examId; }
     public void setExamId(String examId) { this.examId = examId; }
+
+    public String getQuestionType() { return questionType; }
+    public void setQuestionType(String questionType) {
+        this.questionType = questionType != null && !questionType.trim().isEmpty()
+                ? questionType
+                : "multiple_choice";
+    }
 
     public String getQuestionText() { return questionText; }
     public void setQuestionText(String questionText) { this.questionText = questionText; }

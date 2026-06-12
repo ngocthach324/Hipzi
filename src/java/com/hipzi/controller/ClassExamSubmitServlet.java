@@ -232,6 +232,7 @@ public class ClassExamSubmitServlet extends HttpServlet {
                             while (qrs.next()) {
                                 ClassroomExamQuestion q = new ClassroomExamQuestion();
                                 q.setId(qrs.getString("id"));
+                                q.setQuestionType(qrs.getString("question_type"));
                                 q.setCorrectOption(qrs.getString("correct_option"));
                                 double pts = qrs.getDouble("points");
                                 q.setPoints(qrs.wasNull() ? null : pts);

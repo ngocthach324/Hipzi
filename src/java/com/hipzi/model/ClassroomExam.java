@@ -86,6 +86,9 @@ public class ClassroomExam {
 
     public String getExamTypeLabel() {
         if ("essay".equals(examType)) return "Tự luận";
+        if ("true_false".equals(examType)) return "Đúng/Sai";
+        if ("mixed_mc_essay".equals(examType)) return "Trắc nghiệm / Tự luận";
+        if ("mixed_mc_true_false".equals(examType)) return "Trắc nghiệm / Đúng/Sai";
         if ("flashcard".equals(examType)) return "Flashcard";
         return "Trắc nghiệm";
     }

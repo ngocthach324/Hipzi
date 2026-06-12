@@ -186,8 +186,19 @@ public class ClassroomExamDao {
     }
 
     private String normalizeExamType(String examType) {
-        if ("essay".equals(examType) || "flashcard".equals(examType)) {
+        if ("essay".equals(examType)
+                || "true_false".equals(examType)
+                || "mixed_mc_essay".equals(examType)
+                || "mixed_mc_true_false".equals(examType)
+                || "flashcard".equals(examType)) {
             return examType;
+        }
+        return "multiple_choice";
+    }
+
+    private String normalizeQuestionType(String questionType) {
+        if ("essay".equals(questionType) || "true_false".equals(questionType)) {
+            return questionType;
         }
         return "multiple_choice";
     }
@@ -215,6 +226,7 @@ public class ClassroomExamDao {
                     ClassroomExamQuestion question = new ClassroomExamQuestion();
                     question.setId(rs.getString("id"));
                     question.setExamId(rs.getString("exam_id"));
+                    question.setQuestionType(normalizeQuestionType(rs.getString("question_type")));
                     question.setQuestionText(rs.getString("question_text"));
                     question.setOptionA(rs.getString("option_a"));
                     question.setOptionB(rs.getString("option_b"));
@@ -237,8 +249,8 @@ public class ClassroomExamDao {
             return;
         }
         String sql = "INSERT INTO classroom_exam_questions "
-                + "(exam_id, question_text, option_a, option_b, option_c, option_d, correct_option, reference_answer, points, sort_order) "
-                + "VALUES (?::uuid, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "(exam_id, question_type, question_text, option_a, option_b, option_c, option_d, correct_option, reference_answer, points, sort_order) "
+                + "VALUES (?::uuid, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             int order = 1;
             for (ClassroomExamQuestion question : questions) {
@@ -246,16 +258,17 @@ public class ClassroomExamDao {
                     continue;
                 }
                 ps.setString(1, examId);
-                ps.setString(2, question.getQuestionText());
-                ps.setString(3, question.getOptionA());
-                ps.setString(4, question.getOptionB());
-                ps.setString(5, question.getOptionC());
-                ps.setString(6, question.getOptionD());
+                ps.setString(2, normalizeQuestionType(question.getQuestionType()));
+                ps.setString(3, question.getQuestionText());
+                ps.setString(4, question.getOptionA());
+                ps.setString(5, question.getOptionB());
+                ps.setString(6, question.getOptionC());
+                ps.setString(7, question.getOptionD());
                 String correct = normalizeOption(question.getCorrectOption());
-                ps.setString(7, correct.isEmpty() ? null : correct);
-                ps.setString(8, question.getReferenceAnswer());
-                ps.setDouble(9, question.getPoints() != null && question.getPoints() > 0 ? question.getPoints() : 1.0);
-                ps.setInt(10, order++);
+                ps.setString(8, correct.isEmpty() ? null : correct);
+                ps.setString(9, question.getReferenceAnswer());
+                ps.setDouble(10, question.getPoints() != null && question.getPoints() > 0 ? question.getPoints() : 1.0);
+                ps.setInt(11, order++);
                 ps.addBatch();
             }
             ps.executeBatch();
@@ -420,6 +433,7 @@ public class ClassroomExamDao {
                     ClassroomExamQuestion question = new ClassroomExamQuestion();
                     question.setId(rs.getString("id"));
                     question.setExamId(rs.getString("exam_id"));
+                    question.setQuestionType(normalizeQuestionType(rs.getString("question_type")));
                     question.setQuestionText(rs.getString("question_text"));
                     question.setOptionA(rs.getString("option_a"));
                     question.setOptionB(rs.getString("option_b"));
@@ -770,7 +784,7 @@ public class ClassroomExamDao {
                     + "title TEXT NOT NULL,"
                     + "description TEXT,"
                     + "exam_code TEXT NOT NULL UNIQUE,"
-                    + "exam_type VARCHAR(20) NOT NULL DEFAULT 'multiple_choice' CHECK (exam_type IN ('multiple_choice', 'essay', 'flashcard')),"
+                    + "exam_type VARCHAR(40) NOT NULL DEFAULT 'multiple_choice' CHECK (exam_type IN ('multiple_choice', 'essay', 'true_false', 'mixed_mc_essay', 'mixed_mc_true_false', 'flashcard')),"
                     + "creation_mode VARCHAR(20) NOT NULL DEFAULT 'manual' CHECK (creation_mode IN ('manual', 'ai')),"
                     + "raw_source_text TEXT,"
                     + "source_material_id UUID REFERENCES classroom_materials(id) ON DELETE SET NULL,"
@@ -785,16 +799,14 @@ public class ClassroomExamDao {
                     + "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()"
                     + ")");
             st.execute("ALTER TABLE classroom_exams ADD COLUMN IF NOT EXISTS exam_type VARCHAR(20) NOT NULL DEFAULT 'multiple_choice'");
+            st.execute("ALTER TABLE classroom_exams ALTER COLUMN exam_type TYPE VARCHAR(40)");
             st.execute("ALTER TABLE classroom_exams ADD COLUMN IF NOT EXISTS creation_mode VARCHAR(20) NOT NULL DEFAULT 'manual'");
             st.execute("ALTER TABLE classroom_exams ADD COLUMN IF NOT EXISTS raw_source_text TEXT");
             st.execute("ALTER TABLE classroom_exams ADD COLUMN IF NOT EXISTS max_score NUMERIC(5,2) NOT NULL DEFAULT 10 CHECK (max_score > 0)");
             st.execute("ALTER TABLE classroom_exams ADD COLUMN IF NOT EXISTS attempt_limit INTEGER NOT NULL DEFAULT 1 CHECK (attempt_limit > 0)");
-            st.execute("DO $$ BEGIN "
-                    + "IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'classroom_exams_exam_type_check' "
-                    + "AND conrelid = 'classroom_exams'::regclass) THEN "
-                    + "ALTER TABLE classroom_exams ADD CONSTRAINT classroom_exams_exam_type_check "
-                    + "CHECK (exam_type IN ('multiple_choice', 'essay', 'flashcard')); "
-                    + "END IF; END $$");
+            st.execute("ALTER TABLE classroom_exams DROP CONSTRAINT IF EXISTS classroom_exams_exam_type_check");
+            st.execute("ALTER TABLE classroom_exams ADD CONSTRAINT classroom_exams_exam_type_check "
+                    + "CHECK (exam_type IN ('multiple_choice', 'essay', 'true_false', 'mixed_mc_essay', 'mixed_mc_true_false', 'flashcard'))");
             st.execute("DO $$ BEGIN "
                     + "IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'classroom_exams_creation_mode_check' "
                     + "AND conrelid = 'classroom_exams'::regclass) THEN "
@@ -810,6 +822,7 @@ public class ClassroomExamDao {
             st.execute("CREATE TABLE IF NOT EXISTS classroom_exam_questions ("
                     + "id UUID PRIMARY KEY DEFAULT gen_random_uuid(),"
                     + "exam_id UUID NOT NULL REFERENCES classroom_exams(id) ON DELETE CASCADE,"
+                    + "question_type VARCHAR(20) NOT NULL DEFAULT 'multiple_choice' CHECK (question_type IN ('multiple_choice', 'essay', 'true_false')),"
                     + "question_text TEXT NOT NULL,"
                     + "option_a TEXT,"
                     + "option_b TEXT,"
@@ -821,6 +834,15 @@ public class ClassroomExamDao {
                     + "sort_order INTEGER NOT NULL DEFAULT 1 CHECK (sort_order > 0),"
                     + "created_at TIMESTAMPTZ NOT NULL DEFAULT now()"
                     + ")");
+            st.execute("ALTER TABLE classroom_exam_questions ADD COLUMN IF NOT EXISTS question_type VARCHAR(20) NOT NULL DEFAULT 'multiple_choice'");
+            st.execute("ALTER TABLE classroom_exam_questions DROP CONSTRAINT IF EXISTS classroom_exam_questions_question_type_check");
+            st.execute("ALTER TABLE classroom_exam_questions ADD CONSTRAINT classroom_exam_questions_question_type_check "
+                    + "CHECK (question_type IN ('multiple_choice', 'essay', 'true_false'))");
+            st.execute("UPDATE classroom_exam_questions q SET question_type = e.exam_type "
+                    + "FROM classroom_exams e "
+                    + "WHERE q.exam_id = e.id "
+                    + "AND e.exam_type IN ('multiple_choice', 'essay', 'true_false') "
+                    + "AND q.question_type = 'multiple_choice'");
             st.execute("ALTER TABLE classroom_exam_questions ALTER COLUMN points TYPE NUMERIC(5,2)");
             st.execute("CREATE TABLE IF NOT EXISTS classroom_exam_attempts ("
                     + "id UUID PRIMARY KEY DEFAULT gen_random_uuid(),"
@@ -848,9 +870,10 @@ public class ClassroomExamDao {
                     + "id UUID PRIMARY KEY DEFAULT gen_random_uuid(),"
                     + "attempt_id UUID NOT NULL REFERENCES classroom_exam_attempts(id) ON DELETE CASCADE,"
                     + "question_id UUID NOT NULL REFERENCES classroom_exam_questions(id) ON DELETE CASCADE,"
-                    + "selected_option CHAR(1),"
+                    + "selected_option TEXT,"
                     + "is_correct BOOLEAN NOT NULL DEFAULT FALSE"
                     + ")");
+            st.execute("ALTER TABLE classroom_exam_answers ALTER COLUMN selected_option TYPE TEXT");
             st.execute("CREATE INDEX IF NOT EXISTS idx_classroom_exams_classroom ON classroom_exams(classroom_id, status, created_at DESC)");
             st.execute("CREATE INDEX IF NOT EXISTS idx_classroom_exams_code ON classroom_exams(exam_code)");
             st.execute("CREATE INDEX IF NOT EXISTS idx_classroom_exam_questions_exam ON classroom_exam_questions(exam_id, sort_order)");

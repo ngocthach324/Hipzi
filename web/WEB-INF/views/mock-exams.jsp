@@ -55,6 +55,106 @@
             display: none;
         }
 
+        /* Transparent navbar on scroll top */
+        .navbar:not(.scrolled) {
+            background: transparent !important;
+            border-bottom: none !important;
+            box-shadow: none !important;
+        }
+
+        @keyframes fadeSlideDown {
+            from { opacity: 0; transform: translateY(-18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── EXAM HERO ──────────────────────────────── */
+        .page-hero-exam {
+            text-align: center;
+            padding: 8rem 1.5rem 3.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .hero-kicker-exam {
+            display: inline-flex;
+            align-items: center;
+            gap: .55rem;
+            background: #d1fae5;
+            color: #065f46;
+            font-weight: 800;
+            font-size: .85rem;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            padding: .4rem 1rem;
+            border-radius: 999px;
+            margin-bottom: 1.5rem;
+            animation: fadeSlideDown .6s ease both;
+        }
+        .hero-title-exam {
+            font-size: clamp(1.9rem, 4.5vw, 3rem);
+            font-weight: 900;
+            line-height: 1.18;
+            color: #071627;
+            max-width: 780px;
+            margin-bottom: 1rem;
+            animation: fadeSlideDown .65s .08s ease both;
+        }
+        .hero-title-accent {
+            color: var(--mock-primary);
+        }
+        .hero-sub-exam {
+            color: #475569;
+            font-size: 1.05rem;
+            font-weight: 500;
+            line-height: 1.75;
+            max-width: 680px;
+            margin-bottom: 2.2rem;
+            animation: fadeSlideDown .7s .14s ease both;
+        }
+        .hero-exam-search-wrap {
+            width: 100%;
+            max-width: 640px;
+            animation: fadeSlideDown .75s .2s ease both;
+        }
+        .hero-exam-search-bar {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 999px;
+            padding: .5rem .5rem .5rem 1.4rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,.08);
+            transition: border-color .25s, box-shadow .25s;
+            gap: .75rem;
+        }
+        .hero-exam-search-bar:focus-within {
+            border-color: rgba(4,120,87,.4);
+            box-shadow: 0 8px 32px rgba(4,120,87,.12), 0 0 0 4px rgba(4,120,87,.08);
+        }
+        .hero-exam-search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font: 600 1rem inherit;
+            color: #0f172a;
+            background: transparent;
+        }
+        .hero-exam-search-input::placeholder { color: #94a3b8; font-weight: 400; }
+        .hero-exam-search-btn {
+            background: linear-gradient(135deg, #058c63 0%, #0aaf7e 100%);
+            color: #fff;
+            border: none;
+            padding: .7rem 1.6rem;
+            border-radius: 999px;
+            font: 700 .95rem inherit;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 4px 14px rgba(5,140,99,.35);
+            transition: opacity .2s, transform .2s;
+        }
+        .hero-exam-search-btn:hover { opacity: .9; transform: translateY(-1px); }
+        .hero-exam-search-btn:active { transform: translateY(0); }
+
         .sr-only {
             position: absolute;
             width: 1px;
@@ -791,6 +891,7 @@
                 <li><a href="${pageContext.request.contextPath}/classes">Lớp học</a></li>
 
                 <li><a href="${pageContext.request.contextPath}/exam-room" class="active">Phòng thi</a></li>
+                <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
                 <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
             </ul>
 
@@ -828,51 +929,31 @@
 
     <main class="mock-page">
         <div class="mock-shell">
-            <section class="mock-hero" aria-labelledby="mock-title">
-                <div>
-                    <div class="mock-kicker">
-                        <span class="mock-kicker-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 3v18M5 8h14M7 16h10"/>
-                            </svg>
-                        </span>
-                        Phòng luyện thi thông minh
-                    </div>
-                    <h1 id="mock-title">Chọn đúng dạng luyện tập, <span>vào bài nhanh hơn.</span></h1>
-                    <p>
-                        Giao diện mới gom đề thi theo 3 dạng rõ ràng: trắc nghiệm để kiểm tra tốc độ,
-                        flashcard để ghi nhớ trọng tâm và tự luận để rèn lập luận có phản hồi.
-                        Mỗi lựa chọn đều được sắp theo mục tiêu luyện tập, giúp học viên nhìn nhanh nội dung phù hợp trước khi bắt đầu.
-                    </p>
-
+            <!-- HERO PHÒNG THI -->
+            <section class="page-hero-exam" aria-labelledby="mock-title">
+                <div class="hero-kicker-exam">
+                    <span class="mock-kicker-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3v18M5 8h14M7 16h10"/>
+                        </svg>
+                    </span>
+                    Phòng luyện thi thông minh
                 </div>
-
-                <aside class="mock-hero-card" aria-label="Gợi ý lộ trình hôm nay">
-                    <div class="mock-hero-card-top">
-                        <img src="${pageContext.request.contextPath}/assets/images/subjects_mascot_cutout.png" alt="HIPZI học tập">
-                        <div>
-                            <h2>Lộ trình đề xuất hôm nay</h2>
-                            <p>Ưu tiên bài ngắn trước, sau đó tăng độ khó để giữ nhịp học ổn định.</p>
-                        </div>
+                <h1 id="mock-title" class="hero-title-exam">
+                    Chọn đúng dạng luyện tập, <span class="hero-title-accent">vào bài nhanh hơn.</span>
+                </h1>
+                <p class="hero-sub-exam">
+                    Giao diện gom đề thi theo 3 dạng rõ ràng: <strong>trắc nghiệm</strong> để kiểm tra tốc độ,
+                    <strong>flashcard</strong> để ghi nhớ trọng tâm và <strong>tự luận</strong> để rèn lập luận.
+                    Mỗi lựa chọn được sắp theo mục tiêu giúp bạn nhìn nhanh nội dung phù hợp trước khi bắt đầu.
+                </p>
+                <div class="hero-exam-search-wrap">
+                    <div class="hero-exam-search-bar">
+                        <svg style="color:#64748b;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                        <input id="heroExamSearch" type="text" class="hero-exam-search-input" placeholder="Tìm kiếm đề thi, môn học, chủ đề..." autocomplete="off">
+                        <button class="hero-exam-search-btn" onclick="syncSearchToToolbox()">Tìm kiếm</button>
                     </div>
-                    <ul class="mock-focus-list">
-                        <li>
-                            <span class="focus-step">1</span>
-                            <span><strong>Ôn nhanh từ vựng</strong><small>Flashcard, 12 phút</small></span>
-                            <span class="focus-score">+18%</span>
-                        </li>
-                        <li>
-                            <span class="focus-step">2</span>
-                            <span><strong>Làm đề trắc nghiệm</strong><small>Toán THPT, 90 phút</small></span>
-                            <span class="focus-score">92%</span>
-                        </li>
-                        <li>
-                            <span class="focus-step">3</span>
-                            <span><strong>Viết dàn ý tự luận</strong><small>Ngữ văn, 30 phút</small></span>
-                            <span class="focus-score">Bám sát</span>
-                        </li>
-                    </ul>
-                </aside>
+                </div>
             </section>
 
             <section class="mock-board" aria-label="Danh sách bài thi thử">
@@ -1285,6 +1366,20 @@
             });
             applyFilters();
         })();
+
+        // Sync hero search to the toolbox search input
+        function syncSearchToToolbox() {
+            const heroInput = document.getElementById('heroExamSearch');
+            const toolboxInput = document.getElementById('mockSearch');
+            if (heroInput && toolboxInput) {
+                toolboxInput.value = heroInput.value;
+                toolboxInput.dispatchEvent(new Event('input'));
+                toolboxInput.closest('.mock-board')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        document.getElementById('heroExamSearch')?.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); syncSearchToToolbox(); }
+        });
     </script>
 </body>
 </html>

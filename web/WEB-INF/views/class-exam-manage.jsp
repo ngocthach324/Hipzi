@@ -1003,6 +1003,7 @@
                 <li><a href="${pageContext.request.contextPath}/material-repository">Kho tài liệu</a></li>
                 <li><a href="${pageContext.request.contextPath}/classes" class="active">Lớp học</a></li>
                 <li><a href="${pageContext.request.contextPath}/exam-room">Phòng thi</a></li>
+                <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
                 <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
             </ul>
             <div class="navbar-user-controls">
@@ -1472,8 +1473,9 @@
                         String correct = q != null && q.getCorrectOption() != null ? q.getCorrectOption().toUpperCase() : "";
                         boolean answered = selected != null && !selected.trim().isEmpty();
                         boolean isCorrectAnswer = ans != null && ans.getId() != null && ans.isCorrect();
-                        String statusClass = !answered ? "pending" : (isCorrectAnswer ? "correct" : "wrong");
-                        String statusText = !answered ? "Chưa trả lời" : (isCorrectAnswer ? "Đúng" : "Sai");
+                        boolean essayAnswer = q != null && "essay".equals(q.getQuestionType());
+                        String statusClass = !answered ? "pending" : (essayAnswer ? "pending" : (isCorrectAnswer ? "correct" : "wrong"));
+                        String statusText = !answered ? "Chưa trả lời" : (essayAnswer ? "Đã trả lời" : (isCorrectAnswer ? "Đúng" : "Sai"));
                 %>
                     <article class="answer-detail-card">
                         <div class="answer-detail-top">
@@ -1482,6 +1484,9 @@
                         </div>
                         <div class="answer-question-text"><%= h(q != null ? q.getQuestionText() : "") %></div>
 
+                        <% if (essayAnswer) { %>
+                            <div class="answer-question-text"><strong>Câu trả lời:</strong> <%= h(selected) %></div>
+                        <% } else { %>
                         <ul class="answer-option-list">
                             <% String[] keys = {"A", "B", "C", "D"};
                                for (String key : keys) {
@@ -1506,6 +1511,7 @@
                             </li>
                             <% } %>
                         </ul>
+                        <% } %>
                     </article>
                 <%  }
                 } %>

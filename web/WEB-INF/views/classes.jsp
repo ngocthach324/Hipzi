@@ -24,6 +24,130 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/materials.css">
     <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=block">
+    <style>
+        :root {
+            --font: "Be Vietnam Pro", "Inter", Arial, sans-serif;
+            --c-primary:   #0d9488;
+            --c-primary-l: #14b8a6;
+            --c-primary-d: #0f766e;
+            --c-accent:    #7c3aed;
+            --c-navy:      #0f172a;
+            --c-text:      #1e293b;
+            --c-muted:     #64748b;
+            --c-border:    #e2e8f0;
+            --c-surface:   #ffffff;
+            --r-pill:      999px;
+            --transition:  .25s cubic-bezier(.4,0,.2,1);
+        }
+        .navbar:not(.scrolled) {
+            background: transparent !important;
+            border-bottom: none !important;
+            box-shadow: none !important;
+        }
+        @keyframes fadeSlideDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .page-hero {
+            background: transparent;
+            min-height: 60vh;
+            padding: 2rem 1.5rem 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            background: rgba(13,148,136,.12);
+            border: 1px solid rgba(13,148,136,.25);
+            color: var(--c-primary-d);
+            font-size: .82rem;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            padding: .35rem .9rem;
+            border-radius: var(--r-pill);
+            margin-bottom: 1.4rem;
+            animation: fadeSlideDown .6s ease both;
+        }
+        .hero-title {
+            font-size: clamp(1.8rem, 4.5vw, 3rem);
+            font-weight: 800;
+            color: var(--c-navy);
+            line-height: 1.2;
+            max-width: 720px;
+            margin-bottom: 1rem;
+            animation: fadeSlideDown .65s .08s ease both;
+        }
+        .hero-title span {
+            background: linear-gradient(135deg, #058c63 0%, #0aaf7e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle {
+            color: #334155;
+            font-weight: 500;
+            font-size: 1.1rem;
+            max-width: 580px;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+            animation: fadeSlideDown .7s .14s ease both;
+        }
+        .hero-search-wrap {
+            width: 100%;
+            max-width: 640px;
+            animation: fadeSlideDown .75s .2s ease both;
+        }
+        .hero-search-bar {
+            display: flex;
+            align-items: center;
+            background: var(--c-surface);
+            border: 2px solid var(--c-border);
+            border-radius: var(--r-pill);
+            padding: .5rem .5rem .5rem 1.4rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,.08);
+            transition: border-color var(--transition), box-shadow var(--transition);
+            gap: .75rem;
+        }
+        .hero-search-bar:focus-within {
+            border-color: var(--c-primary-l);
+            box-shadow: 0 8px 32px rgba(13,148,136,.15), 0 0 0 4px rgba(13,148,136,.08);
+        }
+        .hero-search-icon { color: var(--c-muted); flex-shrink: 0; }
+        .hero-search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-family: var(--font);
+            font-size: 1rem;
+            color: var(--c-text);
+            background: transparent;
+        }
+        .hero-search-input::placeholder { color: #94a3b8; }
+        .hero-search-btn {
+            background: linear-gradient(135deg, #058c63 0%, #0aaf7e 100%);
+            color: #fff;
+            border: none;
+            padding: .7rem 1.5rem;
+            border-radius: var(--r-pill);
+            font-family: var(--font);
+            font-size: .95rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: opacity var(--transition), transform var(--transition);
+            box-shadow: 0 4px 14px rgba(5,140,99,.35);
+        }
+        .hero-search-btn:hover { opacity: .9; transform: translateY(-1px); }
+        .hero-search-btn:active { transform: translateY(0); }
+    </style>
 </head>
 <body>
 
@@ -43,6 +167,7 @@
 
 
                 <li><a href="${pageContext.request.contextPath}/exam-room">Phòng thi</a></li>
+                <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
                 <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
             </ul>
             
@@ -82,22 +207,28 @@
         </div>
     </header>
 
-    <!-- HEADER LỚP HỌC (SẮC TÍM HOÀNG GIA RỰC RỠ) -->
-    <section class="repo-header">
-        <div class="repo-container">
-            <h1>Lớp học trực tuyến & Tương tác</h1>
-            <p>Hệ thống các lớp học chất lượng cao do Giảng viên hàng đầu dẫn dắt, bám sát lộ trình và mục tiêu điểm số.</p>
-            
-            <!-- THANH TÌM KIẾM TRUNG TÂM -->
-            <div class="search-bar-wrapper" style="max-width: 650px; margin: 2rem auto 0 auto;">
-                <form action="${pageContext.request.contextPath}/classes" method="GET" class="search-bar" style="background: #ffffff; padding: 0.5rem 0.5rem 0.5rem 1.5rem; border-radius: 100px; display: flex; align-items: center; box-shadow: 0 10px 25px rgba(5, 150, 105, 0.2);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" name="q" class="search-input" placeholder="Tìm kiếm lớp học, chủ đề, tên giảng viên..." value="${param.q}" style="border: none; outline: none; width: 100%; margin-left: 0.75rem; font-size: 1rem;" />
-                    <input type="hidden" name="subject" value="${empty param.subject ? 'Tất cả' : param.subject}" />
-                    <input type="hidden" name="grade" value="${empty param.grade ? 'Tất cả' : param.grade}" />
-                    <button type="submit" class="btn btn-primary search-btn" style="background: #059669; border-color: #059669; border-radius: 100px; font-weight: 600;">Tìm kiếm</button>
-                </form>
-            </div>
+    <!-- HERO LỚP HỌC -->
+    <section class="page-hero">
+        <div class="hero-kicker">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Hệ thống lớp học trực tuyến HIPZI
+        </div>
+        <h1 class="hero-title">
+            Lớp học trực tuyến <span>tương tác &amp; hiệu quả</span>
+        </h1>
+        <p class="hero-subtitle">
+            Hệ thống các lớp học chất lượng cao do giảng viên hàng đầu dẫn dắt, bám sát lộ trình và mục tiêu điểm số của bạn.
+        </p>
+        <div class="hero-search-wrap">
+            <form action="${pageContext.request.contextPath}/classes" method="GET">
+                <div class="hero-search-bar">
+                    <svg class="hero-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    <input type="text" name="q" class="hero-search-input" placeholder="Tìm kiếm lớp học, chủ đề, tên giảng viên..." value="${param.q}" autocomplete="off">
+                    <input type="hidden" name="subject" value="${empty param.subject ? 'Tất cả' : param.subject}">
+                    <input type="hidden" name="grade" value="${empty param.grade ? 'Tất cả' : param.grade}">
+                    <button type="submit" class="hero-search-btn">Tìm kiếm</button>
+                </div>
+            </form>
         </div>
     </section>
 

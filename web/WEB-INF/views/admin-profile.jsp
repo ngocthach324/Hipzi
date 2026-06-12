@@ -1855,6 +1855,7 @@
 
 
                 <li><a href="${pageContext.request.contextPath}/exam-room">Phòng thi</a></li>
+                <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
                 <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
             </ul>
             <div class="navbar-user-controls">
@@ -3017,4 +3018,4 @@
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
-</html>
+</html>
