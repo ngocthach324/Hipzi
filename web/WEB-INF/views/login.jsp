@@ -18,12 +18,12 @@
 
         <!-- Cột bên trái: Poster Wall (3 cột cuộn) -->
         <div class="auth-banner">
-            <img class="auth-side-illustration" src="${pageContext.request.contextPath}/assets/images/auth-left-knowledge-poster-balanced.png" alt="" aria-hidden="true">
+            <img class="auth-side-illustration" src="${pageContext.request.contextPath}/assets/images/auth-capybara-classroom.png" alt="" aria-hidden="true">
             <div class="poster-grid">
                 <% 
                     String[] myPosters = null;
                     try {
-                        String path = application.getRealPath("/assets/posters");
+                        String path = application.getRealPath("/assets/images");
                         if (path != null) {
                             java.io.File folder = new java.io.File(path);
                             if (folder.exists() && folder.isDirectory()) {
@@ -44,7 +44,7 @@
                     if (myPosters == null || myPosters.length == 0) {
                         myPosters = new String[]{"placeholder.jpg"};
                     }
-                    myPosters = new String[]{"auth-capybara-study.png"};
+                    myPosters = new String[]{"auth-capybara-classroom.png"};
                     
                     // Vòng lặp 3 cột
                     for (int col = 0; col < 3; col++) { 
@@ -55,7 +55,7 @@
                         String posterFile = myPosters[(i + col * 4) % myPosters.length];
                     %>
                     <div class="poster-item" 
-                         style="background-image: url('${pageContext.request.contextPath}/assets/posters/<%= posterFile %>');"></div>
+                         style="background-image: url('${pageContext.request.contextPath}/assets/images/<%= posterFile %>');"></div>
                     <% } %>
                     
                     <!-- Lặp lần 2 cho infinite effect -->
@@ -63,7 +63,7 @@
                         String posterFile = myPosters[(i + col * 4) % myPosters.length];
                     %>
                     <div class="poster-item" 
-                         style="background-image: url('${pageContext.request.contextPath}/assets/posters/<%= posterFile %>');"></div>
+                         style="background-image: url('${pageContext.request.contextPath}/assets/images/<%= posterFile %>');"></div>
                     <% } %>
                 </div>
                 <% } %>
