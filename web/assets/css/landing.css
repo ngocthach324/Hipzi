@@ -3668,9 +3668,13 @@ body::after {
     animation: marqueeLoop 40s linear infinite;
 }
 
-.marquee-track:hover .marquee-group {
-    animation-play-state: paused;
+.marquee-group-reverse {
+    display: flex;
+    gap: 2rem;
+    flex-shrink: 0;
+    animation: marqueeLoop 40s linear infinite reverse;
 }
+
 
 @keyframes marqueeLoop {
     0% {
@@ -5177,4 +5181,15 @@ body::after {
         gap: 1rem;
     }
     
+}
+
+/* Hiệu ứng Fade Up In cho Banner */
+.fade-up-element {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fade-up-element.is-visible {
+    opacity: 1;
+    transform: translateY(0);
 }

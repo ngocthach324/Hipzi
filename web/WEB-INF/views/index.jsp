@@ -21,7 +21,7 @@
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=9">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=10">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/hero-v2.css">
     <!-- Hiệu ứng cuộn mượt và chậm Lenis CSS -->
     <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.13/dist/lenis.css">
@@ -140,40 +140,13 @@
                         <span>Cập nhật liên tục theo chương trình học</span>
                     </li>
                 </ul>
-                <a href="<%= request.getContextPath() + "/material-repository" %>" class="feature-link">
+                <a href="<%= request.getContextPath() + (user != null ? "/material-repository" : "/login") %>" class="feature-link">
                     <span>Khám phá ngay</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
             </div>
             
             <!-- Card 2 -->
-            <div class="feature-card">
-                <div class="feature-icon icon-accent">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2c.2 4.4 2.6 6.8 7 7-4.4.2-6.8 2.6-7 7-.2-4.4-2.6-6.8-7-7 4.4-.2 6.8-2.6 7-7z"></path><path d="M6 13c.1 2.2 1.3 3.4 3.5 3.5-2.2.1-3.4 1.3-3.5 3.5-.1-2.2-1.3-3.4-3.5-3.5 2.2-.1 3.4-1.3 3.5-3.5z"></path></svg>
-                </div>
-                <h3>AI hỗ trợ học tập</h3>
-                <p>Trợ lý AI thông minh đồng hành cùng Học sinh đúc kết kiến thức trọng tâm từ tài liệu và bứt phá tư duy hiệu quả.</p>
-                <ul class="feature-list">
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 6-6"/></svg>
-                        <span>Tự động đúc kết kiến thức trọng tâm</span>
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 6-6"/></svg>
-                        <span>Khởi tạo bộ thẻ Flashcard siêu tốc</span>
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 6-6"/></svg>
-                        <span>Luyện đề trắc nghiệm thực chiến</span>
-                    </li>
-                </ul>
-                <a href="<%= request.getContextPath() + "/index#ai-roadmap" %>" class="feature-link" style="color: var(--primary);">
-                    <span>Trải nghiệm ngay</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
-            </div>
-            
-            <!-- Card 3 -->
             <div class="feature-card">
                 <div class="feature-icon icon-secondary">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 7h6"></path><path d="M9 11h6"></path><path d="M9 15h3"></path><path d="M14 16l1.5 1.5L19 14"></path></svg>
@@ -194,8 +167,35 @@
                         <span>Kỳ thi chung có kết quả minh bạch</span>
                     </li>
                 </ul>
-                <a href="<%= request.getContextPath() + "/exam-room" %>" class="feature-link" style="color: var(--secondary-hover);">
+                <a href="<%= request.getContextPath() + (user != null ? "/exam-room" : "/login") %>" class="feature-link" style="color: var(--secondary-hover);">
                     <span>Vào phòng thi</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+            
+            <!-- Card 3 -->
+            <div class="feature-card">
+                <div class="feature-icon icon-accent">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                </div>
+                <h3>Khóa học đa dạng</h3>
+                <p>Hệ thống khóa học chất lượng cao được thiết kế theo lộ trình chuẩn giúp bạn dễ dàng chinh phục mục tiêu.</p>
+                <ul class="feature-list">
+                    <li>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 6-6"/></svg>
+                        <span>Lộ trình bài bản, cá nhân hóa</span>
+                    </li>
+                    <li>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 6-6"/></svg>
+                        <span>Video bài giảng trực quan</span>
+                    </li>
+                    <li>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 6-6"/></svg>
+                        <span>Tương tác với giảng viên</span>
+                    </li>
+                </ul>
+                <a href="<%= request.getContextPath() + (user != null ? "/courses" : "/login") %>" class="feature-link" style="color: var(--primary);">
+                    <span>Trải nghiệm ngay</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
             </div>
@@ -563,7 +563,7 @@
     <!-- PHẦN ĐÁNH GIÁ TỪ CỘNG ĐỒNG / TESTIMONIALS SECTION -->
     <section class="testimonials-section">
         <div style="text-align: center; margin-bottom: 3.5rem;">
-            <h2 class="section-title scroll-letter-title">Đánh giá từ cộng đồng</h2>
+            <h2 class="section-title ecosystem-title scroll-letter-title" data-highlight-text="cộng đồng">Đánh giá từ cộng đồng</h2>
             <p class="section-subtitle" style="margin-bottom: 0;">Hàng ngàn Học viên và Giảng viên trên toàn quốc đã tin tưởng lựa chọn HIPZI làm bạn đồng hành.</p>
         </div>
 
@@ -735,7 +735,248 @@
                     </div>
                 </div>
             </div>
+            <div class="marquee-track" style="margin-top: 2rem;">
+                <!-- Group 1 -->
+                <div class="marquee-group-reverse">
+                    <!-- Card 1 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">”</div>
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★ ★ ★ ★ ★</div>
+                            <div class="testimonial-text">"Giao diện rất chuyên nghiệp và dễ sử dụng. Mình tìm kiếm tài liệu trọng tâm ôn thi THPT Quốc gia chỉ mất vài giây."</div>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar" style="background: #2563eb;">ĐH</div>
+                            <div class="author-info">
+                                <div class="author-name">Đức Huy</div>
+                                <div class="author-role">Học sinh lớp 12</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">”</div>
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★ ★ ★ ★ ★</div>
+                            <div class="testimonial-text">"Cảm ơn HIPZI đã duy trì nền tảng chất lượng. Các bộ flashcard tự động tạo từ tài liệu giúp mình nhớ bài cực kỳ lâu."</div>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar" style="background: #f59e0b;">TH</div>
+                            <div class="author-info">
+                                <div class="author-name">Lê Thu Hương</div>
+                                <div class="author-role">Học sinh lớp 11</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">”</div>
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★ ★ ★ ★ ★</div>
+                            <div class="testimonial-text">"Tính năng luyện đề trắc nghiệm AI rất sát với thực tế. Mình đã đạt kết quả cao trong kỳ thi giữa kỳ nhờ ôn luyện tại đây."</div>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar" style="background: #8b5cf6;">QH</div>
+                            <div class="author-info">
+                                <div class="author-name">Phạm Quang Huy</div>
+                                <div class="author-role">Sinh viên CNTT</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">”</div>
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★ ★ ★ ★ ★</div>
+                            <div class="testimonial-text">"Các box học tập rất hay và trực quan. Giao diện thân thiện tiếp thêm động lực học mỗi ngày cho mình và bạn bè."</div>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar" style="background: #f43f5e;">NL</div>
+                            <div class="author-info">
+                                <div class="author-name">Võ Ngọc Linh</div>
+                                <div class="author-role">Học sinh lớp 10</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 5 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">”</div>
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★ ★ ★ ★ ★</div>
+                            <div class="testimonial-text">"Quy trình kiểm duyệt giúp kho học liệu luôn giữ tiêu chuẩn cao. Công cụ AI hỗ trợ tạo câu hỏi giúp tôi tiết kiệm 80% thời gian."</div>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar" style="background: #059669;">MT</div>
+                            <div class="author-info">
+                                <div class="author-name">Trần Minh Tuấn</div>
+                                <div class="author-role">Giảng viên Toán</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group 2 (Duplicated for Seamless Infinite Looping) -->
+                <div class="marquee-group-reverse" aria-hidden="true">
+                    <!-- Card 1 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">”</div>
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★ ★ ★ ★ ★</div>
+                            <div class="testimonial-text">"Giao diện rất chuyên nghiệp và dễ sử dụng. Mình tìm kiếm tài liệu trọng tâm ôn thi THPT Quốc gia chỉ mất vài giây."</div>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar" style="background: #2563eb;">ĐH</div>
+                            <div class="author-info">
+                                <div class="author-name">Đức Huy</div>
+                                <div class="author-role">Học sinh lớp 12</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">”</div>
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★ ★ ★ ★ ★</div>
+                            <div class="testimonial-text">"Cảm ơn HIPZI đã duy trì nền tảng chất lượng. Các bộ flashcard tự động tạo từ tài liệu giúp mình nhớ bài cực kỳ lâu."</div>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar" style="background: #f59e0b;">TH</div>
+                            <div class="author-info">
+                                <div class="author-name">Lê Thu Hương</div>
+                                <div class="author-role">Học sinh lớp 11</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">”</div>
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★ ★ ★ ★ ★</div>
+                            <div class="testimonial-text">"Tính năng luyện đề trắc nghiệm AI rất sát với thực tế. Mình đã đạt kết quả cao trong kỳ thi giữa kỳ nhờ ôn luyện tại đây."</div>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar" style="background: #8b5cf6;">QH</div>
+                            <div class="author-info">
+                                <div class="author-name">Phạm Quang Huy</div>
+                                <div class="author-role">Sinh viên CNTT</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">”</div>
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★ ★ ★ ★ ★</div>
+                            <div class="testimonial-text">"Các box học tập rất hay và trực quan. Giao diện thân thiện tiếp thêm động lực học mỗi ngày cho mình và bạn bè."</div>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar" style="background: #f43f5e;">NL</div>
+                            <div class="author-info">
+                                <div class="author-name">Võ Ngọc Linh</div>
+                                <div class="author-role">Học sinh lớp 10</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 5 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">”</div>
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★ ★ ★ ★ ★</div>
+                            <div class="testimonial-text">"Quy trình kiểm duyệt giúp kho học liệu luôn giữ tiêu chuẩn cao. Công cụ AI hỗ trợ tạo câu hỏi giúp tôi tiết kiệm 80% thời gian."</div>
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar" style="background: #059669;">MT</div>
+                            <div class="author-info">
+                                <div class="author-name">Trần Minh Tuấn</div>
+                                <div class="author-role">Giảng viên Toán</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+    <!-- ========================================================== -->
+    <!-- BANNER CỘNG ĐỒNG HIPZI (CHÍNH GIỮA FULL-WIDTH TOÀN TRANG)  -->
+    <!-- ========================================================== -->
+    <div class="fade-up-element" style="max-width:1320px; width:100%; margin:4.5rem auto 2.5rem auto; padding:0 1.5rem;">
+        <div class="community-engagement-banner" style="background:#ffffff; border-radius:1.5rem; border:1px solid #e2e8f0; box-shadow:0 10px 30px rgba(0, 0, 0, 0.03); padding:2.5rem; display:flex; flex-direction:column; gap:1.75rem; position:relative; overflow:hidden;">
+            
+            <!-- Dải lấp lánh trang trí góc phải -->
+            <div style="position:absolute; top:0; right:0; width:350px; height:350px; background:radial-gradient(circle, rgba(5, 150, 105, 0.05) 0%, transparent 70%); pointer-events:none;"></div>
+
+            <div style="display:flex; flex-direction:column; gap:1.25rem; z-index:1;">
+                <!-- Badge Hỗ trợ / Cộng đồng -->
+                <div>
+                    <span style="display:inline-flex; align-items:center; gap:0.4rem; background:#ecfdf5; color:#059669; font-weight:800; font-size:0.75rem; padding:0.4rem 1rem; border-radius:2rem; letter-spacing:0.5px; text-transform:uppercase;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        Hỗ trợ học tập 24/7
+                    </span>
+                </div>
+
+                <!-- Hàng Flex chính chia 2 cột -->
+                <div style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; gap:2.5rem; flex-wrap:wrap;">
+                    
+                    <!-- Cột Trái: Tiêu đề & Lời kêu gọi -->
+                    <div style="flex:1; min-width:320px; display:flex; flex-direction:column; gap:1rem; text-align:left;">
+                        <h3 style="font-weight:800; font-size:2.15rem; color:#0f172a; line-height:1.25; margin:0; letter-spacing:-0.5px;">
+                            Tham Gia <span style="background:linear-gradient(135deg, rgb(4, 120, 87) 0%, rgb(16, 185, 129) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; font-style:italic;">Cộng Đồng HIPZI?</span>
+                        </h3>
+                        <p style="font-size:0.95rem; color:#475569; line-height:1.55; margin:0; max-width:550px;">
+                            Đừng ngần ngại kết nối với đội ngũ giảng viên và cộng đồng học viên để cùng trao đổi kiến thức, định hướng lộ trình học tập phù hợp và hiệu quả nhất với bản thân.
+                        </p>
+                        
+                        <!-- Hàng Nút Hành động CTA -->
+                        <div style="display:flex; align-items:center; gap:0.85rem; margin-top:0.5rem; flex-wrap:wrap;">
+                            <a href="https://zalo.me/g/hipzi2024" target="_blank" style="background:#059669; color:#ffffff; font-weight:700; font-size:0.85rem; padding:0.85rem 1.75rem; border-radius:0.75rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem; box-shadow:0 4px 12px rgba(5, 150, 105, 0.25); transition:all 0.2s ease; letter-spacing:0.5px;" onmouseover="this.style.background='#047857'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='#059669'; this.style.transform='translateY(0)';">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                THAM GIA CỘNG ĐỒNG
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Cột Phải: Khung Highlight Thông số bo tròn màu xám nhạt -->
+                    <div style="background:#f8fafc; border-radius:1.25rem; padding:1.5rem; border:1px solid #f1f5f9; display:flex; flex-direction:column; gap:1.25rem; min-width:260px;">
+                        
+                        <!-- Thông số 1 -->
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div style="width:42px; height:42px; border-radius:0.85rem; background:#ffffff; color:#2563eb; box-shadow:0 2px 8px rgba(0,0,0,0.04); display:flex; justify-content:center; align-items:center; flex-shrink:0;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <div style="display:flex; flex-direction:column; text-align:left;">
+                                <span style="font-size:0.7rem; font-weight:700; color:#94a3b8; letter-spacing:0.5px; text-transform:uppercase;">GIẢNG VIÊN ONLINE</span>
+                                <span style="font-size:1.05rem; font-weight:800; color:#0f172a;">Hơn 50+ Mentor</span>
+                            </div>
+                        </div>
+
+                        <div style="height:1px; background:#f1f5f9;"></div>
+
+                        <!-- Thông số 2 -->
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div style="width:42px; height:42px; border-radius:0.85rem; background:#ffffff; color:#10b981; box-shadow:0 2px 8px rgba(0,0,0,0.04); display:flex; justify-content:center; align-items:center; flex-shrink:0;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            </div>
+                            <div style="display:flex; flex-direction:column; text-align:left;">
+                                <span style="font-size:0.7rem; font-weight:700; color:#94a3b8; letter-spacing:0.5px; text-transform:uppercase;">CỘNG ĐỒNG HỌC VIÊN</span>
+                                <span style="font-size:1.05rem; font-weight:800; color:#0f172a;">2000+ Thành viên</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
     </section>
 
     <!-- PHẦN LIÊN HỆ VỚI CHÚNG TÔI / CONTACT SECTION -->
@@ -1098,6 +1339,21 @@
                 requestAnimationFrame(raf);
             }
             requestAnimationFrame(raf);
+
+            // Hiệu ứng Fade Up cho Banner Cộng đồng
+            const fadeUpElements = document.querySelectorAll('.fade-up-element');
+            if (fadeUpElements.length > 0) {
+                const fadeObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            fadeObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.25 });
+                
+                fadeUpElements.forEach(el => fadeObserver.observe(el));
+            }
 
             // Xử lý gửi Form Liên hệ trang chủ qua AJAX
             const contactForm = document.getElementById('contactForm');

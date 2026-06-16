@@ -128,7 +128,9 @@ document.addEventListener('DOMContentLoaded', function() {
         typeNextChar();
     }
 
-    prepareLetterTitle(document.querySelector('.ecosystem-title'), 'ecosystem-title-char');
+    document.querySelectorAll('.ecosystem-title').forEach(title => {
+        prepareLetterTitle(title, 'ecosystem-title-char');
+    });
     document.querySelectorAll('.scroll-letter-title').forEach(title => {
         prepareLetterTitle(title, 'scroll-letter-title-char');
     });
@@ -582,6 +584,18 @@ document.addEventListener('DOMContentLoaded', function() {
             prefersReducedMotion.addEventListener('change', requestHipziHowUpdate);
             mobileQuery.addEventListener('change', requestHipziHowUpdate);
         }
+    }
+
+    const marqueeTracks = document.querySelectorAll('.marquee-track');
+    if (marqueeTracks.length > 0 && typeof Element.prototype.getAnimations === 'function') {
+        marqueeTracks.forEach(track => {
+            track.addEventListener('mouseenter', () => {
+                track.getAnimations({ subtree: true }).forEach(anim => anim.playbackRate = 0.5);
+            });
+            track.addEventListener('mouseleave', () => {
+                track.getAnimations({ subtree: true }).forEach(anim => anim.playbackRate = 1);
+            });
+        });
     }
 });
 
