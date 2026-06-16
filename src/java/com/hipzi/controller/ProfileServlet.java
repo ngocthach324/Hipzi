@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Locale;
 
 
-@WebServlet(name = "ProfileServlet", urlPatterns = {"/profile", "/student-profile", "/parent-profile", "/teacher-profile", "/staff-profile", "/admin-profile"})
+@WebServlet(name = "ProfileServlet", urlPatterns = {"/profile", "/student-profile", "/parent-profile", "/teacher-profile", "/teacher-wallet", "/teacher-management", "/staff-profile", "/admin-profile"})
 @MultipartConfig(
     fileSizeThreshold = 1024 * 1024 * 1, // 1 MB
     maxFileSize = 1024 * 1024 * 5,       // 5 MB
@@ -82,6 +82,12 @@ public class ProfileServlet extends HttpServlet {
             return;
         }
 
+        if ("/teacher-wallet".equals(path) || "/teacher-management".equals(path)) {
+            String tab = "/teacher-wallet".equals(path) ? "wallet" : "management";
+            response.sendRedirect(request.getContextPath() + "/teacher-profile?tab=" + tab);
+            return;
+        }
+
         // Nếu truy cập qua path chung "/profile", chuyển hướng sang path định danh vai trò cụ thể
         if ("/profile".equals(path)) {
             String rolePath = "/student-profile";
@@ -121,7 +127,7 @@ public class ProfileServlet extends HttpServlet {
         } else if ("/WEB-INF/views/parent-profile.jsp".equals(targetJsp)) {
             List<ParentStudentLink> trackedStudents = linkDao.findLinksByParentId(user.getId());
             request.setAttribute("trackedStudents", trackedStudents);
-        } else if ("/WEB-INF/views/teacher-profile.jsp".equals(targetJsp)) {
+        } else if (isTeacherPage(targetJsp)) {
             TeacherApplication teacherApplication = teacherApplicationDao.findLatestByUserId(user.getId());
             request.setAttribute("teacherApplication", teacherApplication);
             request.setAttribute("teacherClassrooms", classroomDao.findByTeacherId(user.getId()));
@@ -395,6 +401,56 @@ public class ProfileServlet extends HttpServlet {
                         session.setAttribute("toastType", "error");
                     }
                 }
+            } else if ("updateTeacherCourse".equals(action)) {
+                String courseId = cleanParam(request.getParameter("courseId"));
+                Course course = buildCourseFromRequest(request, user);
+                TeacherApplication teacherApplication = teacherApplicationDao.findLatestByUserId(user.getId());
+                TeacherGoogleAccount googleAccount = teacherGoogleAccountDao.findActiveByTeacherId(user.getId());
+
+                if (!canManageClassrooms(user, teacherApplication)) {
+                    session.setAttribute("toastMsg", "Hồ sơ giảng viên của bạn cần được phê duyệt trước khi chỉnh sửa khóa học.");
+                    session.setAttribute("toastType", "error");
+                } else if (courseId.isEmpty()) {
+                    session.setAttribute("toastMsg", "Không tìm thấy khóa học cần chỉnh sửa.");
+                    session.setAttribute("toastType", "error");
+                } else if (googleAccount == null || !googleAccount.isConnected()) {
+                    session.setAttribute("toastMsg", "Vui lòng kết nối Google Drive trước khi chỉnh sửa khóa học.");
+                    session.setAttribute("toastType", "error");
+                } else if (!isApprovedSubject(teacherApplication, course.getSubjectName())) {
+                    session.setAttribute("toastMsg", "Bạn chỉ được chỉnh sửa khóa học cho môn đã được phê duyệt trong hồ sơ giảng dạy.");
+                    session.setAttribute("toastType", "error");
+                } else if (!isValidCourse(course)) {
+                    session.setAttribute("toastMsg", "Vui lòng điền đầy đủ tên khóa học, môn học, số bài, giá hợp lệ và link Google Drive.");
+                    session.setAttribute("toastType", "error");
+                } else {
+                    course.setDriveOwnerEmail(googleAccount.getGoogleEmail());
+                    String accessToken = googleDriveOAuthService.accessTokenForTeacher(
+                            user.getId(),
+                            config("GOOGLE_CLIENT_ID"),
+                            config("GOOGLE_CLIENT_SECRET"),
+                            tokenEncryptionKey()
+                    );
+                    googleDriveOAuthService.verifyShareableResource(accessToken, courseDriveResourceId(course));
+                    if (courseDao.updateForTeacher(courseId, user.getId(), course)) {
+                        session.setAttribute("toastMsg", "Đã cập nhật khóa học '" + course.getTitle() + "'.");
+                        session.setAttribute("toastType", "success");
+                    } else {
+                        session.setAttribute("toastMsg", "Không thể cập nhật khóa học này.");
+                        session.setAttribute("toastType", "error");
+                    }
+                }
+            } else if ("deleteTeacherCourse".equals(action)) {
+                String courseId = cleanParam(request.getParameter("courseId"));
+                if (courseId.isEmpty()) {
+                    session.setAttribute("toastMsg", "Không tìm thấy khóa học cần xóa.");
+                    session.setAttribute("toastType", "error");
+                } else if (courseDao.softDeleteForTeacher(courseId, user.getId())) {
+                    session.setAttribute("toastMsg", "Đã xóa khóa học khỏi danh sách hiển thị.");
+                    session.setAttribute("toastType", "success");
+                } else {
+                    session.setAttribute("toastMsg", "Không thể xóa khóa học này.");
+                    session.setAttribute("toastType", "error");
+                }
             } else if ("reviewCourse".equals(action)) {
                 String courseId = cleanParam(request.getParameter("courseId"));
                 String decision = cleanParam(request.getParameter("decision"));
@@ -562,7 +618,7 @@ public class ProfileServlet extends HttpServlet {
             returnPath += "?tab=class-registration";
         } else if ("deleteManagedClass".equals(action)) {
             returnPath += "?tab=manage-classes";
-        } else if ("registerCourse".equals(action)) {
+        } else if ("registerCourse".equals(action) || "updateTeacherCourse".equals(action) || "deleteTeacherCourse".equals(action)) {
             returnPath += "?tab=course-registration";
         } else if ("reviewCourse".equals(action) || "deleteManagedCourse".equals(action)) {
             returnPath += "?tab=manage-courses";
@@ -576,6 +632,10 @@ public class ProfileServlet extends HttpServlet {
 
     private String cleanParam(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private boolean isTeacherPage(String targetJsp) {
+        return "/WEB-INF/views/teacher-profile.jsp".equals(targetJsp);
     }
 
     private String config(String name) {

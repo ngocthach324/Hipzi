@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 @WebServlet(name = "LoginServlet", urlPatterns = {"/login"})
 public class LoginServlet extends HttpServlet {
@@ -64,7 +65,7 @@ public class LoginServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        String email = request.getParameter("email");
+        String email = normalizeEmail(request.getParameter("email"));
         String password = request.getParameter("password");
         boolean rememberMe = "true".equals(request.getParameter("rememberMe"));
 
@@ -85,8 +86,6 @@ public class LoginServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/verify-otp?purpose=login");
                 return;
             }
-
-            List<com.hipzi.model.Role> roles = user.getRoles();
 
             session.removeAttribute("pending_2fa_user_id");
             session.removeAttribute("pending_remember_me");
@@ -122,6 +121,14 @@ public class LoginServlet extends HttpServlet {
             request.setAttribute("email", email);
             request.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(request, response);
         }
+    }
+
+    private String normalizeEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+        String normalized = email.trim().toLowerCase(Locale.ROOT);
+        return normalized.isEmpty() ? null : normalized;
     }
 
     private String resolveProfileUrl(List<com.hipzi.model.Role> roles) {

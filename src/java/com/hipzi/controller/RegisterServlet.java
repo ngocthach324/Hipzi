@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Locale;
 
 @WebServlet(name = "RegisterServlet", urlPatterns = {"/register"})
 public class RegisterServlet extends HttpServlet {
@@ -28,7 +29,7 @@ public class RegisterServlet extends HttpServlet {
         
         request.setCharacterEncoding("UTF-8");
         
-        String email           = request.getParameter("email");
+        String email           = normalizeEmail(request.getParameter("email"));
         String password        = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
         String displayName     = request.getParameter("displayName");
@@ -76,5 +77,13 @@ public class RegisterServlet extends HttpServlet {
         request.setAttribute("email", email);
         request.setAttribute("displayName", displayName);
         request.getRequestDispatcher("/WEB-INF/views/register.jsp").forward(request, response);
+    }
+
+    private String normalizeEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+        String normalized = email.trim().toLowerCase(Locale.ROOT);
+        return normalized.isEmpty() ? null : normalized;
     }
 }

@@ -16,10 +16,10 @@ public class User {
     private String oauthSub;            // Subject ID từ OAuth provider
     // Onboarding
     private boolean onboardingCompleted; // false = chưa chọn role → redirect /onboarding.jsp
-    // Bảo mật 2 lớp
     private boolean emailVerified;       // true = đã xác minh email lần đầu
     private boolean twoFactorEnabled;    // true = yêu cầu OTP khi đăng nhập
     private String studentCode;
+    private double walletBalance;        // Số dư ví
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private Timestamp deletedAt;
@@ -29,6 +29,7 @@ public class User {
 
     public User() {
         this.roles = new ArrayList<>();
+        this.walletBalance = 0.0;
     }
 
     public String getId() { return id; }
@@ -75,6 +76,9 @@ public class User {
 
     public Timestamp getDeletedAt() { return deletedAt; }
     public void setDeletedAt(Timestamp deletedAt) { this.deletedAt = deletedAt; }
+
+    public double getWalletBalance() { return walletBalance; }
+    public void setWalletBalance(double walletBalance) { this.walletBalance = walletBalance; }
 
     public List<Role> getRoles() { return roles; }
     public void setRoles(List<Role> roles) { this.roles = roles; }

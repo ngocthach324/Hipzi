@@ -249,6 +249,61 @@ public class CourseDao {
         return false;
     }
 
+    public boolean updateForTeacher(String courseId, String teacherId, Course course) {
+        String sql = "UPDATE courses SET title = ?, short_description = ?, subject_code = ?, subject_name = ?, "
+                + "grade_level = ?, level_name = ?, price_type = ?, price_amount = ?, currency = ?, "
+                + "thumbnail_url = ?, thumbnail_gradient = ?, badge_text = ?, lessons_count = ?, estimated_hours = ?, "
+                + "google_drive_url = ?, google_drive_file_id = ?, google_drive_folder_id = ?, drive_owner_email = ?, "
+                + "access_instructions = ?, updated_at = NOW() "
+                + "WHERE id = ?::uuid AND teacher_id = ?::uuid AND deleted_at IS NULL";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, course.getTitle());
+            ps.setString(2, course.getShortDescription());
+            ps.setString(3, course.getSubjectCode());
+            ps.setString(4, course.getSubjectName());
+            ps.setString(5, course.getGradeLevel());
+            ps.setString(6, course.getLevelName());
+            ps.setString(7, course.getPriceType());
+            ps.setBigDecimal(8, valueOrZero(course.getPriceAmount()));
+            ps.setString(9, course.getCurrency() != null ? course.getCurrency() : "VND");
+            ps.setString(10, course.getThumbnailUrl());
+            ps.setString(11, course.getThumbnailGradient());
+            ps.setString(12, course.getBadgeText());
+            ps.setInt(13, Math.max(0, course.getLessonsCount()));
+            ps.setBigDecimal(14, valueOrZero(course.getEstimatedHours()));
+            ps.setString(15, course.getGoogleDriveUrl());
+            ps.setString(16, course.getGoogleDriveFileId());
+            ps.setString(17, course.getGoogleDriveFolderId());
+            ps.setString(18, course.getDriveOwnerEmail());
+            ps.setString(19, course.getAccessInstructions());
+            ps.setString(20, courseId);
+            ps.setString(21, teacherId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error in CourseDao.updateForTeacher: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean softDeleteForTeacher(String courseId, String teacherId) {
+        String sql = "UPDATE courses SET status = 'archived', visibility = 'private', deleted_at = NOW(), updated_at = NOW() "
+                + "WHERE id = ?::uuid AND teacher_id = ?::uuid AND deleted_at IS NULL";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, courseId);
+            ps.setString(2, teacherId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error in CourseDao.softDeleteForTeacher: " + e.getMessage());
+        }
+        return false;
+    }
+
     public boolean softDeleteByStaff(String courseId, String staffId, String deleteReason) {
         String sql = "UPDATE courses SET status = 'archived', visibility = 'private', deleted_at = NOW(), "
                 + "deleted_by = ?::uuid, delete_reason = ?, updated_at = NOW() "

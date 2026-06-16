@@ -44,7 +44,7 @@
     <title>Khóa học trực tuyến - HIPZI</title>
     <meta name="description" content="Khám phá hàng trăm khóa học chất lượng cao từ giảng viên uy tín trên HIPZI. Học mọi lúc, mọi nơi, theo lộ trình cá nhân hóa.">
     <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=5">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=9">
     <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=block">
 
@@ -903,11 +903,28 @@
                         <% } %>
                     </div>
                     <div class="dropdown-menu-popup">
-                        <a href="${pageContext.request.contextPath}/profile">
+                        <a href="${pageContext.request.contextPath}/teacher-profile">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                            <span><%= profileMenuLabel %></span>
+                            <span class="avatar-menu-copy">
+                                <span class="avatar-menu-title"><%= profileMenuLabel %></span>
+                                <span class="avatar-menu-subtitle">Vai trò: <%= profileRoleLabel %></span>
+                            </span>
                         </a>
-                        <div style="height:1px;background:var(--border-dark);margin:.35rem 0;"></div>
+                        <a href="${pageContext.request.contextPath}/teacher-profile?tab=wallet" class="avatar-menu-wallet">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 7H5a2 2 0 0 0 0 4h15v8H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16v4z"/><path d="M16 14h.01"/></svg>
+                            <span class="avatar-menu-copy">
+                                <span class="avatar-menu-title">Ví giảng viên</span>
+                                <span class="avatar-menu-subtitle">Số dư: 1.250.000đ</span>
+                            </span>
+                        </a>
+                        <a href="${pageContext.request.contextPath}/teacher-profile?tab=management">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3l8 4.5-8 4.5-8-4.5L12 3z"/><path d="M4 12l8 4.5 8-4.5"/><path d="M4 16.5l8 4.5 8-4.5"/></svg>
+                            <span class="avatar-menu-copy">
+                                <span class="avatar-menu-title">Quản lý giảng dạy</span>
+                                <span class="avatar-menu-subtitle">Lớp học, khóa học và tài liệu</span>
+                            </span>
+                        </a>
+                        <div class="avatar-menu-divider"></div>
                         <a href="${pageContext.request.contextPath}/logout" class="danger-link">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                             <span>Đăng xuất</span>
@@ -1503,7 +1520,7 @@
 
 <%@ include file="/WEB-INF/fragments/site-footer.jspf" %>
 
-<script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
+<script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=3"></script>
 <script>
 // ─── DATA ────────────────────────────────────────────
 const allCards = Array.from(document.querySelectorAll('.course-card'));

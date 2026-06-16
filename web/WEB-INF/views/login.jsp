@@ -155,8 +155,15 @@
             const storageKey = 'hipziRememberedEmails';
             if (!form || !emailInput || !rememberInput || !menu) return;
 
-            emailInput.addEventListener('focus', () => {
+            const enableEmailInput = () => {
                 emailInput.removeAttribute('readonly');
+            };
+
+            emailInput.addEventListener('pointerdown', enableEmailInput);
+            emailInput.addEventListener('keydown', enableEmailInput);
+            emailInput.addEventListener('focus', () => {
+                enableEmailInput();
+                showMenu();
             });
 
             const readEmails = () => {
@@ -176,7 +183,7 @@
                 menu.classList.remove('show');
             };
 
-            const showMenu = () => {
+            function showMenu() {
                 const query = emailInput.value.trim().toLowerCase();
                 const emails = readEmails().filter(email => !query || email.toLowerCase().startsWith(query));
                 menu.innerHTML = '';
@@ -223,7 +230,7 @@
                 });
 
                 menu.classList.add('show');
-            };
+            }
 
             form.addEventListener('submit', () => {
                 const email = emailInput.value.trim().toLowerCase();
@@ -233,7 +240,6 @@
                 writeEmails(emails);
             });
 
-            emailInput.addEventListener('focus', showMenu);
             emailInput.addEventListener('input', showMenu);
             document.addEventListener('mousedown', event => {
                 if (!menu.contains(event.target) && event.target !== emailInput) {
@@ -246,4 +252,4 @@
         document.addEventListener('DOMContentLoaded', setupRememberedEmailMenu);
     </script>
 </body>
-</html>
+</html>

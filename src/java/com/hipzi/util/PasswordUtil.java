@@ -1,5 +1,7 @@
 package com.hipzi.util;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -12,9 +14,13 @@ public class PasswordUtil {
      * Trong tương lai nên chuyển sang BCrypt hoặc PBKDF2.
      */
     public static String hashPassword(String password) {
+        return hashPassword(password, StandardCharsets.UTF_8);
+    }
+
+    private static String hashPassword(String password, Charset charset) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = md.digest(password.getBytes());
+            byte[] hashBytes = md.digest(password.getBytes(charset));
             return Base64.getEncoder().encodeToString(hashBytes);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Could not hash password", e);
@@ -28,6 +34,12 @@ public class PasswordUtil {
             return true;
         }
         String newHash = hashPassword(plainPassword);
-        return newHash.equals(hashedPassword);
+        if (newHash.equals(hashedPassword)) {
+            return true;
+        }
+
+        Charset legacyCharset = Charset.defaultCharset();
+        return !StandardCharsets.UTF_8.equals(legacyCharset)
+                && hashPassword(plainPassword, legacyCharset).equals(hashedPassword);
     }
 }

@@ -9,6 +9,7 @@ import com.hipzi.exception.UnauthorizedException;
 import com.hipzi.util.PasswordUtil;
 
 import java.util.List;
+import java.util.Locale;
 
 public class AuthService {
 
@@ -22,8 +23,9 @@ public class AuthService {
     // BR-ROLE-001: Mỗi user phải có ít nhất 1 role
     // -------------------------------------------------------------------------
     public String register(String email, String password, String displayName, String roleName) {
+        String normalizedEmail = normalizeEmail(email);
         // Validation
-        if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+        if (normalizedEmail == null || password == null || password.trim().isEmpty()) {
             return "Email và mật khẩu không được để trống.";
         }
         if (displayName == null || displayName.trim().isEmpty()) {
@@ -39,13 +41,13 @@ public class AuthService {
         }
 
         // Kiểm tra email đã tồn tại
-        if (userDao.findByEmail(email) != null) {
+        if (userDao.findByEmail(normalizedEmail) != null) {
             return "Email này đã được sử dụng.";
         }
 
         // Tạo user mới (onboarding_completed = true vì đã chọn role trên form)
         User newUser = new User();
-        newUser.setEmail(email.trim());
+        newUser.setEmail(normalizedEmail);
         newUser.setDisplayName(displayName.trim());
         newUser.setPasswordHash(PasswordUtil.hashPassword(password));
 
@@ -71,7 +73,12 @@ public class AuthService {
     // Đăng nhập bằng email/password
     // -------------------------------------------------------------------------
     public User login(String email, String password) {
-        User user = userDao.findByEmail(email);
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null || password == null || password.isEmpty()) {
+            throw new UnauthorizedException("Vui lòng nhập email và mật khẩu.");
+        }
+
+        User user = userDao.findByEmail(normalizedEmail);
         if (user == null) {
             throw new UnauthorizedException("Email hoặc mật khẩu không chính xác.");
         }
@@ -94,6 +101,14 @@ public class AuthService {
         user.setRoles(roles);
 
         return user;
+    }
+
+    private String normalizeEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+        String normalized = email.trim().toLowerCase(Locale.ROOT);
+        return normalized.isEmpty() ? null : normalized;
     }
 
     // -------------------------------------------------------------------------

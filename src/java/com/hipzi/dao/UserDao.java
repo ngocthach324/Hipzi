@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Locale;
 
 public class UserDao {
 
@@ -27,6 +28,7 @@ public class UserDao {
         user.setEmailVerified(rs.getBoolean("email_verified"));
         user.setTwoFactorEnabled(rs.getBoolean("two_factor_enabled"));
         user.setStudentCode(rs.getString("student_code"));
+        user.setWalletBalance(rs.getDouble("wallet_balance"));
         user.setCreatedAt(rs.getTimestamp("created_at"));
         user.setUpdatedAt(rs.getTimestamp("updated_at"));
         return user;
@@ -36,15 +38,21 @@ public class UserDao {
     // Tìm user theo email (dùng cho login email/password)
     // -------------------------------------------------------------------------
     public User findByEmail(String email) {
-        String sql = "SELECT * FROM users WHERE email = ? AND deleted_at IS NULL";
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail == null) {
+            return null;
+        }
+
+        String sql = "SELECT * FROM users WHERE LOWER(TRIM(email)) = ? AND deleted_at IS NULL";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, email);
+            ps.setString(1, normalizedEmail);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapRow(rs);
             }
         } catch (SQLException e) {
             System.err.println("Error in UserDao.findByEmail: " + e.getMessage());
+            throw new IllegalStateException("Could not query user by email", e);
         }
         return null;
     }
@@ -72,18 +80,24 @@ public class UserDao {
     // onboarding_completed = TRUE vì user đã chọn role trên form đăng ký
     // -------------------------------------------------------------------------
     public boolean createUser(User user) {
+        String normalizedEmail = normalizeEmail(user != null ? user.getEmail() : null);
+        if (user == null || normalizedEmail == null) {
+            return false;
+        }
+
         String studentCode = generateStudentCode();
         String sql = "INSERT INTO users (email, password_hash, display_name, student_code, account_status, onboarding_completed) " +
                      "VALUES (?, ?, ?, ?, 'active', true) RETURNING id";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, user.getEmail());
+            ps.setString(1, normalizedEmail);
             ps.setString(2, user.getPasswordHash());
             ps.setString(3, user.getDisplayName());
             ps.setString(4, studentCode);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     user.setId(rs.getString("id"));
+                    user.setEmail(normalizedEmail);
                     user.setStudentCode(studentCode);
                     user.setOnboardingCompleted(true);
                     return true;
@@ -110,13 +124,18 @@ public class UserDao {
     // onboarding_completed = FALSE → sẽ redirect sang /onboarding.jsp
     // -------------------------------------------------------------------------
     public boolean createUserFromOAuth(User user) {
+        String normalizedEmail = normalizeEmail(user != null ? user.getEmail() : null);
+        if (user == null || normalizedEmail == null) {
+            return false;
+        }
+
         String studentCode = generateStudentCode();
         String sql = "INSERT INTO users (email, display_name, avatar_url, oauth_provider, oauth_sub, " +
                      "student_code, account_status, onboarding_completed, email_verified) " +
                      "VALUES (?, ?, ?, ?, ?, ?, 'active', false, true) RETURNING id";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, user.getEmail());
+            ps.setString(1, normalizedEmail);
             ps.setString(2, user.getDisplayName());
             ps.setString(3, user.getAvatarUrl());
             ps.setString(4, user.getOauthProvider());
@@ -125,6 +144,7 @@ public class UserDao {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     user.setId(rs.getString("id"));
+                    user.setEmail(normalizedEmail);
                     user.setStudentCode(studentCode);
                     user.setOnboardingCompleted(false);
                     return true;
@@ -260,5 +280,13 @@ public class UserDao {
             System.err.println("Error in UserDao.listAllIds: " + e.getMessage());
         }
         return ids;
+    }
+
+    private String normalizeEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+        String normalized = email.trim().toLowerCase(Locale.ROOT);
+        return normalized.isEmpty() ? null : normalized;
     }
 }

@@ -310,6 +310,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 50);
     }
 
+    const avatarDropdowns = Array.from(document.querySelectorAll('.nav-avatar-dropdown'))
+        .filter(dropdown => dropdown.id !== 'teacherAvatarDropdown');
+    if (avatarDropdowns.length > 0) {
+        const closeAvatarMenus = exceptDropdown => {
+            avatarDropdowns.forEach(dropdown => {
+                if (dropdown === exceptDropdown) return;
+                dropdown.classList.remove('is-open');
+                const trigger = dropdown.querySelector('.nav-avatar-frame');
+                if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            });
+        };
+
+        avatarDropdowns.forEach(dropdown => {
+            const trigger = dropdown.querySelector('.nav-avatar-frame');
+            if (!trigger) return;
+            if (!trigger.hasAttribute('aria-haspopup')) {
+                trigger.setAttribute('aria-haspopup', 'true');
+            }
+            trigger.setAttribute('aria-expanded', 'false');
+
+            trigger.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                const willOpen = !dropdown.classList.contains('is-open');
+                closeAvatarMenus(dropdown);
+                dropdown.classList.toggle('is-open', willOpen);
+                trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            });
+
+            dropdown.addEventListener('click', event => {
+                event.stopPropagation();
+            });
+        });
+
+        document.addEventListener('click', () => closeAvatarMenus());
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') closeAvatarMenus();
+        });
+    }
+
     window.addEventListener('scroll', function() {
         const navbar = document.querySelector('.navbar');
         if (navbar) {
