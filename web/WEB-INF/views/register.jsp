@@ -18,6 +18,7 @@
 
         <!-- Cột bên trái: Poster Wall (3 cột cuộn) -->
         <div class="auth-banner">
+            <img class="auth-side-illustration" src="${pageContext.request.contextPath}/assets/images/auth-left-knowledge-poster-balanced.png" alt="" aria-hidden="true">
             <div class="poster-grid">
                 <% 
                     String[] myPosters = null;
@@ -43,6 +44,7 @@
                     if (myPosters == null || myPosters.length == 0) {
                         myPosters = new String[]{"placeholder.jpg"};
                     }
+                    myPosters = new String[]{"auth-capybara-study.png"};
                     
                     // Vòng lặp 3 cột
                     for (int col = 0; col < 3; col++) { 
@@ -67,6 +69,10 @@
                 <% } %>
             </div>
             <div class="poster-overlay"></div>
+            <div class="auth-banner-copy" hidden>
+                <strong>Học mọi lúc, mọi nơi</strong>
+                <span>Hàng nghìn bài học chờ bạn khám phá</span>
+            </div>
         </div>
 
         <!-- Cột bên phải: Form Đăng Ký -->
@@ -224,4 +230,4 @@
         document.addEventListener('DOMContentLoaded', animateBannerTitle);
     </script>
 </body>
-</html>
+</html>
