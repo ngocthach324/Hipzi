@@ -18,7 +18,7 @@
 
         <!-- Cột bên trái: Poster Wall (3 cột cuộn) -->
         <div class="auth-banner">
-            <img class="auth-side-illustration" src="${pageContext.request.contextPath}/assets/images/auth-capybara-classroom.png" alt="" aria-hidden="true">
+            <img class="auth-side-illustration" src="${pageContext.request.contextPath}/assets/images/auth-capybara-classroom-no-math.png" alt="" aria-hidden="true">
             <div class="poster-grid">
                 <% 
                     String[] myPosters = null;
@@ -44,7 +44,7 @@
                     if (myPosters == null || myPosters.length == 0) {
                         myPosters = new String[]{"placeholder.jpg"};
                     }
-                    myPosters = new String[]{"auth-capybara-classroom.png"};
+                    myPosters = new String[]{"auth-capybara-classroom-no-math.png"};
                     
                     // Vòng lặp 3 cột
                     for (int col = 0; col < 3; col++) { 
