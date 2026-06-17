@@ -259,130 +259,105 @@
             border-radius: 1rem;
             padding: 0.85rem 1rem;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
-            text-decoration: none;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            flex-shrink: 0;
         }
-
-        .sidebar-user-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
-        }
-
-        .sidebar-user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-            overflow: hidden;
-        }
-
-        .sidebar-user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
+        /* ===== KHU VỰC SIDEBAR BÊN TRÁI (LEFT NAVIGATION PANE) ===== */
+        .dashboard-sidebar {
+            width: 270px;
             background: #ffffff;
-            color: #d97706;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            flex-shrink: 0;
-            border: 2px solid rgba(255, 255, 255, 0.6);
-            object-fit: cover;
-        }
-
-        .sidebar-user-details {
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-        }
-
-        .sidebar-user-name {
-            font-weight: 700;
-            font-size: 0.85rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .sidebar-user-email {
-            font-size: 0.7rem;
-            opacity: 0.9;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .sidebar-user-action {
-            background: rgba(255, 255, 255, 0.2);
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 1.5rem 1.25rem;
+            box-sizing: border-box;
             flex-shrink: 0;
-            transition: background 0.2s ease;
-        }
-
-        .sidebar-user-card:hover .sidebar-user-action {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-
-        /* ===== NỘI DUNG CHÍNH (RIGHT CONTENT PANE) ===== */
-        .dashboard-content-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            flex: 1;
-            min-width: 0;
-            padding: 0;
-            min-height: 0;
+            position: sticky;
+            top: 0.75rem;
+            height: calc(100vh - 1.5rem);
             overflow-y: auto;
+            box-shadow: var(--shadow);
         }
 
-        .dashboard-content-wrapper.is-switching-tab {
-            overflow-anchor: none;
-            transition: min-height 0.25s ease;
+        .sidebar-section-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin: 1.05rem 0 0.3rem 0.35rem;
+            white-space: nowrap;
         }
 
-        /* Dải tiêu đề trang trọng phía trên cùng */
-        .dashboard-top-strip {
-            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
-            border-radius: 1.25rem;
-            padding: 1.15rem 1.75rem;
+        /* Nav menu items */
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: #ffffff;
-            box-shadow: 0 10px 25px rgba(4, 120, 87, 0.15);
+            flex-direction: column;
+            gap: 4.8px;
         }
 
-        .strip-right-controls {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .strip-date {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #ecfdf5;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .strip-actions-group {
+        .sidebar-menu li a {
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            padding: 0.8rem 0.85rem;
+            border-radius: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .sidebar-menu li a span {
+            white-space: nowrap;
+        }
+
+        .sidebar-menu li a svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2.2;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-menu li a:hover {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .sidebar-menu li a:hover svg {
+            color: var(--primary);
+        }
+
+        .sidebar-menu li a.active {
+            color: var(--primary);
+            background: var(--primary-light);
+            font-weight: 700;
+        }
+
+        .sidebar-menu li a.active svg {
+            color: var(--primary);
+        }
+
+        .sidebar-menu li a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15%;
+            height: 70%;
+            width: 6px;
+            background: var(--primary);
+            border-radius: 0 6px 6px 0;
+        }
+
+        #nav-tab-materials,
+        #nav-tab-practice {
+            display: none !important;
         }
 
         .strip-btn {
@@ -1771,6 +1746,519 @@
             from { transform: translateY(-1px) scale(0.98); }
             to { transform: translateY(1px) scale(1.02); }
         }
+
+        /* ===== STAFF PROFILE SHELL - ĐỒNG BỘ KHUNG GIAO DIỆN TEACHER PROFILE ===== */
+        body {
+            background:
+                linear-gradient(135deg, #e6fcf5 0%, #ebfbee 50%, #dcfce7 100%) !important;
+            background-attachment: fixed !important;
+            font-family: var(--font-sans);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        body > header.navbar,
+        .dashboard-unified-header,
+        .sidebar-mascot-box,
+        .menu-indicator {
+            display: none !important;
+        }
+
+        .app-dashboard-container {
+            max-width: none !important;
+            width: calc(100% - 2rem) !important;
+            height: auto !important;
+            min-height: 0 !important;
+            margin: 1rem auto !important;
+            padding: 0 !important;
+            display: block !important;
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            overflow: visible !important;
+        }
+
+        .dashboard-body {
+            display: grid !important;
+            grid-template-columns: 270px minmax(0, 1fr);
+            gap: 1rem;
+            align-items: start;
+            overflow: visible !important;
+            min-height: 0 !important;
+        }
+
+        .dashboard-sidebar {
+            width: 270px !important;
+            height: calc(100vh - 1.5rem) !important;
+            min-height: 0 !important;
+            position: sticky !important;
+            top: 0.75rem !important;
+            background: #ffffff !important;
+            border: 1px solid var(--border-dark) !important;
+            border-radius: 1.5rem !important;
+            padding: 1.5rem 1.25rem !important;
+            box-shadow: var(--shadow) !important;
+            box-sizing: border-box;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            justify-content: flex-start !important;
+            gap: 0 !important;
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .sidebar-brand-horizontal {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.7rem;
+            width: 100%;
+            text-decoration: none;
+        }
+
+        .brand-avatar-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #ecfdf5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid rgba(4, 120, 87, 0.08);
+            box-shadow: 0 2px 8px rgba(4, 120, 87, 0.04);
+        }
+
+        .brand-avatar-box img {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+            transition: transform 0.25s ease;
+        }
+
+        .sidebar-brand-horizontal:hover .brand-avatar-box img {
+            transform: scale(1.1) rotate(4deg);
+        }
+
+        .brand-text-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .brand-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .brand-subtitle {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-top: 0.08rem;
+            white-space: nowrap;
+        }
+
+        .sidebar-toggle-btn {
+            background: #f8fafc;
+            border: 1px solid var(--border-dark);
+            border-radius: 10px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: auto;
+            padding: 0;
+        }
+
+        .sidebar-toggle-btn:hover {
+            color: var(--primary);
+            background: var(--primary-light);
+            border-color: rgba(4, 120, 87, 0.2);
+            transform: scale(1.05);
+        }
+
+        .sidebar-top-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .sidebar-section-label {
+            font-size: 0.75rem !important;
+            font-weight: 800 !important;
+            color: var(--text-muted) !important;
+            letter-spacing: 1px !important;
+            text-transform: uppercase !important;
+            margin: 1.05rem 0 0.3rem 0.35rem !important;
+            white-space: nowrap !important;
+        }
+
+        .sidebar-menu {
+            gap: 4.8px !important;
+        }
+
+        .sidebar-menu li a {
+            justify-content: flex-start !important;
+            gap: 0.75rem !important;
+            padding: 0.8rem 0.85rem !important;
+            border-radius: 0.85rem !important;
+            position: relative;
+            transform: none !important;
+        }
+
+        .sidebar-menu li a .menu-label-group {
+            gap: 0.75rem;
+            min-width: 0;
+        }
+
+        .sidebar-menu li a svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text-muted);
+        }
+
+        .sidebar-menu li a:hover,
+        .sidebar-menu li a.active {
+            color: var(--primary) !important;
+            background: var(--primary-light) !important;
+        }
+
+        .sidebar-menu li a:hover svg,
+        .sidebar-menu li a.active svg {
+            color: var(--primary) !important;
+            stroke: currentColor !important;
+        }
+
+        .sidebar-menu li a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15%;
+            height: 70%;
+            width: 6px;
+            background: var(--primary);
+            border-radius: 0 6px 6px 0;
+        }
+
+        .dashboard-main-section {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            gap: 1rem;
+        }
+
+        .dashboard-top-bar {
+            height: 70px;
+            min-height: 70px;
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            box-sizing: border-box;
+            box-shadow: var(--shadow);
+        }
+
+        .top-bar-search-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f1f5f9;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            width: 280px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .top-bar-search-wrapper:focus-within {
+            background: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .top-bar-search-wrapper svg {
+            color: var(--text-muted);
+            width: 18px;
+            height: 18px;
+        }
+
+        .top-bar-search-wrapper input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .top-bar-user-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-left: 0.75rem;
+            border-left: 1px solid var(--border-dark);
+            cursor: pointer;
+        }
+
+        .top-bar-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border-dark);
+        }
+
+        .top-bar-avatar-placeholder {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            border: 2px solid var(--primary);
+        }
+
+        .top-bar-user-info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .top-bar-user-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .top-bar-user-email {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.2;
+        }
+
+        .nav-bell-trigger {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            border: none;
+            text-decoration: none;
+        }
+
+        .nav-bell-trigger:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .dashboard-content-wrapper {
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            flex: 1;
+            padding: 2rem !important;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            background: #f9fafb !important;
+            border: 1px solid var(--border-dark) !important;
+            border-radius: 1.5rem !important;
+            box-shadow: var(--shadow) !important;
+        }
+
+        .app-dashboard-container.collapsed .dashboard-body {
+            grid-template-columns: 80px minmax(0, 1fr);
+        }
+
+        .app-dashboard-container.collapsed .dashboard-sidebar {
+            width: 80px !important;
+            padding: 1.5rem 0.5rem !important;
+            align-items: center;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-brand-horizontal {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .app-dashboard-container.collapsed .brand-text-col,
+        .app-dashboard-container.collapsed .sidebar-menu li a span,
+        .app-dashboard-container.collapsed .sidebar-section-label {
+            display: none !important;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-toggle-btn {
+            margin-left: 0;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-toggle-btn .icon-collapse {
+            display: none !important;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-toggle-btn .icon-expand {
+            display: block !important;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-menu li a {
+            width: 44px;
+            height: 44px;
+            padding: 0 !important;
+            justify-content: center !important;
+            margin: 0 auto;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-menu li a.active::before {
+            display: none !important;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-body {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-sidebar {
+                width: 100% !important;
+                height: auto !important;
+                position: static !important;
+            }
+
+            .dashboard-top-bar {
+                padding: 0 1rem;
+            }
+        }
+
+        /* ===== BUTTON & FORM PREMIUM STYLES (MATCHING TEACHER PROFILE) ===== */
+        .btn-premium {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            min-height: 44px;
+            padding-block: 0.68rem;
+            padding-inline: 1.25rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            line-height: 1.15;
+            white-space: nowrap;
+            border-radius: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-premium.primary {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
+        }
+
+        .btn-premium.primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-premium.secondary {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-dark);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-premium.secondary:hover {
+            background: var(--border-light);
+        }
+
+        .btn-premium.danger {
+            background: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-premium.danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .form-group-premium {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group-premium label {
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--text-main);
+        }
+
+        .form-group-premium input,
+        .form-group-premium select,
+        .form-group-premium textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-dark);
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            outline: none;
+            background: #ffffff;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group-premium input:focus,
+        .form-group-premium select:focus,
+        .form-group-premium textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+            background: #ffffff;
+        }
+
+        .field-required {
+            color: #ef4444;
+            font-weight: 900;
+            margin-left: 0.18rem;
+        }
     </style>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=block">
 </head>
@@ -1922,108 +2410,120 @@
         <div class="dashboard-body">
             <!-- KÊNH SIDEBAR TRÁI (LEFT PANE) -->
             <aside class="dashboard-sidebar">
-                <div class="sidebar-top-group">
-                    <ul class="sidebar-menu">
-                        <li>
-                            <a id="nav-tab-teacher-approval" class="<%= "tab-teacher-approval".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-teacher-approval')">
-                            <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
-                                <span>Duyệt hồ sơ giảng viên</span>
-                            </div>
-                            <span class="menu-indicator">&rarr;</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="nav-tab-manage-teachers" class="<%= "tab-manage-teachers".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-manage-teachers')">
-                            <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                                <span>Quản lý giảng viên</span>
-                            </div>
-                            <span class="menu-indicator">&rarr;</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="nav-tab-manage-classes" class="<%= "tab-manage-classes".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-manage-classes')">
-                            <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                                <span>Quản lý lớp học</span>
-                            </div>
-                            <span class="menu-indicator">&rarr;</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="nav-tab-manage-courses" class="<%= "tab-manage-courses".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-manage-courses')">
-                            <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 6.5v12"/><path d="M5 8.5c2.6 0 4.9.5 7 2 2.1-1.5 4.4-2 7-2v11c-2.6 0-4.9.5-7 2-2.1-1.5-4.4-2-7-2z"/></svg>
-                                <span>Quản lý khóa học</span>
-                            </div>
-                            <span class="menu-indicator">&rarr;</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="nav-tab-profile" class="<%= ("tab-profile".equals(activeStaffTab) || "tab-edit".equals(activeStaffTab)) ? "active" : "" %>" onclick="switchTab('tab-profile')">
-                            <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                <span>Hồ sơ cá nhân</span>
-                            </div>
-                            <span class="menu-indicator">&rarr;</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="nav-tab-security" class="<%= "tab-security".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-security')">
-                            <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                <span>Bảo mật và mật khẩu</span>
-                            </div>
-                            <span class="menu-indicator">&rarr;</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="nav-tab-materials" class="<%= "tab-materials".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-materials')">
-                            <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                                <span>Hàng đợi duyệt tài liệu</span>
-                            </div>
-                            <span class="menu-indicator">&rarr;</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="nav-tab-practice" class="<%= "tab-practice".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-practice')">
-                            <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
-                                <span>Đăng ký giảng viên</span>
-                            </div>
-                            <span class="menu-indicator">&rarr;</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="nav-tab-notifications" class="<%= "tab-notifications".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-notifications')">
-                            <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                                <span>Thông báo hệ thống</span>
-                            </div>
-                            <span class="menu-indicator">&rarr;</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="nav-tab-support" class="<%= "tab-support".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-support')">
-                            <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                <span>Hỗ trợ nghiệp vụ</span>
-                            </div>
-                            <span class="menu-indicator">&rarr;</span>
-                        </a>
-                    </li>
-                    </ul>
-                    <div class="sidebar-mascot-box" aria-label="HIPZI mascot">
-                        <img class="sidebar-cute-mascot"
-                             src="${pageContext.request.contextPath}/assets/images/capybara-mascot-transparent.png"
-                             alt="HIPZI mascot">
+                <div class="sidebar-brand-horizontal">
+                    <a href="${pageContext.request.contextPath}/index" class="brand-avatar-box" title="Trang chủ">
+                        <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="Hipzi Logo">
+                    </a>
+                    <div class="brand-text-col">
+                        <span class="brand-title">Hipzi</span>
+                        <span class="brand-subtitle">Staff Console</span>
                     </div>
+                    <button type="button" class="sidebar-toggle-btn" title="Thu gọn / Mở rộng" onclick="toggleSidebar()">
+                        <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M16 15l-3-3 3-3"/></svg>
+                        <svg class="icon-expand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: none;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M13 9l3 3-3 3"/></svg>
+                    </button>
                 </div>
+            <div class="sidebar-section-label">Tổng quan</div>
+            <ul class="sidebar-menu">
+                <li>
+                    <a id="nav-tab-profile" class="<%= ("tab-profile".equals(activeStaffTab) || "tab-edit".equals(activeStaffTab)) ? "active" : "" %>" onclick="switchTab('tab-profile')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span>Hồ sơ cá nhân</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-security" class="<%= "tab-security".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-security')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span>Bảo mật và mật khẩu</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-notifications" class="<%= "tab-notifications".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-notifications')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        <span>Thông báo hệ thống</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-support" class="<%= "tab-support".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-support')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <span>Hỗ trợ nghiệp vụ</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-section-label">Quản lý hệ thống</div>
+            <ul class="sidebar-menu">
+                <li>
+                    <a id="nav-tab-teacher-approval" class="<%= "tab-teacher-approval".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-teacher-approval')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+                        <span>Duyệt hồ sơ giảng viên</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-manage-teachers" class="<%= "tab-manage-teachers".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-manage-teachers')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <span>Quản lý giảng viên</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-manage-classes" class="<%= "tab-manage-classes".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-manage-classes')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                        <span>Quản lý lớp học</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-manage-courses" class="<%= "tab-manage-courses".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-manage-courses')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 6.5v12"/><path d="M5 8.5c2.6 0 4.9.5 7 2 2.1-1.5 4.4-2 7-2v11c-2.6 0-4.9.5-7 2-2.1-1.5-4.4-2-7-2z"/></svg>
+                        <span>Quản lý khóa học</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-materials" class="<%= "tab-materials".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-materials')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                        <span>Hàng đợi duyệt tài liệu</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-practice" class="<%= "tab-practice".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-practice')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+                        <span>Đăng ký giảng viên</span>
+                    </a>
+                </li>
+            </ul>
             </aside>
 
             <!-- KÊNH NỘI DUNG PHẢI (RIGHT CONTENT PANE) -->
+            <div class="dashboard-main-section">
+                <div class="dashboard-top-bar">
+                    <div class="top-bar-search-wrapper">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" placeholder="Tìm kiếm tác vụ...">
+                    </div>
+
+                    <div class="top-bar-right">
+                        <button type="button" class="nav-bell-trigger" title="Chuyển chế độ sáng/tối" onclick="alert('Chức năng chuyển đổi giao diện sáng/tối đang được phát triển.')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                        </button>
+                        <button type="button" class="nav-bell-trigger" title="Thông báo hệ thống" onclick="switchTab('tab-notifications')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        </button>
+                        <a href="${pageContext.request.contextPath}/logout" class="nav-bell-trigger" title="Đăng xuất">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        </a>
+                        <div class="top-bar-user-card" onclick="switchTab('tab-profile')">
+                            <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+                                <img src="<%= user.getAvatarUrl() %>" class="top-bar-avatar" alt="Avatar">
+                            <% } else { %>
+                                <div class="top-bar-avatar-placeholder"><%= initials %></div>
+                            <% } %>
+                            <div class="top-bar-user-info">
+                                <span class="top-bar-user-name"><%= user != null ? user.getDisplayName() : "Nhân viên HIPZI" %></span>
+                                <span class="top-bar-user-email"><%= user != null ? user.getEmail() : "staff@hipzi.vn" %></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             <main class="dashboard-content-wrapper">
 
             <!-- Banner dải màu trang trí phía trên cùng (Top Accent Strip) -->
@@ -2806,67 +3306,74 @@
             <!-- TAB 7: HỐ TRỢ HỌC TẬP                      -->
             <!-- ========================================== -->
             <section id="tab-support" class="tab-pane <%= "tab-support".equals(activeStaffTab) ? "active-pane" : "" %>">
-                <div class="tab-grouped-container">
-                    <div class="tab-header-accent">
-                        <div class="tab-header-title-text">Hỗ trợ nghiệp vụ</div>
-                        <div class="tab-header-date-pill">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <div class="tab-pane-header">
+                    <div class="tab-pane-header-left">
+                        <h1>Hỗ trợ nghiệp vụ</h1>
+                        <p>Giải đáp thắc mắc và gửi yêu cầu trợ giúp kỹ thuật dành cho nhân viên HIPZI.</p>
+                    </div>
+                    <div class="tab-pane-header-right">
+                        <div class="date-badge">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                             <span><%= currentDateDisplay %></span>
                         </div>
                     </div>
+                </div>
 
-                    <div class="tab-body-content">
-                        <div class="section-data-card">
-                            <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
-                                <div class="card-header-title">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                    <span>Trung tâm Hỗ trợ & Giải đáp thắc mắc</span>
-                                </div>
-                            </div>
-
-                            <div style="padding-top:1.75rem; display:grid; grid-template-columns:1.2fr 1fr; gap:2rem; align-items: start;">
-                                <div>
-                                    <span style="font-weight:800; font-size:1.15rem; color:var(--text-main); display:block; margin-bottom:1.25rem; letter-spacing: -0.2px;">Câu hỏi thường gặp (FAQ)</span>
-                                    <div style="display:flex; flex-direction:column; gap:1rem;">
-                                        <details style="background:#ffffff; padding:1.25rem; border-radius:1rem; border: 1px solid #e2e8f0; cursor:pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-                                            <summary style="font-weight:700; font-size:0.95rem; color:var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
-                                                <span>Làm thế nào để tải xuống bài giảng?</span>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-                                            </summary>
-                                            <p style="font-size:0.9rem; color:var(--text-muted); margin:1rem 0 0 0; line-height: 1.6; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
-                                                Học viên có thể tải xuống các file đính kèm miễn phí khi tài liệu đã được duyệt và chuyển sang chế độ hiển thị công khai.
-                                            </p>
-                                        </details>
-
-                                        <details style="background:#ffffff; padding:1.25rem; border-radius:1rem; border: 1px solid #e2e8f0; cursor:pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-                                            <summary style="font-weight:700; font-size:0.95rem; color:var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
-                                                <span>AI tạo câu hỏi ôn tập hoạt động ra sao?</span>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-                                            </summary>
-                                            <p style="font-size:0.9rem; color:var(--text-muted); margin:1rem 0 0 0; line-height: 1.6; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
-                                                Trợ lý AI phân tích văn bản từ tài liệu gốc do Giảng viên cung cấp để bóc tách thành các bộ Flashcard trực quan cho học viên luyện tập.
-                                            </p>
-                                        </details>
-                                    </div>
-                                </div>
-
-                                <div style="padding:1.75rem; border-radius:1.5rem; border:1px solid #e2e8f0; background:linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); box-shadow: 0 10px 25px rgba(0,0,0,0.02);">
-                                    <span style="font-weight:800; font-size:1.05rem; color:var(--text-main); display:block; margin-bottom:1rem; text-transform: uppercase; letter-spacing: 0.5px;">Yêu cầu hỗ trợ</span>
-                                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Gửi yêu cầu trực tiếp đến đội ngũ kỹ thuật nếu bạn gặp sự cố nghiêm trọng.</p>
-                                    <form id="supportForm" style="display:flex; flex-direction:column; gap:1.25rem;">
-                                        <div class="form-group-edit">
-                                            <label style="font-size: 0.8rem;">Tiêu đề cần hỗ trợ</label>
-                                            <input type="text" name="title" required placeholder="Nhập tiêu đề vắn tắt..." style="background: white;">
-                                        </div>
-                                        <div class="form-group-edit">
-                                            <label style="font-size: 0.8rem;">Mô tả chi tiết</label>
-                                            <textarea name="content" rows="4" required placeholder="Mô tả khó khăn bạn đang gặp phải..." style="background: white;"></textarea>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary" style="padding:0.75rem; border-radius:0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; margin-top: 0.5rem;">Gửi tin nhắn</button>
-                                    </form>
-                                </div>
-                            </div>
+                <div class="dashboard-grid-layout" style="align-items: start;">
+                    <!-- FAQ -->
+                    <div class="premium-card">
+                        <div class="premium-card-header" style="border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                            <span class="premium-card-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                Câu hỏi thường gặp (FAQ)
+                            </span>
                         </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
+                                <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Làm thế nào để tải xuống bài giảng?</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                                </summary>
+                                <p style="font-size: 0.9rem; color: var(--text-muted); margin: 1rem 0 0 0; line-height: 1.6; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
+                                    Học viên có thể tải xuống các file đính kèm miễn phí khi tài liệu đã được duyệt và chuyển sang chế độ hiển thị công khai.
+                                </p>
+                            </details>
+
+                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
+                                <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>AI tạo câu hỏi ôn tập hoạt động ra sao?</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                                </summary>
+                                <p style="font-size: 0.9rem; color: var(--text-muted); margin: 1rem 0 0 0; line-height: 1.6; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
+                                    Trợ lý AI phân tích văn bản từ tài liệu gốc do Giảng viên cung cấp để bóc tách thành các bộ Flashcard trực quan cho học viên luyện tập.
+                                </p>
+                            </details>
+                        </div>
+                    </div>
+
+                    <!-- SUPPORT FORM -->
+                    <div class="premium-card">
+                        <div class="premium-card-header" style="border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                            <span class="premium-card-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                Yêu cầu hỗ trợ
+                            </span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: -0.75rem; margin-bottom: 1rem; line-height: 1.5;">Gửi yêu cầu trực tiếp đến đội ngũ kỹ thuật nếu bạn gặp sự cố nghiêm trọng.</p>
+                        <form id="supportForm" style="display: flex; flex-direction: column; gap: 1.25rem;" class="form-edit-layout">
+                            <div class="form-group-premium">
+                                <label>Tiêu đề cần hỗ trợ <span class="field-required">*</span></label>
+                                <input type="text" name="title" required placeholder="Nhập tiêu đề vắn tắt...">
+                            </div>
+                            <div class="form-group-premium">
+                                <label>Mô tả chi tiết <span class="field-required">*</span></label>
+                                <textarea name="content" rows="4" required placeholder="Mô tả khó khăn bạn đang gặp phải..."></textarea>
+                            </div>
+                            <div class="support-submit-row" style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
+                                <button type="submit" class="btn-premium primary" style="width: 100%;">Gửi tin nhắn</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </section>
@@ -2975,6 +3482,7 @@
             </div>
 
             </main>
+            </div>
         </div>
     </div>
 
@@ -3084,6 +3592,13 @@
             }
         }
 
+        function toggleSidebar() {
+            const container = document.querySelector('.app-dashboard-container');
+            if (!container) return;
+            container.classList.toggle('collapsed');
+            localStorage.setItem('staffSidebarCollapsed', container.classList.contains('collapsed') ? 'true' : 'false');
+        }
+
         function switchTab(targetTabId, options = {}) {
             targetTabId = normalizeProfileTabId(targetTabId);
             const targetPane = document.getElementById(targetTabId);
@@ -3159,6 +3674,10 @@
         });
         <% } %>
         window.addEventListener('DOMContentLoaded', () => {
+            const container = document.querySelector('.app-dashboard-container');
+            if (container && localStorage.getItem('staffSidebarCollapsed') === 'true') {
+                container.classList.add('collapsed');
+            }
             const urlParams = new URLSearchParams(window.location.search);
             const tabParam = urlParams.get('tab');
             if (tabParam) {
