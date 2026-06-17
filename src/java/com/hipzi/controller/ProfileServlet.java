@@ -26,6 +26,7 @@ import com.hipzi.dao.AdminStatsDao;
 import com.hipzi.dao.AdminUserDao;
 import com.hipzi.dao.ClassroomDao;
 import com.hipzi.dao.CourseDao;
+import com.hipzi.dao.RepositoryMaterialDao;
 import com.hipzi.dao.TeacherApplicationDao;
 import com.hipzi.dao.TeacherGoogleAccountDao;
 import java.io.File;
@@ -56,6 +57,7 @@ public class ProfileServlet extends HttpServlet {
     private final TeacherGoogleAccountDao teacherGoogleAccountDao = new TeacherGoogleAccountDao();
     private final ClassroomDao classroomDao = new ClassroomDao();
     private final CourseDao courseDao = new CourseDao();
+    private final RepositoryMaterialDao repositoryMaterialDao = new RepositoryMaterialDao();
     private final GoogleDriveOAuthService googleDriveOAuthService = new GoogleDriveOAuthService();
 
     @Override
@@ -82,7 +84,13 @@ public class ProfileServlet extends HttpServlet {
             return;
         }
 
+        String preferredProfilePath = preferredProfilePath(user);
+
         if ("/teacher-wallet".equals(path) || "/teacher-management".equals(path)) {
+            if (!hasRole(user, "teacher")) {
+                response.sendRedirect(request.getContextPath() + preferredProfilePath);
+                return;
+            }
             String tab = "/teacher-wallet".equals(path) ? "wallet" : "management";
             response.sendRedirect(request.getContextPath() + "/teacher-profile?tab=" + tab);
             return;
@@ -90,28 +98,27 @@ public class ProfileServlet extends HttpServlet {
 
         // Nếu truy cập qua path chung "/profile", chuyển hướng sang path định danh vai trò cụ thể
         if ("/profile".equals(path)) {
-            String rolePath = "/student-profile";
-            List<com.hipzi.model.Role> roles = user.getRoles();
-            if (roles != null) {
-                boolean hasParent = false, hasTeacher = false, hasStaff = false, hasAdmin = false;
-                for (com.hipzi.model.Role r : roles) {
-                    String rn = r.getName().toLowerCase();
-                    if ("parent".equals(rn)) hasParent = true;
-                    if ("teacher".equals(rn)) hasTeacher = true;
-                    if ("staff".equals(rn)) hasStaff = true;
-                    if ("admin".equals(rn)) hasAdmin = true;
-                }
-                if (hasAdmin) rolePath = "/admin-profile";
-                else if (hasStaff) rolePath = "/staff-profile";
-                else if (hasTeacher) rolePath = "/teacher-profile";
-                else if (hasParent) rolePath = "/parent-profile";
-            }
             String queryString = request.getQueryString();
-            String redirectUrl = request.getContextPath() + rolePath + (queryString != null ? "?" + queryString : "");
+            String redirectUrl = request.getContextPath() + preferredProfilePath + (queryString != null ? "?" + queryString : "");
             response.sendRedirect(redirectUrl);
             return;
         }
 
+        String requiredRole = requiredRoleForProfilePath(path);
+        if (requiredRole != null && !hasRole(user, requiredRole) && !path.equals(preferredProfilePath)) {
+            response.sendRedirect(request.getContextPath() + preferredProfilePath);
+            return;
+        }
+
+        // Kiểm tra quyền truy cập nghiêm ngặt cho Admin và Staff
+        if ("/admin-profile".equals(path) && !hasRole(user, "admin")) {
+            response.sendRedirect(request.getContextPath() + "/profile");
+            return;
+        }
+        if ("/staff-profile".equals(path) && !hasRole(user, "staff")) {
+            response.sendRedirect(request.getContextPath() + "/profile");
+            return;
+        }
         String targetJsp = "/WEB-INF/views/student-profile.jsp";
         if ("/parent-profile".equals(path)) targetJsp = "/WEB-INF/views/parent-profile.jsp";
         else if ("/teacher-profile".equals(path)) targetJsp = "/WEB-INF/views/teacher-profile.jsp";
@@ -132,6 +139,7 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("teacherApplication", teacherApplication);
             request.setAttribute("teacherClassrooms", classroomDao.findByTeacherId(user.getId()));
             request.setAttribute("teacherCourses", courseDao.findByTeacherId(user.getId()));
+            request.setAttribute("teacherMaterialCount", repositoryMaterialDao.countByUploaderId(user.getId()));
             request.setAttribute("teacherGoogleAccount", teacherGoogleAccountDao.findActiveByTeacherId(user.getId()));
         } else if ("/WEB-INF/views/staff-profile.jsp".equals(targetJsp)) {
             request.setAttribute("teacherApplications", teacherApplicationDao.listForStaffReview());
@@ -194,6 +202,13 @@ public class ProfileServlet extends HttpServlet {
         User user = (User) session.getAttribute("loggedUser");
         if (!user.isOnboardingCompleted()) {
             response.sendRedirect(request.getContextPath() + "/onboarding");
+            return;
+        }
+        String postPath = request.getServletPath();
+        String preferredProfilePath = preferredProfilePath(user);
+        String requiredRole = requiredRoleForProfilePath(postPath);
+        if (requiredRole != null && !hasRole(user, requiredRole) && !postPath.equals(preferredProfilePath)) {
+            response.sendRedirect(request.getContextPath() + preferredProfilePath);
             return;
         }
         String action = request.getParameter("action");
@@ -289,7 +304,10 @@ public class ProfileServlet extends HttpServlet {
                 }
             } else if ("banUser".equals(action)) {
                 String targetUserId = request.getParameter("targetUserId");
-                if (adminUserDao.banUser(targetUserId, user.getId())) {
+                if (!hasRole(user, "admin")) {
+                    session.setAttribute("toastMsg", "Bạn không có quyền khóa tài khoản người dùng.");
+                    session.setAttribute("toastType", "error");
+                } else if (adminUserDao.banUser(targetUserId, user.getId())) {
                     session.setAttribute("toastMsg", "Đã khóa tài khoản người dùng thành công.");
                     session.setAttribute("toastType", "success");
                 } else {
@@ -498,10 +516,7 @@ public class ProfileServlet extends HttpServlet {
                 String credentialsSummary = cleanParam(request.getParameter("credentialsSummary"));
                 String teacherBio = cleanParam(request.getParameter("teacherBio"));
 
-                if (!hasRole(user, "teacher")) {
-                    session.setAttribute("toastMsg", "Chỉ tài khoản có vai trò giảng viên mới có thể gửi hồ sơ đăng kí giảng dạy.");
-                    session.setAttribute("toastType", "error");
-                } else if (teacherType.isEmpty() || institutionName.isEmpty() || specialization.isEmpty()
+                if (teacherType.isEmpty() || institutionName.isEmpty() || specialization.isEmpty()
                         || teachingSubjects.isEmpty() || teacherBio.isEmpty()) {
                     session.setAttribute("toastMsg", "Vui lòng hoàn tất các thông tin bắt buộc trong hồ sơ đăng kí giảng dạy.");
                     session.setAttribute("toastType", "error");
@@ -590,22 +605,7 @@ public class ProfileServlet extends HttpServlet {
 
         String returnPath = request.getServletPath();
         if (returnPath == null || "/profile".equals(returnPath)) {
-            returnPath = "/student-profile";
-            List<com.hipzi.model.Role> roles = user.getRoles();
-            if (roles != null) {
-                boolean hasParent = false, hasTeacher = false, hasStaff = false, hasAdmin = false;
-                for (com.hipzi.model.Role r : roles) {
-                    String rn = r.getName().toLowerCase();
-                    if ("parent".equals(rn)) hasParent = true;
-                    if ("teacher".equals(rn)) hasTeacher = true;
-                    if ("staff".equals(rn)) hasStaff = true;
-                    if ("admin".equals(rn)) hasAdmin = true;
-                }
-                if (hasAdmin) returnPath = "/admin-profile";
-                else if (hasStaff) returnPath = "/staff-profile";
-                else if (hasTeacher) returnPath = "/teacher-profile";
-                else if (hasParent) returnPath = "/parent-profile";
-            }
+            returnPath = preferredProfilePath(user);
         }
         if ("changePassword".equals(action) || "toggle2FA".equals(action)) {
             returnPath += "?tab=security";
@@ -985,6 +985,62 @@ public class ProfileServlet extends HttpServlet {
         }
 
         return savedCount > 0 ? evidenceSummary.toString() : "Chưa đính kèm minh chứng.";
+    }
+
+    private String preferredProfilePath(User user) {
+        if (user != null && user.getRoles() != null) {
+            boolean hasParent = false;
+            boolean hasTeacher = false;
+            boolean hasStaff = false;
+            boolean hasAdmin = false;
+            for (com.hipzi.model.Role role : user.getRoles()) {
+                if (role == null || role.getName() == null) {
+                    continue;
+                }
+                String roleName = role.getName().trim().toLowerCase();
+                if ("parent".equals(roleName)) {
+                    hasParent = true;
+                } else if ("teacher".equals(roleName)) {
+                    hasTeacher = true;
+                } else if ("staff".equals(roleName)) {
+                    hasStaff = true;
+                } else if ("admin".equals(roleName)) {
+                    hasAdmin = true;
+                }
+            }
+            if (hasAdmin) {
+                return "/admin-profile";
+            }
+            if (hasStaff) {
+                return "/staff-profile";
+            }
+            if (hasTeacher) {
+                return "/teacher-profile";
+            }
+            if (hasParent) {
+                return "/parent-profile";
+            }
+        }
+        return "/student-profile";
+    }
+
+    private String requiredRoleForProfilePath(String path) {
+        if ("/admin-profile".equals(path)) {
+            return "admin";
+        }
+        if ("/staff-profile".equals(path)) {
+            return "staff";
+        }
+        if ("/teacher-profile".equals(path) || "/teacher-wallet".equals(path) || "/teacher-management".equals(path)) {
+            return "teacher";
+        }
+        if ("/parent-profile".equals(path)) {
+            return "parent";
+        }
+        if ("/student-profile".equals(path)) {
+            return "student";
+        }
+        return null;
     }
 
     private boolean hasRole(User user, String roleName) {

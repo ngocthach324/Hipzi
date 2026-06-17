@@ -170,6 +170,26 @@ public class RepositoryMaterialDao {
         return 0;
     }
 
+    public int countByUploaderId(String uploaderId) {
+        if (uploaderId == null || uploaderId.trim().isEmpty()) {
+            return 0;
+        }
+        ensureSchema();
+        String sql = "SELECT COUNT(*) FROM repository_materials WHERE uploaded_by = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uploaderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in RepositoryMaterialDao.countByUploaderId: " + e.getMessage());
+        }
+        return 0;
+    }
+
     public void incrementViewCount(String id) {
         ensureSchema();
         String sql = "UPDATE repository_materials SET view_count = view_count + 1, updated_at = now() WHERE id = ?::uuid";

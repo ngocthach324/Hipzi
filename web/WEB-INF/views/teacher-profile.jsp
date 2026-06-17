@@ -8,6 +8,15 @@
 <%@page import="java.util.List"%>
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.util.Date"%>
+<%!
+    private String h(String value) {
+        if (value == null) return "";
+        return value.replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\"", "&quot;");
+    }
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -37,22 +46,36 @@
         }
 
         body {
-            background-color: #e2e8f0;
+            background:
+                linear-gradient(135deg, #e6fcf5 0%, #ebfbee 50%, #dcfce7 100%) !important;
+            background-attachment: fixed !important;
             font-family: var(--font-sans);
             margin: 0;
             padding: 0;
-            min-height: 100vh;
+            min-height: 0;
+            position: relative;
+        }
+
+        body::before {
+            display: none !important;
+        }
+
+        body::after {
+            display: none !important;
         }
 
         .app-dashboard-container {
             max-width: 1600px;
             width: calc(100% - 1.5rem);
-            min-height: calc(100vh - 1.5rem);
-            margin: 0.75rem auto;
+            min-height: 0;
+            height: var(--teacher-dashboard-frame-height, auto);
+            margin: 0.75rem auto 0 auto;
+            padding-bottom: 0.75rem;
             background: transparent;
             display: flex;
             flex-direction: row;
             gap: 1rem;
+            align-items: flex-start;
         }
 
         .dashboard-sidebar {
@@ -80,7 +103,6 @@
             width: 100%;
             text-decoration: none;
         }
-
         .brand-avatar-box {
             width: 44px;
             height: 44px;
@@ -432,7 +454,7 @@
             display: flex;
             flex-direction: column;
             gap: 2rem;
-            background: #f8fafc;
+            background: #f9fafb;
             border: 1px solid var(--border-dark);
             border-radius: 1.5rem;
             box-shadow: var(--shadow);
@@ -490,9 +512,9 @@
 
         .tab-pane-header-left p {
             font-size: 0.95rem;
-            color: var(--text-muted);
+            color: #475569;
             margin: 0;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .tab-pane-header-right {
@@ -503,7 +525,7 @@
 
         /* Date badge */
         .date-badge {
-            background: #ffffff;
+            background: #f8fafc;
             border: 1px solid var(--border-dark);
             padding: 0.5rem 1rem;
             border-radius: 1rem;
@@ -546,24 +568,42 @@
             position: relative;
             overflow: hidden;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-top: 4px solid var(--primary);
+            color: var(--text-main);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
         }
 
         .metric-card.primary {
-            background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
-            color: #ffffff;
-            box-shadow: 0 10px 25px rgba(4, 120, 87, 0.15);
+            background: #ffffff;
+            color: var(--text-main);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
         }
 
         .metric-card.secondary {
             background: #ffffff;
-            border: 1px solid var(--border-dark);
-            color: var(--text-main);
-            box-shadow: var(--shadow);
+        }
+
+        .metrics-row .metric-card:nth-child(1) {
+            border-top-color: var(--primary);
+        }
+
+        .metrics-row .metric-card:nth-child(2) {
+            border-top-color: #7c3aed;
+        }
+
+        .metrics-row .metric-card:nth-child(3) {
+            border-top-color: #ea580c;
+        }
+
+        .metrics-row .metric-card:nth-child(4) {
+            border-top-color: #2563eb;
         }
 
         .metric-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1);
         }
 
         .metric-card-top {
@@ -584,6 +624,10 @@
             color: var(--text-muted);
         }
 
+        .metric-card.primary .metric-card-title {
+            color: var(--text-muted);
+        }
+
         .metric-arrow-btn {
             width: 30px;
             height: 30px;
@@ -591,9 +635,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.1);
-            color: #ffffff;
+            border: 1px solid var(--border-dark);
+            background: var(--border-light);
+            color: var(--primary);
             transition: all 0.2s ease;
         }
 
@@ -608,26 +652,53 @@
             font-weight: 800;
             margin: 0.75rem 0 0.35rem 0;
             line-height: 1;
+            position: relative;
+            z-index: 1;
         }
 
         .metric-card-sub {
-            font-size: 0.72rem;
-            font-weight: 700;
+            font-size: 0.78rem;
+            font-weight: 800;
             display: inline-flex;
             align-items: center;
-            padding: 0.2rem 0.5rem;
+            padding: 0.24rem 0.62rem;
             border-radius: 0.5rem;
             width: fit-content;
+            position: relative;
+            z-index: 1;
         }
 
         .metric-card.primary .metric-card-sub {
-            background: rgba(255, 255, 255, 0.15);
-            color: #ecfdf5;
+            background: var(--primary-light);
+            color: var(--primary);
         }
 
         .metric-card.secondary .metric-card-sub {
             background: var(--primary-light);
             color: var(--primary);
+        }
+
+        .metric-ghost-icon {
+            position: absolute;
+            right: 1.15rem;
+            bottom: 1rem;
+            width: 64px;
+            height: 64px;
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            background: var(--primary-light);
+            opacity: 0.28;
+            transform: rotate(-6deg);
+            pointer-events: none;
+        }
+
+        .metric-ghost-icon svg {
+            width: 34px;
+            height: 34px;
+            stroke-width: 2.1;
         }
 
         /* ===== LAYOUT BÀN CỜ ĐA CỘT ===== */
@@ -644,7 +715,7 @@
         }
 
         .premium-card {
-            background: #ffffff;
+            background: #f8fafc;
             border: 1px solid var(--border-dark);
             border-radius: 1.5rem;
             padding: 1.5rem;
@@ -653,6 +724,35 @@
             flex-direction: column;
             gap: 1.25rem;
             box-sizing: border-box;
+        }
+
+        #tab-security .premium-card {
+            background: #ffffff;
+        }
+
+        #tab-support .premium-card {
+            background: #ffffff;
+        }
+
+        #tab-support #supportForm input,
+        #tab-support #supportForm textarea {
+            background: #f8fafc;
+        }
+
+        #tab-support .dashboard-grid-layout {
+            align-items: stretch !important;
+        }
+
+        #tab-support .dashboard-grid-layout > .premium-card {
+            height: 100%;
+        }
+
+        #tab-support #supportForm {
+            flex: 1;
+        }
+
+        #tab-support .support-submit-row {
+            margin-top: auto;
         }
 
         .premium-card-header {
@@ -718,6 +818,12 @@
             flex-shrink: 0;
         }
 
+        .info-icon-circle svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2.15;
+        }
+
         .info-icon-circle.primary { background: var(--primary-light); color: var(--primary); }
         .info-icon-circle.accent { background: var(--accent-light); color: var(--accent); }
         .info-icon-circle.warning { background: #fff9db; color: #f59e0b; }
@@ -728,6 +834,7 @@
             flex-direction: column;
             min-width: 0;
             flex-grow: 1;
+            align-items: flex-start;
         }
 
         .info-label {
@@ -746,6 +853,189 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .account-summary-panel {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 1.25rem;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .account-summary-main {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .account-avatar-wrap {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            flex-shrink: 0;
+        }
+
+        .account-avatar-img,
+        .account-avatar-placeholder {
+            width: 76px;
+            height: 76px;
+            border-radius: 1.15rem;
+            border: 1px solid rgba(4, 120, 87, 0.12);
+            box-shadow: 0 10px 20px rgba(4, 120, 87, 0.08);
+        }
+
+        .account-avatar-img {
+            object-fit: cover;
+            display: block;
+        }
+
+        .account-avatar-placeholder {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-camera-btn {
+            position: absolute;
+            right: -6px;
+            bottom: -6px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            background: var(--primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(4, 120, 87, 0.24);
+            transition: all 0.2s ease;
+        }
+
+        .avatar-camera-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .account-identity {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .account-name {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.25rem;
+            font-weight: 850;
+            line-height: 1.25;
+        }
+
+        .account-name-view {
+            min-height: 2.35rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .account-name-edit-form {
+            width: min(100%, 360px);
+            margin: 0;
+        }
+
+        .account-name-input {
+            width: 100%;
+            min-height: 2.7rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.8rem;
+            background: #ffffff;
+            color: var(--text-main);
+            font: inherit;
+            font-size: 1rem;
+            font-weight: 650;
+            padding: 0.65rem 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .account-name-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.12);
+        }
+
+        .account-email {
+            display: block;
+            margin-top: 0.25rem;
+            color: #475569;
+            font-size: 0.92rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .account-side-meta {
+            display: flex;
+            align-items: stretch;
+            gap: 0.75rem;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .account-meta-pill {
+            min-width: 150px;
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            background: #f8fafc;
+            padding: 0.75rem 0.9rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.22rem;
+        }
+
+        .account-meta-label {
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            font-weight: 850;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .account-meta-value {
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 640px) {
+            .account-summary-panel {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .account-summary-main,
+            .account-side-meta {
+                width: 100%;
+            }
+
+            .account-side-meta {
+                margin-left: 0;
+                flex-direction: column;
+            }
+
+            .account-meta-pill {
+                min-width: 0;
+            }
         }
 
         /* List Items */
@@ -837,9 +1127,13 @@
             align-items: center;
             justify-content: center;
             gap: 0.4rem;
-            padding: 0.65rem 1.25rem;
+            min-height: 44px;
+            padding-block: 0.68rem;
+            padding-inline: 1.25rem;
             font-weight: 700;
             font-size: 0.85rem;
+            line-height: 1.15;
+            white-space: nowrap;
             border-radius: 0.85rem;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -914,7 +1208,261 @@
         .form-group-premium textarea:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .btn-premium.primary {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
+        }
+
+        .btn-premium.primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-premium.secondary {
             background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-dark);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-premium.secondary:hover {
+            background: #f8fafc;
+        }
+
+        .btn-premium.danger {
+            background: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-premium.danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        /* Form Controls */
+        .form-group-premium {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group-premium label {
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--text-main);
+        }
+
+        .form-group-premium input,
+        .form-group-premium select,
+        .form-group-premium textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-dark);
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            outline: none;
+            background: #ffffff;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group-premium input:focus,
+        .form-group-premium select:focus,
+        .form-group-premium textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+            background: #ffffff;
+        }
+
+        .field-required {
+            color: #ef4444;
+            font-weight: 900;
+            margin-left: 0.18rem;
+        }
+
+        .field-optional {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.76rem;
+            margin-left: 0.25rem;
+        }
+
+        .teacher-form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.15rem;
+        }
+
+        .teacher-form-section .form-group-premium {
+            gap: 0.62rem;
+        }
+
+        .teacher-form-section .form-group-premium > label {
+            line-height: 1.45;
+            margin-bottom: 0.05rem;
+        }
+
+        .teacher-form-section + .teacher-form-section {
+            margin-top: 1.6rem;
+            padding-top: 1.4rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .teacher-form-section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .teacher-form-section-title::before {
+            content: "";
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 999px;
+            background: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        .teacher-registration-form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.15rem 1rem;
+        }
+
+        .teacher-registration-form-grid .full-span {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 1000px) {
+            .teacher-registration-form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .teacher-registration-select {
+            color: var(--text-main);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.95rem center;
+            background-size: 1rem;
+            padding-right: 2.6rem;
+        }
+
+        .teacher-registration-textarea {
+            min-height: 118px;
+            resize: vertical;
+        }
+
+        input[name="teachingSubjects"] {
+            appearance: none;
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 0.3rem !important;
+            background: #f8fafc;
+            display: inline-grid;
+            place-content: center;
+            cursor: pointer;
+            transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        input[name="teachingSubjects"]:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.08);
+        }
+
+        input[name="teachingSubjects"]:checked {
+            border-color: var(--primary);
+            background-color: var(--primary);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 0.95rem;
+            box-shadow: 0 6px 14px rgba(4, 120, 87, 0.24), 0 0 0 4px rgba(4, 120, 87, 0.1);
+            transform: scale(1.04);
+        }
+
+        input[name="teachingSubjects"]:checked + span {
+            color: var(--primary);
+        }
+
+        .teacher-subject-selected {
+            color: var(--primary) !important;
+            font-weight: 800 !important;
+        }
+
+        .teacher-evidence-dropzone {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.65rem;
+            min-height: 150px;
+            padding: 1.25rem;
+            border: 1.5px dashed #cbd5e1;
+            border-radius: 1rem;
+            background: #ffffff;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .teacher-evidence-dropzone:hover,
+        .teacher-evidence-dropzone.drag-over {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.08);
+        }
+
+        .teacher-evidence-dropzone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .teacher-evidence-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            box-shadow: var(--shadow);
+        }
+
+        .teacher-evidence-title {
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-weight: 800;
+        }
+
+        .teacher-evidence-subtitle,
+        .teacher-evidence-filename {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .teacher-evidence-filename {
+            color: var(--primary);
+            font-weight: 700;
         }
 
         .form-actions-row-premium {
@@ -922,6 +1470,43 @@
             justify-content: flex-end;
             gap: 1rem;
             margin-top: 0.5rem;
+        }
+
+        .checkbox-grid-premium {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-dark);
+        }
+
+        .checkbox-premium-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .checkbox-premium-input {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin: 0;
+            padding: 0;
+            flex-shrink: 0;
+            border-radius: 0.25rem;
+        }
+
+        .teacher-type-helper-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0 0 1rem 0;
+            line-height: 1.5;
         }
 
         /* ===== THẺ PHÂN LOẠI GIẢNG VIÊN (PREMIUM SELECTION) ===== */
@@ -965,7 +1550,7 @@
         }
 
         .teacher-type-card-inner::after {
-            content: '¹3';
+            content: '\2714';
             position: absolute;
             top: 1rem;
             right: 1rem;
@@ -988,6 +1573,11 @@
             border-color: var(--primary);
             transform: translateY(-3px);
             box-shadow: 0 10px 20px rgba(4, 120, 87, 0.05);
+        }
+
+        .teacher-type-card input:focus-visible + .teacher-type-card-inner {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
         }
 
         .teacher-type-card input:checked + .teacher-type-card-inner {
@@ -1078,6 +1668,9 @@
             font-weight: 700;
             padding: 0.2rem 0.6rem;
             border-radius: 0.5rem;
+            width: fit-content;
+            max-width: max-content;
+            align-self: flex-start;
         }
         .acc-status-tag.active { background: #dcfce7; color: #15803d; }
         .acc-status-tag.suspended { background: #fef9c3; color: #a16207; }
@@ -1094,6 +1687,45 @@
         .role-tag.student { background: #e0f2fe; color: #0284c7; }
         .role-tag.staff { background: #dbeafe; color: #2563eb; }
         .role-tag.admin { background: #fee2e2; color: #dc2626; }
+
+        .account-header-actions,
+        .account-edit-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .account-cancel-btn {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-dark);
+        }
+
+        .account-cancel-btn:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .btn-premium.profile-edit-btn,
+        .btn-premium.secondary.profile-edit-btn,
+        .account-save-btn {
+            background: var(--primary);
+            color: #ffffff;
+            border: 1px solid var(--primary);
+            box-shadow: 0 10px 20px rgba(4, 120, 87, 0.16);
+        }
+
+        .btn-premium.profile-edit-btn:hover,
+        .btn-premium.secondary.profile-edit-btn:hover,
+        .account-save-btn:hover {
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+
+        .btn-premium.profile-edit-btn svg {
+            color: currentColor;
+        }
         
         @keyframes modalScaleUp {
             from { opacity: 0; transform: scale(0.95); }
@@ -1133,6 +1765,9 @@
 
         TeacherApplication teacherApplication = (TeacherApplication) request.getAttribute("teacherApplication");
         List<Classroom> teacherClassrooms = (List<Classroom>) request.getAttribute("teacherClassrooms");
+        List<?> teacherCourses = (List<?>) request.getAttribute("teacherCourses");
+        Object teacherMaterialCountObj = request.getAttribute("teacherMaterialCount");
+        int teacherMaterialCount = teacherMaterialCountObj instanceof Number ? ((Number) teacherMaterialCountObj).intValue() : 0;
         boolean teachingRegistrationSubmitted = teacherApplication != null || Boolean.TRUE.equals(session.getAttribute("teacherRegistrationSubmitted"));
         String teachingRegistrationStatus = teacherApplication != null ? teacherApplication.getStatus() : null;
         String teachingRegistrationStatusLabel = "Đang chờ duyệt";
@@ -1334,52 +1969,162 @@
                     </div>
                 </div>
 
-                <div class="premium-card">
-                        <% if (teachingRegistrationSubmitted) { %>
-                            <div class="teacher-application-status">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                                <div>
-                                    <div style="font-weight:800; margin-bottom:0.25rem;">Hồ sơ đăng kí giảng dạy đã được gửi.</div>
-                                    <div style="font-size:0.82rem; font-weight:800; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.4px;">Trạng thái: <%= teachingRegistrationStatusLabel %></div>
-                                    <div style="font-size:0.9rem; line-height:1.55;">
-                                        <% if (teacherApplication != null && teacherApplication.getReviewNote() != null && !teacherApplication.getReviewNote().trim().isEmpty()) { %>
-                                            <%= teacherApplication.getReviewNote() %>
-                                        <% } else { %>
-                                            Đội ngũ quản trị sẽ kiểm tra minh chứng và phản hồi qua email. Bạn vẫn có thể gửi lại nếu cần cập nhật thông tin.
-                                        <% } %>
-                                    </div>
-                                </div>
+                <div class="dashboard-grid-layout" style="margin-bottom: 1.5rem;">
+                    <!-- Thẻ trái -->
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="width: 48px; height: 48px; border-radius: 0.75rem; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0 0 0.5rem 0; color: var(--text-main); font-size: 1.15rem; font-weight: 800;">Trở thành giảng viên chính thức</h3>
+                            <p style="margin: 0; color: var(--text-muted); line-height: 1.6; font-size: 0.88rem;">Cung cấp thông tin chuyên môn và bằng cấp để đội ngũ HIPZI xác thực. Sau khi hồ sơ được duyệt, bạn sẽ mở khóa đầy đủ các tính năng dành cho giảng viên.</p>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 0.5rem;">
+                            <%
+                                boolean isApprovedTeacher = "approved".equals(teachingRegistrationStatus);
+                                boolean hasStartedTeaching = teacherClassrooms != null && !teacherClassrooms.isEmpty();
+                            %>
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
+                                <% if (teachingRegistrationSubmitted) { %>
+                                    <strong style="display: block; color: #10b981; font-size: 1.25rem; line-height: 1.2;">✓</strong>
+                                    <span style="display: block; color: #10b981; font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Đã gửi</span>
+                                <% } else { %>
+                                    <strong style="display: block; color: var(--primary); font-size: 1.25rem;">01</strong>
+                                    <span style="display: block; color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Gửi hồ sơ</span>
+                                <% } %>
                             </div>
-                        <% } %>
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
+                                <% if (isApprovedTeacher) { %>
+                                    <strong style="display: block; color: #10b981; font-size: 1.25rem; line-height: 1.2;">✓</strong>
+                                    <span style="display: block; color: #10b981; font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Đã duyệt</span>
+                                <% } else { %>
+                                    <strong style="display: block; color: var(--primary); font-size: 1.25rem;">02</strong>
+                                    <span style="display: block; color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Chờ xét duyệt</span>
+                                <% } %>
+                            </div>
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
+                                <% if (hasStartedTeaching) { %>
+                                    <strong style="display: block; color: #10b981; font-size: 1.25rem; line-height: 1.2;">✓</strong>
+                                    <span style="display: block; color: #10b981; font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Sẵn sàng</span>
+                                <% } else { %>
+                                    <strong style="display: block; color: var(--primary); font-size: 1.25rem;">03</strong>
+                                    <span style="display: block; color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Bắt đầu giảng dạy</span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
 
+                    <%
+                        boolean isRejectedApplicationCard = "rejected".equals(teachingRegistrationStatus);
+                        boolean needsMoreInfoApplicationCard = "needs_more_info".equals(teachingRegistrationStatus);
+                        String actionCardBg = "#f0fdf4";
+                        String actionCardBorder = "#bbf7d0";
+                        String actionCardText = "#064e3b";
+                        String actionCardParagraph = "#047857";
+                    %>
+                    <!-- Thẻ phải -->
+                    <div style="background: <%= actionCardBg %>; border: 1px solid <%= actionCardBorder %>; color: <%= actionCardText %>; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1.25rem;">
+                        <div>
+                            <% if (isApprovedTeacher) { %>
+                                <div style="min-height: 48px; display: flex; align-items: flex-start;">
+                                    <div style="display: inline-flex; align-items: center; gap: 0.45rem; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.72rem; font-weight: 800; color: #064e3b;">HOÀN TẤT</div>
+                                </div>
+                                <h3 style="margin: 0.75rem 0 0.5rem 0; font-size: 1.25rem; line-height: 1.3; font-weight: 800; color: #064e3b;">Hồ sơ đã được duyệt</h3>
+                                <p style="margin: 0; color: #047857; line-height: 1.6; font-size: 0.85rem;">Chúc mừng! Hồ sơ giảng dạy của bạn đã được xác thực thành công. Bây giờ bạn có thể mở khóa các tính năng dành cho giảng viên.</p>
+                            <% } else { %>
+                                <% if (teachingRegistrationSubmitted) { %>
+                                    <%
+                                        boolean isRejectedApplication = "rejected".equals(teachingRegistrationStatus);
+                                        boolean needsMoreInfoApplication = "needs_more_info".equals(teachingRegistrationStatus);
+                                        String statusTagText = needsMoreInfoApplication ? "CẦN BỔ SUNG" : (isRejectedApplication ? "TỪ CHỐI" : "ĐANG CHỜ DUYỆT");
+                                        String statusTagBg = needsMoreInfoApplication ? "#fef3c7" : (isRejectedApplication ? "#fee2e2" : "#dcfce7");
+                                        String statusTagBorder = needsMoreInfoApplication ? "#f59e0b" : (isRejectedApplication ? "#ef4444" : "#bbf7d0");
+                                        String statusTagColor = needsMoreInfoApplication ? "#a16207" : (isRejectedApplication ? "#b91c1c" : "#064e3b");
+                                        String submittedTitle = needsMoreInfoApplication ? "Cần bổ sung hồ sơ" : (isRejectedApplication ? "Hồ sơ chưa được duyệt" : "Hồ sơ đang được xét duyệt");
+                                        String staffReviewNote = teacherApplication != null ? teacherApplication.getReviewNote() : null;
+                                        boolean hasStaffReviewNote = staffReviewNote != null && !staffReviewNote.trim().isEmpty();
+                                        String submittedDescription;
+                                        if ((needsMoreInfoApplication || isRejectedApplication) && hasStaffReviewNote) {
+                                            submittedDescription = "Nội dung từ Nhân viên Hipzi: \"" + staffReviewNote.trim() + "\"";
+                                        } else if (needsMoreInfoApplication) {
+                                            submittedDescription = "Vui lòng bổ sung thông tin theo yêu cầu của đội ngũ kiểm duyệt trước khi gửi lại hồ sơ.";
+                                        } else if (isRejectedApplication) {
+                                            submittedDescription = "Hồ sơ hiện chưa đạt yêu cầu xét duyệt. Bạn có thể cập nhật lại thông tin và gửi lại khi sẵn sàng.";
+                                        } else {
+                                            submittedDescription = "Bạn có thể cập nhật lại thông tin hoặc bổ sung minh chứng trong thời gian đội ngũ HIPZI kiểm tra hồ sơ.";
+                                        }
+                                    %>
+                                    <div style="min-height: 48px; display: flex; align-items: flex-start;">
+                                        <div style="display: inline-flex; align-items: center; gap: 0.45rem; background: <%= statusTagBg %>; border: 1px solid <%= statusTagBorder %>; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.72rem; font-weight: 800; color: <%= statusTagColor %>; box-shadow: 0 6px 14px rgba(245, 158, 11, 0.12);"><%= statusTagText %></div>
+                                    </div>
+                                    <h3 style="margin: 0.75rem 0 0.5rem 0; font-size: 1.25rem; line-height: 1.3; font-weight: 800; color: <%= actionCardText %>;"><%= submittedTitle %></h3>
+                                    <p style="margin: 0; color: <%= actionCardParagraph %>; line-height: 1.6; font-size: 0.85rem;"><%= h(submittedDescription) %></p>
+                                <% } else { %>
+                                    <div style="min-height: 48px; display: flex; align-items: flex-start;">
+                                        <div style="display: inline-flex; align-items: center; gap: 0.45rem; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.72rem; font-weight: 800; color: #064e3b;">BẮT ĐẦU</div>
+                                    </div>
+                                    <h3 style="margin: 0.75rem 0 0.5rem 0; font-size: 1.25rem; line-height: 1.3; font-weight: 800; color: #064e3b;">Hoàn thiện hồ sơ giảng dạy</h3>
+                                    <p style="margin: 0; color: #047857; line-height: 1.6; font-size: 0.85rem;">Gửi thông tin chuyên môn, kinh nghiệm và minh chứng để HIPZI xét duyệt quyền giảng dạy cho tài khoản của bạn.</p>
+                                <% } %>
+                            <% } %>
+                        </div>
+                        <button type="button" 
+                            <% if (isApprovedTeacher) { %>
+                                onclick="switchTab('tab-class-registration');"
+                            <% } else { %>
+                                onclick="document.getElementById('teaching-registration-form-scroll-target').scrollIntoView({ behavior: 'smooth', block: 'start' });"
+                            <% } %>
+                            class="btn-premium secondary" style="width: 100%; border: none; background: #047857; color: #ffffff; font-weight: 800; box-shadow: 0 4px 14px rgba(4, 120, 87, 0.25);">
+                            <% if (isApprovedTeacher) { %>
+                                <span>Đăng kí lớp học</span>
+                            <% } else if (teachingRegistrationSubmitted) { %>
+                                <span>Cập nhật hồ sơ</span>
+                            <% } else { %>
+                                <span>Điền hồ sơ ngay</span>
+                            <% } %>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="teaching-registration-form-scroll-target" style="display: flex; flex-direction: column; gap: 1.25rem;">
                         <form action="${pageContext.request.contextPath}/teacher-profile" method="POST" enctype="multipart/form-data" class="form-edit-layout" style="padding:0;" onsubmit="return validateTeachingSubjects()">
+                            <fieldset <%= isApprovedTeacher ? "disabled" : "" %> style="border: none; padding: 0; margin: 0;">
                             <input type="hidden" name="action" value="submitTeachingRegistration">
 
                             <div class="section-data-card">
-                                <div class="card-header-layout">
-                                    <div class="card-header-title">
+                                <div class="card-header-layout" style="display: flex; align-items: center; justify-content: flex-start; gap: 0.75rem;">
+                                    <div class="card-header-title" style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3l8 4.5-8 4.5-8-4.5L12 3z"/><path d="M4 12l8 4.5 8-4.5"/><path d="M4 16.5l8 4.5 8-4.5"/></svg>
                                         <span>Phân loại giảng viên</span>
                                     </div>
-                                    <span style="font-size:0.8rem; font-weight:700; color:var(--primary); background:var(--primary-light); padding:0.2rem 0.75rem; border-radius:1rem;">Bắt buộc</span>
+                                    <% if (!isApprovedTeacher) { %>
+                                        <span style="font-size:0.8rem; font-weight:700; color:var(--primary); background:var(--primary-light); padding:0.2rem 0.75rem; border-radius:1rem; margin-top: 2px;">Bắt buộc</span>
+                                    <% } %>
                                 </div>
 
                                 <div style="padding:1.5rem;">
-                                    <p class="teacher-type-helper-text">Vui lòng chọn nhóm giảng viên hiện tại của bạn trước khi điền thông tin.</p>
+                                    <% if (isApprovedTeacher) { %>
+                                        <p class="teacher-type-helper-text" style="color: #047857; font-weight: 600;">Hệ thống đã xếp bạn vào nhóm giảng viên dưới đây dựa trên hồ sơ đã duyệt.</p>
+                                    <% } else { %>
+                                        <p class="teacher-type-helper-text">Vui lòng chọn nhóm giảng viên hiện tại của bạn trước khi điền thông tin.</p>
+                                    <% } %>
                                     <div class="teacher-type-grid">
                                         <label class="teacher-type-card">
-                                            <input type="radio" name="teacherType" value="student_tutor" required>
+                                            <input type="radio" name="teacherType" value="student_tutor" <%= (teacherApplication != null && "student_tutor".equals(teacherApplication.getTeacherType())) ? "checked" : "" %> required>
                                             <div class="teacher-type-card-inner">
                                                 <span class="teacher-type-kicker">Nhóm 1</span>
                                                 <h3 class="teacher-type-title">Gia sư sinh viên</h3>
                                                 <p class="teacher-type-description">Phù hợp với học viên cần người hướng dẫn gần gũi, hỗ trợ bài tập, ôn tập kiến thức nền tảng hoặc học theo nhóm nhỏ.</p>
-                                                <ul class="teacher-type-examples">
+                                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-top: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Đối tượng phù hợp:</div>
+                                                <ul class="teacher-type-examples" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0;">
                                                     <li>Sinh viên Sư phạm Toán</li>
                                                     <li>Sinh viên Công nghệ thông tin dạy lập trình cơ bản</li>
                                                     <li>Sinh viên IELTS 7.5 dạy tiếng Anh</li>
                                                     <li>Sinh viên năm 3, năm 4 có thành tích học tập tốt</li>
                                                 </ul>
-                                                <ul class="teacher-type-requirements">
+                                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Hồ sơ yêu cầu:</div>
+                                                <ul class="teacher-type-requirements" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0;">
                                                     <li>Trường đang học, chuyên ngành, năm học hiện tại</li>
                                                     <li>Môn có thể dạy</li>
                                                     <li>Thẻ sinh viên hoặc minh chứng đang học</li>
@@ -1389,18 +2134,20 @@
                                         </label>
 
                                         <label class="teacher-type-card">
-                                            <input type="radio" name="teacherType" value="certified_pedagogy" required>
+                                            <input type="radio" name="teacherType" value="certified_pedagogy" <%= (teacherApplication != null && "certified_pedagogy".equals(teacherApplication.getTeacherType())) ? "checked" : "" %> required>
                                             <div class="teacher-type-card-inner">
                                                 <span class="teacher-type-kicker">Nhóm 2</span>
                                                 <h3 class="teacher-type-title">Giảng viên có chứng chỉ sư phạm</h3>
                                                 <p class="teacher-type-description">Phù hợp với học viên cần người dạy có nền tảng giảng dạy, phương pháp truyền đạt rõ ràng và tập trung vào một số môn cụ thể.</p>
-                                                <ul class="teacher-type-examples">
+                                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-top: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Đối tượng phù hợp:</div>
+                                                <ul class="teacher-type-examples" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0;">
                                                     <li>Người có chứng chỉ nghiệp vụ sư phạm</li>
                                                     <li>Người có chứng chỉ dạy tiếng Anh</li>
                                                     <li>Người có chứng chỉ đào tạo kỹ năng</li>
                                                     <li>Người có chứng chỉ dạy tin học hoặc lập trình</li>
                                                 </ul>
-                                                <ul class="teacher-type-requirements">
+                                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Hồ sơ yêu cầu:</div>
+                                                <ul class="teacher-type-requirements" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0;">
                                                     <li>Chứng chỉ sư phạm hoặc chứng chỉ giảng dạy</li>
                                                     <li>Môn có thể dạy</li>
                                                     <li>Kinh nghiệm dạy học nếu có</li>
@@ -1410,18 +2157,20 @@
                                         </label>
 
                                         <label class="teacher-type-card">
-                                            <input type="radio" name="teacherType" value="degree_specialist" required>
+                                            <input type="radio" name="teacherType" value="degree_specialist" <%= (teacherApplication != null && "degree_specialist".equals(teacherApplication.getTeacherType())) ? "checked" : "" %> required>
                                             <div class="teacher-type-card-inner">
                                                 <span class="teacher-type-kicker">Nhóm 3</span>
                                                 <h3 class="teacher-type-title">Giảng viên chuyên môn</h3>
                                                 <p class="teacher-type-description">Dành cho giảng viên, giáo viên đã tốt nghiệp, có bằng cấp chuyên môn rõ ràng hoặc đang/đã làm việc trong lĩnh vực giảng dạy.</p>
-                                                <ul class="teacher-type-examples">
+                                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-top: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Đối tượng phù hợp:</div>
+                                                <ul class="teacher-type-examples" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0;">
                                                     <li>Cử nhân Sư phạm Toán</li>
                                                     <li>Cử nhân Ngôn ngữ Anh</li>
                                                     <li>Thạc sĩ ngành Giáo dục</li>
                                                     <li>Giáo viên THCS/THPT, giảng viên đại học hoặc chuyên gia phù hợp</li>
                                                 </ul>
-                                                <ul class="teacher-type-requirements">
+                                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Hồ sơ yêu cầu:</div>
+                                                <ul class="teacher-type-requirements" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0;">
                                                     <li>Bằng đại học, cao học hoặc bằng chuyên môn</li>
                                                     <li>Chuyên ngành đào tạo</li>
                                                     <li>Kinh nghiệm giảng dạy</li>
@@ -1443,94 +2192,122 @@
 
                                 <div style="padding:1.5rem;">
                                     <div class="teacher-registration-form-grid">
-                                        <div class="form-group-premium">
-                                            <label>Trường / đơn vị đang học hoặc công tác</label>
-                                            <input type="text" name="institutionName" placeholder="Ví dụ: Đại học Sư phạm TP.HCM, THPT Chuyên Lê Hồng Phong" required>
-                                        </div>
-                                        <div class="form-group-premium">
-                                            <label>Chuyên ngành / lĩnh vực chuyên môn</label>
-                                            <input type="text" name="specialization" placeholder="Ví dụ: Sư phạm Toán, Ngôn ngữ Anh, Công nghệ thông tin" required>
-                                        </div>
-                                        <div class="form-group-premium">
-                                            <label>Năm học hiện tại</label>
-                                            <select name="currentStudyYear">
-                                                <option value="">Không áp dụng</option>
-                                                <option value="year_1">Năm 1</option>
-                                                <option value="year_2">Năm 2</option>
-                                                <option value="year_3">Năm 3</option>
-                                                <option value="year_4">Năm 4</option>
-                                                <option value="year_5_plus">Năm 5 trở lên</option>
-                                                <option value="graduated">Đã tốt nghiệp</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group-premium full-span">
-                                            <label>Môn có thể dạy (Có thể chọn nhiều môn)</label>
-                                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; margin-top: 0.5rem; background: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid var(--border-dark);">
-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                    <input type="checkbox" name="teachingSubjects" value="Toán" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Toán học
-                                                </label>
-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                    <input type="checkbox" name="teachingSubjects" value="Văn" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Ngữ Văn
-                                                </label>
-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                    <input type="checkbox" name="teachingSubjects" value="Anh" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Tiếng Anh
-                                                </label>
-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                    <input type="checkbox" name="teachingSubjects" value="Lý" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Vật Lý
-                                                </label>
-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                    <input type="checkbox" name="teachingSubjects" value="Hóa" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Hóa Học
-                                                </label>
-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                    <input type="checkbox" name="teachingSubjects" value="Sinh Học" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Sinh Học
-                                                </label>
-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                    <input type="checkbox" name="teachingSubjects" value="Lịch Sử" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Lịch Sử
-                                                </label>
-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                    <input type="checkbox" name="teachingSubjects" value="Địa Lý" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Địa Lý
-                                                </label>
-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                    <input type="checkbox" name="teachingSubjects" value="Công Nghệ" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Công Nghệ
-                                                </label>
-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                    <input type="checkbox" name="teachingSubjects" value="Tin Học" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Tin Học
-                                                </label>
+                                        <div class="teacher-form-section full-span" style="grid-column: 1 / -1;">
+                                            <div class="teacher-form-section-title">Học vấn</div>
+                                            <div class="teacher-registration-form-grid">
+                                                <div class="form-group-premium">
+                                                    <label>Trường / đơn vị đang học hoặc công tác<span class="field-required">*</span></label>
+                                                    <input type="text" name="institutionName" placeholder="Ví dụ: Đại học Sư phạm TP.HCM, THPT Chuyên Lê Hồng Phong" required>
+                                                </div>
+                                                <div class="form-group-premium">
+                                                    <label>Chuyên ngành / lĩnh vực chuyên môn<span class="field-required">*</span></label>
+                                                    <input type="text" name="specialization" placeholder="Ví dụ: Sư phạm Toán, Ngôn ngữ Anh, Công nghệ thông tin" required>
+                                                </div>
+                                                <div class="form-group-premium">
+                                                    <label>Năm học hiện tại</label>
+                                                    <select name="currentStudyYear" class="teacher-registration-select">
+                                                        <option value="">Không áp dụng</option>
+                                                        <option value="year_1">Năm 1</option>
+                                                        <option value="year_2">Năm 2</option>
+                                                        <option value="year_3">Năm 3</option>
+                                                        <option value="year_4">Năm 4</option>
+                                                        <option value="year_5_plus">Năm 5 trở lên</option>
+                                                        <option value="graduated">Đã tốt nghiệp</option>
+                                                    </select>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="form-group-premium">
-                                            <label>Kinh nghiệm giảng dạy</label>
-                                            <input type="text" name="teachingExperience" placeholder="Ví dụ: 2 năm dạy kèm Toán THPT, trợ giảng trung tâm tiếng Anh">
+
+                                        <div class="teacher-form-section full-span" style="grid-column: 1 / -1;">
+                                            <div class="teacher-form-section-title">Chuyên môn & Kinh nghiệm</div>
+                                            <div class="teacher-registration-form-grid">
+                                                <div class="form-group-premium full-span">
+                                                    <label>Môn có thể dạy<span class="field-required">*</span><span class="field-optional">Có thể chọn nhiều môn</span></label>
+                                                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; margin-top: 0.5rem; background: #ffffff; padding: 1rem; border-radius: 0.75rem; border: 1px solid var(--border-dark);">
+                                                        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+                                                            <input type="checkbox" name="teachingSubjects" value="Toán" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Toán học
+                                                        </label>
+                                                        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+                                                            <input type="checkbox" name="teachingSubjects" value="Văn" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Ngữ Văn
+                                                        </label>
+                                                        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+                                                            <input type="checkbox" name="teachingSubjects" value="Anh" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Tiếng Anh
+                                                        </label>
+                                                        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+                                                            <input type="checkbox" name="teachingSubjects" value="Lý" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Vật Lý
+                                                        </label>
+                                                        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+                                                            <input type="checkbox" name="teachingSubjects" value="Hóa" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Hóa Học
+                                                        </label>
+                                                        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+                                                            <input type="checkbox" name="teachingSubjects" value="Sinh Học" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Sinh Học
+                                                        </label>
+                                                        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+                                                            <input type="checkbox" name="teachingSubjects" value="Lịch Sử" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Lịch Sử
+                                                        </label>
+                                                        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+                                                            <input type="checkbox" name="teachingSubjects" value="Địa Lý" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Địa Lý
+                                                        </label>
+                                                        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+                                                            <input type="checkbox" name="teachingSubjects" value="Công Nghệ" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Công Nghệ
+                                                        </label>
+                                                        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+                                                            <input type="checkbox" name="teachingSubjects" value="Tin Học" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Tin Học
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group-premium">
+                                                    <label>Kinh nghiệm giảng dạy</label>
+                                                    <input type="text" name="teachingExperience" placeholder="Ví dụ: 2 năm dạy kèm Toán THPT, trợ giảng trung tâm tiếng Anh">
+                                                </div>
+                                                <div class="form-group-premium">
+                                                    <label>Nơi từng/đang công tác<span class="field-optional">Tùy chọn</span></label>
+                                                    <input type="text" name="workplace" placeholder="Ví dụ: Trung tâm Anh ngữ, trường THPT, dự án gia sư cá nhân">
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="form-group-premium">
-                                            <label>Nơi từng/đang công tác</label>
-                                            <input type="text" name="workplace" placeholder="Điền nếu có">
-                                        </div>
-                                        <div class="form-group-premium full-span">
-                                            <label>Thành tích, chứng chỉ hoặc bằng cấp liên quan</label>
-                                            <textarea name="credentialsSummary" rows="3" placeholder="Ví dụ: IELTS 7.5, giải học sinh giỏi, chứng chỉ nghiệp vụ sư phạm, bằng cử nhân..."></textarea>
-                                        </div>
-                                        <div class="form-group-premium full-span">
-                                            <label>Hồ sơ cá nhân ngắn</label>
-                                            <textarea name="teacherBio" rows="4" placeholder="Giới thiệu phương pháp dạy, nhóm học viên phù hợp và điểm mạnh chuyên môn của bạn." required></textarea>
-                                        </div>
-                                        <div class="form-group-premium full-span">
-                                            <label>Minh chứng xác minh</label>
-                                            <div class="teacher-evidence-box">
-                                                <input type="file" name="evidenceFiles" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx">
-                                                <p style="font-size:0.8rem; color:var(--text-muted); margin:0.75rem 0 0 0;">Có thể đính kèm thẻ sinh viên, chứng chỉ, bằng cấp, bảng điểm hoặc giấy xác nhận công tác. Mỗi file tối đa 5MB.</p>
+
+                                        <div class="teacher-form-section full-span" style="grid-column: 1 / -1;">
+                                            <div class="teacher-form-section-title">Hồ sơ & Xác thực</div>
+                                            <div class="teacher-registration-form-grid">
+                                                <div class="form-group-premium full-span">
+                                                    <label>Thành tích, chứng chỉ hoặc bằng cấp liên quan</label>
+                                                    <textarea class="teacher-registration-textarea" name="credentialsSummary" rows="4" placeholder="Ví dụ: IELTS 7.5, giải học sinh giỏi, chứng chỉ nghiệp vụ sư phạm, bằng cử nhân..."></textarea>
+                                                </div>
+                                                <div class="form-group-premium full-span">
+                                                    <label>Hồ sơ cá nhân ngắn<span class="field-required">*</span></label>
+                                                    <textarea class="teacher-registration-textarea" name="teacherBio" rows="4" placeholder="Giới thiệu phương pháp dạy, nhóm học viên phù hợp và điểm mạnh chuyên môn của bạn." required></textarea>
+                                                </div>
+                                                <div class="form-group-premium full-span">
+                                                    <label>Minh chứng xác minh</label>
+                                                    <div class="teacher-evidence-box">
+                                                        <label class="teacher-evidence-dropzone">
+                                                            <input type="file" id="teacherEvidenceFiles" name="evidenceFiles" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx">
+                                                            <span class="teacher-evidence-icon">
+                                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5"/></svg>
+                                                            </span>
+                                                            <span class="teacher-evidence-title">Kéo thả file vào đây hoặc nhấn để tải lên</span>
+                                                            <span class="teacher-evidence-subtitle">PDF, ảnh, Word. Mỗi file tối đa 5MB.</span>
+                                                            <span id="teacherEvidenceFileName" class="teacher-evidence-filename">Chưa có tệp nào được chọn</span>
+                                                        </label>
+                                                        <p style="font-size:0.8rem; color:var(--text-muted); margin:0.75rem 0 0 0;">Có thể đính kèm thẻ sinh viên, chứng chỉ, bằng cấp, bảng điểm hoặc giấy xác nhận công tác.</p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="form-actions-row-premium">
-                                <button type="submit" class="btn-premium primary">
-                                    <span>Gửi hồ sơ đăng kí</span>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                                </button>
-                            </div>
+                            <% if (!isApprovedTeacher) { %>
+                                <div class="form-actions-row-premium">
+                                    <button type="submit" class="btn-premium primary">
+                                        <span>Gửi hồ sơ đăng kí</span>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                    </button>
+                                </div>
+                            <% } %>
+                            </fieldset>
                         </form>
                     </div>
             </section>
@@ -1573,7 +2350,7 @@
                                 String startValue = cls.getStartTime() != null ? cls.getStartTime().toLocalTime().toString().substring(0, 5) : "";
                                 String endValue = cls.getEndTime() != null ? cls.getEndTime().toLocalTime().toString().substring(0, 5) : "";
                             %>
-                                <div class="classroom-card" style="border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem; background: var(--surface); display: flex; flex-direction: column; justify-content: space-between; height: 100%; min-height: 250px; box-shadow: var(--shadow); transition: all 0.2s ease;">
+                                <div class="classroom-card" style="border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem; background: #f8fafc; display: flex; flex-direction: column; justify-content: space-between; height: 100%; min-height: 250px; box-shadow: var(--shadow); transition: all 0.2s ease;">
                                     <div>
                                         <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
                                             <span class="subject-badge" style="background: var(--primary-light); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700;"><%= cls.getSubject() %></span>
@@ -1832,23 +2609,12 @@
                             <div class="metric-card-value"><%= teacherClassrooms != null ? teacherClassrooms.size() : 0 %></div>
                             <span class="metric-card-sub">Lớp hoạt động</span>
                         </div>
-                    </div>
-
-                    <!-- Metric 2: Application status -->
-                    <div class="metric-card secondary">
-                        <div class="metric-card-top">
-                            <span class="metric-card-title">Trạng thái hồ sơ</span>
-                            <div class="metric-arrow-btn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="metric-card-value" style="font-size: 1.45rem; margin-top: 1.25rem;"><%= teachingRegistrationStatusLabel %></div>
-                            <span class="metric-card-sub" style="background:#eff6ff; color:#2563eb;">Giảng viên</span>
+                        <div class="metric-ghost-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                         </div>
                     </div>
 
-                    <!-- Metric 3: Active courses -->
+                    <!-- Metric 2: Active courses -->
                     <div class="metric-card secondary">
                         <div class="metric-card-top">
                             <span class="metric-card-title">Khóa học của tôi</span>
@@ -1857,22 +2623,45 @@
                             </div>
                         </div>
                         <div>
-                            <div class="metric-card-value">1</div>
+                            <div class="metric-card-value"><%= teacherCourses != null ? teacherCourses.size() : 0 %></div>
                             <span class="metric-card-sub" style="background:#f5f3ff; color:#7c3aed;">Đang phát hành</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#7c3aed; background:#f5f3ff;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                         </div>
                     </div>
 
-                    <!-- Metric 4: System notifications -->
+                    <!-- Metric 3: Uploaded materials -->
                     <div class="metric-card secondary">
                         <div class="metric-card-top">
-                            <span class="metric-card-title">Thông báo</span>
+                            <span class="metric-card-title">Số tài liệu</span>
                             <div class="metric-arrow-btn">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
                             </div>
                         </div>
                         <div>
-                            <div class="metric-card-value"><%= notifications != null ? notifications.size() : 0 %></div>
-                            <span class="metric-card-sub" style="background:#fff7ed; color:#ea580c;">Tin nhắn mới</span>
+                            <div class="metric-card-value"><%= teacherMaterialCount %></div>
+                            <span class="metric-card-sub" style="background:#fff7ed; color:#ea580c;">Tài liệu đã đăng</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#ea580c; background:#fff7ed;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        </div>
+                    </div>
+
+                    <!-- Metric 4: Teaching schedule placeholder -->
+                    <div class="metric-card secondary">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Đặt lịch dạy</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-card-value" style="font-size: 1.45rem; margin-top: 1.25rem;">Sắp có</div>
+                            <span class="metric-card-sub" style="background:#eff6ff; color:#2563eb;">Đang phát triển</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#2563eb; background:#eff6ff;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h4"/><path d="M8 18h8"/></svg>
                         </div>
                     </div>
                 </div>
@@ -1880,100 +2669,66 @@
                 <!-- MAIN GRID LAYOUT -->
                 <div class="dashboard-grid-layout">
                     <!-- Cột Trái: Thông tin cá nhân -->
-                    <div class="premium-card">
+                    <div class="premium-card" style="grid-column: 1 / -1;">
                         <div class="premium-card-header">
                             <span class="premium-card-title">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                Thông tin cá nhân
+                                Chi tiết tài khoản
                             </span>
-                            <button onclick="switchTab('tab-edit')" class="btn-premium secondary" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
-                                <span>Chỉnh sửa</span>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                            </button>
+                            <div class="account-header-actions">
+                                <button type="button" id="accountEditTrigger" onclick="toggleAccountNameEdit(true)" class="btn-premium profile-edit-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                    <span>Chỉnh sửa</span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                </button>
+                                <div id="accountEditActions" class="account-edit-actions" style="display: none;">
+                                    <button type="button" class="btn-premium account-cancel-btn" onclick="toggleAccountNameEdit(false)" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">Hủy bỏ</button>
+                                    <button type="submit" form="accountNameInlineForm" class="btn-premium account-save-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">Lưu</button>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Lưới chi tiết thông tin -->
-                        <div class="profile-info-grid">
-                            <div class="profile-info-item">
-                                <div class="info-icon-circle primary">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <form id="teacherAvatarUploadForm" action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" style="display:none;">
+                            <input type="hidden" name="action" value="updateAvatar">
+                            <input type="file" id="teacherAvatarFile" name="avatarFile" accept="image/*" onchange="document.getElementById('teacherAvatarUploadForm').submit();">
+                        </form>
+
+                        <div class="account-summary-panel">
+                            <div class="account-summary-main">
+                                <div class="account-avatar-wrap">
+                                    <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+                                        <img src="<%= user.getAvatarUrl() %>" class="account-avatar-img" alt="Avatar">
+                                    <% } else { %>
+                                        <div class="account-avatar-placeholder"><%= initials %></div>
+                                    <% } %>
+                                    <button type="button" class="avatar-camera-btn" title="Cập nhật ảnh đại diện" onclick="document.getElementById('teacherAvatarFile').click();">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                    </button>
                                 </div>
-                                <div class="info-content">
-                                    <span class="info-label">Họ và tên hiển thị</span>
-                                    <span class="info-value"><%= user != null ? user.getDisplayName() : "—" %></span>
+                                <div class="account-identity">
+                                    <h3 class="account-name"><%= user != null ? user.getDisplayName() : "Giảng viên HIPZI" %></h3>
+                                    <form id="accountNameInlineForm" class="account-name-edit-form" action="${pageContext.request.contextPath}/profile" method="POST" style="display: none;">
+                                        <input type="hidden" name="action" value="updateName">
+                                        <input id="accountDisplayNameInput" class="account-name-input" type="text" name="displayName" required value="<%= user != null ? user.getDisplayName() : "" %>" placeholder="Nhập họ và tên của bạn...">
+                                    </form>
+                                    <span class="account-email" title="<%= user != null ? user.getEmail() : "" %>"><%= user != null ? user.getEmail() : "info@hipzi.vn" %></span>
                                 </div>
                             </div>
-
-                            <div class="profile-info-item">
-                                <div class="info-icon-circle accent">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <div class="account-side-meta">
+                                <div class="account-meta-pill">
+                                    <span class="account-meta-label">Ngày tham gia</span>
+                                    <span class="account-meta-value"><%= joinDate %></span>
                                 </div>
-                                <div class="info-content">
-                                    <span class="info-label">Ngày tham gia</span>
-                                    <span class="info-value"><%= joinDate %></span>
-                                </div>
-                            </div>
-
-                            <div class="profile-info-item">
-                                <div class="info-icon-circle warning">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                                </div>
-                                <div class="info-content" style="min-width: 0;">
-                                    <span class="info-label">Địa chỉ Email</span>
-                                    <span class="info-value" style="font-size:0.95rem;" title="<%= user != null ? user.getEmail() : "" %>"><%= user != null ? user.getEmail() : "—" %></span>
-                                </div>
-                            </div>
-
-                            <div class="profile-info-item">
-                                <div class="info-icon-circle danger">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                </div>
-                                <div class="info-content">
-                                    <span class="info-label">Trạng thái tài khoản</span>
-                                    <% String statusVal = (user != null) ? user.getAccountStatus() : "active"; %>
-                                    <span class="acc-status-tag <%= statusVal %>">
-                                        <%= "active".equals(statusVal) ? "Đang hoạt động" : "suspended".equals(statusVal) ? "Tạm khóa" : "Vô hiệu hóa" %>
+                                <div class="account-meta-pill">
+                                    <span class="account-meta-label">Vai trò</span>
+                                    <span class="account-meta-value">
+                                        <span class="role-tag teacher">Giảng viên</span>
                                     </span>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
-                    <!-- Cột Phải: Danh sách lớp học -->
-                    <div class="premium-card">
-                        <div class="premium-card-header">
-                            <span class="premium-card-title">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                                Lớp học của tôi
-                            </span>
-                            <button onclick="switchTab('tab-class-registration')" class="btn-premium secondary" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">Xem tất cả</button>
-                        </div>
-
-                        <div class="dashboard-list">
-                            <% if (teacherClassrooms != null && !teacherClassrooms.isEmpty()) { 
-                                int count = 0;
-                                for (Classroom cls : teacherClassrooms) { 
-                                    if (count++ >= 3) break;
-                            %>
-                                <div class="dashboard-list-item">
-                                    <div class="item-info">
-                                        <div class="item-icon-round primary">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                                        </div>
-                                        <div class="item-meta">
-                                            <span class="item-title" style="font-weight:700; color:var(--text-main); font-size:0.9rem;"><%= cls.getTitle() %></span>
-                                            <span class="item-subtitle" style="font-size:0.75rem; color:var(--text-muted);"><%= cls.getSubject() %> - <%= cls.getGrade() %></span>
-                                        </div>
-                                    </div>
-                                    <span class="status-badge <%= cls.getStatus() %>"><%= "open".equals(cls.getStatus()) ? "Đang mở" : "closed".equals(cls.getStatus()) ? "Đã đóng" : "Sắp mở" %></span>
-                                </div>
-                            <% } } else { %>
-                                <div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 1.5rem 0;">
-                                    Chưa đăng kí lớp học nào.
-                                </div>
-                            <% } %>
-                        </div>
-                    </div>
                 </div>
             </section>
 <!-- ========================================== -->
@@ -2037,7 +2792,7 @@
                 <div class="premium-card">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem;">
                         <div>
-                            <span style="font-weight: 800; font-size: 1.15rem; color: #b45309; letter-spacing: 0.5px; text-transform: uppercase; display: block;">Mật khẩu đăng nhập</span>
+                            <span style="font-weight: 800; font-size: 1.15rem; color: var(--text-main); letter-spacing: 0.5px; text-transform: uppercase; display: block;">Mật khẩu đăng nhập</span>
                             <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.35rem 0 0 0;">Cập nhật mật khẩu định kỳ để bảo mật tốt hơn.</p>
                         </div>
                         <button type="button" onclick="document.getElementById('pwd-modal-overlay').style.display='flex';" class="btn-premium primary" style="background: #059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
@@ -2070,10 +2825,13 @@
                     <div class="premium-card">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Bảo mật 2 lớp (OTP)</span>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">Mã OTP qua Email</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.1rem;">
+                            <div>
+                                <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); display: block;">Mã OTP qua Email</span>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; line-height: 1.5; margin: 0.35rem 0 0 0;">Tăng cường bảo vệ tài khoản khi đăng nhập ở thiết bị lạ.</p>
+                            </div>
                             
                             <!-- Form ngầm xử lý toggle 2FA -->
                             <form id="toggle2faForm" action="${pageContext.request.contextPath}/profile" method="POST" style="display: none;">
@@ -2092,7 +2850,7 @@
                     <div class="premium-card">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Thiết bị hiện tại</span>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                         </div>
                         <div>
                             <span style="font-weight: 800; font-size: 1.1rem; color: var(--text-main); display: block;">Windows - Chrome (Vietnam)</span>
@@ -2303,7 +3061,7 @@
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.5rem;">
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
                             <div style="width: 48px; height: 48px; border-radius: 0.75rem; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center;">
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                             </div>
@@ -2312,15 +3070,15 @@
                                 <p style="margin: 0; color: var(--text-muted); line-height: 1.6; font-size: 0.88rem;">Khi giảng viên đăng tải bài giảng, đề luyện tập, giáo án hoặc bộ tài nguyên học tập chất lượng, tài liệu sẽ được đưa vào kho tài liệu để học viên dễ tìm kiếm, xem và đánh giá.</p>
                             </div>
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 0.5rem;">
-                                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
                                     <strong style="display: block; color: var(--primary); font-size: 1.25rem;">01</strong>
                                     <span style="display: block; color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Đăng tài liệu</span>
                                 </div>
-                                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
                                     <strong style="display: block; color: var(--primary); font-size: 1.25rem;">02</strong>
                                     <span style="display: block; color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Nhận tương tác</span>
                                 </div>
-                                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
                                     <strong style="display: block; color: var(--primary); font-size: 1.25rem;">03</strong>
                                     <span style="display: block; color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Tăng uy tín</span>
                                 </div>
@@ -2341,7 +3099,7 @@
                     </div>
                 </div>
 
-                <div id="repository-upload-form-panel" style="display: none; margin-top: 1.5rem; background: #ffffff; border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow);">
+                <div id="repository-upload-form-panel" style="display: none; margin-top: 1.5rem; background: #f8fafc; border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow);">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.75rem;">
                             <div>
                                 <h3 style="margin: 0; color: var(--text-main); font-size: 1.15rem; font-weight: 800;">Thông tin tài liệu đăng tải</h3>
@@ -2440,7 +3198,7 @@
                         </div>
                         
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            <details style="background: #ffffff; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
+                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
                                 <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
                                     <span>Làm thế nào để tải xuống bài giảng?</span>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
@@ -2450,7 +3208,7 @@
                                 </p>
                             </details>
 
-                            <details style="background: #ffffff; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
+                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
                                 <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
                                     <span>AI tạo câu hỏi ôn tập hoạt động ra sao?</span>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
@@ -2459,6 +3217,27 @@
                                     Trợ lý AI phân tích văn bản từ tài liệu gốc do Giảng viên cung cấp để bóc tách thành các bộ Flashcard trực quan cho học viên luyện tập.
                                 </p>
                             </details>
+
+                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
+                                <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Tài liệu sau khi đăng sẽ được duyệt trong bao lâu?</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                                </summary>
+                                <p style="font-size: 0.9rem; color: var(--text-muted); margin: 1rem 0 0 0; line-height: 1.6; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
+                                    Tài liệu sẽ được kiểm tra nội dung, định dạng và quyền chia sẻ trước khi hiển thị công khai trong kho học liệu.
+                                </p>
+                            </details>
+
+                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
+                                <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Kết nối Google Drive bị lỗi thì xử lý thế nào?</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                                </summary>
+                                <p style="font-size: 0.9rem; color: var(--text-muted); margin: 1rem 0 0 0; line-height: 1.6; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
+                                    Hãy thử kết nối lại tài khoản Google Drive, kiểm tra quyền truy cập file và gửi yêu cầu hỗ trợ nếu lỗi vẫn tiếp diễn.
+                                </p>
+                            </details>
+
                         </div>
                     </div>
 
@@ -2470,17 +3249,18 @@
                                 Yêu cầu hỗ trợ
                             </span>
                         </div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Gửi yêu cầu trực tiếp đến đội ngũ kỹ thuật nếu bạn gặp sự cố nghiêm trọng.</p>
                         <form id="supportForm" style="display: flex; flex-direction: column; gap: 1.25rem;" class="form-edit-layout">
                             <div class="form-group-premium">
-                                <label>Tiêu đề cần hỗ trợ</label>
+                                <label>Tiêu đề cần hỗ trợ <span style="color:#ef4444;">*</span></label>
                                 <input type="text" name="title" required placeholder="Nhập tiêu đề vắn tắt...">
                             </div>
                             <div class="form-group-premium">
-                                <label>Mô tả chi tiết</label>
+                                <label>Mô tả chi tiết <span style="color:#ef4444;">*</span></label>
                                 <textarea name="content" rows="4" required placeholder="Mô tả khó khăn bạn đang gặp phải..."></textarea>
                             </div>
-                            <button type="submit" class="btn-premium primary" style="width: 100%; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">Gửi tin nhắn</button>
+                            <div class="support-submit-row" style="display: flex; justify-content: flex-end;">
+                                <button type="submit" class="btn-premium primary">Gửi tin nhắn</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -2743,6 +3523,53 @@
         }
 
         let teacherTabSwitchTimer;
+        let teacherFrameResizeObserver;
+
+        function syncTeacherDashboardFrameHeight() {
+            const dashboard = document.querySelector('.app-dashboard-container');
+            const contentWrapper = document.querySelector('.dashboard-content-wrapper');
+            const sidebar = document.querySelector('.dashboard-sidebar');
+            if (!dashboard || !contentWrapper) {
+                return;
+            }
+
+            const dashboardTop = dashboard.getBoundingClientRect().top + window.scrollY;
+            const contentBottom = contentWrapper.getBoundingClientRect().bottom + window.scrollY;
+            const sidebarBottom = sidebar ? sidebar.getBoundingClientRect().bottom + window.scrollY : 0;
+            const layoutBottom = Math.max(contentBottom, sidebarBottom);
+            const frameHeight = Math.ceil(layoutBottom - dashboardTop + 20);
+            const pageBgHeight = Math.ceil(layoutBottom + 20);
+            dashboard.style.setProperty('--teacher-dashboard-frame-height', frameHeight + 'px');
+            document.body.style.setProperty('--teacher-page-bg-height', pageBgHeight + 'px');
+        }
+
+        function scheduleTeacherDashboardFrameSync() {
+            requestAnimationFrame(() => {
+                syncTeacherDashboardFrameHeight();
+                requestAnimationFrame(syncTeacherDashboardFrameHeight);
+            });
+        }
+
+        function observeTeacherDashboardFrame() {
+            const contentWrapper = document.querySelector('.dashboard-content-wrapper');
+            const sidebar = document.querySelector('.dashboard-sidebar');
+            if (!contentWrapper || typeof ResizeObserver === 'undefined') {
+                scheduleTeacherDashboardFrameSync();
+                return;
+            }
+
+            if (teacherFrameResizeObserver) {
+                teacherFrameResizeObserver.disconnect();
+            }
+
+            teacherFrameResizeObserver = new ResizeObserver(scheduleTeacherDashboardFrameSync);
+            teacherFrameResizeObserver.observe(contentWrapper);
+            if (sidebar) {
+                teacherFrameResizeObserver.observe(sidebar);
+            }
+            document.querySelectorAll('.tab-pane').forEach(pane => teacherFrameResizeObserver.observe(pane));
+            scheduleTeacherDashboardFrameSync();
+        }
 
         function getTeacherTabSlug(tabId) {
             return tabId.replace(/^tab-/, '');
@@ -2812,6 +3639,7 @@
             teacherTabSwitchTimer = window.setTimeout(() => {
                 contentWrapper.classList.remove('is-switching-tab');
                 contentWrapper.style.minHeight = '';
+                scheduleTeacherDashboardFrameSync();
             }, 320);
         }
 
@@ -2838,12 +3666,38 @@
             }
         }
 
+        function toggleAccountNameEdit(isEditing) {
+            const nameView = document.querySelector('.account-identity .account-name');
+            const form = document.getElementById('accountNameInlineForm');
+            const editTrigger = document.getElementById('accountEditTrigger');
+            const editActions = document.getElementById('accountEditActions');
+            const input = document.getElementById('accountDisplayNameInput');
+
+            if (!nameView || !form || !editTrigger || !editActions) {
+                return;
+            }
+
+            nameView.style.display = isEditing ? 'none' : '';
+            form.style.display = isEditing ? 'block' : 'none';
+            editTrigger.style.display = isEditing ? 'none' : 'inline-flex';
+            editActions.style.display = isEditing ? 'flex' : 'none';
+
+            if (isEditing && input) {
+                input.focus();
+                input.select();
+            } else if (input) {
+                input.value = input.defaultValue;
+            }
+            scheduleTeacherDashboardFrameSync();
+        }
+
         function toggleSidebar() {
             const container = document.querySelector('.app-dashboard-container');
             if (container) {
                 container.classList.toggle('collapsed');
                 const isCollapsed = container.classList.contains('collapsed');
                 localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true' : 'false');
+                scheduleTeacherDashboardFrameSync();
             }
         }
 
@@ -2869,6 +3723,7 @@
                 if (options.updateUrl) {
                     updateTeacherTabUrl(targetTabId, options.replaceUrl);
                 }
+                scheduleTeacherDashboardFrameSync();
                 return;
             }
 
@@ -2902,7 +3757,10 @@
                 updateTeacherTabUrl(targetTabId, options.replaceUrl);
             }
 
-            requestAnimationFrame(settleTeacherTabScroll);
+            requestAnimationFrame(() => {
+                scheduleTeacherDashboardFrameSync();
+                settleTeacherTabScroll();
+            });
         }
 
         <% if (session.getAttribute("toastMsg") != null) { 
@@ -2923,6 +3781,7 @@
                     container.classList.add('collapsed');
                 }
             }
+            observeTeacherDashboardFrame();
         });
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -2936,6 +3795,14 @@
                     updateTeacherTabUrl(activePane.id, true);
                 }
             }
+            scheduleTeacherDashboardFrameSync();
+        });
+
+        window.addEventListener('load', scheduleTeacherDashboardFrameSync);
+        window.addEventListener('resize', scheduleTeacherDashboardFrameSync);
+
+        document.querySelectorAll('.dashboard-content-wrapper details').forEach(detail => {
+            detail.addEventListener('toggle', scheduleTeacherDashboardFrameSync);
         });
 
         window.addEventListener('popstate', (event) => {
@@ -3001,6 +3868,64 @@
                 return false;
             }
             return true;
+        }
+
+        function syncTeachingSubjectLabelStates() {
+            document.querySelectorAll('input[name="teachingSubjects"]').forEach(input => {
+                const label = input.closest('label');
+                if (label) {
+                    label.classList.toggle('teacher-subject-selected', input.checked);
+                }
+            });
+        }
+
+        document.querySelectorAll('input[name="teachingSubjects"]').forEach(input => {
+            input.addEventListener('change', syncTeachingSubjectLabelStates);
+        });
+        syncTeachingSubjectLabelStates();
+
+        const teacherEvidenceInput = document.getElementById('teacherEvidenceFiles');
+        const teacherEvidenceFileName = document.getElementById('teacherEvidenceFileName');
+        const teacherEvidenceDropzone = document.querySelector('.teacher-evidence-dropzone');
+
+        function updateTeacherEvidenceFileName(files) {
+            if (!teacherEvidenceFileName) return;
+            if (!files || files.length === 0) {
+                teacherEvidenceFileName.textContent = 'Chưa có tệp nào được chọn';
+                return;
+            }
+            if (files.length === 1) {
+                teacherEvidenceFileName.textContent = files[0].name;
+                return;
+            }
+            teacherEvidenceFileName.textContent = files.length + ' tệp đã được chọn';
+        }
+
+        if (teacherEvidenceInput && teacherEvidenceDropzone) {
+            teacherEvidenceInput.addEventListener('change', () => {
+                updateTeacherEvidenceFileName(teacherEvidenceInput.files);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                teacherEvidenceDropzone.addEventListener(eventName, event => {
+                    event.preventDefault();
+                    teacherEvidenceDropzone.classList.add('drag-over');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                teacherEvidenceDropzone.addEventListener(eventName, event => {
+                    event.preventDefault();
+                    teacherEvidenceDropzone.classList.remove('drag-over');
+                });
+            });
+
+            teacherEvidenceDropzone.addEventListener('drop', event => {
+                if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+                    teacherEvidenceInput.files = event.dataTransfer.files;
+                    updateTeacherEvidenceFileName(teacherEvidenceInput.files);
+                }
+            });
         }
 
         function formatClassTimeValue(rawValue) {

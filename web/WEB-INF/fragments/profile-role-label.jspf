@@ -1,29 +1,26 @@
 <%
     String profileRoleLabel = "h\u1ecdc vi\u00ean";
     if (user != null && user.getRoles() != null) {
-        boolean hasStudentRole = false;
+        boolean hasAdmin = false, hasStaff = false, hasTeacher = false, hasParent = false, hasStudent = false;
         for (com.hipzi.model.Role role : user.getRoles()) {
-            if (role == null || role.getName() == null) {
-                continue;
-            }
+            if (role == null || role.getName() == null) continue;
             String roleName = role.getName().trim().toLowerCase();
-            if ("admin".equals(roleName)) {
-                profileRoleLabel = "qu\u1ea3n tr\u1ecb vi\u00ean";
-                break;
-            } else if ("staff".equals(roleName)) {
-                profileRoleLabel = "nh\u00e2n vi\u00ean";
-                break;
-            } else if ("teacher".equals(roleName)) {
-                profileRoleLabel = "gi\u1ea3ng vi\u00ean";
-                break;
-            } else if ("parent".equals(roleName)) {
-                profileRoleLabel = "ph\u1ee5 huynh";
-                break;
-            } else if ("student".equals(roleName)) {
-                hasStudentRole = true;
-            }
+            if ("admin".equals(roleName)) hasAdmin = true;
+            else if ("staff".equals(roleName)) hasStaff = true;
+            else if ("teacher".equals(roleName)) hasTeacher = true;
+            else if ("parent".equals(roleName)) hasParent = true;
+            else if ("student".equals(roleName)) hasStudent = true;
         }
-        if (hasStudentRole && "h\u1ecdc vi\u00ean".equals(profileRoleLabel)) {
+
+        if (hasAdmin) {
+            profileRoleLabel = "qu\u1ea3n tr\u1ecb vi\u00ean";
+        } else if (hasStaff) {
+            profileRoleLabel = "nh\u00e2n vi\u00ean";
+        } else if (hasTeacher) {
+            profileRoleLabel = "gi\u1ea3ng vi\u00ean";
+        } else if (hasParent) {
+            profileRoleLabel = "ph\u1ee5 huynh";
+        } else if (hasStudent) {
             profileRoleLabel = "h\u1ecdc vi\u00ean";
         }
     }

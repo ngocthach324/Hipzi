@@ -64,7 +64,7 @@
                                             </div>
 
                                             <div class="dropdown-menu-popup">
-                                                <a href="${pageContext.request.contextPath}/teacher-profile">
+                                                <a href="${pageContext.request.contextPath}/profile">
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                                         stroke="currentColor" stroke-width="2.2">
                                                         <circle cx="12" cy="8" r="4" />
@@ -78,7 +78,7 @@
                                                                 %></span>
                                                     </span>
                                                 </a>
-                                                <a href="${pageContext.request.contextPath}/teacher-profile?tab=wallet"
+                                                <a href="${pageContext.request.contextPath}/teacher-wallet"
                                                     class="avatar-menu-wallet">
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                                         stroke="currentColor" stroke-width="2.2">
@@ -92,7 +92,7 @@
                                                     </span>
                                                 </a>
                                                 <a
-                                                    href="${pageContext.request.contextPath}/teacher-profile?tab=management">
+                                                    href="${pageContext.request.contextPath}/teacher-management">
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                                         stroke="currentColor" stroke-width="2.2">
                                                         <path d="M12 3l8 4.5-8 4.5-8-4.5L12 3z" />

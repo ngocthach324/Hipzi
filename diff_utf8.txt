@@ -1,0 +1,1538 @@
+﻿diff --git a/web/WEB-INF/views/teacher-profile.jsp b/web/WEB-INF/views/teacher-profile.jsp
+index 13f944a..50530bd 100644
+--- a/web/WEB-INF/views/teacher-profile.jsp
++++ b/web/WEB-INF/views/teacher-profile.jsp
+@@ -37,22 +37,36 @@
+         }
+ 
+         body {
+-            background-color: #e2e8f0;
++            background:
++                linear-gradient(135deg, #e6fcf5 0%, #ebfbee 50%, #dcfce7 100%) !important;
++            background-attachment: fixed !important;
+             font-family: var(--font-sans);
+             margin: 0;
+             padding: 0;
+-            min-height: 100vh;
++            min-height: 0;
++            position: relative;
++        }
++
++        body::before {
++            display: none !important;
++        }
++
++        body::after {
++            display: none !important;
+         }
+ 
+         .app-dashboard-container {
+             max-width: 1600px;
+             width: calc(100% - 1.5rem);
+-            min-height: calc(100vh - 1.5rem);
+-            margin: 0.75rem auto;
++            min-height: 0;
++            height: var(--teacher-dashboard-frame-height, auto);
++            margin: 0.75rem auto 0 auto;
++            padding-bottom: 0.75rem;
+             background: transparent;
+             display: flex;
+             flex-direction: row;
+             gap: 1rem;
++            align-items: flex-start;
+         }
+ 
+         .dashboard-sidebar {
+@@ -80,7 +94,6 @@
+             width: 100%;
+             text-decoration: none;
+         }
+-
+         .brand-avatar-box {
+             width: 44px;
+             height: 44px;
+@@ -432,7 +445,7 @@
+             display: flex;
+             flex-direction: column;
+             gap: 2rem;
+-            background: #f8fafc;
++            background: #f9fafb;
+             border: 1px solid var(--border-dark);
+             border-radius: 1.5rem;
+             box-shadow: var(--shadow);
+@@ -490,9 +503,9 @@
+ 
+         .tab-pane-header-left p {
+             font-size: 0.95rem;
+-            color: var(--text-muted);
++            color: #475569;
+             margin: 0;
+-            font-weight: 500;
++            font-weight: 600;
+         }
+ 
+         .tab-pane-header-right {
+@@ -503,7 +516,7 @@
+ 
+         /* Date badge */
+         .date-badge {
+-            background: #ffffff;
++            background: #f8fafc;
+             border: 1px solid var(--border-dark);
+             padding: 0.5rem 1rem;
+             border-radius: 1rem;
+@@ -546,24 +559,42 @@
+             position: relative;
+             overflow: hidden;
+             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
++            background: #ffffff;
++            border: 1px solid #e5e7eb;
++            border-top: 4px solid var(--primary);
++            color: var(--text-main);
++            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+         }
+ 
+         .metric-card.primary {
+-            background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+-            color: #ffffff;
+-            box-shadow: 0 10px 25px rgba(4, 120, 87, 0.15);
++            background: #ffffff;
++            color: var(--text-main);
++            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+         }
+ 
+         .metric-card.secondary {
+             background: #ffffff;
+-            border: 1px solid var(--border-dark);
+-            color: var(--text-main);
+-            box-shadow: var(--shadow);
++        }
++
++        .metrics-row .metric-card:nth-child(1) {
++            border-top-color: var(--primary);
++        }
++
++        .metrics-row .metric-card:nth-child(2) {
++            border-top-color: #7c3aed;
++        }
++
++        .metrics-row .metric-card:nth-child(3) {
++            border-top-color: #ea580c;
++        }
++
++        .metrics-row .metric-card:nth-child(4) {
++            border-top-color: #2563eb;
+         }
+ 
+         .metric-card:hover {
+             transform: translateY(-3px);
+-            box-shadow: 0 12px 30px rgba(0,0,0,0.06);
++            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1);
+         }
+ 
+         .metric-card-top {
+@@ -584,6 +615,10 @@
+             color: var(--text-muted);
+         }
+ 
++        .metric-card.primary .metric-card-title {
++            color: var(--text-muted);
++        }
++
+         .metric-arrow-btn {
+             width: 30px;
+             height: 30px;
+@@ -591,9 +626,9 @@
+             display: flex;
+             align-items: center;
+             justify-content: center;
+-            border: 1px solid rgba(255,255,255,0.2);
+-            background: rgba(255,255,255,0.1);
+-            color: #ffffff;
++            border: 1px solid var(--border-dark);
++            background: var(--border-light);
++            color: var(--primary);
+             transition: all 0.2s ease;
+         }
+ 
+@@ -608,21 +643,25 @@
+             font-weight: 800;
+             margin: 0.75rem 0 0.35rem 0;
+             line-height: 1;
++            position: relative;
++            z-index: 1;
+         }
+ 
+         .metric-card-sub {
+-            font-size: 0.72rem;
+-            font-weight: 700;
++            font-size: 0.78rem;
++            font-weight: 800;
+             display: inline-flex;
+             align-items: center;
+-            padding: 0.2rem 0.5rem;
++            padding: 0.24rem 0.62rem;
+             border-radius: 0.5rem;
+             width: fit-content;
++            position: relative;
++            z-index: 1;
+         }
+ 
+         .metric-card.primary .metric-card-sub {
+-            background: rgba(255, 255, 255, 0.15);
+-            color: #ecfdf5;
++            background: var(--primary-light);
++            color: var(--primary);
+         }
+ 
+         .metric-card.secondary .metric-card-sub {
+@@ -630,6 +669,29 @@
+             color: var(--primary);
+         }
+ 
++        .metric-ghost-icon {
++            position: absolute;
++            right: 1.15rem;
++            bottom: 1rem;
++            width: 64px;
++            height: 64px;
++            border-radius: 1.25rem;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++            color: var(--primary);
++            background: var(--primary-light);
++            opacity: 0.28;
++            transform: rotate(-6deg);
++            pointer-events: none;
++        }
++
++        .metric-ghost-icon svg {
++            width: 34px;
++            height: 34px;
++            stroke-width: 2.1;
++        }
++
+         /* ===== LAYOUT B├ÇN Cß╗£ ─ÉA Cß╗ÿT ===== */
+         .dashboard-grid-layout {
+             display: grid;
+@@ -644,7 +706,7 @@
+         }
+ 
+         .premium-card {
+-            background: #ffffff;
++            background: #f8fafc;
+             border: 1px solid var(--border-dark);
+             border-radius: 1.5rem;
+             padding: 1.5rem;
+@@ -655,6 +717,35 @@
+             box-sizing: border-box;
+         }
+ 
++        #tab-security .premium-card {
++            background: #ffffff;
++        }
++
++        #tab-support .premium-card {
++            background: #ffffff;
++        }
++
++        #tab-support #supportForm input,
++        #tab-support #supportForm textarea {
++            background: #f8fafc;
++        }
++
++        #tab-support .dashboard-grid-layout {
++            align-items: stretch !important;
++        }
++
++        #tab-support .dashboard-grid-layout > .premium-card {
++            height: 100%;
++        }
++
++        #tab-support #supportForm {
++            flex: 1;
++        }
++
++        #tab-support .support-submit-row {
++            margin-top: auto;
++        }
++
+         .premium-card-header {
+             display: flex;
+             justify-content: space-between;
+@@ -718,6 +809,12 @@
+             flex-shrink: 0;
+         }
+ 
++        .info-icon-circle svg {
++            width: 20px;
++            height: 20px;
++            stroke-width: 2.15;
++        }
++
+         .info-icon-circle.primary { background: var(--primary-light); color: var(--primary); }
+         .info-icon-circle.accent { background: var(--accent-light); color: var(--accent); }
+         .info-icon-circle.warning { background: #fff9db; color: #f59e0b; }
+@@ -728,6 +825,7 @@
+             flex-direction: column;
+             min-width: 0;
+             flex-grow: 1;
++            align-items: flex-start;
+         }
+ 
+         .info-label {
+@@ -748,6 +846,189 @@
+             text-overflow: ellipsis;
+         }
+ 
++        .account-summary-panel {
++            background: #ffffff;
++            border: 1px solid var(--border-light);
++            border-radius: 1.25rem;
++            padding: 1.25rem;
++            display: flex;
++            align-items: center;
++            gap: 1rem;
++        }
++
++        .account-summary-main {
++            display: flex;
++            align-items: center;
++            gap: 1rem;
++            min-width: 0;
++            flex: 1;
++        }
++
++        .account-avatar-wrap {
++            position: relative;
++            width: 76px;
++            height: 76px;
++            flex-shrink: 0;
++        }
++
++        .account-avatar-img,
++        .account-avatar-placeholder {
++            width: 76px;
++            height: 76px;
++            border-radius: 1.15rem;
++            border: 1px solid rgba(4, 120, 87, 0.12);
++            box-shadow: 0 10px 20px rgba(4, 120, 87, 0.08);
++        }
++
++        .account-avatar-img {
++            object-fit: cover;
++            display: block;
++        }
++
++        .account-avatar-placeholder {
++            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
++            color: var(--primary);
++            font-size: 1.8rem;
++            font-weight: 900;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++        }
++
++        .avatar-camera-btn {
++            position: absolute;
++            right: -6px;
++            bottom: -6px;
++            width: 30px;
++            height: 30px;
++            border-radius: 50%;
++            border: 2px solid #ffffff;
++            background: var(--primary);
++            color: #ffffff;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++            cursor: pointer;
++            box-shadow: 0 8px 16px rgba(4, 120, 87, 0.24);
++            transition: all 0.2s ease;
++        }
++
++        .avatar-camera-btn:hover {
++            background: var(--primary-hover);
++            transform: translateY(-1px);
++        }
++
++        .account-identity {
++            min-width: 0;
++            flex: 1;
++        }
++
++        .account-name {
++            margin: 0;
++            color: var(--text-main);
++            font-size: 1.25rem;
++            font-weight: 850;
++            line-height: 1.25;
++        }
++
++        .account-name-view {
++            min-height: 2.35rem;
++            display: flex;
++            align-items: center;
++        }
++
++        .account-name-edit-form {
++            width: min(100%, 360px);
++            margin: 0;
++        }
++
++        .account-name-input {
++            width: 100%;
++            min-height: 2.7rem;
++            border: 1px solid #cbd5e1;
++            border-radius: 0.8rem;
++            background: #ffffff;
++            color: var(--text-main);
++            font: inherit;
++            font-size: 1rem;
++            font-weight: 650;
++            padding: 0.65rem 0.9rem;
++            outline: none;
++            transition: border-color 0.2s ease, box-shadow 0.2s ease;
++        }
++
++        .account-name-input:focus {
++            border-color: var(--primary);
++            box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.12);
++        }
++
++        .account-email {
++            display: block;
++            margin-top: 0.25rem;
++            color: #475569;
++            font-size: 0.92rem;
++            font-weight: 600;
++            white-space: nowrap;
++            overflow: hidden;
++            text-overflow: ellipsis;
++        }
++
++        .account-side-meta {
++            display: flex;
++            align-items: stretch;
++            gap: 0.75rem;
++            margin-left: auto;
++            flex-shrink: 0;
++        }
++
++        .account-meta-pill {
++            min-width: 150px;
++            border: 1px solid var(--border-light);
++            border-radius: 1rem;
++            background: #f8fafc;
++            padding: 0.75rem 0.9rem;
++            display: flex;
++            flex-direction: column;
++            justify-content: center;
++            gap: 0.22rem;
++        }
++
++        .account-meta-label {
++            color: var(--text-muted);
++            font-size: 0.68rem;
++            font-weight: 850;
++            letter-spacing: 0.5px;
++            text-transform: uppercase;
++        }
++
++        .account-meta-value {
++            color: var(--text-main);
++            font-size: 0.9rem;
++            font-weight: 800;
++            white-space: nowrap;
++        }
++
++        @media (max-width: 640px) {
++            .account-summary-panel {
++                align-items: flex-start;
++                flex-direction: column;
++            }
++
++            .account-summary-main,
++            .account-side-meta {
++                width: 100%;
++            }
++
++            .account-side-meta {
++                margin-left: 0;
++                flex-direction: column;
++            }
++
++            .account-meta-pill {
++                min-width: 0;
++            }
++        }
++
+         /* List Items */
+         .dashboard-list {
+             display: flex;
+@@ -837,9 +1118,13 @@
+             align-items: center;
+             justify-content: center;
+             gap: 0.4rem;
+-            padding: 0.65rem 1.25rem;
++            min-height: 44px;
++            padding-block: 0.68rem;
++            padding-inline: 1.25rem;
+             font-weight: 700;
+             font-size: 0.85rem;
++            line-height: 1.15;
++            white-space: nowrap;
+             border-radius: 0.85rem;
+             cursor: pointer;
+             transition: all 0.2s ease;
+@@ -909,6 +1194,75 @@
+             box-sizing: border-box;
+         }
+ 
++        .form-group-premium input:focus,
++        .form-group-premium select:focus,
++        .form-group-premium textarea:focus {
++            border-color: var(--primary);
++            box-shadow: 0 0 0 3px var(--primary-light);
++        }
++
++        .btn-premium.primary {
++            background: var(--primary);
++            color: #ffffff;
++            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
++        }
++
++        .btn-premium.primary:hover {
++            background: var(--primary-hover);
++            transform: translateY(-1px);
++        }
++
++        .btn-premium.secondary {
++            background: #ffffff;
++            color: var(--text-main);
++            border: 1px solid var(--border-dark);
++            box-shadow: var(--shadow);
++        }
++
++        .btn-premium.secondary:hover {
++            background: #f8fafc;
++        }
++
++        .btn-premium.danger {
++            background: #ef4444;
++            color: #ffffff;
++            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
++        }
++
++        .btn-premium.danger:hover {
++            background: #dc2626;
++            transform: translateY(-1px);
++        }
++
++        /* Form Controls */
++        .form-group-premium {
++            display: flex;
++            flex-direction: column;
++            gap: 0.4rem;
++        }
++
++        .form-group-premium label {
++            font-weight: 700;
++            font-size: 0.82rem;
++            color: var(--text-main);
++        }
++
++        .form-group-premium input,
++        .form-group-premium select,
++        .form-group-premium textarea {
++            width: 100%;
++            padding: 0.75rem 1rem;
++            border-radius: 0.75rem;
++            border: 1px solid var(--border-dark);
++            font-family: inherit;
++            font-size: 0.92rem;
++            color: var(--text-main);
++            outline: none;
++            background: #ffffff;
++            transition: all 0.2s ease;
++            box-sizing: border-box;
++        }
++
+         .form-group-premium input:focus,
+         .form-group-premium select:focus,
+         .form-group-premium textarea:focus {
+@@ -924,6 +1278,43 @@
+             margin-top: 0.5rem;
+         }
+ 
++        .checkbox-grid-premium {
++            display: grid;
++            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
++            gap: 1rem;
++            margin-top: 0.5rem;
++            background: #f8fafc;
++            padding: 1rem;
++            border-radius: 0.75rem;
++            border: 1px solid var(--border-dark);
++        }
++
++        .checkbox-premium-label {
++            display: flex;
++            align-items: center;
++            gap: 0.5rem;
++            font-weight: 500;
++            cursor: pointer;
++            color: var(--text-main);
++            font-size: 0.95rem;
++        }
++
++        .checkbox-premium-input {
++            width: 1.25rem;
++            height: 1.25rem;
++            margin: 0;
++            padding: 0;
++            flex-shrink: 0;
++            border-radius: 0.25rem;
++        }
++
++        .teacher-type-helper-text {
++            color: var(--text-muted);
++            font-size: 0.9rem;
++            margin: 0 0 1rem 0;
++            line-height: 1.5;
++        }
++
+         /* ===== THß║║ PH├éN LOß║áI GIß║óNG VI├èN (PREMIUM SELECTION) ===== */
+         .teacher-type-grid {
+             display: grid;
+@@ -965,7 +1356,7 @@
+         }
+ 
+         .teacher-type-card-inner::after {
+-            content: '┬╣3';
++            content: '\2714';
+             position: absolute;
+             top: 1rem;
+             right: 1rem;
+@@ -990,6 +1381,11 @@
+             box-shadow: 0 10px 20px rgba(4, 120, 87, 0.05);
+         }
+ 
++        .teacher-type-card input:focus-visible + .teacher-type-card-inner {
++            outline: 2px solid var(--primary);
++            outline-offset: 2px;
++        }
++
+         .teacher-type-card input:checked + .teacher-type-card-inner {
+             border-color: var(--primary);
+             background: linear-gradient(180deg, var(--primary-light) 0%, #ffffff 60%);
+@@ -1078,6 +1474,9 @@
+             font-weight: 700;
+             padding: 0.2rem 0.6rem;
+             border-radius: 0.5rem;
++            width: fit-content;
++            max-width: max-content;
++            align-self: flex-start;
+         }
+         .acc-status-tag.active { background: #dcfce7; color: #15803d; }
+         .acc-status-tag.suspended { background: #fef9c3; color: #a16207; }
+@@ -1094,6 +1493,45 @@
+         .role-tag.student { background: #e0f2fe; color: #0284c7; }
+         .role-tag.staff { background: #dbeafe; color: #2563eb; }
+         .role-tag.admin { background: #fee2e2; color: #dc2626; }
++
++        .account-header-actions,
++        .account-edit-actions {
++            display: flex;
++            align-items: center;
++            gap: 0.6rem;
++            flex-wrap: wrap;
++        }
++
++        .account-cancel-btn {
++            background: #ffffff;
++            color: var(--text-main);
++            border: 1px solid var(--border-dark);
++        }
++
++        .account-cancel-btn:hover {
++            background: #f8fafc;
++            border-color: #cbd5e1;
++        }
++
++        .btn-premium.profile-edit-btn,
++        .btn-premium.secondary.profile-edit-btn,
++        .account-save-btn {
++            background: var(--primary);
++            color: #ffffff;
++            border: 1px solid var(--primary);
++            box-shadow: 0 10px 20px rgba(4, 120, 87, 0.16);
++        }
++
++        .btn-premium.profile-edit-btn:hover,
++        .btn-premium.secondary.profile-edit-btn:hover,
++        .account-save-btn:hover {
++            background: var(--primary-hover);
++            border-color: var(--primary-hover);
++        }
++
++        .btn-premium.profile-edit-btn svg {
++            color: currentColor;
++        }
+         
+         @keyframes modalScaleUp {
+             from { opacity: 0; transform: scale(0.95); }
+@@ -1133,367 +1571,10 @@
+ 
+         TeacherApplication teacherApplication = (TeacherApplication) request.getAttribute("teacherApplication");
+         List<Classroom> teacherClassrooms = (List<Classroom>) request.getAttribute("teacherClassrooms");
++        List<?> teacherCourses = (List<?>) request.getAttribute("teacherCourses");
++        Object teacherMaterialCountObj = request.getAttribute("teacherMaterialCount");
++        int teacherMaterialCount = teacherMaterialCountObj instanceof Number ? ((Number) teacherMaterialCountObj).intValue() : 0;
+         boolean teachingRegistrationSubmitted = teacherApplication != null || Boolean.TRUE.equals(session.getAttribute("teacherRegistrationSubmitted"));
+-        String teachingRegistrationStatus = teacherApplication != null ? teacherApplication.getStatus() : null;
+-        String teachingRegistrationStatusLabel = "─Éang chß╗¥ duyß╗çt";
+-        if ("approved".equals(teachingRegistrationStatus)) {
+-            teachingRegistrationStatusLabel = "─É├ú duyß╗çt";
+-        } else if ("rejected".equals(teachingRegistrationStatus)) {
+-            teachingRegistrationStatusLabel = "Kh├┤ng ─æ╞░ß╗úc duyß╗çt";
+-        } else if ("needs_more_info".equals(teachingRegistrationStatus)) {
+-            teachingRegistrationStatusLabel = "Cß║ºn bß╗ò sung th├┤ng tin";
+-        }
+-        boolean registrationNeedsAttention = !teachingRegistrationSubmitted
+-                || "rejected".equals(teachingRegistrationStatus)
+-                || "needs_more_info".equals(teachingRegistrationStatus);
+-        String initialTeacherTab = request.getParameter("tab");
+-        if (initialTeacherTab == null || initialTeacherTab.trim().isEmpty()) {
+-            initialTeacherTab = "tab-teaching-registration";
+-        } else {
+-            initialTeacherTab = initialTeacherTab.trim();
+-            if (initialTeacherTab.equals("materials") || initialTeacherTab.equals("practice") ||
+-                initialTeacherTab.equals("tab-materials") || initialTeacherTab.equals("tab-practice")) {
+-                initialTeacherTab = "tab-upload-material";
+-            } else if (!initialTeacherTab.startsWith("tab-")) {
+-                initialTeacherTab = "tab-" + initialTeacherTab;
+-            }
+-            if (!initialTeacherTab.equals("tab-teaching-registration") &&
+-                !initialTeacherTab.equals("tab-class-registration") &&
+-                !initialTeacherTab.equals("tab-profile") &&
+-                !initialTeacherTab.equals("tab-edit") &&
+-                !initialTeacherTab.equals("tab-security") &&
+-                !initialTeacherTab.equals("tab-upload-material") &&
+-                !initialTeacherTab.equals("tab-support") &&
+-                !initialTeacherTab.equals("tab-balance-stats") &&
+-                !initialTeacherTab.equals("tab-transaction-history")) {
+-                initialTeacherTab = "tab-teaching-registration";
+-            }
+-        }
+-    %>
+-
+-    <%@ include file="/WEB-INF/fragments/profile-role-label.jspf" %>
+-
+-
+-
+-    <!-- ===== D├ÇN TRANG CH├ìNH THEO Bß╗É Cß╗ñC PREMIUM ─Éß╗ÆNG Bß╗ÿ DONEZO ===== -->
+-    <div class="app-dashboard-container">
+-        
+-        <!-- K├èNH SIDEBAR TR├üI (LEFT PANE) -->
+-        <aside class="dashboard-sidebar">
+-            <div class="sidebar-brand-horizontal">
+-                <a href="${pageContext.request.contextPath}/index" class="brand-avatar-box" title="Trang chß╗º">
+-                    <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="Hipzi Logo">
+-                </a>
+-                <div class="brand-text-col">
+-                    <span class="brand-title">Hipzi</span>
+-                    <span class="brand-subtitle">Platform</span>
+-                </div>
+-                <button type="button" class="sidebar-toggle-btn" title="Thu gß╗ìn / Mß╗ƒ rß╗Öng" onclick="toggleSidebar()">
+-                    <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M16 15l-3-3 3-3"/></svg>
+-                    <svg class="icon-expand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: none;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M13 9l3 3-3 3"/></svg>
+-                </button>
+-            </div>
+-            
+-            <div class="sidebar-section-label">Tß╗òng quan</div>
+-            <ul class="sidebar-menu">
+-                <li>
+-                    <a id="nav-tab-profile" class="<%= ("tab-profile".equals(initialTeacherTab) || "tab-edit".equals(initialTeacherTab)) ? "active" : "" %>" onclick="switchTab('tab-profile')" title="Hß╗ô s╞í c├í nh├ón">
+-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+-                        <span>Hß╗ô s╞í c├í nh├ón</span>
+-                    </a>
+-                </li>
+-                <li>
+-                    <a id="nav-tab-security" class="<%= "tab-security".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-security')" title="Bß║úo mß║¡t">
+-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+-                        <span>Bß║úo mß║¡t</span>
+-                    </a>
+-                </li>
+-                <li>
+-                    <a id="nav-tab-support" class="<%= "tab-support".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-support')" title="Hß╗ù trß╗ú giß║úng dß║íy">
+-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+-                        <span>Hß╗ù trß╗ú giß║úng dß║íy</span>
+-                    </a>
+-                </li>
+-            </ul>
+-
+-            <div class="sidebar-section-label">Quß║ún l├╜ giß║úng dß║íy</div>
+-            <ul class="sidebar-menu">
+-                <li>
+-                    <a id="nav-tab-teaching-registration" class="<%= "tab-teaching-registration".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-teaching-registration')" title="─É─âng k├¡ giß║úng dß║íy">
+-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3l8 4.5-8 4.5-8-4.5L12 3z"/><path d="M4 12l8 4.5 8-4.5"/><path d="M4 16.5l8 4.5 8-4.5"/></svg>
+-                        <span>─É─âng k├¡ giß║úng dß║íy</span>
+-                    </a>
+-                </li>
+-                <li>
+-                    <a id="nav-tab-class-registration" class="<%= "tab-class-registration".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-class-registration')" title="─É─âng k├¡ lß╗¢p hß╗ìc">
+-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+-                        <span>─É─âng k├¡ lß╗¢p hß╗ìc</span>
+-                    </a>
+-                </li>
+-                <li>
+-                    <a id="nav-tab-course-registration" class="<%= "tab-course-registration".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-course-registration')" title="─É─âng kh├│a hß╗ìc">
+-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+-                        <span>─É─âng kh├│a hß╗ìc</span>
+-                    </a>
+-                </li>
+-                <li>
+-                    <a id="nav-tab-upload-material" class="<%= "tab-upload-material".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-upload-material')" title="─É─âng tß║úi t├ái liß╗çu">
+-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+-                        <span>─É─âng tß║úi t├ái liß╗çu</span>
+-                    </a>
+-                </li>
+-            </ul>
+-
+-            <div class="sidebar-section-label">V├¡ tiß╗ün</div>
+-            <ul class="sidebar-menu">
+-                <li>
+-                    <a id="nav-tab-balance-stats" class="<%= "tab-balance-stats".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-balance-stats')" title="Thß╗æng k├¬ sß╗æ d╞░">
+-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 0 0-4z"/><circle cx="18" cy="12" r="1"/></svg>
+-                        <span>Thß╗æng k├¬ sß╗æ d╞░</span>
+-                    </a>
+-                </li>
+-                <li>
+-                    <a id="nav-tab-transaction-history" class="<%= "tab-transaction-history".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-transaction-history')" title="Lß╗ïch sß╗¡ giao dß╗ïch">
+-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+-                        <span>Lß╗ïch sß╗¡ giao dß╗ïch</span>
+-                    </a>
+-                </li>
+-            </ul>
+-
+-        </aside>
+-
+-        <!-- K├èNH PHß║óI CH├ìNH -->
+-        <div class="dashboard-main-section">
+-            
+-            <!-- TOP BAR ─Éß╗ÆNG Bß╗ÿ DONEZO -->
+-            <div class="dashboard-top-bar">
+-                <div class="top-bar-search-wrapper">
+-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+-                    <input type="text" placeholder="T├¼m kiß║┐m t├íc vß╗Ñ...">
+-
+-                </div>
+-
+-                <div class="top-bar-right">
+-                    <!-- Toggle giao diß╗çn S├íng / Tß╗æi -->
+-                    <div class="nav-bell-trigger" title="Chuyß╗ân chß║┐ ─æß╗Ö s├íng/tß╗æi" onclick="alert('Chß╗⌐c n─âng chuyß╗ân ─æß╗òi giao diß╗çn s├íng/tß╗æi ─æang ─æ╞░ß╗úc ph├ít triß╗ân.')">
+-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+-                    </div>
+-
+-                    <!-- Notification dropdown fragment -->
+-                    <%@ include file="/WEB-INF/fragments/notification-bell.jspf" %>
+-
+-                    <!-- N├║t ─É─âng xuß║Ñt -->
+-                    <a href="${pageContext.request.contextPath}/logout" class="nav-bell-trigger" title="─É─âng xuß║Ñt" style="text-decoration: none;">
+-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+-                    </a>
+-
+-                    <!-- User info card -->
+-                    <div class="top-bar-user-card" onclick="switchTab('tab-profile')">
+-                        <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+-                            <img src="<%= user.getAvatarUrl() %>" class="top-bar-avatar" alt="Avatar">
+-                        <% } else { %>
+-                            <div class="top-bar-avatar-placeholder"><%= initials %></div>
+-                        <% } %>
+-                        <div class="top-bar-user-info">
+-                            <span class="top-bar-user-name"><%= user != null ? user.getDisplayName() : "Giß║úng vi├¬n HIPZI" %></span>
+-                            <span class="top-bar-user-email"><%= user != null ? user.getEmail() : "info@hipzi.vn" %></span>
+-                        </div>
+-                    </div>
+-                </div>
+-            </div>
+-
+-            <!-- CHß╗¿A WORKSPACE TAB PANES -->
+-            <main class="dashboard-content-wrapper">
+-
+-            <!-- Banner dß║úi m├áu trang tr├¡ ph├¡a tr├¬n c├╣ng (Top Accent Strip) -->
+-
+-
+-            <!-- Th├┤ng b├ío nhß║»c nhß╗ƒ Onboarding (Nß║┐u ─æ─âng k├╜ qua Google m├á ch╞░a chß╗ìn role) -->
+-            <% if (user != null && !user.isOnboardingCompleted()) { %>
+-            <div class="onboarding-banner" style="margin-top: -0.5rem;">
+-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+-                <p>Hß╗ô s╞í cß╗ºa bß║ín ─æang chß╗¥ ho├án tß║Ñt thiß║┐t lß║¡p vai tr├▓ hß╗ìc vi├¬n sß╗¡ dß╗Ñng nß╗ün tß║úng.</p>
+-                <a href="${pageContext.request.contextPath}/onboarding">Ho├án tß║Ñt ngay</a>
+-            </div>
+-            <% } %>
+-
+-            <!-- ========================================== -->
+-            <!-- TAB 1: Hß╗Æ S╞á C├ü NH├éN Tß╗öNG QUAN             -->
+-            <!-- ========================================== -->
+-            <section id="tab-teaching-registration" class="tab-pane <%= "tab-teaching-registration".equals(initialTeacherTab) ? "active-pane" : "" %>">
+-                <div class="tab-pane-header">
+-                    <div class="tab-pane-header-left">
+-                        <h1>─É─âng k├¡ giß║úng dß║íy</h1>
+-                        <p>Ho├án thiß╗çn hß╗ô s╞í n─âng lß╗▒c giß║úng dß║íy ─æß╗â ─æ╞░ß╗úc x├⌐t duyß╗çt hß╗ìc liß╗çu v├á giß║úng dß║íy.</p>
+-                    </div>
+-                    <div class="tab-pane-header-right">
+-                        <div class="date-badge">
+-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+-                            <span><%= currentDateDisplay %></span>
+-                        </div>
+-                    </div>
+-                </div>
+-
+-                <div class="premium-card">
+-                        <% if (teachingRegistrationSubmitted) { %>
+-                            <div class="teacher-application-status">
+-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+-                                <div>
+-                                    <div style="font-weight:800; margin-bottom:0.25rem;">Hß╗ô s╞í ─æ─âng k├¡ giß║úng dß║íy ─æ├ú ─æ╞░ß╗úc gß╗¡i.</div>
+-                                    <div style="font-size:0.82rem; font-weight:800; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.4px;">Trß║íng th├íi: <%= teachingRegistrationStatusLabel %></div>
+-                                    <div style="font-size:0.9rem; line-height:1.55;">
+-                                        <% if (teacherApplication != null && teacherApplication.getReviewNote() != null && !teacherApplication.getReviewNote().trim().isEmpty()) { %>
+-                                            <%= teacherApplication.getReviewNote() %>
+-                                        <% } else { %>
+-                                            ─Éß╗Öi ng┼⌐ quß║ún trß╗ï sß║╜ kiß╗âm tra minh chß╗⌐ng v├á phß║ún hß╗ôi qua email. Bß║ín vß║½n c├│ thß╗â gß╗¡i lß║íi nß║┐u cß║ºn cß║¡p nhß║¡t th├┤ng tin.
+-                                        <% } %>
+-                                    </div>
+-                                </div>
+-                            </div>
+-                        <% } %>
+-
+-                        <form action="${pageContext.request.contextPath}/teacher-profile" method="POST" enctype="multipart/form-data" class="form-edit-layout" style="padding:0;" onsubmit="return validateTeachingSubjects()">
+-                            <input type="hidden" name="action" value="submitTeachingRegistration">
+-
+-                            <div class="section-data-card">
+-                                <div class="card-header-layout">
+-                                    <div class="card-header-title">
+-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3l8 4.5-8 4.5-8-4.5L12 3z"/><path d="M4 12l8 4.5 8-4.5"/><path d="M4 16.5l8 4.5 8-4.5"/></svg>
+-                                        <span>Ph├ón loß║íi giß║úng vi├¬n</span>
+-                                    </div>
+-                                    <span style="font-size:0.8rem; font-weight:700; color:var(--primary); background:var(--primary-light); padding:0.2rem 0.75rem; border-radius:1rem;">Bß║»t buß╗Öc</span>
+-                                </div>
+-
+-                                <div style="padding:1.5rem;">
+-                                    <p class="teacher-type-helper-text">Vui l├▓ng chß╗ìn nh├│m giß║úng vi├¬n hiß╗çn tß║íi cß╗ºa bß║ín tr╞░ß╗¢c khi ─æiß╗ün th├┤ng tin.</p>
+-                                    <div class="teacher-type-grid">
+-                                        <label class="teacher-type-card">
+-                                            <input type="radio" name="teacherType" value="student_tutor" required>
+-                                            <div class="teacher-type-card-inner">
+-                                                <span class="teacher-type-kicker">Nh├│m 1</span>
+-                                                <h3 class="teacher-type-title">Gia s╞░ sinh vi├¬n</h3>
+-                                                <p class="teacher-type-description">Ph├╣ hß╗úp vß╗¢i hß╗ìc vi├¬n cß║ºn ng╞░ß╗¥i h╞░ß╗¢ng dß║½n gß║ºn g┼⌐i, hß╗ù trß╗ú b├ái tß║¡p, ├┤n tß║¡p kiß║┐n thß╗⌐c nß╗ün tß║úng hoß║╖c hß╗ìc theo nh├│m nhß╗Å.</p>
+-                                                <ul class="teacher-type-examples">
+-                                                    <li>Sinh vi├¬n S╞░ phß║ím To├ín</li>
+-                                                    <li>Sinh vi├¬n C├┤ng nghß╗ç th├┤ng tin dß║íy lß║¡p tr├¼nh c╞í bß║ún</li>
+-                                                    <li>Sinh vi├¬n IELTS 7.5 dß║íy tiß║┐ng Anh</li>
+-                                                    <li>Sinh vi├¬n n─âm 3, n─âm 4 c├│ th├ánh t├¡ch hß╗ìc tß║¡p tß╗æt</li>
+-                                                </ul>
+-                                                <ul class="teacher-type-requirements">
+-                                                    <li>Tr╞░ß╗¥ng ─æang hß╗ìc, chuy├¬n ng├ánh, n─âm hß╗ìc hiß╗çn tß║íi</li>
+-                                                    <li>M├┤n c├│ thß╗â dß║íy</li>
+-                                                    <li>Thß║╗ sinh vi├¬n hoß║╖c minh chß╗⌐ng ─æang hß╗ìc</li>
+-                                                    <li>Th├ánh t├¡ch hoß║╖c chß╗⌐ng chß╗ë nß║┐u c├│</li>
+-                                                </ul>
+-                                            </div>
+-                                        </label>
+-
+-                                        <label class="teacher-type-card">
+-                                            <input type="radio" name="teacherType" value="certified_pedagogy" required>
+-                                            <div class="teacher-type-card-inner">
+-                                                <span class="teacher-type-kicker">Nh├│m 2</span>
+-                                                <h3 class="teacher-type-title">Giß║úng vi├¬n c├│ chß╗⌐ng chß╗ë s╞░ phß║ím</h3>
+-                                                <p class="teacher-type-description">Ph├╣ hß╗úp vß╗¢i hß╗ìc vi├¬n cß║ºn ng╞░ß╗¥i dß║íy c├│ nß╗ün tß║úng giß║úng dß║íy, ph╞░╞íng ph├íp truyß╗ün ─æß║ít r├╡ r├áng v├á tß║¡p trung v├áo mß╗Öt sß╗æ m├┤n cß╗Ñ thß╗â.</p>
+-                                                <ul class="teacher-type-examples">
+-                                                    <li>Ng╞░ß╗¥i c├│ chß╗⌐ng chß╗ë nghiß╗çp vß╗Ñ s╞░ phß║ím</li>
+-                                                    <li>Ng╞░ß╗¥i c├│ chß╗⌐ng chß╗ë dß║íy tiß║┐ng Anh</li>
+-                                                    <li>Ng╞░ß╗¥i c├│ chß╗⌐ng chß╗ë ─æ├áo tß║ío kß╗╣ n─âng</li>
+-                                                    <li>Ng╞░ß╗¥i c├│ chß╗⌐ng chß╗ë dß║íy tin hß╗ìc hoß║╖c lß║¡p tr├¼nh</li>
+-                                                </ul>
+-                                                <ul class="teacher-type-requirements">
+-                                                    <li>Chß╗⌐ng chß╗ë s╞░ phß║ím hoß║╖c chß╗⌐ng chß╗ë giß║úng dß║íy</li>
+-                                                    <li>M├┤n c├│ thß╗â dß║íy</li>
+-                                                    <li>Kinh nghiß╗çm dß║íy hß╗ìc nß║┐u c├│</li>
+-                                                    <li>Hß╗ô s╞í c├í nh├ón v├á minh chß╗⌐ng chuy├¬n m├┤n li├¬n quan</li>
+-                                                </ul>
+-                                            </div>
+-                                        </label>
+-
+-                                        <label class="teacher-type-card">
+-                                            <input type="radio" name="teacherType" value="degree_specialist" required>
+-                                            <div class="teacher-type-card-inner">
+-                                                <span class="teacher-type-kicker">Nh├│m 3</span>
+-                                                <h3 class="teacher-type-title">Giß║úng vi├¬n chuy├¬n m├┤n</h3>
+-                                                <p class="teacher-type-description">D├ánh cho giß║úng vi├¬n, gi├ío vi├¬n ─æ├ú tß╗æt nghiß╗çp, c├│ bß║▒ng cß║Ñp chuy├¬n m├┤n r├╡ r├áng hoß║╖c ─æang/─æ├ú l├ám viß╗çc trong l─⌐nh vß╗▒c giß║úng dß║íy.</p>
+-                                                <ul class="teacher-type-examples">
+-                                                    <li>Cß╗¡ nh├ón S╞░ phß║ím To├ín</li>
+-                                                    <li>Cß╗¡ nh├ón Ng├┤n ngß╗» Anh</li>
+-                                                    <li>Thß║íc s─⌐ ng├ánh Gi├ío dß╗Ñc</li>
+-                                                    <li>Gi├ío vi├¬n THCS/THPT, giß║úng vi├¬n ─æß║íi hß╗ìc hoß║╖c chuy├¬n gia ph├╣ hß╗úp</li>
+-                                                </ul>
+-                                                <ul class="teacher-type-requirements">
+-                                                    <li>Bß║▒ng ─æß║íi hß╗ìc, cao hß╗ìc hoß║╖c bß║▒ng chuy├¬n m├┤n</li>
+-                                                    <li>Chuy├¬n ng├ánh ─æ├áo tß║ío</li>
+-                                                    <li>Kinh nghiß╗çm giß║úng dß║íy</li>
+-                                                    <li>M├┤n phß╗Ñ tr├ích, n╞íi tß╗½ng/─æang c├┤ng t├íc nß║┐u c├│</li>
+-                                                </ul>
+-                                            </div>
+-                                        </label>
+-                                    </div>
+-                                </div>
+-                            </div>
+-
+-                            <div class="section-data-card">
+-                                <div class="card-header-layout">
+-                                    <div class="card-header-title">
+-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+-                                        <span>Th├┤ng tin x├íc minh</span>
+-                                    </div>
+-                                </div>
+-
+-                                <div style="padding:1.5rem;">
+-                                    <div class="teacher-registration-form-grid">
+-                                        <div class="form-group-premium">
+-                                            <label>Tr╞░ß╗¥ng / ─æ╞ín vß╗ï ─æang hß╗ìc hoß║╖c c├┤ng t├íc</label>
+-                                            <input type="text" name="institutionName" placeholder="V├¡ dß╗Ñ: ─Éß║íi hß╗ìc S╞░ phß║ím TP.HCM, THPT Chuy├¬n L├¬ Hß╗ông Phong" required>
+-                                        </div>
+-                                        <div class="form-group-premium">
+-                                            <label>Chuy├¬n ng├ánh / l─⌐nh vß╗▒c chuy├¬n m├┤n</label>
+-                                            <input type="text" name="specialization" placeholder="V├¡ dß╗Ñ: S╞░ phß║ím To├ín, Ng├┤n ngß╗» Anh, C├┤ng nghß╗ç th├┤ng tin" required>
+-                                        </div>
+-                                        <div class="form-group-premium">
+-                                            <label>N─âm hß╗ìc hiß╗çn tß║íi</label>
+-                                            <select name="currentStudyYear">
+-                                                <option value="">Kh├┤ng ├íp dß╗Ñng</option>
+-                                                <option value="year_1">N─âm 1</option>
+-                                                <option value="year_2">N─âm 2</option>
+-                                                <option value="year_3">N─âm 3</option>
+-                                                <option value="year_4">N─âm 4</option>
+-                                                <option value="year_5_plus">N─âm 5 trß╗ƒ l├¬n</option>
+-                                                <option value="graduated">─É├ú tß╗æt nghiß╗çp</option>
+-                                            </select>
+-                                        </div>
+-                                        <div class="form-group-premium full-span">
+-                                            <label>M├┤n c├│ thß╗â dß║íy (C├│ thß╗â chß╗ìn nhiß╗üu m├┤n)</label>
+-                                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; margin-top: 0.5rem; background: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid var(--border-dark);">
+-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+-                                                    <input type="checkbox" name="teachingSubjects" value="To├ín" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> To├ín hß╗ìc
+-                                                </label>
+-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+-                                                    <input type="checkbox" name="teachingSubjects" value="V─ân" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Ngß╗» V─ân
+-                                                </label>
+-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+-                                                    <input type="checkbox" name="teachingSubjects" value="Anh" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Tiß║┐ng Anh
+-                                                </label>
+-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+-                                                    <input type="checkbox" name="teachingSubjects" value="L├╜" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Vß║¡t L├╜
+-                                                </label>
+-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+-                                                    <input type="checkbox" name="teachingSubjects" value="H├│a" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> H├│a Hß╗ìc
+-                                                </label>
+-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+-                                                    <input type="checkbox" name="teachingSubjects" value="Sinh Hß╗ìc" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Sinh Hß╗ìc
+-                                                </label>
+-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+-                                                    <input type="checkbox" name="teachingSubjects" value="Lß╗ïch Sß╗¡" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Lß╗ïch Sß╗¡
+-                                                </label>
+-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+-                                                    <input type="checkbox" name="teachingSubjects" value="─Éß╗ïa L├╜" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> ─Éß╗ïa L├╜
+-                                                </label>
+-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+-                                                    <input type="checkbox" name="teachingSubjects" value="C├┤ng Nghß╗ç" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> C├┤ng Nghß╗ç
+-                                                </label>
+-                                                <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
+                                                     <input type="checkbox" name="teachingSubjects" value="Tin Hß╗ìc" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Tin Hß╗ìc
+                                                 </label>
+                                             </div>
+@@ -1573,7 +1654,7 @@
+                                 String startValue = cls.getStartTime() != null ? cls.getStartTime().toLocalTime().toString().substring(0, 5) : "";
+                                 String endValue = cls.getEndTime() != null ? cls.getEndTime().toLocalTime().toString().substring(0, 5) : "";
+                             %>
+-                                <div class="classroom-card" style="border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem; background: var(--surface); display: flex; flex-direction: column; justify-content: space-between; height: 100%; min-height: 250px; box-shadow: var(--shadow); transition: all 0.2s ease;">
++                                <div class="classroom-card" style="border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem; background: #f8fafc; display: flex; flex-direction: column; justify-content: space-between; height: 100%; min-height: 250px; box-shadow: var(--shadow); transition: all 0.2s ease;">
+                                     <div>
+                                         <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                                             <span class="subject-badge" style="background: var(--primary-light); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700;"><%= cls.getSubject() %></span>
+@@ -1832,47 +1913,59 @@
+                             <div class="metric-card-value"><%= teacherClassrooms != null ? teacherClassrooms.size() : 0 %></div>
+                             <span class="metric-card-sub">Lß╗¢p hoß║ít ─æß╗Öng</span>
+                         </div>
++                        <div class="metric-ghost-icon" aria-hidden="true">
++                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
++                        </div>
+                     </div>
+ 
+-                    <!-- Metric 2: Application status -->
++                    <!-- Metric 2: Active courses -->
+                     <div class="metric-card secondary">
+                         <div class="metric-card-top">
+-                            <span class="metric-card-title">Trß║íng th├íi hß╗ô s╞í</span>
++                            <span class="metric-card-title">Kh├│a hß╗ìc cß╗ºa t├┤i</span>
+                             <div class="metric-arrow-btn">
+                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                             </div>
+                         </div>
+                         <div>
+-                            <div class="metric-card-value" style="font-size: 1.45rem; margin-top: 1.25rem;"><%= teachingRegistrationStatusLabel %></div>
+-                            <span class="metric-card-sub" style="background:#eff6ff; color:#2563eb;">Giß║úng vi├¬n</span>
++                            <div class="metric-card-value"><%= teacherCourses != null ? teacherCourses.size() : 0 %></div>
++                            <span class="metric-card-sub" style="background:#f5f3ff; color:#7c3aed;">─Éang ph├ít h├ánh</span>
++                        </div>
++                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#7c3aed; background:#f5f3ff;">
++                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                         </div>
+                     </div>
+ 
+-                    <!-- Metric 3: Active courses -->
++                    <!-- Metric 3: Uploaded materials -->
+                     <div class="metric-card secondary">
+                         <div class="metric-card-top">
+-                            <span class="metric-card-title">Kh├│a hß╗ìc cß╗ºa t├┤i</span>
++                            <span class="metric-card-title">Sß╗æ t├ái liß╗çu</span>
+                             <div class="metric-arrow-btn">
+                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                             </div>
+                         </div>
+                         <div>
+-                            <div class="metric-card-value">1</div>
+-                            <span class="metric-card-sub" style="background:#f5f3ff; color:#7c3aed;">─Éang ph├ít h├ánh</span>
++                            <div class="metric-card-value"><%= teacherMaterialCount %></div>
++                            <span class="metric-card-sub" style="background:#fff7ed; color:#ea580c;">T├ái liß╗çu ─æ├ú ─æ─âng</span>
++                        </div>
++                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#ea580c; background:#fff7ed;">
++                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                         </div>
+                     </div>
+ 
+-                    <!-- Metric 4: System notifications -->
++                    <!-- Metric 4: Teaching schedule placeholder -->
+                     <div class="metric-card secondary">
+                         <div class="metric-card-top">
+-                            <span class="metric-card-title">Th├┤ng b├ío</span>
++                            <span class="metric-card-title">─Éß║╖t lß╗ïch dß║íy</span>
+                             <div class="metric-arrow-btn">
+                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                             </div>
+                         </div>
+                         <div>
+-                            <div class="metric-card-value"><%= notifications != null ? notifications.size() : 0 %></div>
+-                            <span class="metric-card-sub" style="background:#fff7ed; color:#ea580c;">Tin nhß║»n mß╗¢i</span>
++                            <div class="metric-card-value" style="font-size: 1.45rem; margin-top: 1.25rem;">Sß║»p c├│</div>
++                            <span class="metric-card-sub" style="background:#eff6ff; color:#2563eb;">─Éang ph├ít triß╗ân</span>
++                        </div>
++                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#2563eb; background:#eff6ff;">
++                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h4"/><path d="M8 18h8"/></svg>
+                         </div>
+                     </div>
+                 </div>
+@@ -1880,100 +1973,66 @@
+                 <!-- MAIN GRID LAYOUT -->
+                 <div class="dashboard-grid-layout">
+                     <!-- Cß╗Öt Tr├íi: Th├┤ng tin c├í nh├ón -->
+-                    <div class="premium-card">
++                    <div class="premium-card" style="grid-column: 1 / -1;">
+                         <div class="premium-card-header">
+                             <span class="premium-card-title">
+                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+-                                Th├┤ng tin c├í nh├ón
++                                Chi tiß║┐t t├ái khoß║ún
+                             </span>
+-                            <button onclick="switchTab('tab-edit')" class="btn-premium secondary" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+-                                <span>Chß╗ënh sß╗¡a</span>
+-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+-                            </button>
+-                        </div>
+-
+-                        <!-- L╞░ß╗¢i chi tiß║┐t th├┤ng tin -->
+-                        <div class="profile-info-grid">
+-                            <div class="profile-info-item">
+-                                <div class="info-icon-circle primary">
+-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+-                                </div>
+-                                <div class="info-content">
+-                                    <span class="info-label">Hß╗ì v├á t├¬n hiß╗ân thß╗ï</span>
+-                                    <span class="info-value"><%= user != null ? user.getDisplayName() : "ΓÇö" %></span>
++                            <div class="account-header-actions">
++                                <button type="button" id="accountEditTrigger" onclick="toggleAccountNameEdit(true)" class="btn-premium profile-edit-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
++                                    <span>Chß╗ënh sß╗¡a</span>
++                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
++                                </button>
++                                <div id="accountEditActions" class="account-edit-actions" style="display: none;">
++                                    <button type="button" class="btn-premium account-cancel-btn" onclick="toggleAccountNameEdit(false)" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">Hß╗ºy bß╗Å</button>
++                                    <button type="submit" form="accountNameInlineForm" class="btn-premium account-save-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">L╞░u</button>
+                                 </div>
+                             </div>
++                        </div>
+ 
+-                            <div class="profile-info-item">
+-                                <div class="info-icon-circle accent">
+-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+-                                </div>
+-                                <div class="info-content">
+-                                    <span class="info-label">Ng├áy tham gia</span>
+-                                    <span class="info-value"><%= joinDate %></span>
+-                                </div>
+-                            </div>
++                        <form id="teacherAvatarUploadForm" action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" style="display:none;">
++                            <input type="hidden" name="action" value="updateAvatar">
++                            <input type="file" id="teacherAvatarFile" name="avatarFile" accept="image/*" onchange="document.getElementById('teacherAvatarUploadForm').submit();">
++                        </form>
+ 
+-                            <div class="profile-info-item">
+-                                <div class="info-icon-circle warning">
+-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
++                        <div class="account-summary-panel">
++                            <div class="account-summary-main">
++                                <div class="account-avatar-wrap">
++                                    <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
++                                        <img src="<%= user.getAvatarUrl() %>" class="account-avatar-img" alt="Avatar">
++                                    <% } else { %>
++                                        <div class="account-avatar-placeholder"><%= initials %></div>
++                                    <% } %>
++                                    <button type="button" class="avatar-camera-btn" title="Cß║¡p nhß║¡t ß║únh ─æß║íi diß╗çn" onclick="document.getElementById('teacherAvatarFile').click();">
++                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
++                                    </button>
+                                 </div>
+-                                <div class="info-content" style="min-width: 0;">
+-                                    <span class="info-label">─Éß╗ïa chß╗ë Email</span>
+-                                    <span class="info-value" style="font-size:0.95rem;" title="<%= user != null ? user.getEmail() : "" %>"><%= user != null ? user.getEmail() : "ΓÇö" %></span>
++                                <div class="account-identity">
++                                    <h3 class="account-name"><%= user != null ? user.getDisplayName() : "Giß║úng vi├¬n HIPZI" %></h3>
++                                    <form id="accountNameInlineForm" class="account-name-edit-form" action="${pageContext.request.contextPath}/profile" method="POST" style="display: none;">
++                                        <input type="hidden" name="action" value="updateName">
++                                        <input id="accountDisplayNameInput" class="account-name-input" type="text" name="displayName" required value="<%= user != null ? user.getDisplayName() : "" %>" placeholder="Nhß║¡p hß╗ì v├á t├¬n cß╗ºa bß║ín...">
++                                    </form>
++                                    <span class="account-email" title="<%= user != null ? user.getEmail() : "" %>"><%= user != null ? user.getEmail() : "info@hipzi.vn" %></span>
+                                 </div>
+                             </div>
+-
+-                            <div class="profile-info-item">
+-                                <div class="info-icon-circle danger">
+-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
++                            <div class="account-side-meta">
++                                <div class="account-meta-pill">
++                                    <span class="account-meta-label">Ng├áy tham gia</span>
++                                    <span class="account-meta-value"><%= joinDate %></span>
+                                 </div>
+-                                <div class="info-content">
+-                                    <span class="info-label">Trß║íng th├íi t├ái khoß║ún</span>
+-                                    <% String statusVal = (user != null) ? user.getAccountStatus() : "active"; %>
+-                                    <span class="acc-status-tag <%= statusVal %>">
+-                                        <%= "active".equals(statusVal) ? "─Éang hoß║ít ─æß╗Öng" : "suspended".equals(statusVal) ? "Tß║ím kh├│a" : "V├┤ hiß╗çu h├│a" %>
++                                <div class="account-meta-pill">
++                                    <span class="account-meta-label">Vai tr├▓</span>
++                                    <span class="account-meta-value">
++                                        <span class="role-tag teacher">Giß║úng vi├¬n</span>
+                                     </span>
+                                 </div>
+                             </div>
+                         </div>
+-                    </div>
+ 
+-                    <!-- Cß╗Öt Phß║úi: Danh s├ích lß╗¢p hß╗ìc -->
+-                    <div class="premium-card">
+-                        <div class="premium-card-header">
+-                            <span class="premium-card-title">
+-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+-                                Lß╗¢p hß╗ìc cß╗ºa t├┤i
+-                            </span>
+-                            <button onclick="switchTab('tab-class-registration')" class="btn-premium secondary" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">Xem tß║Ñt cß║ú</button>
+-                        </div>
+-
+-                        <div class="dashboard-list">
+-                            <% if (teacherClassrooms != null && !teacherClassrooms.isEmpty()) { 
+-                                int count = 0;
+-                                for (Classroom cls : teacherClassrooms) { 
+-                                    if (count++ >= 3) break;
+-                            %>
+-                                <div class="dashboard-list-item">
+-                                    <div class="item-info">
+-                                        <div class="item-icon-round primary">
+-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+-                                        </div>
+-                                        <div class="item-meta">
+-                                            <span class="item-title" style="font-weight:700; color:var(--text-main); font-size:0.9rem;"><%= cls.getTitle() %></span>
+-                                            <span class="item-subtitle" style="font-size:0.75rem; color:var(--text-muted);"><%= cls.getSubject() %> - <%= cls.getGrade() %></span>
+-                                        </div>
+-                                    </div>
+-                                    <span class="status-badge <%= cls.getStatus() %>"><%= "open".equals(cls.getStatus()) ? "─Éang mß╗ƒ" : "closed".equals(cls.getStatus()) ? "─É├ú ─æ├│ng" : "Sß║»p mß╗ƒ" %></span>
+-                                </div>
+-                            <% } } else { %>
+-                                <div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 1.5rem 0;">
+-                                    Ch╞░a ─æ─âng k├¡ lß╗¢p hß╗ìc n├áo.
+-                                </div>
+-                            <% } %>
+-                        </div>
+                     </div>
++
+                 </div>
+             </section>
+ <!-- ========================================== -->
+@@ -2037,7 +2096,7 @@
+                 <div class="premium-card">
+                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem;">
+                         <div>
+-                            <span style="font-weight: 800; font-size: 1.15rem; color: #b45309; letter-spacing: 0.5px; text-transform: uppercase; display: block;">Mß║¡t khß║⌐u ─æ─âng nhß║¡p</span>
++                            <span style="font-weight: 800; font-size: 1.15rem; color: var(--text-main); letter-spacing: 0.5px; text-transform: uppercase; display: block;">Mß║¡t khß║⌐u ─æ─âng nhß║¡p</span>
+                             <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.35rem 0 0 0;">Cß║¡p nhß║¡t mß║¡t khß║⌐u ─æß╗ïnh kß╗│ ─æß╗â bß║úo mß║¡t tß╗æt h╞ín.</p>
+                         </div>
+                         <button type="button" onclick="document.getElementById('pwd-modal-overlay').style.display='flex';" class="btn-premium primary" style="background: #059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
+@@ -2070,10 +2129,13 @@
+                     <div class="premium-card">
+                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                             <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Bß║úo mß║¡t 2 lß╗¢p (OTP)</span>
+-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
++                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                         </div>
+-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+-                            <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">M├ú OTP qua Email</span>
++                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.1rem;">
++                            <div>
++                                <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); display: block;">M├ú OTP qua Email</span>
++                                <p style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; line-height: 1.5; margin: 0.35rem 0 0 0;">T─âng c╞░ß╗¥ng bß║úo vß╗ç t├ái khoß║ún khi ─æ─âng nhß║¡p ß╗ƒ thiß║┐t bß╗ï lß║í.</p>
++                            </div>
+                             
+                             <!-- Form ngß║ºm xß╗¡ l├╜ toggle 2FA -->
+                             <form id="toggle2faForm" action="${pageContext.request.contextPath}/profile" method="POST" style="display: none;">
+@@ -2092,7 +2154,7 @@
+                     <div class="premium-card">
+                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                             <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Thiß║┐t bß╗ï hiß╗çn tß║íi</span>
+-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
++                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                         </div>
+                         <div>
+                             <span style="font-weight: 800; font-size: 1.1rem; color: var(--text-main); display: block;">Windows - Chrome (Vietnam)</span>
+@@ -2341,7 +2403,7 @@
+                     </div>
+                 </div>
+ 
+-                <div id="repository-upload-form-panel" style="display: none; margin-top: 1.5rem; background: #ffffff; border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow);">
++                <div id="repository-upload-form-panel" style="display: none; margin-top: 1.5rem; background: #f8fafc; border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow);">
+                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.75rem;">
+                             <div>
+                                 <h3 style="margin: 0; color: var(--text-main); font-size: 1.15rem; font-weight: 800;">Th├┤ng tin t├ái liß╗çu ─æ─âng tß║úi</h3>
+@@ -2440,7 +2502,7 @@
+                         </div>
+                         
+                         <div style="display: flex; flex-direction: column; gap: 1rem;">
+-                            <details style="background: #ffffff; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
++                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
+                                 <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
+                                     <span>L├ám thß║┐ n├áo ─æß╗â tß║úi xuß╗æng b├ái giß║úng?</span>
+                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+@@ -2450,7 +2512,7 @@
+                                 </p>
+                             </details>
+ 
+-                            <details style="background: #ffffff; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
++                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
+                                 <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
+                                     <span>AI tß║ío c├óu hß╗Åi ├┤n tß║¡p hoß║ít ─æß╗Öng ra sao?</span>
+                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+@@ -2459,6 +2521,27 @@
+                                     Trß╗ú l├╜ AI ph├ón t├¡ch v─ân bß║ún tß╗½ t├ái liß╗çu gß╗æc do Giß║úng vi├¬n cung cß║Ñp ─æß╗â b├│c t├ích th├ánh c├íc bß╗Ö Flashcard trß╗▒c quan cho hß╗ìc vi├¬n luyß╗çn tß║¡p.
+                                 </p>
+                             </details>
++
++                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
++                                <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
++                                    <span>T├ái liß╗çu sau khi ─æ─âng sß║╜ ─æ╞░ß╗úc duyß╗çt trong bao l├óu?</span>
++                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
++                                </summary>
++                                <p style="font-size: 0.9rem; color: var(--text-muted); margin: 1rem 0 0 0; line-height: 1.6; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
++                                    T├ái liß╗çu sß║╜ ─æ╞░ß╗úc kiß╗âm tra nß╗Öi dung, ─æß╗ïnh dß║íng v├á quyß╗ün chia sß║╗ tr╞░ß╗¢c khi hiß╗ân thß╗ï c├┤ng khai trong kho hß╗ìc liß╗çu.
++                                </p>
++                            </details>
++
++                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
++                                <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
++                                    <span>Kß║┐t nß╗æi Google Drive bß╗ï lß╗ùi th├¼ xß╗¡ l├╜ thß║┐ n├áo?</span>
++                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
++                                </summary>
++                                <p style="font-size: 0.9rem; color: var(--text-muted); margin: 1rem 0 0 0; line-height: 1.6; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
++                                    H├úy thß╗¡ kß║┐t nß╗æi lß║íi t├ái khoß║ún Google Drive, kiß╗âm tra quyß╗ün truy cß║¡p file v├á gß╗¡i y├¬u cß║ºu hß╗ù trß╗ú nß║┐u lß╗ùi vß║½n tiß║┐p diß╗àn.
++                                </p>
++                            </details>
++
+                         </div>
+                     </div>
+ 
+@@ -2470,17 +2553,18 @@
+                                 Y├¬u cß║ºu hß╗ù trß╗ú
+                             </span>
+                         </div>
+-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Gß╗¡i y├¬u cß║ºu trß╗▒c tiß║┐p ─æß║┐n ─æß╗Öi ng┼⌐ kß╗╣ thuß║¡t nß║┐u bß║ín gß║╖p sß╗▒ cß╗æ nghi├¬m trß╗ìng.</p>
+                         <form id="supportForm" style="display: flex; flex-direction: column; gap: 1.25rem;" class="form-edit-layout">
+                             <div class="form-group-premium">
+-                                <label>Ti├¬u ─æß╗ü cß║ºn hß╗ù trß╗ú</label>
++                                <label>Ti├¬u ─æß╗ü cß║ºn hß╗ù trß╗ú <span style="color:#ef4444;">*</span></label>
+                                 <input type="text" name="title" required placeholder="Nhß║¡p ti├¬u ─æß╗ü vß║»n tß║»t...">
+                             </div>
+                             <div class="form-group-premium">
+-                                <label>M├┤ tß║ú chi tiß║┐t</label>
++                                <label>M├┤ tß║ú chi tiß║┐t <span style="color:#ef4444;">*</span></label>
+                                 <textarea name="content" rows="4" required placeholder="M├┤ tß║ú kh├│ kh─ân bß║ín ─æang gß║╖p phß║úi..."></textarea>
+                             </div>
+-                            <button type="submit" class="btn-premium primary" style="width: 100%; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">Gß╗¡i tin nhß║»n</button>
++                            <div class="support-submit-row" style="display: flex; justify-content: flex-end;">
++                                <button type="submit" class="btn-premium primary">Gß╗¡i tin nhß║»n</button>
++                            </div>
+                         </form>
+                     </div>
+                 </div>
+@@ -2743,6 +2827,53 @@
+         }
+ 
+         let teacherTabSwitchTimer;
++        let teacherFrameResizeObserver;
++
++        function syncTeacherDashboardFrameHeight() {
++            const dashboard = document.querySelector('.app-dashboard-container');
++            const contentWrapper = document.querySelector('.dashboard-content-wrapper');
++            const sidebar = document.querySelector('.dashboard-sidebar');
++            if (!dashboard || !contentWrapper) {
++                return;
++            }
++
++            const dashboardTop = dashboard.getBoundingClientRect().top + window.scrollY;
++            const contentBottom = contentWrapper.getBoundingClientRect().bottom + window.scrollY;
++            const sidebarBottom = sidebar ? sidebar.getBoundingClientRect().bottom + window.scrollY : 0;
++            const layoutBottom = Math.max(contentBottom, sidebarBottom);
++            const frameHeight = Math.ceil(layoutBottom - dashboardTop + 20);
++            const pageBgHeight = Math.ceil(layoutBottom + 20);
++            dashboard.style.setProperty('--teacher-dashboard-frame-height', frameHeight + 'px');
++            document.body.style.setProperty('--teacher-page-bg-height', pageBgHeight + 'px');
++        }
++
++        function scheduleTeacherDashboardFrameSync() {
++            requestAnimationFrame(() => {
++                syncTeacherDashboardFrameHeight();
++                requestAnimationFrame(syncTeacherDashboardFrameHeight);
++            });
++        }
++
++        function observeTeacherDashboardFrame() {
++            const contentWrapper = document.querySelector('.dashboard-content-wrapper');
++            const sidebar = document.querySelector('.dashboard-sidebar');
++            if (!contentWrapper || typeof ResizeObserver === 'undefined') {
++                scheduleTeacherDashboardFrameSync();
++                return;
++            }
++
++            if (teacherFrameResizeObserver) {
++                teacherFrameResizeObserver.disconnect();
++            }
++
++            teacherFrameResizeObserver = new ResizeObserver(scheduleTeacherDashboardFrameSync);
++            teacherFrameResizeObserver.observe(contentWrapper);
++            if (sidebar) {
++                teacherFrameResizeObserver.observe(sidebar);
++            }
++            document.querySelectorAll('.tab-pane').forEach(pane => teacherFrameResizeObserver.observe(pane));
++            scheduleTeacherDashboardFrameSync();
++        }
+ 
+         function getTeacherTabSlug(tabId) {
+             return tabId.replace(/^tab-/, '');
+@@ -2812,6 +2943,7 @@
+             teacherTabSwitchTimer = window.setTimeout(() => {
+                 contentWrapper.classList.remove('is-switching-tab');
+                 contentWrapper.style.minHeight = '';
++                scheduleTeacherDashboardFrameSync();
+             }, 320);
+         }
+ 
+@@ -2838,12 +2970,38 @@
+             }
+         }
+ 
++        function toggleAccountNameEdit(isEditing) {
++            const nameView = document.querySelector('.account-identity .account-name');
++            const form = document.getElementById('accountNameInlineForm');
++            const editTrigger = document.getElementById('accountEditTrigger');
++            const editActions = document.getElementById('accountEditActions');
++            const input = document.getElementById('accountDisplayNameInput');
++
++            if (!nameView || !form || !editTrigger || !editActions) {
++                return;
++            }
++
++            nameView.style.display = isEditing ? 'none' : '';
++            form.style.display = isEditing ? 'block' : 'none';
++            editTrigger.style.display = isEditing ? 'none' : 'inline-flex';
++            editActions.style.display = isEditing ? 'flex' : 'none';
++
++            if (isEditing && input) {
++                input.focus();
++                input.select();
++            } else if (input) {
++                input.value = input.defaultValue;
++            }
++            scheduleTeacherDashboardFrameSync();
++        }
++
+         function toggleSidebar() {
+             const container = document.querySelector('.app-dashboard-container');
+             if (container) {
+                 container.classList.toggle('collapsed');
+                 const isCollapsed = container.classList.contains('collapsed');
+                 localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true' : 'false');
++                scheduleTeacherDashboardFrameSync();
+             }
+         }
+ 
+@@ -2869,6 +3027,7 @@
+                 if (options.updateUrl) {
+                     updateTeacherTabUrl(targetTabId, options.replaceUrl);
+                 }
++                scheduleTeacherDashboardFrameSync();
+                 return;
+             }
+ 
+@@ -2902,7 +3061,10 @@
+                 updateTeacherTabUrl(targetTabId, options.replaceUrl);
+             }
+ 
+-            requestAnimationFrame(settleTeacherTabScroll);
++            requestAnimationFrame(() => {
++                scheduleTeacherDashboardFrameSync();
++                settleTeacherTabScroll();
++            });
+         }
+ 
+         <% if (session.getAttribute("toastMsg") != null) { 
+@@ -2923,6 +3085,7 @@
+                     container.classList.add('collapsed');
+                 }
+             }
++            observeTeacherDashboardFrame();
+         });
+ 
+         window.addEventListener('DOMContentLoaded', () => {
+@@ -2936,6 +3099,14 @@
+                     updateTeacherTabUrl(activePane.id, true);
+                 }
+             }
++            scheduleTeacherDashboardFrameSync();
++        });
++
++        window.addEventListener('load', scheduleTeacherDashboardFrameSync);
++        window.addEventListener('resize', scheduleTeacherDashboardFrameSync);
++
++        document.querySelectorAll('.dashboard-content-wrapper details').forEach(detail => {
++            detail.addEventListener('toggle', scheduleTeacherDashboardFrameSync);
+         });
+ 
+         window.addEventListener('popstate', (event) => {
