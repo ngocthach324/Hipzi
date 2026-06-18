@@ -29,25 +29,51 @@ public class TeacherApplicationDao {
         return null;
     }
 
-    public boolean upsertApplication(TeacherApplication application) {
+    public TeacherApplication findLatestApprovedByUserId(String userId) {
+        String sql = "SELECT * FROM teacher_applications "
+                + "WHERE user_id = ?::uuid AND status = 'approved' "
+                + "ORDER BY reviewed_at DESC NULLS LAST, updated_at DESC, submitted_at DESC "
+                + "LIMIT 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in TeacherApplicationDao.findLatestApprovedByUserId: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public TeacherApplication findLatestEditableByUserId(String userId) {
+        String sql = "SELECT * FROM teacher_applications "
+                + "WHERE user_id = ?::uuid AND status <> 'approved' "
+                + "ORDER BY updated_at DESC, submitted_at DESC "
+                + "LIMIT 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in TeacherApplicationDao.findLatestEditableByUserId: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean insertApplication(TeacherApplication application) {
         String sql = "INSERT INTO teacher_applications "
                 + "(user_id, teacher_type, status, institution_name, specialization, current_study_year, "
                 + "teaching_subjects, teaching_experience, workplace, credentials_summary, teacher_bio, evidence_summary) "
-                + "VALUES (?::uuid, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?) "
-                + "ON CONFLICT (user_id) DO UPDATE SET "
-                + "teacher_type = EXCLUDED.teacher_type, "
-                + "status = 'pending', "
-                + "institution_name = EXCLUDED.institution_name, "
-                + "specialization = EXCLUDED.specialization, "
-                + "current_study_year = EXCLUDED.current_study_year, "
-                + "teaching_subjects = EXCLUDED.teaching_subjects, "
-                + "teaching_experience = EXCLUDED.teaching_experience, "
-                + "workplace = EXCLUDED.workplace, "
-                + "credentials_summary = EXCLUDED.credentials_summary, "
-                + "teacher_bio = EXCLUDED.teacher_bio, "
-                + "evidence_summary = EXCLUDED.evidence_summary, "
-                + "submitted_at = NOW(), "
-                + "updated_at = NOW()";
+                + "VALUES (?::uuid, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -66,9 +92,50 @@ public class TeacherApplicationDao {
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("Error in TeacherApplicationDao.upsertApplication: " + e.getMessage());
+            System.err.println("Error in TeacherApplicationDao.insertApplication: SQLState="
+                    + e.getSQLState() + ", errorCode=" + e.getErrorCode()
+                    + ", message=" + e.getMessage());
         }
         return false;
+    }
+
+    public boolean updateApplication(TeacherApplication application) {
+        String sql = "UPDATE teacher_applications "
+                + "SET teacher_type = ?, institution_name = ?, specialization = ?, "
+                + "current_study_year = ?, teaching_subjects = ?, teaching_experience = ?, "
+                + "workplace = ?, credentials_summary = ?, teacher_bio = ?, "
+                + "evidence_summary = ?, status = 'pending', submitted_at = NOW(), "
+                + "review_note = NULL, reviewed_by = NULL, reviewed_at = NULL, "
+                + "updated_at = NOW() "
+                + "WHERE id = ?::uuid AND user_id = ?::uuid AND status <> 'approved'";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, application.getTeacherType());
+            ps.setString(2, application.getInstitutionName());
+            ps.setString(3, application.getSpecialization());
+            ps.setString(4, application.getCurrentStudyYear());
+            ps.setString(5, application.getTeachingSubjects());
+            ps.setString(6, application.getTeachingExperience());
+            ps.setString(7, application.getWorkplace());
+            ps.setString(8, application.getCredentialsSummary());
+            ps.setString(9, application.getTeacherBio());
+            ps.setString(10, application.getEvidenceSummary());
+            ps.setString(11, application.getId());
+            ps.setString(12, application.getUserId());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error in TeacherApplicationDao.updateApplication: SQLState="
+                    + e.getSQLState() + ", errorCode=" + e.getErrorCode()
+                    + ", message=" + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean hasApprovedApplication(String userId) {
+        return findLatestApprovedByUserId(userId) != null;
     }
 
     public List<TeacherApplication> listForStaffReview() {
@@ -99,9 +166,14 @@ public class TeacherApplicationDao {
     public List<TeacherApplication> listApprovedTeachers(String searchQuery, String teacherTypeFilter, String subjectFilter) {
         StringBuilder sql = new StringBuilder(
                 "SELECT ta.*, u.display_name AS applicant_name, u.email AS applicant_email, u.avatar_url AS applicant_avatar_url "
+                + "FROM ("
+                + "SELECT DISTINCT ON (ta.user_id) ta.* "
                 + "FROM teacher_applications ta "
+                + "WHERE ta.status = 'approved' "
+                + "ORDER BY ta.user_id, ta.reviewed_at DESC NULLS LAST, ta.updated_at DESC, ta.submitted_at DESC"
+                + ") ta "
                 + "JOIN users u ON u.id = ta.user_id "
-                + "WHERE ta.status = 'approved' ");
+                + "WHERE 1 = 1 ");
 
         List<Object> params = new ArrayList<>();
 

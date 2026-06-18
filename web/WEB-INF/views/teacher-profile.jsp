@@ -525,7 +525,7 @@
 
         /* Date badge */
         .date-badge {
-            background: #f8fafc;
+            background: #ffffff;
             border: 1px solid var(--border-dark);
             padding: 0.5rem 1rem;
             border-radius: 1rem;
@@ -731,6 +731,12 @@
         }
 
         #tab-support .premium-card {
+            background: #ffffff;
+        }
+
+        #tab-class-registration .premium-card,
+        #tab-course-registration .premium-card,
+        #tab-upload-material .premium-card {
             background: #ffffff;
         }
 
@@ -1385,13 +1391,24 @@
 
         input[name="teachingSubjects"]:checked {
             border-color: var(--primary);
-            background-color: var(--primary);
+            background-color: var(--primary) !important;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: center;
             background-size: 0.95rem;
             box-shadow: 0 6px 14px rgba(4, 120, 87, 0.24), 0 0 0 4px rgba(4, 120, 87, 0.1);
             transform: scale(1.04);
+        }
+
+        .teacher-registration-readonly input[name="teachingSubjects"]:checked,
+        .teacher-registration-readonly input[name="teachingSubjects"]:disabled:checked,
+        .teacher-registration-editing input[name="teachingSubjects"]:checked {
+            border-color: var(--primary) !important;
+            background-color: var(--primary) !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: center !important;
+            background-size: 0.95rem !important;
         }
 
         input[name="teachingSubjects"]:checked + span {
@@ -1470,6 +1487,31 @@
             justify-content: flex-end;
             gap: 1rem;
             margin-top: 0.5rem;
+        }
+
+        .form-actions-row-premium.is-hidden {
+            display: none !important;
+        }
+
+        .teacher-registration-readonly input:not([type="hidden"]),
+        .teacher-registration-readonly select,
+        .teacher-registration-readonly textarea {
+            background-color: #ffffff !important;
+            color: #64748b !important;
+            cursor: not-allowed !important;
+        }
+
+        .teacher-registration-readonly .teacher-type-card,
+        .teacher-registration-readonly .teacher-evidence-dropzone,
+        .teacher-registration-readonly .teacher-subject-option {
+            cursor: not-allowed !important;
+        }
+
+        .teacher-registration-editing input:not([type="hidden"]),
+        .teacher-registration-editing select,
+        .teacher-registration-editing textarea {
+            background-color: #ffffff;
+            color: var(--text-main);
         }
 
         .checkbox-grid-premium {
@@ -1618,6 +1660,27 @@
             line-height: 1.5;
         }
 
+        .teacher-type-examples {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .teacher-type-examples li {
+            position: relative;
+            padding-left: 1.55rem;
+        }
+
+        .teacher-type-examples li::before {
+            content: '\2713';
+            position: absolute;
+            left: 0;
+            top: 0.05rem;
+            color: #10b981;
+            font-weight: 900;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
         /* ===== TOAST NOTIFICATIONS ===== */
         .custom-toast-container {
             position: fixed;
@@ -1631,7 +1694,7 @@
         }
 
         .custom-toast-msg {
-            background: #047857;
+            background: #059669;
             color: #ffffff;
             padding: 0.85rem 1.25rem;
             border-radius: 0.75rem;
@@ -1764,12 +1827,14 @@
         List<Notification> notifications = (List<Notification>) request.getAttribute("notifications");
 
         TeacherApplication teacherApplication = (TeacherApplication) request.getAttribute("teacherApplication");
+        TeacherApplication approvedTeacherApplication = (TeacherApplication) request.getAttribute("approvedTeacherApplication");
         List<Classroom> teacherClassrooms = (List<Classroom>) request.getAttribute("teacherClassrooms");
         List<?> teacherCourses = (List<?>) request.getAttribute("teacherCourses");
         Object teacherMaterialCountObj = request.getAttribute("teacherMaterialCount");
         int teacherMaterialCount = teacherMaterialCountObj instanceof Number ? ((Number) teacherMaterialCountObj).intValue() : 0;
         boolean teachingRegistrationSubmitted = teacherApplication != null || Boolean.TRUE.equals(session.getAttribute("teacherRegistrationSubmitted"));
         String teachingRegistrationStatus = teacherApplication != null ? teacherApplication.getStatus() : null;
+        boolean teachingFeaturesLockedByPendingReview = "pending".equals(teachingRegistrationStatus);
         String teachingRegistrationStatusLabel = "Đang chờ duyệt";
         if ("approved".equals(teachingRegistrationStatus)) {
             teachingRegistrationStatusLabel = "Đã duyệt";
@@ -1956,6 +2021,11 @@
             <!-- TAB 1: HỒ SƠ CÁ NHÂN TỔNG QUAN             -->
             <!-- ========================================== -->
             <section id="tab-teaching-registration" class="tab-pane <%= "tab-teaching-registration".equals(initialTeacherTab) ? "active-pane" : "" %>">
+                <%
+                    boolean isApprovedTeacher = "approved".equals(teachingRegistrationStatus);
+                    boolean shouldLockTeachingRegistration = teachingRegistrationSubmitted;
+                    boolean hasStartedTeaching = teacherClassrooms != null && !teacherClassrooms.isEmpty();
+                %>
                 <div class="tab-pane-header">
                     <div class="tab-pane-header-left">
                         <h1>Đăng kí giảng dạy</h1>
@@ -1967,6 +2037,7 @@
                             <span><%= currentDateDisplay %></span>
                         </div>
                     </div>
+
                 </div>
 
                 <div class="dashboard-grid-layout" style="margin-bottom: 1.5rem;">
@@ -1980,10 +2051,6 @@
                             <p style="margin: 0; color: var(--text-muted); line-height: 1.6; font-size: 0.88rem;">Cung cấp thông tin chuyên môn và bằng cấp để đội ngũ HIPZI xác thực. Sau khi hồ sơ được duyệt, bạn sẽ mở khóa đầy đủ các tính năng dành cho giảng viên.</p>
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 0.5rem;">
-                            <%
-                                boolean isApprovedTeacher = "approved".equals(teachingRegistrationStatus);
-                                boolean hasStartedTeaching = teacherClassrooms != null && !teacherClassrooms.isEmpty();
-                            %>
                             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
                                 <% if (teachingRegistrationSubmitted) { %>
                                     <strong style="display: block; color: #10b981; font-size: 1.25rem; line-height: 1.2;">✓</strong>
@@ -2071,10 +2138,12 @@
                         <button type="button" 
                             <% if (isApprovedTeacher) { %>
                                 onclick="switchTab('tab-class-registration');"
+                            <% } else if (teachingRegistrationSubmitted) { %>
+                                onclick="unlockTeachingForm();"
                             <% } else { %>
                                 onclick="document.getElementById('teaching-registration-form-scroll-target').scrollIntoView({ behavior: 'smooth', block: 'start' });"
                             <% } %>
-                            class="btn-premium secondary" style="width: 100%; border: none; background: #047857; color: #ffffff; font-weight: 800; box-shadow: 0 4px 14px rgba(4, 120, 87, 0.25);">
+                            class="btn-premium secondary" style="width: 100%; border: none; background: #059669; color: #ffffff; font-weight: 800; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
                             <% if (isApprovedTeacher) { %>
                                 <span>Đăng kí lớp học</span>
                             <% } else if (teachingRegistrationSubmitted) { %>
@@ -2088,24 +2157,34 @@
                 </div>
 
                 <div id="teaching-registration-form-scroll-target" style="display: flex; flex-direction: column; gap: 1.25rem;">
-                        <form action="${pageContext.request.contextPath}/teacher-profile" method="POST" enctype="multipart/form-data" class="form-edit-layout" style="padding:0;" onsubmit="return validateTeachingSubjects()">
-                            <fieldset <%= isApprovedTeacher ? "disabled" : "" %> style="border: none; padding: 0; margin: 0;">
+                        <form action="${pageContext.request.contextPath}/teacher-profile" method="POST" enctype="multipart/form-data" class="form-edit-layout" style="padding:0;" id="teacher-profile-form" data-update-locked="<%= shouldLockTeachingRegistration ? "true" : "false" %>" data-default-helper-text="<%= isApprovedTeacher ? "Hệ thống đã xếp bạn vào nhóm giảng viên dưới đây dựa trên hồ sơ đã duyệt." : (teachingRegistrationSubmitted ? "Hồ sơ của bạn đang được xét duyệt. Nhấn Cập nhật hồ sơ nếu cần chỉnh sửa hoặc bổ sung minh chứng." : "Vui lòng chọn nhóm giảng viên hiện tại của bạn trước khi điền thông tin.") %>" onsubmit="return validateTeachingSubjects()">
+                            <div id="registration-fieldset" class="<%= shouldLockTeachingRegistration ? "teacher-registration-readonly" : "teacher-registration-editing" %>" style="border: none; padding: 0; margin: 0;">
                             <input type="hidden" name="action" value="submitTeachingRegistration">
 
-                            <div class="section-data-card">
-                                <div class="card-header-layout" style="display: flex; align-items: center; justify-content: flex-start; gap: 0.75rem;">
-                                    <div class="card-header-title" style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3l8 4.5-8 4.5-8-4.5L12 3z"/><path d="M4 12l8 4.5 8-4.5"/><path d="M4 16.5l8 4.5 8-4.5"/></svg>
-                                        <span>Phân loại giảng viên</span>
+                            <div class="section-data-card" style="margin-top: 15px;">
+                                <div class="card-header-layout" style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <div class="card-header-title" style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3l8 4.5-8 4.5-8-4.5L12 3z"/><path d="M4 12l8 4.5 8-4.5"/><path d="M4 16.5l8 4.5 8-4.5"/></svg>
+                                            <span>Phân loại giảng viên</span>
+                                        </div>
+                                        <% if (!teachingRegistrationSubmitted) { %>
+                                            <span style="font-size:0.8rem; font-weight:700; color:var(--primary); background:var(--primary-light); padding:0.2rem 0.75rem; border-radius:1rem; margin-top: 2px;">Bắt buộc</span>
+                                        <% } %>
                                     </div>
-                                    <% if (!isApprovedTeacher) { %>
-                                        <span style="font-size:0.8rem; font-weight:700; color:var(--primary); background:var(--primary-light); padding:0.2rem 0.75rem; border-radius:1rem; margin-top: 2px;">Bắt buộc</span>
+                                    <% if (teachingRegistrationSubmitted) { %>
+                                        <button type="button" id="btn-unlock-teaching-form" class="btn-premium primary teacher-update-trigger" style="background:#059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25); border:none; padding: 0.4rem 1rem; font-size: 0.85rem;" onclick="unlockTeachingForm();">
+                                            <span>Cập nhật hồ sơ</span>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                        </button>
                                     <% } %>
                                 </div>
 
                                 <div style="padding:1.5rem;">
                                     <% if (isApprovedTeacher) { %>
-                                        <p class="teacher-type-helper-text" style="color: #047857; font-weight: 600;">Hệ thống đã xếp bạn vào nhóm giảng viên dưới đây dựa trên hồ sơ đã duyệt.</p>
+                                        <p id="teacher-type-helper-text" class="teacher-type-helper-text" style="color: #047857; font-weight: 600;">Hệ thống đã xếp bạn vào nhóm giảng viên dưới đây dựa trên hồ sơ đã duyệt.</p>
+                                    <% } else if (teachingRegistrationSubmitted) { %>
+                                        <p id="teacher-type-helper-text" class="teacher-type-helper-text" style="color: #047857; font-weight: 600;">Hồ sơ của bạn đang được xét duyệt. Nhấn Cập nhật hồ sơ nếu cần chỉnh sửa hoặc bổ sung minh chứng.</p>
                                     <% } else { %>
                                         <p class="teacher-type-helper-text">Vui lòng chọn nhóm giảng viên hiện tại của bạn trước khi điền thông tin.</p>
                                     <% } %>
@@ -2123,13 +2202,6 @@
                                                     <li>Sinh viên IELTS 7.5 dạy tiếng Anh</li>
                                                     <li>Sinh viên năm 3, năm 4 có thành tích học tập tốt</li>
                                                 </ul>
-                                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Hồ sơ yêu cầu:</div>
-                                                <ul class="teacher-type-requirements" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0;">
-                                                    <li>Trường đang học, chuyên ngành, năm học hiện tại</li>
-                                                    <li>Môn có thể dạy</li>
-                                                    <li>Thẻ sinh viên hoặc minh chứng đang học</li>
-                                                    <li>Thành tích hoặc chứng chỉ nếu có</li>
-                                                </ul>
                                             </div>
                                         </label>
 
@@ -2146,13 +2218,6 @@
                                                     <li>Người có chứng chỉ đào tạo kỹ năng</li>
                                                     <li>Người có chứng chỉ dạy tin học hoặc lập trình</li>
                                                 </ul>
-                                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Hồ sơ yêu cầu:</div>
-                                                <ul class="teacher-type-requirements" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0;">
-                                                    <li>Chứng chỉ sư phạm hoặc chứng chỉ giảng dạy</li>
-                                                    <li>Môn có thể dạy</li>
-                                                    <li>Kinh nghiệm dạy học nếu có</li>
-                                                    <li>Hồ sơ cá nhân và minh chứng chuyên môn liên quan</li>
-                                                </ul>
                                             </div>
                                         </label>
 
@@ -2168,13 +2233,6 @@
                                                     <li>Cử nhân Ngôn ngữ Anh</li>
                                                     <li>Thạc sĩ ngành Giáo dục</li>
                                                     <li>Giáo viên THCS/THPT, giảng viên đại học hoặc chuyên gia phù hợp</li>
-                                                </ul>
-                                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Hồ sơ yêu cầu:</div>
-                                                <ul class="teacher-type-requirements" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0;">
-                                                    <li>Bằng đại học, cao học hoặc bằng chuyên môn</li>
-                                                    <li>Chuyên ngành đào tạo</li>
-                                                    <li>Kinh nghiệm giảng dạy</li>
-                                                    <li>Môn phụ trách, nơi từng/đang công tác nếu có</li>
                                                 </ul>
                                             </div>
                                         </label>
@@ -2197,22 +2255,27 @@
                                             <div class="teacher-registration-form-grid">
                                                 <div class="form-group-premium">
                                                     <label>Trường / đơn vị đang học hoặc công tác<span class="field-required">*</span></label>
-                                                    <input type="text" name="institutionName" placeholder="Ví dụ: Đại học Sư phạm TP.HCM, THPT Chuyên Lê Hồng Phong" required>
+                                                    <input type="text" name="institutionName"
+                                                        value="<%= teacherApplication != null && teacherApplication.getInstitutionName() != null ? h(teacherApplication.getInstitutionName()) : "" %>"
+                                                        placeholder="Ví dụ: Đại học Sư phạm TP.HCM, THPT Chuyên Lê Hồng Phong" required>
                                                 </div>
                                                 <div class="form-group-premium">
                                                     <label>Chuyên ngành / lĩnh vực chuyên môn<span class="field-required">*</span></label>
-                                                    <input type="text" name="specialization" placeholder="Ví dụ: Sư phạm Toán, Ngôn ngữ Anh, Công nghệ thông tin" required>
+                                                    <input type="text" name="specialization"
+                                                        value="<%= teacherApplication != null && teacherApplication.getSpecialization() != null ? h(teacherApplication.getSpecialization()) : "" %>"
+                                                        placeholder="Ví dụ: Sư phạm Toán, Ngôn ngữ Anh, Công nghệ thông tin" required>
                                                 </div>
                                                 <div class="form-group-premium">
                                                     <label>Năm học hiện tại</label>
                                                     <select name="currentStudyYear" class="teacher-registration-select">
-                                                        <option value="">Không áp dụng</option>
-                                                        <option value="year_1">Năm 1</option>
-                                                        <option value="year_2">Năm 2</option>
-                                                        <option value="year_3">Năm 3</option>
-                                                        <option value="year_4">Năm 4</option>
-                                                        <option value="year_5_plus">Năm 5 trở lên</option>
-                                                        <option value="graduated">Đã tốt nghiệp</option>
+                                                        <% String _csy = teacherApplication != null ? teacherApplication.getCurrentStudyYear() : ""; if (_csy == null) _csy = ""; %>
+                                                        <option value="" <%= "".equals(_csy) ? "selected" : "" %>>Không áp dụng</option>
+                                                        <option value="year_1" <%= "year_1".equals(_csy) ? "selected" : "" %>>Năm 1</option>
+                                                        <option value="year_2" <%= "year_2".equals(_csy) ? "selected" : "" %>>Năm 2</option>
+                                                        <option value="year_3" <%= "year_3".equals(_csy) ? "selected" : "" %>>Năm 3</option>
+                                                        <option value="year_4" <%= "year_4".equals(_csy) ? "selected" : "" %>>Năm 4</option>
+                                                        <option value="year_5_plus" <%= "year_5_plus".equals(_csy) ? "selected" : "" %>>Năm 5 trở lên</option>
+                                                        <option value="graduated" <%= "graduated".equals(_csy) ? "selected" : "" %>>Đã tốt nghiệp</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -2224,45 +2287,50 @@
                                                 <div class="form-group-premium full-span">
                                                     <label>Môn có thể dạy<span class="field-required">*</span><span class="field-optional">Có thể chọn nhiều môn</span></label>
                                                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; margin-top: 0.5rem; background: #ffffff; padding: 1rem; border-radius: 0.75rem; border: 1px solid var(--border-dark);">
+                                                        <% String _subj = teacherApplication != null && teacherApplication.getTeachingSubjects() != null ? teacherApplication.getTeachingSubjects() : ""; %>
                                                         <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                            <input type="checkbox" name="teachingSubjects" value="Toán" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Toán học
+                                                            <input type="checkbox" name="teachingSubjects" value="Toán" <%= _subj.contains("Toán") ? "checked" : "" %> style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Toán học
                                                         </label>
                                                         <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                            <input type="checkbox" name="teachingSubjects" value="Văn" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Ngữ Văn
+                                                            <input type="checkbox" name="teachingSubjects" value="Văn" <%= _subj.contains("Văn") ? "checked" : "" %> style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Ngữ Văn
                                                         </label>
                                                         <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                            <input type="checkbox" name="teachingSubjects" value="Anh" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Tiếng Anh
+                                                            <input type="checkbox" name="teachingSubjects" value="Anh" <%= _subj.contains("Anh") ? "checked" : "" %> style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Tiếng Anh
                                                         </label>
                                                         <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                            <input type="checkbox" name="teachingSubjects" value="Lý" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Vật Lý
+                                                            <input type="checkbox" name="teachingSubjects" value="Lý" <%= _subj.contains("Lý") ? "checked" : "" %> style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Vật Lý
                                                         </label>
                                                         <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                            <input type="checkbox" name="teachingSubjects" value="Hóa" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Hóa Học
+                                                            <input type="checkbox" name="teachingSubjects" value="Hóa" <%= _subj.contains("Hóa") ? "checked" : "" %> style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Hóa Học
                                                         </label>
                                                         <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                            <input type="checkbox" name="teachingSubjects" value="Sinh Học" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Sinh Học
+                                                            <input type="checkbox" name="teachingSubjects" value="Sinh Học" <%= _subj.contains("Sinh Học") ? "checked" : "" %> style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Sinh Học
                                                         </label>
                                                         <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                            <input type="checkbox" name="teachingSubjects" value="Lịch Sử" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Lịch Sử
+                                                            <input type="checkbox" name="teachingSubjects" value="Lịch Sử" <%= _subj.contains("Lịch Sử") ? "checked" : "" %> style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Lịch Sử
                                                         </label>
                                                         <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                            <input type="checkbox" name="teachingSubjects" value="Địa Lý" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Địa Lý
+                                                            <input type="checkbox" name="teachingSubjects" value="Địa Lý" <%= _subj.contains("Địa Lý") ? "checked" : "" %> style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Địa Lý
                                                         </label>
                                                         <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                            <input type="checkbox" name="teachingSubjects" value="Công Nghệ" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Công Nghệ
+                                                            <input type="checkbox" name="teachingSubjects" value="Công Nghệ" <%= _subj.contains("Công Nghệ") ? "checked" : "" %> style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Công Nghệ
                                                         </label>
                                                         <label style="display:flex; align-items:center; gap:0.5rem; font-weight:500; cursor:pointer; color:var(--text-main); font-size:0.95rem;">
-                                                            <input type="checkbox" name="teachingSubjects" value="Tin Học" style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Tin Học
+                                                            <input type="checkbox" name="teachingSubjects" value="Tin Học" <%= _subj.contains("Tin Học") ? "checked" : "" %> style="width:1.25rem; height:1.25rem; margin:0; padding:0; flex-shrink:0; border-radius:0.25rem;"> Tin Học
                                                         </label>
                                                     </div>
                                                 </div>
                                                 <div class="form-group-premium">
                                                     <label>Kinh nghiệm giảng dạy</label>
-                                                    <input type="text" name="teachingExperience" placeholder="Ví dụ: 2 năm dạy kèm Toán THPT, trợ giảng trung tâm tiếng Anh">
+                                                    <input type="text" name="teachingExperience"
+                                                        value="<%= teacherApplication != null && teacherApplication.getTeachingExperience() != null ? h(teacherApplication.getTeachingExperience()) : "" %>"
+                                                        placeholder="Ví dụ: 2 năm dạy kèm Toán THPT, trợ giảng trung tâm tiếng Anh">
                                                 </div>
                                                 <div class="form-group-premium">
                                                     <label>Nơi từng/đang công tác<span class="field-optional">Tùy chọn</span></label>
-                                                    <input type="text" name="workplace" placeholder="Ví dụ: Trung tâm Anh ngữ, trường THPT, dự án gia sư cá nhân">
+                                                    <input type="text" name="workplace"
+                                                        value="<%= teacherApplication != null && teacherApplication.getWorkplace() != null ? h(teacherApplication.getWorkplace()) : "" %>"
+                                                        placeholder="Ví dụ: Trung tâm Anh ngữ, trường THPT, dự án gia sư cá nhân">
                                                 </div>
                                             </div>
                                         </div>
@@ -2272,11 +2340,11 @@
                                             <div class="teacher-registration-form-grid">
                                                 <div class="form-group-premium full-span">
                                                     <label>Thành tích, chứng chỉ hoặc bằng cấp liên quan</label>
-                                                    <textarea class="teacher-registration-textarea" name="credentialsSummary" rows="4" placeholder="Ví dụ: IELTS 7.5, giải học sinh giỏi, chứng chỉ nghiệp vụ sư phạm, bằng cử nhân..."></textarea>
+                                                    <textarea class="teacher-registration-textarea" name="credentialsSummary" rows="4" placeholder="Ví dụ: IELTS 7.5, giải học sinh giỏi, chứng chỉ nghiệp vụ sư phạm, bằng cử nhân..."><%= teacherApplication != null && teacherApplication.getCredentialsSummary() != null ? h(teacherApplication.getCredentialsSummary()) : "" %></textarea>
                                                 </div>
                                                 <div class="form-group-premium full-span">
                                                     <label>Hồ sơ cá nhân ngắn<span class="field-required">*</span></label>
-                                                    <textarea class="teacher-registration-textarea" name="teacherBio" rows="4" placeholder="Giới thiệu phương pháp dạy, nhóm học viên phù hợp và điểm mạnh chuyên môn của bạn." required></textarea>
+                                                    <textarea class="teacher-registration-textarea" name="teacherBio" rows="4" placeholder="Giới thiệu phương pháp dạy, nhóm học viên phù hợp và điểm mạnh chuyên môn của bạn." required><%= teacherApplication != null && teacherApplication.getTeacherBio() != null ? h(teacherApplication.getTeacherBio()) : "" %></textarea>
                                                 </div>
                                                 <div class="form-group-premium full-span">
                                                     <label>Minh chứng xác minh</label>
@@ -2287,7 +2355,7 @@
                                                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5"/></svg>
                                                             </span>
                                                             <span class="teacher-evidence-title">Kéo thả file vào đây hoặc nhấn để tải lên</span>
-                                                            <span class="teacher-evidence-subtitle">PDF, ảnh, Word. Mỗi file tối đa 5MB.</span>
+                                                            <span class="teacher-evidence-subtitle">PDF, ảnh, Word. Mỗi file tối đa 20MB.</span>
                                                             <span id="teacherEvidenceFileName" class="teacher-evidence-filename">Chưa có tệp nào được chọn</span>
                                                         </label>
                                                         <p style="font-size:0.8rem; color:var(--text-muted); margin:0.75rem 0 0 0;">Có thể đính kèm thẻ sinh viên, chứng chỉ, bằng cấp, bảng điểm hoặc giấy xác nhận công tác.</p>
@@ -2299,15 +2367,29 @@
                                 </div>
                             </div>
 
-                            <% if (!isApprovedTeacher) { %>
+                            <% if (!teachingRegistrationSubmitted) { %>
                                 <div class="form-actions-row-premium">
-                                    <button type="submit" class="btn-premium primary">
+                                    <button type="submit" id="btn-submit-teaching-form" form="teacher-profile-form" name="action" value="submitTeachingRegistration" class="btn-premium primary">
                                         <span>Gửi hồ sơ đăng kí</span>
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
                                     </button>
                                 </div>
+                            <% } else { %>
+                                <div class="form-actions-row-premium is-hidden" id="approved-form-actions" style="justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap;">
+                                    <button type="button" id="btn-cancel-teaching-edit" onclick="cancelTeachingEdit()"
+                                        class="btn-premium"
+                                        style="flex: 0 0 auto; min-width: 150px; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.75rem 1.25rem; font-size: 0.92rem; font-weight: 700; border-radius: 0.85rem; cursor: pointer; border: 1.5px solid #d1d5db; color: #374151; background: #ffffff; box-shadow: none; transition: all 0.2s ease;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                        <span>Hủy bỏ</span>
+                                    </button>
+                                    <button type="submit" id="btn-submit-teaching-form" form="teacher-profile-form" name="action" value="submitTeachingRegistration" class="btn-premium primary"
+                                        style="flex: 0 0 auto; min-width: 190px; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; background:#059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
+                                        <span>Cập nhật ngay</span>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                                    </button>
+                                </div>
                             <% } %>
-                            </fieldset>
+                            </div>
                         </form>
                     </div>
             </section>
@@ -2331,8 +2413,8 @@
 
                 <%
                     String[] registeredSubjects = new String[0];
-                    if (teacherApplication != null && "approved".equals(teacherApplication.getStatus()) && teacherApplication.getTeachingSubjects() != null && !teacherApplication.getTeachingSubjects().isEmpty()) {
-                        registeredSubjects = teacherApplication.getTeachingSubjects().split("\\s*,\\s*");
+                    if (!teachingFeaturesLockedByPendingReview && approvedTeacherApplication != null && approvedTeacherApplication.getTeachingSubjects() != null && !approvedTeacherApplication.getTeachingSubjects().isEmpty()) {
+                        registeredSubjects = approvedTeacherApplication.getTeachingSubjects().split("\\s*,\\s*");
                     }
                 %>
 
@@ -2572,7 +2654,7 @@
                         </form>
                     <% } else { %>
                         <div class="empty-status-panel" style="padding: 2.25rem 1.5rem; text-align: center; border: 1px dashed var(--border-dark); border-radius: 1rem; margin-top: 1rem;">
-                            <p style="margin: 0; color: var(--text-muted); font-weight: 700;">Bạn chưa có môn học nào được phê duyệt để mở lớp.</p>
+                            <p style="margin: 0; color: var(--text-muted); font-weight: 700;"><%= teachingFeaturesLockedByPendingReview ? "Hồ sơ giảng dạy đang chờ xét duyệt, tạm thời chưa thể đăng kí lớp học." : "Bạn chưa có môn học nào được phê duyệt để mở lớp." %></p>
                         </div>
                     <% } %>
                 </div>
@@ -2885,6 +2967,11 @@
                         </span>
                     </div>
 
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                        Lưu ý: Bạn chỉ được phép đăng khóa học cho các môn học đã được hệ thống phê duyệt trong hồ sơ năng lực của mình.
+                    </p>
+
+                    <% if (registeredSubjects != null && registeredSubjects.length > 0) { %>
                     <form action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;" class="form-edit-layout">
                         <input type="hidden" name="action" value="registerCourse">
 
@@ -3032,6 +3119,11 @@
                             <button type="submit" class="btn-premium primary" style="width: 100%;">Đăng khóa học</button>
                         </div>
                     </form>
+                    <% } else { %>
+                        <div class="empty-status-panel" style="padding: 2.25rem 1.5rem; text-align: center; border: 1px dashed var(--border-dark); border-radius: 1rem; margin-top: 1rem;">
+                            <p style="margin: 0; color: var(--text-muted); font-weight: 700;"><%= teachingFeaturesLockedByPendingReview ? "Hồ sơ giảng dạy đang chờ xét duyệt, tạm thời chưa thể đăng khóa học." : "Bạn chưa có môn học nào được phê duyệt để đăng khóa học." %></p>
+                        </div>
+                    <% } %>
                 </div>
             </section>
 
@@ -3060,6 +3152,11 @@
                         </span>
                     </div>
 
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                        Lưu ý: Bạn chỉ được phép đăng tải tài liệu cho các môn học đã được hệ thống phê duyệt trong hồ sơ năng lực của mình.
+                    </p>
+
+                    <% if (registeredSubjects != null && registeredSubjects.length > 0) { %>
                     <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.5rem;">
                         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
                             <div style="width: 48px; height: 48px; border-radius: 0.75rem; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center;">
@@ -3097,8 +3194,14 @@
                             </button>
                         </div>
                     </div>
+                    <% } else { %>
+                        <div class="empty-status-panel" style="padding: 2.25rem 1.5rem; text-align: center; border: 1px dashed var(--border-dark); border-radius: 1rem; margin-top: 1rem;">
+                            <p style="margin: 0; color: var(--text-muted); font-weight: 700;"><%= teachingFeaturesLockedByPendingReview ? "Hồ sơ giảng dạy đang chờ xét duyệt, tạm thời chưa thể đăng tải tài liệu." : "Bạn chưa có môn học nào được phê duyệt để đăng tải tài liệu." %></p>
+                        </div>
+                    <% } %>
                 </div>
 
+                <% if (registeredSubjects != null && registeredSubjects.length > 0) { %>
                 <div id="repository-upload-form-panel" style="display: none; margin-top: 1.5rem; background: #f8fafc; border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow);">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.75rem;">
                             <div>
@@ -3168,6 +3271,7 @@
                             </div>
                         </form>
                     </div>
+                <% } %>
             </section>
 
             <!-- ========================================== -->
@@ -3862,6 +3966,12 @@
         }
 
         function validateTeachingSubjects() {
+            const form = document.getElementById('teacher-profile-form');
+            if (form && form.dataset.updateLocked === 'true') {
+                showToast('Nhấn Cập nhật hồ sơ trước khi chỉnh sửa hoặc gửi lại thông tin.', 'info');
+                return false;
+            }
+
             const checkboxes = document.querySelectorAll('input[name="teachingSubjects"]:checked');
             if (checkboxes.length === 0) {
                 showToast('Vui lòng chọn ít nhất một môn có thể dạy.', 'error');
@@ -3883,6 +3993,46 @@
             input.addEventListener('change', syncTeachingSubjectLabelStates);
         });
         syncTeachingSubjectLabelStates();
+
+        function setTeachingRegistrationLocked(isLocked) {
+            const form = document.getElementById('teacher-profile-form');
+            const fieldset = document.getElementById('registration-fieldset');
+            if (!form || !fieldset) return;
+
+            fieldset.classList.toggle('teacher-registration-readonly', isLocked);
+            fieldset.classList.toggle('teacher-registration-editing', !isLocked);
+
+            form.querySelectorAll('input, select, textarea').forEach(control => {
+                if (control.type === 'hidden') return;
+
+                const disableWhenLocked = control.matches('select, input[type="radio"], input[type="checkbox"], input[type="file"]');
+                if (disableWhenLocked) {
+                    control.disabled = isLocked;
+                    if (isLocked) {
+                        control.setAttribute('disabled', 'disabled');
+                    } else {
+                        control.removeAttribute('disabled');
+                    }
+                    return;
+                }
+
+                const supportsReadOnly = control.matches('input:not([type="radio"]):not([type="checkbox"]):not([type="file"]), textarea');
+                if (supportsReadOnly && isLocked) {
+                    control.readOnly = true;
+                    control.setAttribute('readonly', 'readonly');
+                    control.setAttribute('aria-readonly', 'true');
+                } else {
+                    control.readOnly = false;
+                    control.removeAttribute('readonly');
+                    control.setAttribute('aria-readonly', 'false');
+                }
+            });
+        }
+
+        const teacherProfileForm = document.getElementById('teacher-profile-form');
+        if (teacherProfileForm && teacherProfileForm.dataset.updateLocked === 'true') {
+            setTeachingRegistrationLocked(true);
+        }
 
         const teacherEvidenceInput = document.getElementById('teacherEvidenceFiles');
         const teacherEvidenceFileName = document.getElementById('teacherEvidenceFileName');
@@ -4102,6 +4252,47 @@
                 else if (a > 50) clearInterval(t);
             }, 200);
         });
+        function unlockTeachingForm() {
+            var form = document.getElementById('teacher-profile-form');
+            if (form) form.dataset.updateLocked = 'false';
+            setTeachingRegistrationLocked(false);
+            var approvedActions = document.getElementById('approved-form-actions');
+            if (approvedActions) approvedActions.classList.remove('is-hidden');
+            var helperText = document.getElementById('teacher-type-helper-text');
+            if (helperText) {
+                helperText.textContent = 'Bạn có thể cập nhật nhóm giảng viên và thông tin xác minh bên dưới. Sau khi gửi, hồ sơ cập nhật sẽ được xét duyệt lại trước khi thay đổi có hiệu lực.';
+            }
+            var unlockBtn = document.getElementById('btn-unlock-teaching-form');
+            if (unlockBtn) {
+                unlockBtn.style.display = 'none';
+            }
+            var formTarget = document.getElementById('teaching-registration-form-scroll-target');
+            if (formTarget) setTimeout(function() { formTarget.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            if (typeof showToast === 'function') showToast('Hồ sơ đã được mở khóa. Chỉnh sửa và gửi lại để Staff xét duyệt.', 'info');
+        }
+        function cancelTeachingEdit() {
+            var form = document.getElementById('teacher-profile-form');
+            if (form) {
+                form.reset();
+                form.dataset.updateLocked = 'true';
+            }
+            setTeachingRegistrationLocked(true);
+            syncTeachingSubjectLabelStates();
+            var approvedActions = document.getElementById('approved-form-actions');
+            if (approvedActions) approvedActions.classList.add('is-hidden');
+            var helperText = document.getElementById('teacher-type-helper-text');
+            if (helperText) {
+                helperText.textContent = form && form.dataset.defaultHelperText
+                        ? form.dataset.defaultHelperText
+                        : 'Hồ sơ của bạn đang được xét duyệt. Nhấn Cập nhật hồ sơ nếu cần chỉnh sửa hoặc bổ sung minh chứng.';
+            }
+            var unlockBtn = document.getElementById('btn-unlock-teaching-form');
+            if (unlockBtn) {
+                unlockBtn.style.display = '';
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (typeof showToast === 'function') showToast('Đã hủy chỉnh sửa hồ sơ.', 'info');
+        }
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>

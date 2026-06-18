@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.Normalizer;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -41,10 +42,12 @@ import java.util.Locale;
 @WebServlet(name = "ProfileServlet", urlPatterns = {"/profile", "/student-profile", "/parent-profile", "/teacher-profile", "/teacher-wallet", "/teacher-management", "/staff-profile", "/admin-profile"})
 @MultipartConfig(
     fileSizeThreshold = 1024 * 1024 * 1, // 1 MB
-    maxFileSize = 1024 * 1024 * 5,       // 5 MB
-    maxRequestSize = 1024 * 1024 * 10    // 10 MB
+    maxFileSize = 1024 * 1024 * 20,      // 20 MB
+    maxRequestSize = 1024 * 1024 * 40    // 40 MB
 )
 public class ProfileServlet extends HttpServlet {
+
+    private static final long TEACHER_EVIDENCE_MAX_FILE_SIZE = 1024L * 1024L * 20L;
 
     private final AuthService authService = new AuthService();
     private final OtpService  otpService  = new OtpService();
@@ -136,7 +139,10 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("trackedStudents", trackedStudents);
         } else if (isTeacherPage(targetJsp)) {
             TeacherApplication teacherApplication = teacherApplicationDao.findLatestByUserId(user.getId());
+            TeacherApplication approvedTeacherApplication = teacherApplicationDao.findLatestApprovedByUserId(user.getId());
             request.setAttribute("teacherApplication", teacherApplication);
+            request.setAttribute("approvedTeacherApplication", approvedTeacherApplication);
+            request.setAttribute("hasApprovedApplication", approvedTeacherApplication != null);
             request.setAttribute("teacherClassrooms", classroomDao.findByTeacherId(user.getId()));
             request.setAttribute("teacherCourses", courseDao.findByTeacherId(user.getId()));
             request.setAttribute("teacherMaterialCount", repositoryMaterialDao.countByUploaderId(user.getId()));
@@ -211,9 +217,15 @@ public class ProfileServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + preferredProfilePath);
             return;
         }
-        String action = request.getParameter("action");
+        String action = null;
 
         try {
+            action = cleanParam(request.getParameter("action"));
+            if (action.isEmpty() && "/teacher-profile".equals(postPath)
+                    && looksLikeTeachingRegistrationRequest(request)) {
+                action = "submitTeachingRegistration";
+            }
+
             if ("toggle2FA".equals(action)) {
                 if (user.isTwoFactorEnabled()) {
                     // Đang bật → Yêu cầu OTP để tắt
@@ -316,7 +328,7 @@ public class ProfileServlet extends HttpServlet {
                 }
             } else if ("registerClass".equals(action)) {
                 Classroom classroom = buildClassroomFromRequest(request, user.getId(), null);
-                TeacherApplication teacherApplication = teacherApplicationDao.findLatestByUserId(user.getId());
+                TeacherApplication teacherApplication = findApprovedApplicationForTeachingFeatures(user.getId());
 
                 if (!canManageClassrooms(user, teacherApplication)) {
                     session.setAttribute("toastMsg", "Hồ sơ giảng viên của bạn cần được phê duyệt trước khi đăng kí lớp học.");
@@ -337,7 +349,7 @@ public class ProfileServlet extends HttpServlet {
             } else if ("updateClass".equals(action)) {
                 String classId = cleanParam(request.getParameter("classId"));
                 Classroom classroom = buildClassroomFromRequest(request, user.getId(), classId);
-                TeacherApplication teacherApplication = teacherApplicationDao.findLatestByUserId(user.getId());
+                TeacherApplication teacherApplication = findApprovedApplicationForTeachingFeatures(user.getId());
 
                 if (classId.isEmpty()) {
                     session.setAttribute("toastMsg", "Không tìm thấy lớp học cần chỉnh sửa.");
@@ -387,7 +399,7 @@ public class ProfileServlet extends HttpServlet {
                 }
             } else if ("registerCourse".equals(action)) {
                 Course course = buildCourseFromRequest(request, user);
-                TeacherApplication teacherApplication = teacherApplicationDao.findLatestByUserId(user.getId());
+                TeacherApplication teacherApplication = findApprovedApplicationForTeachingFeatures(user.getId());
                 TeacherGoogleAccount googleAccount = teacherGoogleAccountDao.findActiveByTeacherId(user.getId());
 
                 if (!canManageClassrooms(user, teacherApplication)) {
@@ -422,7 +434,7 @@ public class ProfileServlet extends HttpServlet {
             } else if ("updateTeacherCourse".equals(action)) {
                 String courseId = cleanParam(request.getParameter("courseId"));
                 Course course = buildCourseFromRequest(request, user);
-                TeacherApplication teacherApplication = teacherApplicationDao.findLatestByUserId(user.getId());
+                TeacherApplication teacherApplication = findApprovedApplicationForTeachingFeatures(user.getId());
                 TeacherGoogleAccount googleAccount = teacherGoogleAccountDao.findActiveByTeacherId(user.getId());
 
                 if (!canManageClassrooms(user, teacherApplication)) {
@@ -516,12 +528,35 @@ public class ProfileServlet extends HttpServlet {
                 String credentialsSummary = cleanParam(request.getParameter("credentialsSummary"));
                 String teacherBio = cleanParam(request.getParameter("teacherBio"));
 
-                if (teacherType.isEmpty() || institutionName.isEmpty() || specialization.isEmpty()
-                        || teachingSubjects.isEmpty() || teacherBio.isEmpty()) {
-                    session.setAttribute("toastMsg", "Vui lòng hoàn tất các thông tin bắt buộc trong hồ sơ đăng kí giảng dạy.");
+                List<String> missingFields = new ArrayList<>();
+                if (!isSupportedTeacherType(teacherType)) {
+                    missingFields.add("nhóm giảng viên");
+                }
+                if (institutionName.isEmpty()) {
+                    missingFields.add("trường / đơn vị");
+                }
+                if (specialization.isEmpty()) {
+                    missingFields.add("chuyên ngành / lĩnh vực chuyên môn");
+                }
+                if (teachingSubjects.isEmpty()) {
+                    missingFields.add("môn có thể dạy");
+                }
+                if (teacherBio.isEmpty()) {
+                    missingFields.add("hồ sơ cá nhân ngắn");
+                }
+
+                if (!missingFields.isEmpty()) {
+                    session.setAttribute("toastMsg", "Vui lòng bổ sung: " + String.join(", ", missingFields) + ".");
                     session.setAttribute("toastType", "error");
                 } else {
                     String evidenceSummary = saveTeachingEvidenceFiles(request, user);
+                    TeacherApplication latestApp = teacherApplicationDao.findLatestByUserId(user.getId());
+                    TeacherApplication editableApp = teacherApplicationDao.findLatestEditableByUserId(user.getId());
+                    TeacherApplication approvedApp = teacherApplicationDao.findLatestApprovedByUserId(user.getId());
+                    TeacherApplication evidenceSourceApp = editableApp != null ? editableApp : (latestApp != null ? latestApp : approvedApp);
+                    if ("Chưa đính kèm minh chứng.".equals(evidenceSummary) && evidenceSourceApp != null && evidenceSourceApp.getEvidenceSummary() != null && !evidenceSourceApp.getEvidenceSummary().trim().isEmpty()) {
+                        evidenceSummary = evidenceSourceApp.getEvidenceSummary();
+                    }
                     String teacherTypeLabel = teacherTypeLabel(teacherType);
                     TeacherApplication application = new TeacherApplication();
                     application.setUserId(user.getId());
@@ -535,30 +570,47 @@ public class ProfileServlet extends HttpServlet {
                     application.setCredentialsSummary(credentialsSummary);
                     application.setTeacherBio(teacherBio);
                     application.setEvidenceSummary(evidenceSummary);
-                    boolean savedApplication = teacherApplicationDao.upsertApplication(application);
+                    // Keep approved applications immutable while an update is waiting for review.
+                    boolean savedApplication;
+                    if (editableApp != null) {
+                        application.setId(editableApp.getId());
+                        savedApplication = teacherApplicationDao.updateApplication(application);
+                    } else {
+                        savedApplication = teacherApplicationDao.insertApplication(application);
+                    }
 
-                    String content = "Loại giảng viên: " + teacherTypeLabel + "\n"
-                            + "Trường/đơn vị: " + institutionName + "\n"
-                            + "Chuyên ngành/lĩnh vực: " + specialization + "\n"
-                            + "Năm học hiện tại: " + studyYearLabel(currentStudyYear) + "\n"
-                            + "Môn có thể dạy: " + teachingSubjects + "\n"
-                            + "Kinh nghiệm giảng dạy: " + valueOrEmpty(teachingExperience) + "\n"
-                            + "Nơi từng/đang công tác: " + valueOrEmpty(workplace) + "\n"
-                            + "Thành tích/chứng chỉ/bằng cấp: " + valueOrEmpty(credentialsSummary) + "\n\n"
-                            + "Hồ sơ cá nhân:\n" + teacherBio + "\n\n"
-                            + "Minh chứng đã tải lên:\n" + evidenceSummary;
+                    if (savedApplication) {
+                        String content = "Loai giang vien: " + teacherTypeLabel + "\n"
+                                + "Truong/don vi: " + institutionName + "\n"
+                                + "Chuyen nganh/linh vuc: " + specialization + "\n"
+                                + "Nam hoc hien tai: " + studyYearLabel(currentStudyYear) + "\n"
+                                + "Mon co the day: " + teachingSubjects + "\n"
+                                + "Kinh nghiem giang day: " + valueOrEmpty(teachingExperience) + "\n"
+                                + "Noi tung/dang cong tac: " + valueOrEmpty(workplace) + "\n"
+                                + "Thanh tich/chung chi/bang cap: " + valueOrEmpty(credentialsSummary) + "\n\n"
+                                + "Ho so ca nhan:\n" + teacherBio + "\n\n"
+                                + "Minh chung da tai len:\n" + evidenceSummary;
 
-                    com.hipzi.util.EmailService.sendSupportRequest(
-                            user.getEmail(),
-                            user.getDisplayName(),
-                            "Hồ sơ đăng kí giảng dạy - " + teacherTypeLabel,
-                            content
-                    );
-                    session.setAttribute("teacherRegistrationSubmitted", Boolean.TRUE);
-                    session.setAttribute("toastMsg", savedApplication
-                            ? "Đã gửi hồ sơ đăng kí giảng dạy. Đội ngũ quản trị sẽ xem xét và phản hồi qua email."
-                            : "Đã gửi hồ sơ qua email, nhưng chưa lưu được vào cơ sở dữ liệu. Vui lòng kiểm tra migration teacher_applications.");
-                    session.setAttribute("toastType", "success");
+                        try {
+                            com.hipzi.util.EmailService.sendSupportRequest(
+                                    user.getEmail(),
+                                    user.getDisplayName(),
+                                    "Ho so dang ki giang day - " + teacherTypeLabel,
+                                    content
+                            );
+                        } catch (Exception emailError) {
+                            System.err.println("Teacher application email notification failed: " + emailError.getMessage());
+                        }
+                        session.setAttribute("teacherRegistrationSubmitted", Boolean.TRUE);
+                        String successMsg = (latestApp != null)
+                            ? "Hồ sơ đã được cập nhật và gửi lại để Staff xét duyệt."
+                            : "Đã gửi hồ sơ đăng kí giảng dạy. Đội ngũ quản trị sẽ xem xét trong khu vực duyệt hồ sơ.";
+                        session.setAttribute("toastMsg", successMsg);
+                        session.setAttribute("toastType", "success");
+                    } else {
+                        session.setAttribute("toastMsg", "Chua luu duoc ho so dang ki giang day. Vui long kiem tra migration teacher_applications.");
+                        session.setAttribute("toastType", "error");
+                    }
                 }
             } else if ("reviewTeacherApplication".equals(action)) {
                 String applicationId = cleanParam(request.getParameter("applicationId"));
@@ -593,9 +645,15 @@ public class ProfileServlet extends HttpServlet {
                         session.setAttribute("toastType", "error");
                     }
                 }
+            } else {
+                System.err.println("Unknown profile action: '" + action + "', path=" + postPath
+                        + ", contentType=" + request.getContentType());
+                session.setAttribute("toastMsg", "Không nhận diện được thao tác gửi. Vui lòng tải lại trang và thử lại.");
+                session.setAttribute("toastType", "error");
             }
         } catch (IllegalStateException e) {
-            session.setAttribute("toastMsg", e.getMessage());
+            System.err.println("Multipart profile request failed: " + e.getMessage());
+            session.setAttribute("toastMsg", uploadLimitMessage(e));
             session.setAttribute("toastType", "error");
         } catch (Exception e) {
             System.err.println("Error updating profile: " + e.getMessage());
@@ -624,6 +682,8 @@ public class ProfileServlet extends HttpServlet {
             returnPath += "?tab=manage-courses";
         } else if ("submitTeachingRegistration".equals(action)) {
             returnPath += "?tab=teaching-registration";
+        } else if ((action == null || action.isEmpty()) && "/teacher-profile".equals(postPath)) {
+            returnPath += "?tab=teaching-registration";
         } else if ("reviewTeacherApplication".equals(action)) {
             returnPath += "?tab=teacher-approval";
         }
@@ -632,6 +692,31 @@ public class ProfileServlet extends HttpServlet {
 
     private String cleanParam(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private boolean isSupportedTeacherType(String teacherType) {
+        return "student_tutor".equals(teacherType)
+                || "certified_pedagogy".equals(teacherType)
+                || "degree_specialist".equals(teacherType);
+    }
+
+    private boolean looksLikeTeachingRegistrationRequest(HttpServletRequest request) {
+        return request.getParameter("teacherType") != null
+                || request.getParameter("institutionName") != null
+                || request.getParameter("specialization") != null
+                || request.getParameter("currentStudyYear") != null
+                || request.getParameter("teacherBio") != null
+                || request.getParameterValues("teachingSubjects") != null;
+    }
+
+    private String uploadLimitMessage(IllegalStateException e) {
+        String message = e.getMessage();
+        if (message != null && message.toLowerCase(Locale.ROOT).contains("size")) {
+            return "File minh chứng vượt giới hạn. Mỗi file tối đa 20MB và tổng dung lượng một lần gửi tối đa 40MB.";
+        }
+        return message != null && !message.trim().isEmpty()
+                ? message
+                : "Không thể xử lý file tải lên. Vui lòng kiểm tra dung lượng và thử lại.";
     }
 
     private boolean isTeacherPage(String targetJsp) {
@@ -904,6 +989,14 @@ public class ProfileServlet extends HttpServlet {
                 && "approved".equals(application.getStatus());
     }
 
+    private TeacherApplication findApprovedApplicationForTeachingFeatures(String userId) {
+        TeacherApplication latestApplication = teacherApplicationDao.findLatestByUserId(userId);
+        if (latestApplication != null && "pending".equals(latestApplication.getStatus())) {
+            return null;
+        }
+        return teacherApplicationDao.findLatestApprovedByUserId(userId);
+    }
+
     private boolean isApprovedSubject(TeacherApplication application, String selectedSubject) {
         if (application == null || selectedSubject == null || selectedSubject.trim().isEmpty()
                 || application.getTeachingSubjects() == null) {
@@ -952,8 +1045,8 @@ public class ProfileServlet extends HttpServlet {
             throw new IOException("Không thể xác định thư mục tải lên minh chứng.");
         }
         File uploadDir = new File(uploadPath);
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
+        if (!uploadDir.exists() && !uploadDir.mkdirs()) {
+            throw new IOException("Không thể tạo thư mục tải lên minh chứng.");
         }
 
         StringBuilder evidenceSummary = new StringBuilder();
@@ -966,6 +1059,21 @@ public class ProfileServlet extends HttpServlet {
             String submittedName = part.getSubmittedFileName();
             if (submittedName == null || submittedName.trim().isEmpty()) {
                 continue;
+            }
+
+            if (part.getSize() > TEACHER_EVIDENCE_MAX_FILE_SIZE) {
+                throw new IllegalStateException("File minh chứng \"" + submittedName + "\" vượt quá 20MB.");
+            }
+
+            String lowerName = submittedName.toLowerCase(Locale.ROOT);
+            if (!(lowerName.endsWith(".pdf")
+                    || lowerName.endsWith(".png")
+                    || lowerName.endsWith(".jpg")
+                    || lowerName.endsWith(".jpeg")
+                    || lowerName.endsWith(".webp")
+                    || lowerName.endsWith(".doc")
+                    || lowerName.endsWith(".docx"))) {
+                throw new IllegalArgumentException("Minh chứng chỉ hỗ trợ PDF, ảnh PNG/JPG/WEBP hoặc file Word.");
             }
 
             String safeOriginalName = submittedName.replaceAll("[^a-zA-Z0-9._-]", "_");

@@ -63,129 +63,91 @@
 
         /* ===== BỐ CỤC CHÍNH CỦA TRANG PROFILE ===== */
         .app-dashboard-container {
-            max-width: 1320px;
-            width: calc(100% - 3rem);
-            height: calc(100vh - 12rem - 10px);
-            min-height: 560px;
-            margin: calc(1rem + 10px) auto 1.5rem auto;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            background: #ffffff;
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            border-radius: 1.5rem;
-            box-shadow: 0 16px 38px rgba(5, 150, 105, 0.08);
-            overflow: hidden;
-        }
-
-        .dashboard-unified-header {
-            background: linear-gradient(135deg, var(--primary) 0%, #047857 100%);
-            padding: 0 1.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            position: relative;
-            gap: 1rem;
-            flex-shrink: 0;
-            height: 64px;
-            min-height: 64px;
-            border-radius: 1.5rem 1.5rem 0 0;
-        }
-
-        .unified-header-tab-title {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            transition: opacity 0.2s ease;
-            pointer-events: none;
-            max-width: calc(100% - 21rem);
-        }
-
-        .unified-header-right {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #ffffff;
-            font-size: 0.85rem;
-            font-weight: 600;
-            background: rgba(255,255,255,0.15);
-            padding: 0.4rem 0.85rem;
-            border-radius: 1rem;
-            flex-shrink: 0;
-        }
-
-        .dashboard-body {
+            max-width: 1600px;
+            width: calc(100% - 1.5rem);
+            min-height: 0;
+            height: var(--teacher-dashboard-frame-height, auto);
+            margin: 0.75rem auto 0 auto;
+            padding-bottom: 0.75rem;
+            background: transparent;
             display: flex;
             flex-direction: row;
-            flex: 1;
-            min-height: 0;
-            overflow: hidden;
+            gap: 1rem;
+            align-items: flex-start;
         }
 
         /* ===== KHU VỰC SIDEBAR BÊN TRÁI (LEFT NAVIGATION PANE) ===== */
         .dashboard-sidebar {
-            background: transparent;
-            border-right: 1px solid rgba(226, 232, 240, 0.9);
-            padding: 1rem 1rem;
+            width: 270px;
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-            width: 270px;
+            padding: 1.5rem 1.25rem;
+            box-sizing: border-box;
             flex-shrink: 0;
-            height: 100%;
-            min-height: 0;
+            position: sticky;
+            top: 0.75rem;
+            height: calc(100vh - 1.5rem);
             overflow-y: auto;
-            overflow-x: hidden;
-            justify-content: space-between;
+            box-shadow: var(--shadow);
         }
 
         /* Nav menu items */
+        .sidebar-section-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin: 1.05rem 0 0.3rem 0.35rem;
+            white-space: nowrap;
+        }
+
         .sidebar-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
             list-style: none;
             padding: 0;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4.8px;
         }
 
         .sidebar-menu li a {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0.85rem 1rem;
+            gap: 0.75rem;
+            padding: 0.8rem 0.85rem;
             border-radius: 0.85rem;
             color: var(--text-muted);
             font-weight: 600;
             font-size: 0.95rem;
             text-decoration: none;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: pointer;
+            position: relative;
         }
 
-        .sidebar-menu li a .menu-label-group {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+        .sidebar-menu li a span {
+            white-space: nowrap;
         }
 
         .sidebar-menu li a svg {
+            width: 20px;
+            height: 20px;
             stroke-width: 2.2;
-            transition: transform 0.2s ease;
-            flex-shrink: 0;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
         }
 
         .sidebar-menu li a:hover {
             color: var(--primary);
             background: var(--primary-light);
-            transform: translateX(4px);
+        }
+
+        .sidebar-menu li a:hover svg {
+            color: var(--primary);
         }
 
         .sidebar-menu li a.active {
@@ -194,9 +156,46 @@
             font-weight: 700;
         }
 
+        .sidebar-menu li a.active svg {
+            color: var(--primary);
+        }
+
+        .sidebar-menu li a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15%;
+            height: 70%;
+            width: 6px;
+            background: var(--primary);
+            border-radius: 0 6px 6px 0;
+        }
+
         #nav-tab-materials,
         #nav-tab-practice {
             display: none !important;
+        }
+
+        .dashboard-main-section {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .dashboard-top-bar {
+            height: 70px;
+            min-height: 70px;
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            box-sizing: border-box;
+            box-shadow: var(--shadow);
         }
 
         .sidebar-menu li a.active svg {
@@ -1747,209 +1746,7 @@
             to { transform: translateY(1px) scale(1.02); }
         }
 
-        /* ===== STAFF PROFILE SHELL - ĐỒNG BỘ KHUNG GIAO DIỆN TEACHER PROFILE ===== */
-        body {
-            background:
-                linear-gradient(135deg, #e6fcf5 0%, #ebfbee 50%, #dcfce7 100%) !important;
-            background-attachment: fixed !important;
-            font-family: var(--font-sans);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
 
-        body > header.navbar,
-        .dashboard-unified-header,
-        .sidebar-mascot-box,
-        .menu-indicator {
-            display: none !important;
-        }
-
-        .app-dashboard-container {
-            max-width: none !important;
-            width: calc(100% - 2rem) !important;
-            height: auto !important;
-            min-height: 0 !important;
-            margin: 1rem auto !important;
-            padding: 0 !important;
-            display: block !important;
-            background: transparent !important;
-            border: none !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            overflow: visible !important;
-        }
-
-        .dashboard-body {
-            display: grid !important;
-            grid-template-columns: 270px minmax(0, 1fr);
-            gap: 1rem;
-            align-items: start;
-            overflow: visible !important;
-            min-height: 0 !important;
-        }
-
-        .dashboard-sidebar {
-            width: 270px !important;
-            height: calc(100vh - 1.5rem) !important;
-            min-height: 0 !important;
-            position: sticky !important;
-            top: 0.75rem !important;
-            background: #ffffff !important;
-            border: 1px solid var(--border-dark) !important;
-            border-radius: 1.5rem !important;
-            padding: 1.5rem 1.25rem !important;
-            box-shadow: var(--shadow) !important;
-            box-sizing: border-box;
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-            justify-content: flex-start !important;
-            gap: 0 !important;
-            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .sidebar-brand-horizontal {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1.7rem;
-            width: 100%;
-            text-decoration: none;
-        }
-
-        .brand-avatar-box {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: #ecfdf5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            border: 1px solid rgba(4, 120, 87, 0.08);
-            box-shadow: 0 2px 8px rgba(4, 120, 87, 0.04);
-        }
-
-        .brand-avatar-box img {
-            width: 34px;
-            height: 34px;
-            object-fit: contain;
-            transition: transform 0.25s ease;
-        }
-
-        .sidebar-brand-horizontal:hover .brand-avatar-box img {
-            transform: scale(1.1) rotate(4deg);
-        }
-
-        .brand-text-col {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .brand-title {
-            font-size: 1.15rem;
-            font-weight: 800;
-            color: var(--text-main);
-            line-height: 1.2;
-            white-space: nowrap;
-        }
-
-        .brand-subtitle {
-            font-size: 0.65rem;
-            font-weight: 800;
-            color: var(--text-muted);
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            margin-top: 0.08rem;
-            white-space: nowrap;
-        }
-
-        .sidebar-toggle-btn {
-            background: #f8fafc;
-            border: 1px solid var(--border-dark);
-            border-radius: 10px;
-            width: 34px;
-            height: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-left: auto;
-            padding: 0;
-        }
-
-        .sidebar-toggle-btn:hover {
-            color: var(--primary);
-            background: var(--primary-light);
-            border-color: rgba(4, 120, 87, 0.2);
-            transform: scale(1.05);
-        }
-
-        .sidebar-top-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-        }
-
-        .sidebar-section-label {
-            font-size: 0.75rem !important;
-            font-weight: 800 !important;
-            color: var(--text-muted) !important;
-            letter-spacing: 1px !important;
-            text-transform: uppercase !important;
-            margin: 1.05rem 0 0.3rem 0.35rem !important;
-            white-space: nowrap !important;
-        }
-
-        .sidebar-menu {
-            gap: 4.8px !important;
-        }
-
-        .sidebar-menu li a {
-            justify-content: flex-start !important;
-            gap: 0.75rem !important;
-            padding: 0.8rem 0.85rem !important;
-            border-radius: 0.85rem !important;
-            position: relative;
-            transform: none !important;
-        }
-
-        .sidebar-menu li a .menu-label-group {
-            gap: 0.75rem;
-            min-width: 0;
-        }
-
-        .sidebar-menu li a svg {
-            width: 20px;
-            height: 20px;
-            color: var(--text-muted);
-        }
-
-        .sidebar-menu li a:hover,
-        .sidebar-menu li a.active {
-            color: var(--primary) !important;
-            background: var(--primary-light) !important;
-        }
-
-        .sidebar-menu li a:hover svg,
-        .sidebar-menu li a.active svg {
-            color: var(--primary) !important;
-            stroke: currentColor !important;
-        }
-
-        .sidebar-menu li a.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 15%;
-            height: 70%;
-            width: 6px;
-            background: var(--primary);
-            border-radius: 0 6px 6px 0;
-        }
 
         .dashboard-main-section {
             display: flex;
@@ -2387,29 +2184,8 @@
     <!-- ===== DÀN TRANG CHÍNH THEO MẪU METROCERY TÙY BIẾN CHO HỌC VIÊN HIPZI ===== -->
     <div class="app-dashboard-container">
 
-        <div class="dashboard-unified-header">
-            <span class="unified-header-tab-title" id="unified-header-title">
-                <%= "tab-manage-teachers".equals(activeStaffTab) ? "Quản lý giảng viên" :
-                    "tab-manage-classes".equals(activeStaffTab) ? "Quản lý lớp học" :
-                    "tab-manage-courses".equals(activeStaffTab) ? "Quản lý khóa học" :
-                    "tab-profile".equals(activeStaffTab) ? "Hồ sơ cá nhân" :
-                    "tab-edit".equals(activeStaffTab) ? "Cập nhật thông tin" :
-                    "tab-security".equals(activeStaffTab) ? "Bảo mật và mật khẩu" :
-                    "tab-materials".equals(activeStaffTab) ? "Hàng đợi duyệt tài liệu" :
-                    "tab-practice".equals(activeStaffTab) ? "Đăng ký giảng viên" :
-                    "tab-notifications".equals(activeStaffTab) ? "Thông báo hệ thống" :
-                    "tab-support".equals(activeStaffTab) ? "Hỗ trợ nghiệp vụ" :
-                    "Duyệt hồ sơ giảng viên" %>
-            </span>
-            <div class="unified-header-right">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span><%= currentDateDisplay %></span>
-            </div>
-        </div>
-
-        <div class="dashboard-body">
-            <!-- KÊNH SIDEBAR TRÁI (LEFT PANE) -->
-            <aside class="dashboard-sidebar">
+        <!-- KÊNH SIDEBAR TRÁI (LEFT PANE) -->
+        <aside class="dashboard-sidebar">
                 <div class="sidebar-brand-horizontal">
                     <a href="${pageContext.request.contextPath}/index" class="brand-avatar-box" title="Trang chủ">
                         <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="Hipzi Logo">
@@ -3482,7 +3258,6 @@
             </div>
 
             </main>
-            </div>
         </div>
     </div>
 
