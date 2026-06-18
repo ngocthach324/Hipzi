@@ -64,7 +64,7 @@
                                             </div>
 
                                             <div class="dropdown-menu-popup">
-                                                <a href="${pageContext.request.contextPath}/profile">
+                                                <a href="<%= profileMenuHref %>">
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                                         stroke="currentColor" stroke-width="2.2">
                                                         <circle cx="12" cy="8" r="4" />
@@ -78,6 +78,7 @@
                                                                 %></span>
                                                     </span>
                                                 </a>
+                                                <% if (profileHasTeacher && !profileHasStaff && !profileHasAdmin) { %>
                                                 <a href="${pageContext.request.contextPath}/teacher-wallet"
                                                     class="avatar-menu-wallet">
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -105,6 +106,33 @@
                                                             liệu</span>
                                                     </span>
                                                 </a>
+                                                <% } else if (profileHasStaff && !profileHasAdmin) { %>
+                                                <a href="${pageContext.request.contextPath}/staff-profile?tab=teacher-approval">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2.2">
+                                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                                        <circle cx="9" cy="7" r="4" />
+                                                        <polyline points="16 11 18 13 22 9" />
+                                                    </svg>
+                                                    <span class="avatar-menu-copy">
+                                                        <span class="avatar-menu-title">Bảng điều phối</span>
+                                                        <span class="avatar-menu-subtitle">Kiểm duyệt hệ thống</span>
+                                                    </span>
+                                                </a>
+                                                <% } else if (profileHasAdmin) { %>
+                                                <a href="${pageContext.request.contextPath}/admin-profile">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2.2">
+                                                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                        <path d="M8 12h8" />
+                                                        <path d="M12 8v8" />
+                                                    </svg>
+                                                    <span class="avatar-menu-copy">
+                                                        <span class="avatar-menu-title">Quản trị hệ thống</span>
+                                                        <span class="avatar-menu-subtitle">Người dùng, vai trò và kiểm duyệt</span>
+                                                    </span>
+                                                </a>
+                                                <% } %>
                                                 <div class="avatar-menu-divider"></div>
                                                 <a href="${pageContext.request.contextPath}/logout" class="danger-link">
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"

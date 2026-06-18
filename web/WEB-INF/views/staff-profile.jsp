@@ -2101,6 +2101,110 @@
             overflow-x: hidden;
         }
 
+        body.staff-profile-page .dashboard-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        body.staff-profile-page .dashboard-sidebar::-webkit-scrollbar-thumb {
+            background: transparent;
+            border-radius: 999px;
+        }
+
+        body.staff-profile-page .dashboard-sidebar:hover::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.22);
+        }
+
+        body.staff-profile-page .sidebar-brand-horizontal {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 27px;
+            width: 100%;
+            text-decoration: none;
+        }
+
+        body.staff-profile-page .brand-avatar-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #ecfdf5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid rgba(4, 120, 87, 0.08);
+            box-shadow: 0 2px 8px rgba(4, 120, 87, 0.04);
+        }
+
+        body.staff-profile-page .brand-avatar-box img {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+            animation: none;
+            filter: none;
+        }
+
+        body.staff-profile-page .brand-text-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            min-width: 0;
+        }
+
+        body.staff-profile-page .brand-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.2;
+            white-space: nowrap;
+            letter-spacing: 0;
+            background: none;
+            -webkit-background-clip: initial;
+            background-clip: initial;
+            -webkit-text-fill-color: var(--text-main);
+        }
+
+        body.staff-profile-page .brand-subtitle {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-top: 0.08rem;
+            white-space: nowrap;
+        }
+
+        body.staff-profile-page .sidebar-toggle-btn {
+            background: #f8fafc;
+            border: 1px solid var(--border-dark);
+            border-radius: 10px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: auto;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        body.staff-profile-page .sidebar-toggle-btn:hover {
+            color: var(--primary);
+            background: var(--primary-light);
+            border-color: rgba(4, 120, 87, 0.2);
+            transform: scale(1.05);
+        }
+
+        body.staff-profile-page .sidebar-menu li a {
+            min-height: 46px;
+            box-sizing: border-box;
+        }
+
         body.staff-profile-page .dashboard-main-section {
             display: flex;
             flex-direction: column;

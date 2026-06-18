@@ -1,28 +1,44 @@
 <%
+    boolean profileHasAdmin = false;
+    boolean profileHasStaff = false;
+    boolean profileHasTeacher = false;
+    boolean profileHasParent = false;
+    boolean profileHasStudent = false;
     String profileRoleLabel = "h\u1ecdc vi\u00ean";
     if (user != null && user.getRoles() != null) {
-        boolean hasAdmin = false, hasStaff = false, hasTeacher = false, hasParent = false, hasStudent = false;
         for (com.hipzi.model.Role role : user.getRoles()) {
             if (role == null || role.getName() == null) continue;
             String roleName = role.getName().trim().toLowerCase();
-            if ("admin".equals(roleName)) hasAdmin = true;
-            else if ("staff".equals(roleName)) hasStaff = true;
-            else if ("teacher".equals(roleName)) hasTeacher = true;
-            else if ("parent".equals(roleName)) hasParent = true;
-            else if ("student".equals(roleName)) hasStudent = true;
+            if ("admin".equals(roleName)) profileHasAdmin = true;
+            else if ("staff".equals(roleName)) profileHasStaff = true;
+            else if ("teacher".equals(roleName)) profileHasTeacher = true;
+            else if ("parent".equals(roleName)) profileHasParent = true;
+            else if ("student".equals(roleName)) profileHasStudent = true;
         }
 
-        if (hasAdmin) {
+        if (profileHasAdmin) {
             profileRoleLabel = "qu\u1ea3n tr\u1ecb vi\u00ean";
-        } else if (hasStaff) {
+        } else if (profileHasStaff) {
             profileRoleLabel = "nh\u00e2n vi\u00ean";
-        } else if (hasTeacher) {
+        } else if (profileHasTeacher) {
             profileRoleLabel = "gi\u1ea3ng vi\u00ean";
-        } else if (hasParent) {
+        } else if (profileHasParent) {
             profileRoleLabel = "ph\u1ee5 huynh";
-        } else if (hasStudent) {
+        } else if (profileHasStudent) {
             profileRoleLabel = "h\u1ecdc vi\u00ean";
         }
     }
     String profileMenuLabel = "H\u1ed3 s\u01a1 " + profileRoleLabel;
+    String profileMenuHref = request.getContextPath() + "/profile";
+    if (profileHasAdmin) {
+        profileMenuHref = request.getContextPath() + "/admin-profile";
+    } else if (profileHasStaff) {
+        profileMenuHref = request.getContextPath() + "/staff-profile?tab=profile";
+    } else if (profileHasTeacher) {
+        profileMenuHref = request.getContextPath() + "/teacher-profile";
+    } else if (profileHasParent) {
+        profileMenuHref = request.getContextPath() + "/parent-profile";
+    } else if (profileHasStudent) {
+        profileMenuHref = request.getContextPath() + "/student-profile";
+    }
 %>

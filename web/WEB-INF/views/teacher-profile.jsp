@@ -447,6 +447,37 @@
             line-height: 1.2;
         }
 
+        .nav-bell-dropdown {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+        }
+
+        .nav-bell-trigger {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            border: none;
+            text-decoration: none;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .nav-bell-trigger:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
         .dashboard-content-wrapper {
             flex: 1;
             padding: 2rem;

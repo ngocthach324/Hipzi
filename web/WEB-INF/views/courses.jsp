@@ -903,13 +903,14 @@
                         <% } %>
                     </div>
                     <div class="dropdown-menu-popup">
-                        <a href="${pageContext.request.contextPath}/teacher-profile">
+                        <a href="<%= profileMenuHref %>">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
                             <span class="avatar-menu-copy">
                                 <span class="avatar-menu-title"><%= profileMenuLabel %></span>
                                 <span class="avatar-menu-subtitle">Vai trò: <%= profileRoleLabel %></span>
                             </span>
                         </a>
+                        <% if (profileHasTeacher && !profileHasStaff && !profileHasAdmin) { %>
                         <a href="${pageContext.request.contextPath}/teacher-profile?tab=wallet" class="avatar-menu-wallet">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 7H5a2 2 0 0 0 0 4h15v8H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16v4z"/><path d="M16 14h.01"/></svg>
                             <span class="avatar-menu-copy">
@@ -924,6 +925,23 @@
                                 <span class="avatar-menu-subtitle">Lớp học, khóa học và tài liệu</span>
                             </span>
                         </a>
+                        <% } else if (profileHasStaff && !profileHasAdmin) { %>
+                        <a href="${pageContext.request.contextPath}/staff-profile?tab=teacher-approval">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+                            <span class="avatar-menu-copy">
+                                <span class="avatar-menu-title">Bảng điều phối</span>
+                                <span class="avatar-menu-subtitle">Kiểm duyệt hệ thống</span>
+                            </span>
+                        </a>
+                        <% } else if (profileHasAdmin) { %>
+                        <a href="${pageContext.request.contextPath}/admin-profile">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                            <span class="avatar-menu-copy">
+                                <span class="avatar-menu-title">Quản trị hệ thống</span>
+                                <span class="avatar-menu-subtitle">Người dùng, vai trò và kiểm duyệt</span>
+                            </span>
+                        </a>
+                        <% } %>
                         <div class="avatar-menu-divider"></div>
                         <a href="${pageContext.request.contextPath}/logout" class="danger-link">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
