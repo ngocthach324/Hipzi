@@ -1446,6 +1446,442 @@
                                         }
                                     </style>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=block">
+    <style>
+        :root {
+            --primary: #047857;
+            --primary-hover: #065f46;
+            --primary-light: #ecfdf5;
+            --secondary: #10b981;
+            --accent: #8b5cf6;
+            --accent-light: #f5f3ff;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-dark: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            --shadow-lg: 0 20px 40px rgba(4, 120, 87, 0.04);
+            --font-sans: "Be Vietnam Pro", "Plus Jakarta Sans", "Inter", Arial, sans-serif;
+        }
+
+        body.student-profile-page {
+            background: linear-gradient(135deg, #e6fcf5 0%, #ebfbee 50%, #dcfce7 100%) !important;
+            background-attachment: fixed !important;
+            font-family: var(--font-sans);
+            margin: 0;
+            padding: 0;
+            min-height: 0;
+            overflow-x: hidden;
+        }
+
+        body.student-profile-page > .navbar {
+            display: none !important;
+        }
+
+        body.student-profile-page .app-dashboard-container {
+            max-width: 1600px;
+            width: calc(100% - 1.5rem);
+            min-height: 0;
+            height: var(--student-dashboard-frame-height, auto);
+            margin: 0.75rem auto 0 auto;
+            padding: 0 0 0.75rem 0;
+            background: transparent !important;
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 1rem;
+            align-items: flex-start;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            overflow: visible !important;
+        }
+
+        body.student-profile-page .dashboard-body,
+        body.student-profile-page .dashboard-unified-header {
+            display: contents !important;
+        }
+
+        body.student-profile-page .dashboard-unified-header {
+            display: none !important;
+        }
+
+        body.student-profile-page .dashboard-sidebar {
+            width: 270px;
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 1.25rem;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0.75rem;
+            height: calc(100vh - 1.5rem);
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: var(--shadow);
+            justify-content: flex-start;
+        }
+
+        body.student-profile-page .sidebar-brand-horizontal {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 27px;
+            width: 100%;
+            text-decoration: none;
+        }
+
+        body.student-profile-page .brand-avatar-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #ecfdf5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid rgba(4, 120, 87, 0.08);
+            box-shadow: 0 2px 8px rgba(4, 120, 87, 0.04);
+        }
+
+        body.student-profile-page .brand-avatar-box img {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+        }
+
+        body.student-profile-page .brand-text-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        body.student-profile-page .brand-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        body.student-profile-page .brand-subtitle {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-top: 0.08rem;
+            white-space: nowrap;
+        }
+
+        body.student-profile-page .sidebar-toggle-btn {
+            background: #f8fafc;
+            border: 1px solid var(--border-dark);
+            border-radius: 10px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: auto;
+            padding: 0;
+        }
+
+        body.student-profile-page .app-dashboard-container.collapsed .dashboard-sidebar {
+            width: 86px;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            align-items: center;
+        }
+
+        body.student-profile-page .app-dashboard-container.collapsed .brand-text-col,
+        body.student-profile-page .app-dashboard-container.collapsed .sidebar-section-label,
+        body.student-profile-page .app-dashboard-container.collapsed .sidebar-menu li a span {
+            display: none;
+        }
+
+        body.student-profile-page .app-dashboard-container.collapsed .sidebar-brand-horizontal {
+            justify-content: center;
+            gap: 0;
+        }
+
+        body.student-profile-page .app-dashboard-container.collapsed .sidebar-toggle-btn {
+            margin-left: 0;
+        }
+
+        body.student-profile-page .app-dashboard-container.collapsed .sidebar-toggle-btn .icon-collapse {
+            display: none;
+        }
+
+        body.student-profile-page .app-dashboard-container.collapsed .sidebar-toggle-btn .icon-expand {
+            display: block !important;
+        }
+
+        body.student-profile-page .app-dashboard-container.collapsed .sidebar-menu li a {
+            width: 46px;
+            height: 46px;
+            padding: 0;
+            justify-content: center;
+        }
+
+        body.student-profile-page .sidebar-section-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin: 1.05rem 0 0.3rem 0.35rem;
+            white-space: nowrap;
+        }
+
+        body.student-profile-page .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4.8px;
+        }
+
+        body.student-profile-page .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.8rem 0.85rem;
+            border-radius: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        body.student-profile-page .sidebar-menu li a .menu-label-group {
+            display: contents;
+        }
+
+        body.student-profile-page .sidebar-menu li a .menu-indicator {
+            display: none;
+        }
+
+        body.student-profile-page .sidebar-menu li a span {
+            white-space: nowrap;
+        }
+
+        body.student-profile-page .sidebar-menu li a svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2.2;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        body.student-profile-page .sidebar-menu li a:hover,
+        body.student-profile-page .sidebar-menu li a.active {
+            color: var(--primary);
+            background: var(--primary-light);
+            font-weight: 700;
+        }
+
+        body.student-profile-page .sidebar-menu li a:hover svg,
+        body.student-profile-page .sidebar-menu li a.active svg {
+            color: var(--primary);
+        }
+
+        body.student-profile-page .sidebar-menu li a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15%;
+            height: 70%;
+            width: 6px;
+            background: var(--primary);
+            border-radius: 0 6px 6px 0;
+        }
+
+        body.student-profile-page .dashboard-main-section {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        body.student-profile-page .dashboard-top-bar {
+            height: 70px;
+            min-height: 70px;
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            box-sizing: border-box;
+            box-shadow: var(--shadow);
+        }
+
+        body.student-profile-page .top-bar-search-wrapper {
+            width: 350px;
+            max-width: 36vw;
+            height: 44px;
+            background: #f1f5f9;
+            border-radius: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 1rem;
+            color: var(--text-muted);
+            border: 1px solid transparent;
+        }
+
+        body.student-profile-page .top-bar-search-wrapper svg {
+            width: 19px;
+            height: 19px;
+            flex-shrink: 0;
+        }
+
+        body.student-profile-page .top-bar-search-wrapper input {
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 100%;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-family: inherit;
+            font-weight: 600;
+        }
+
+        body.student-profile-page .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        body.student-profile-page .nav-bell-trigger {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        body.student-profile-page .top-bar-user-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            padding-left: 1rem;
+            border-left: 1px solid var(--border-dark);
+        }
+
+        body.student-profile-page .top-bar-avatar,
+        body.student-profile-page .top-bar-avatar-placeholder {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+
+        body.student-profile-page .top-bar-avatar-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        body.student-profile-page .top-bar-user-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        body.student-profile-page .top-bar-user-name {
+            font-weight: 800;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        body.student-profile-page .top-bar-user-email {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        body.student-profile-page .dashboard-content-wrapper {
+            background: #f8fafc;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-lg);
+            min-height: calc(100vh - 6.75rem);
+            overflow: visible;
+        }
+
+        body.student-profile-page .tab-pane {
+            display: none;
+            animation: fadeUp 0.28s ease-out;
+        }
+
+        body.student-profile-page .tab-pane.active-pane {
+            display: block;
+        }
+
+        body.student-profile-page .profile-tab-panel,
+        body.student-profile-page .premium-card {
+            background: #ffffff !important;
+            border: 1px solid var(--border-dark) !important;
+            border-radius: 1.5rem !important;
+            box-shadow: var(--shadow) !important;
+        }
+
+        @media (max-width: 1024px) {
+            body.student-profile-page .app-dashboard-container {
+                flex-direction: column !important;
+                width: calc(100% - 1rem);
+            }
+
+            body.student-profile-page .dashboard-sidebar {
+                position: relative;
+                top: 0;
+                width: 100%;
+                height: auto;
+            }
+
+            body.student-profile-page .dashboard-top-bar {
+                padding: 0 1rem;
+            }
+
+            body.student-profile-page .top-bar-search-wrapper {
+                max-width: none;
+                width: 100%;
+            }
+
+            body.student-profile-page .top-bar-user-info {
+                display: none;
+            }
+        }
+    </style>
                                 </head>
 
                                 <body class="student-profile-page">
@@ -1616,7 +2052,21 @@
 
                                                         <!-- KÊNH SIDEBAR TRÁI (LEFT PANE) -->
                                                         <aside class="dashboard-sidebar">
+                                                            <div class="sidebar-brand-horizontal">
+                                                                <a href="${pageContext.request.contextPath}/index" class="brand-avatar-box" title="Trang chủ">
+                                                                    <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="Hipzi Logo">
+                                                                </a>
+                                                                <div class="brand-text-col">
+                                                                    <span class="brand-title">Hipzi</span>
+                                                                    <span class="brand-subtitle">Platform</span>
+                                                                </div>
+                                                                <button type="button" class="sidebar-toggle-btn" title="Thu gọn / Mở rộng" onclick="toggleSidebar()">
+                                                                    <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M16 15l-3-3 3-3"/></svg>
+                                                                    <svg class="icon-expand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: none;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M13 9l3 3-3 3"/></svg>
+                                                                </button>
+                                                            </div>
                                                             <div class="sidebar-top-group">
+                                                                <div class="sidebar-section-label">Tổng quan</div>
                                                                 <ul class="sidebar-menu">
                                                                     <li>
                                                                         <a id="nav-tab-dashboard" class="<%= "tab-dashboard".equals(activeTab) ? "active" : "" %>"
@@ -1733,6 +2183,36 @@
                                                             </aside>
 
                                                         <!-- KÊNH NỘI DUNG PHẢI (RIGHT CONTENT PANE) -->
+                                                        <div class="dashboard-main-section">
+                                                        <div class="dashboard-top-bar">
+                                                            <div class="top-bar-search-wrapper">
+                                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                                                <input type="text" placeholder="Tìm kiếm tác vụ...">
+                                                            </div>
+
+                                                            <div class="top-bar-right">
+                                                                <button type="button" class="nav-bell-trigger" title="Chuyển chế độ sáng/tối" onclick="alert('Chức năng chuyển đổi giao diện sáng/tối đang được phát triển.')">
+                                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                                                                </button>
+                                                                <button type="button" class="nav-bell-trigger" title="Thông báo hệ thống" onclick="switchTab('tab-notifications')">
+                                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                                                                </button>
+                                                                <a href="${pageContext.request.contextPath}/logout" class="nav-bell-trigger" title="Đăng xuất">
+                                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                                                </a>
+                                                                <div class="top-bar-user-card" onclick="switchTab('tab-profile')">
+                                                                    <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+                                                                        <img src="<%= user.getAvatarUrl() %>" class="top-bar-avatar" alt="Avatar">
+                                                                    <% } else { %>
+                                                                        <div class="top-bar-avatar-placeholder"><%= initials %></div>
+                                                                    <% } %>
+                                                                    <div class="top-bar-user-info">
+                                                                        <span class="top-bar-user-name"><%= user != null ? user.getDisplayName() : "Học viên HIPZI" %></span>
+                                                                        <span class="top-bar-user-email"><%= user != null ? user.getEmail() : "student@hipzi.vn" %></span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                         <main class="dashboard-content-wrapper">
 
                                                             <!-- Banner dải màu trang trí phía trên cùng (Top Accent Strip) -->
@@ -2842,6 +3322,7 @@
                                                                     </section>
 
                                                         </main>
+                                                        </div><!-- /dashboard-main-section -->
 
                                                         </div><!-- /dashboard-body -->
 
@@ -2961,6 +3442,13 @@
                                                             }, 160);
                                                         }
 
+                                                        function toggleSidebar() {
+                                                            const container = document.querySelector('.app-dashboard-container');
+                                                            if (!container) return;
+                                                            container.classList.toggle('collapsed');
+                                                            localStorage.setItem('studentSidebarCollapsed', container.classList.contains('collapsed') ? 'true' : 'false');
+                                                        }
+
                                                         function switchTab(targetTabId, options = {}) {
                                                             targetTabId = normalizeProfileTabId(targetTabId);
                                                             const targetPane = document.getElementById(targetTabId);
@@ -3008,6 +3496,9 @@
                                                                     dashboardRoot.style.opacity = '1';
                                                                     dashboardRoot.style.position = 'relative';
                                                                     dashboardRoot.style.zIndex = '1';
+                                                                    if (localStorage.getItem('studentSidebarCollapsed') === 'true') {
+                                                                        dashboardRoot.classList.add('collapsed');
+                                                                    }
                                                                 }
                                                                 const params = new URLSearchParams(window.location.search);
                                                                 const tabParam = params.get('tab');

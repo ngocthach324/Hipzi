@@ -2058,8 +2058,108 @@
         }
     </style>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=block">
+    <style>
+        body.staff-profile-page {
+            background: linear-gradient(135deg, #e6fcf5 0%, #ebfbee 50%, #dcfce7 100%) !important;
+            background-attachment: fixed !important;
+            font-family: var(--font-sans);
+            margin: 0;
+            padding: 0;
+            min-height: 0;
+            overflow-x: hidden;
+        }
+
+        body.staff-profile-page > .navbar {
+            display: none !important;
+        }
+
+        body.staff-profile-page .app-dashboard-container {
+            max-width: 1600px;
+            width: calc(100% - 1.5rem);
+            min-height: 0;
+            height: var(--teacher-dashboard-frame-height, auto);
+            margin: 0.75rem auto 0 auto;
+            padding-bottom: 0.75rem;
+            background: transparent;
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        body.staff-profile-page .dashboard-sidebar {
+            width: 270px;
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
+            padding: 1.5rem 1.25rem;
+            position: sticky;
+            top: 0.75rem;
+            height: calc(100vh - 1.5rem);
+            box-shadow: var(--shadow);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        body.staff-profile-page .dashboard-main-section {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        body.staff-profile-page .dashboard-top-bar {
+            height: 70px;
+            min-height: 70px;
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            box-sizing: border-box;
+            box-shadow: var(--shadow);
+        }
+
+        body.staff-profile-page .dashboard-content-wrapper {
+            background: #f8fafc;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-lg);
+            min-height: calc(100vh - 6.75rem);
+            overflow: visible;
+        }
+
+        body.staff-profile-page .premium-card,
+        body.staff-profile-page .profile-card {
+            border-radius: 1.5rem !important;
+            border: 1px solid var(--border-dark) !important;
+            box-shadow: var(--shadow) !important;
+        }
+
+        @media (max-width: 1024px) {
+            body.staff-profile-page .app-dashboard-container {
+                flex-direction: column;
+                width: calc(100% - 1rem);
+            }
+
+            body.staff-profile-page .dashboard-sidebar {
+                position: relative;
+                top: 0;
+                width: 100%;
+                height: auto;
+            }
+
+            body.staff-profile-page .dashboard-top-bar {
+                padding: 0 1rem;
+            }
+        }
+    </style>
 </head>
-<body>
+<body class="staff-profile-page">
 
     <%
         User user = (User) request.getAttribute("user");
@@ -2192,7 +2292,7 @@
                     </a>
                     <div class="brand-text-col">
                         <span class="brand-title">Hipzi</span>
-                        <span class="brand-subtitle">Staff Console</span>
+                        <span class="brand-subtitle">Platform</span>
                     </div>
                     <button type="button" class="sidebar-toggle-btn" title="Thu gọn / Mở rộng" onclick="toggleSidebar()">
                         <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M16 15l-3-3 3-3"/></svg>
