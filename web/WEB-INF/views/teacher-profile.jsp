@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Role"%>
 <%@page import="com.hipzi.model.Classroom"%>
@@ -2444,7 +2444,6 @@
                         </form>
 
                         </div>
-                    </div>
             </section>
 
             <!-- ========================================== -->
@@ -3345,59 +3344,6 @@
                 </div>
 
                 <div class="dashboard-grid-layout" style="align-items: start;">
-                    <!-- FAQ -->
-                    <div class="premium-card">
-                        <div class="premium-card-header" style="border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem; margin-bottom: 1.5rem;">
-                            <span class="premium-card-title">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                Câu hỏi thường gặp (FAQ)
-                            </span>
-                        </div>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
-                                <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
-                                    <span>Làm thế nào để tải xuống bài giảng?</span>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-                                </summary>
-                                <p style="font-size: 0.9rem; color: var(--text-muted); margin: 1rem 0 0 0; line-height: 1.6; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
-                                    Học viên có thể tải xuống các file đính kèm miễn phí khi tài liệu đã được duyệt và chuyển sang chế độ hiển thị công khai.
-                                </p>
-                            </details>
-
-                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
-                                <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
-                                    <span>AI tạo câu hỏi ôn tập hoạt động ra sao?</span>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-                                </summary>
-                                <p style="font-size: 0.9rem; color: var(--text-muted); margin: 1rem 0 0 0; line-height: 1.6; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
-                                    Trợ lý AI phân tích văn bản từ tài liệu gốc do Giảng viên cung cấp để bóc tách thành các bộ Flashcard trực quan cho học viên luyện tập.
-                                </p>
-                            </details>
-
-                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
-                                <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
-                                    <span>Tài liệu sau khi đăng sẽ được duyệt trong bao lâu?</span>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-                                </summary>
-                                <p style="font-size: 0.9rem; color: var(--text-muted); margin: 1rem 0 0 0; line-height: 1.6; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
-                                    Tài liệu sẽ được kiểm tra nội dung, định dạng và quyền chia sẻ trước khi hiển thị công khai trong kho học liệu.
-                                </p>
-                            </details>
-
-                            <details style="background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow);">
-                                <summary style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
-                                    <span>Kết nối Google Drive bị lỗi thì xử lý thế nào?</span>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-                                </summary>
-                                <p style="font-size: 0.9rem; color: var(--text-muted); margin: 1rem 0 0 0; line-height: 1.6; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
-                                    Hãy thử kết nối lại tài khoản Google Drive, kiểm tra quyền truy cập file và gửi yêu cầu hỗ trợ nếu lỗi vẫn tiếp diễn.
-                                </p>
-                            </details>
-
-                        </div>
-                    </div>
-
                     <!-- SUPPORT FORM -->
                     <div class="premium-card">
                         <div class="premium-card-header" style="border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem; margin-bottom: 1.5rem;">
@@ -3419,25 +3365,30 @@
                                 <button type="submit" class="btn-premium primary">Gửi tin nhắn</button>
                             </div>
                         </form>
-                        <div style="border-top:1px solid var(--border-dark); margin-top:1.5rem; padding-top:1.25rem;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:0.85rem;">
-                                <span style="font-weight:900; color:#0f172a; font-size:0.95rem;">Lịch sử hỗ trợ</span>
-                                <span style="font-size:0.72rem; font-weight:850; color:#059669; background:#dcfce7; border-radius:999px; padding:0.18rem 0.6rem;"><%= userSupportTickets != null ? userSupportTickets.size() : 0 %> yêu cầu</span>
-                            </div>
-                            <div style="display:flex; flex-direction:column; gap:0.75rem;">
-                                <% if (userSupportTickets != null && !userSupportTickets.isEmpty()) {
-                                    for (SupportTicket ticket : userSupportTickets) {
-                                        String ticketTime = ticket.getLatestMessageAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(ticket.getLatestMessageAt()) : "";
-                                %>
-                                <a href="${pageContext.request.contextPath}/teacher-profile?tab=support&supportTicketId=<%= h(ticket.getId()) %>" style="display:block; text-decoration:none; border:1px solid #e2e8f0; border-radius:0.9rem; padding:0.9rem; background:#f8fafc;">
-                                    <span style="display:block; color:#0f172a; font-weight:850; font-size:0.88rem;"><%= h(ticket.getTitle()) %></span>
-                                    <span style="display:block; color:#64748b; font-weight:650; font-size:0.76rem; margin-top:0.25rem;"><%= h(ticket.getStatus()) %> · <%= ticketTime %></span>
-                                    <span style="display:block; color:#475569; font-size:0.78rem; margin-top:0.45rem; line-height:1.45;"><%= h(ticket.getLatestMessage()) %></span>
-                                </a>
-                                <% } } else { %>
-                                <div style="border:1px dashed #cbd5e1; border-radius:0.9rem; padding:1rem; text-align:center; color:#64748b; font-weight:750;">Bạn chưa gửi yêu cầu hỗ trợ nào.</div>
-                                <% } %>
-                            </div>
+                    </div>
+
+                    <!-- SUPPORT HISTORY -->
+                    <div class="premium-card">
+                        <div class="premium-card-header" style="border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem; margin-bottom: 1.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+                            <span class="premium-card-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Lịch sử hỗ trợ
+                            </span>
+                            <span style="font-size:0.72rem; font-weight:850; color:#059669; background:#dcfce7; border-radius:999px; padding:0.18rem 0.6rem;"><%= userSupportTickets != null ? userSupportTickets.size() : 0 %> yêu cầu</span>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                            <% if (userSupportTickets != null && !userSupportTickets.isEmpty()) {
+                                for (SupportTicket ticket : userSupportTickets) {
+                                    String ticketTime = ticket.getLatestMessageAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(ticket.getLatestMessageAt()) : "";
+                            %>
+                            <a href="${pageContext.request.contextPath}/teacher-profile?tab=support&supportTicketId=<%= h(ticket.getId()) %>" style="display:block; text-decoration:none; border:1px solid #e2e8f0; border-radius:0.9rem; padding:0.9rem; background:#f8fafc; transition: all 0.2s ease;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'">
+                                <span style="display:block; color:#0f172a; font-weight:850; font-size:0.88rem;"><%= h(ticket.getTitle()) %></span>
+                                <span style="display:block; color:#64748b; font-weight:650; font-size:0.76rem; margin-top:0.25rem;"><%= h(ticket.getStatus()) %> · <%= ticketTime %></span>
+                                <span style="display:block; color:#475569; font-size:0.78rem; margin-top:0.45rem; line-height:1.45;"><%= h(ticket.getLatestMessage()) %></span>
+                            </a>
+                            <% } } else { %>
+                            <div style="border:1px dashed #cbd5e1; border-radius:0.9rem; padding:1rem; text-align:center; color:#64748b; font-weight:750;">Bạn chưa gửi yêu cầu hỗ trợ nào.</div>
+                            <% } %>
                         </div>
                     </div>
                 </div>
