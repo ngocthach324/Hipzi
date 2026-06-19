@@ -1,9 +1,11 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Role"%>
 <%@page import="com.hipzi.model.Classroom"%>
 <%@page import="com.hipzi.model.TeacherApplication"%>
 <%@page import="com.hipzi.model.Notification"%>
+<%@page import="com.hipzi.model.SupportMessage"%>
+<%@page import="com.hipzi.model.SupportTicket"%>
 <%@page import="com.hipzi.service.NotificationService"%>
 <%@page import="java.util.List"%>
 <%@page import="java.text.SimpleDateFormat"%>
@@ -395,6 +397,7 @@
             display: flex;
             align-items: center;
             gap: 1.25rem;
+            height: 42px;
         }
 
         .top-bar-user-card {
@@ -404,6 +407,8 @@
             padding-left: 0.75rem;
             border-left: 1px solid var(--border-dark);
             cursor: pointer;
+            height: 42px;
+            flex: 0 0 auto;
         }
 
         .top-bar-avatar {
@@ -432,6 +437,8 @@
             display: flex;
             flex-direction: column;
             text-align: left;
+            justify-content: center;
+            min-width: 0;
         }
 
         .top-bar-user-name {
@@ -452,6 +459,9 @@
             width: 42px;
             height: 42px;
             flex: 0 0 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .nav-bell-trigger {
@@ -470,6 +480,13 @@
             text-decoration: none;
             padding: 0;
             box-sizing: border-box;
+            flex: 0 0 42px;
+            line-height: 1;
+        }
+
+        .nav-bell-trigger svg {
+            display: block;
+            flex: 0 0 auto;
         }
 
         .nav-bell-trigger:hover {
@@ -1856,6 +1873,9 @@
 
         // Lấy danh sách thông báo hệ thống
         List<Notification> notifications = (List<Notification>) request.getAttribute("notifications");
+        List<SupportTicket> userSupportTickets = (List<SupportTicket>) request.getAttribute("userSupportTickets");
+        SupportTicket selectedSupportTicket = (SupportTicket) request.getAttribute("selectedSupportTicket");
+        List<SupportMessage> supportMessages = (List<SupportMessage>) request.getAttribute("supportMessages");
 
         TeacherApplication teacherApplication = (TeacherApplication) request.getAttribute("teacherApplication");
         TeacherApplication approvedTeacherApplication = (TeacherApplication) request.getAttribute("approvedTeacherApplication");
@@ -2422,6 +2442,8 @@
                             <% } %>
                             </div>
                         </form>
+
+                        </div>
                     </div>
             </section>
 
@@ -3397,6 +3419,26 @@
                                 <button type="submit" class="btn-premium primary">Gửi tin nhắn</button>
                             </div>
                         </form>
+                        <div style="border-top:1px solid var(--border-dark); margin-top:1.5rem; padding-top:1.25rem;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:0.85rem;">
+                                <span style="font-weight:900; color:#0f172a; font-size:0.95rem;">Lịch sử hỗ trợ</span>
+                                <span style="font-size:0.72rem; font-weight:850; color:#059669; background:#dcfce7; border-radius:999px; padding:0.18rem 0.6rem;"><%= userSupportTickets != null ? userSupportTickets.size() : 0 %> yêu cầu</span>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                                <% if (userSupportTickets != null && !userSupportTickets.isEmpty()) {
+                                    for (SupportTicket ticket : userSupportTickets) {
+                                        String ticketTime = ticket.getLatestMessageAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(ticket.getLatestMessageAt()) : "";
+                                %>
+                                <a href="${pageContext.request.contextPath}/teacher-profile?tab=support&supportTicketId=<%= h(ticket.getId()) %>" style="display:block; text-decoration:none; border:1px solid #e2e8f0; border-radius:0.9rem; padding:0.9rem; background:#f8fafc;">
+                                    <span style="display:block; color:#0f172a; font-weight:850; font-size:0.88rem;"><%= h(ticket.getTitle()) %></span>
+                                    <span style="display:block; color:#64748b; font-weight:650; font-size:0.76rem; margin-top:0.25rem;"><%= h(ticket.getStatus()) %> · <%= ticketTime %></span>
+                                    <span style="display:block; color:#475569; font-size:0.78rem; margin-top:0.45rem; line-height:1.45;"><%= h(ticket.getLatestMessage()) %></span>
+                                </a>
+                                <% } } else { %>
+                                <div style="border:1px dashed #cbd5e1; border-radius:0.9rem; padding:1rem; text-align:center; color:#64748b; font-weight:750;">Bạn chưa gửi yêu cầu hỗ trợ nào.</div>
+                                <% } %>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -3978,7 +4020,7 @@
                 })
                 .then(async response => {
                     if (response.ok) {
-                        showToast('Đã gửi thành công đến quản trị viên, phản hồi sẽ gửi đến email của bạn.');
+                        showToast('Đã gửi yêu cầu hỗ trợ. Phản hồi sẽ hiển thị trong tab hỗ trợ của bạn.');
                         this.reset();
                     } else {
                         const errorMsg = await response.text();
@@ -4328,3 +4370,5 @@
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
 </html>
+
+

@@ -181,6 +181,18 @@ public class CourseDao {
         return subjects;
     }
 
+    public int countExistingCourses() {
+        String sql = "SELECT COUNT(*) FROM courses WHERE deleted_at IS NULL";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? rs.getInt(1) : 0;
+        } catch (SQLException e) {
+            System.err.println("Error in CourseDao.countExistingCourses: " + e.getMessage());
+        }
+        return 0;
+    }
+
     public boolean createForTeacher(Course course) {
         if (course.getCourseCode() == null || course.getCourseCode().trim().isEmpty()) {
             course.setCourseCode("CRS-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(Locale.ROOT));

@@ -4,6 +4,8 @@ import com.hipzi.model.Notification;
 import com.hipzi.model.Classroom;
 import com.hipzi.model.Course;
 import com.hipzi.model.StudentProfile;
+import com.hipzi.model.SupportMessage;
+import com.hipzi.model.SupportTicket;
 import com.hipzi.model.TeacherApplication;
 import com.hipzi.model.TeacherGoogleAccount;
 import com.hipzi.model.User;
@@ -27,6 +29,7 @@ import com.hipzi.dao.AdminUserDao;
 import com.hipzi.dao.ClassroomDao;
 import com.hipzi.dao.CourseDao;
 import com.hipzi.dao.RepositoryMaterialDao;
+import com.hipzi.dao.SupportTicketDao;
 import com.hipzi.dao.TeacherApplicationDao;
 import com.hipzi.dao.TeacherGoogleAccountDao;
 import java.io.File;
@@ -61,6 +64,7 @@ public class ProfileServlet extends HttpServlet {
     private final ClassroomDao classroomDao = new ClassroomDao();
     private final CourseDao courseDao = new CourseDao();
     private final RepositoryMaterialDao repositoryMaterialDao = new RepositoryMaterialDao();
+    private final SupportTicketDao supportTicketDao = new SupportTicketDao();
     private final GoogleDriveOAuthService googleDriveOAuthService = new GoogleDriveOAuthService();
 
     @Override
@@ -134,6 +138,7 @@ public class ProfileServlet extends HttpServlet {
         if ("/WEB-INF/views/student-profile.jsp".equals(targetJsp)) {
             StudentProfile studentProfile = studentProfileService.getProfileByUserId(user.getId());
             request.setAttribute("studentProfile", studentProfile);
+            loadUserSupportData(request, user);
         } else if ("/WEB-INF/views/parent-profile.jsp".equals(targetJsp)) {
             List<ParentStudentLink> trackedStudents = linkDao.findLinksByParentId(user.getId());
             request.setAttribute("trackedStudents", trackedStudents);
@@ -147,7 +152,13 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("teacherCourses", courseDao.findByTeacherId(user.getId()));
             request.setAttribute("teacherMaterialCount", repositoryMaterialDao.countByUploaderId(user.getId()));
             request.setAttribute("teacherGoogleAccount", teacherGoogleAccountDao.findActiveByTeacherId(user.getId()));
+            loadUserSupportData(request, user);
         } else if ("/WEB-INF/views/staff-profile.jsp".equals(targetJsp)) {
+            request.setAttribute("staffTotalUsers", adminStatsDao.getSystemOverview().getTotalUsers());
+            request.setAttribute("staffActiveClassCount", classroomDao.countActiveClassrooms());
+            request.setAttribute("staffCourseCount", courseDao.countExistingCourses());
+            request.setAttribute("staffMaterialCount", repositoryMaterialDao.countVisibleApprovedMaterials());
+            loadStaffSupportData(request);
             request.setAttribute("teacherApplications", teacherApplicationDao.listForStaffReview());
             
             String searchTeacher = cleanParam(request.getParameter("searchTeacher"));
@@ -636,12 +647,17 @@ public class ProfileServlet extends HttpServlet {
                 String message = request.getParameter("message");
                 
                 if (title != null && !title.trim().isEmpty() && message != null && !message.trim().isEmpty()) {
-                    try {
-                        com.hipzi.util.EmailService.sendSupportRequest(user.getEmail(), user.getDisplayName(), title, message);
-                        session.setAttribute("toastMsg", "Gửi hỗ trợ thành công! Quản trị viên sẽ phản hồi qua email.");
+                    SupportTicket ticket = supportTicketDao.createTicketWithMessage(
+                            user.getId(),
+                            title.trim(),
+                            message.trim(),
+                            primarySupportRole(user)
+                    );
+                    if (ticket != null) {
+                        session.setAttribute("toastMsg", "Đã gửi yêu cầu hỗ trợ. Nhân viên HIPZI sẽ phản hồi trong tab hỗ trợ.");
                         session.setAttribute("toastType", "success");
-                    } catch (Exception ex) {
-                        session.setAttribute("toastMsg", "Không thể gửi yêu cầu hỗ trợ. Vui lòng thử lại sau.");
+                    } else {
+                        session.setAttribute("toastMsg", "Không thể tạo yêu cầu hỗ trợ. Vui lòng kiểm tra migration support_tickets.");
                         session.setAttribute("toastType", "error");
                     }
                 }
@@ -1093,6 +1109,70 @@ public class ProfileServlet extends HttpServlet {
         }
 
         return savedCount > 0 ? evidenceSummary.toString() : "Chưa đính kèm minh chứng.";
+    }
+
+    private void loadUserSupportData(HttpServletRequest request, User user) {
+        List<SupportTicket> tickets = new ArrayList<>();
+        List<SupportMessage> messages = new ArrayList<>();
+        SupportTicket selectedTicket = null;
+
+        if (user != null && supportTicketDao.tableExists()) {
+            tickets = supportTicketDao.listByUserId(user.getId(), 10);
+            String selectedTicketId = cleanParam(request.getParameter("supportTicketId"));
+            if (!selectedTicketId.isEmpty() && supportTicketDao.userCanAccessTicket(selectedTicketId, user.getId())) {
+                selectedTicket = supportTicketDao.findById(selectedTicketId);
+            }
+            if (selectedTicket == null && !tickets.isEmpty()) {
+                selectedTicket = tickets.get(0);
+            }
+            if (selectedTicket != null) {
+                messages = supportTicketDao.listMessages(selectedTicket.getId());
+            }
+        }
+
+        request.setAttribute("userSupportTickets", tickets);
+        request.setAttribute("selectedSupportTicket", selectedTicket);
+        request.setAttribute("supportMessages", messages);
+    }
+
+    private void loadStaffSupportData(HttpServletRequest request) {
+        List<SupportTicket> tickets = new ArrayList<>();
+        List<SupportMessage> messages = new ArrayList<>();
+        SupportTicket selectedTicket = null;
+
+        if (supportTicketDao.tableExists()) {
+            tickets = supportTicketDao.listForStaff(30);
+            String selectedTicketId = cleanParam(request.getParameter("supportTicketId"));
+            if (!selectedTicketId.isEmpty()) {
+                selectedTicket = supportTicketDao.findById(selectedTicketId);
+            }
+            if (selectedTicket == null && !tickets.isEmpty()) {
+                selectedTicket = tickets.get(0);
+            }
+            if (selectedTicket != null) {
+                messages = supportTicketDao.listMessages(selectedTicket.getId());
+            }
+        }
+
+        request.setAttribute("staffSupportTickets", tickets);
+        request.setAttribute("selectedSupportTicket", selectedTicket);
+        request.setAttribute("supportMessages", messages);
+    }
+
+    private String primarySupportRole(User user) {
+        if (hasRole(user, "admin")) {
+            return "admin";
+        }
+        if (hasRole(user, "staff")) {
+            return "staff";
+        }
+        if (hasRole(user, "teacher")) {
+            return "teacher";
+        }
+        if (hasRole(user, "parent")) {
+            return "parent";
+        }
+        return "student";
     }
 
     private String preferredProfilePath(User user) {

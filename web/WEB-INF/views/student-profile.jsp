@@ -6,6 +6,8 @@
                     <%@page import="java.text.SimpleDateFormat" %>
                         <%@page import="java.util.Date" %>
                             <%@page import="com.hipzi.model.Notification" %>
+                                <%@page import="com.hipzi.model.SupportMessage" %>
+                                    <%@page import="com.hipzi.model.SupportTicket" %>
                                 <!DOCTYPE html>
                                 <html lang="vi">
 
@@ -1916,6 +1918,12 @@
                                         // Lấy danh sách thông báo hệ thống
                                         List<Notification> notifications = (List<Notification>)
                                                 request.getAttribute("notifications");
+                                        List<SupportTicket> userSupportTickets = (List<SupportTicket>)
+                                                request.getAttribute("userSupportTickets");
+                                        SupportTicket selectedSupportTicket = (SupportTicket)
+                                                request.getAttribute("selectedSupportTicket");
+                                        List<SupportMessage> supportMessages = (List<SupportMessage>)
+                                                request.getAttribute("supportMessages");
 
                                         // Xác định tab hoạt động hiện tại (Server-side rendering)
                                         String activeTab = request.getParameter("tab");
@@ -3314,6 +3322,26 @@
                                                                                                     style="padding:0.75rem; border-radius:0.7rem; font-size:0.9rem;">Gửi
                                                                                                     tin nhắn</button>
                                                                                             </form>
+                                                                                            <div style="border-top:1px solid #e2e8f0; margin-top:1.25rem; padding-top:1rem;">
+                                                                                                <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:0.75rem;">
+                                                                                                    <span style="font-weight:800; color:var(--text-main); font-size:0.9rem;">Lịch sử hỗ trợ</span>
+                                                                                                    <span style="font-size:0.72rem; font-weight:800; color:#059669; background:#dcfce7; border-radius:999px; padding:0.18rem 0.6rem;"><%= userSupportTickets != null ? userSupportTickets.size() : 0 %> yêu cầu</span>
+                                                                                                </div>
+                                                                                                <div style="display:flex; flex-direction:column; gap:0.65rem;">
+                                                                                                    <% if (userSupportTickets != null && !userSupportTickets.isEmpty()) {
+                                                                                                        for (SupportTicket ticket : userSupportTickets) {
+                                                                                                            String ticketTime = ticket.getLatestMessageAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(ticket.getLatestMessageAt()) : "";
+                                                                                                    %>
+                                                                                                    <a href="${pageContext.request.contextPath}/student-profile?tab=support&supportTicketId=<%= h(ticket.getId()) %>" style="display:block; text-decoration:none; border:1px solid #e2e8f0; border-radius:0.8rem; padding:0.85rem; background:#f8fafc;">
+                                                                                                        <span style="display:block; color:var(--text-main); font-weight:800; font-size:0.82rem;"><%= h(ticket.getTitle()) %></span>
+                                                                                                        <span style="display:block; color:#64748b; font-weight:650; font-size:0.72rem; margin-top:0.2rem;"><%= h(ticket.getStatus()) %> · <%= ticketTime %></span>
+                                                                                                        <span style="display:block; color:#475569; font-size:0.74rem; margin-top:0.4rem; line-height:1.45;"><%= h(ticket.getLatestMessage()) %></span>
+                                                                                                    </a>
+                                                                                                    <% } } else { %>
+                                                                                                    <div style="border:1px dashed #cbd5e1; border-radius:0.8rem; padding:0.9rem; text-align:center; color:#64748b; font-weight:700; font-size:0.8rem;">Bạn chưa gửi yêu cầu hỗ trợ nào.</div>
+                                                                                                    <% } %>
+                                                                                                </div>
+                                                                                            </div>
                                                                                         </div>
                                                                                     </div>
                                                                                 </div>
@@ -3652,7 +3680,7 @@
                                                                 })
                                                                     .then(async response => {
                                                                         if (response.ok) {
-                                                                            showToast('Đã gửi thành công đến quản trị viên, phản hồi sẽ gửi đến email của bạn.');
+                                                                            showToast('Đã gửi yêu cầu hỗ trợ. Phản hồi sẽ hiển thị trong tab hỗ trợ của bạn.');
                                                                             this.reset();
                                                                         } else {
                                                                             const errorMsg = await response.text();

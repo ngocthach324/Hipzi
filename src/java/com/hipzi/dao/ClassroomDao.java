@@ -187,6 +187,18 @@ public class ClassroomDao {
         return subjects;
     }
 
+    public int countActiveClassrooms() {
+        String sql = "SELECT COUNT(*) FROM classrooms WHERE status IN ('open', 'upcoming')";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? rs.getInt(1) : 0;
+        } catch (SQLException e) {
+            System.err.println("Error in ClassroomDao.countActiveClassrooms: " + e.getMessage());
+        }
+        return 0;
+    }
+
     public boolean create(Classroom classroom) {
         if (classroom.getClassCode() == null || classroom.getClassCode().trim().isEmpty()) {
             classroom.setClassCode("HPZ-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(Locale.ROOT));

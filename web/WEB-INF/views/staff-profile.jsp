@@ -1,10 +1,12 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Role"%>
 <%@page import="com.hipzi.model.Classroom"%>
 <%@page import="com.hipzi.model.Course"%>
 <%@page import="com.hipzi.model.TeacherApplication"%>
 <%@page import="com.hipzi.model.Notification"%>
+<%@page import="com.hipzi.model.SupportMessage"%>
+<%@page import="com.hipzi.model.SupportTicket"%>
 <%@page import="com.hipzi.service.NotificationService"%>
 <%@page import="com.hipzi.util.UserStatusWebSocket"%>
 <%@page import="java.util.List"%>
@@ -501,6 +503,66 @@
             animation: none;
         }
 
+        body.staff-profile-page #tab-profile,
+        body.staff-profile-page #tab-security {
+            gap: 2rem;
+        }
+
+        body.staff-profile-page #tab-profile .metrics-row,
+        body.staff-profile-page #tab-profile .dashboard-grid-layout {
+            margin: 0;
+        }
+
+        body.staff-profile-page #tab-security .premium-card {
+            background: #ffffff;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            box-sizing: border-box;
+        }
+
+        body.staff-profile-page #tab-profile .premium-card {
+            padding: 1.5rem;
+        }
+
+        body.staff-profile-page #tab-security .security-password-card {
+            min-height: 188px;
+            justify-content: space-between;
+        }
+
+        body.staff-profile-page #tab-security .security-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        body.staff-profile-page #tab-security .security-card-grid .premium-card {
+            min-height: 188px;
+            justify-content: space-between;
+        }
+
+        body.staff-profile-page #tab-support > .dashboard-grid-layout {
+            display: none !important;
+        }
+
+        body.staff-profile-page #tab-support .support-ticket-layout {
+            display: grid;
+            grid-template-columns: 0.82fr 1.18fr;
+            gap: 1.5rem;
+            align-items: stretch;
+        }
+
+        body.staff-profile-page #tab-support .support-ticket-layout .premium-card {
+            background: #ffffff;
+        }
+
+        @media (max-width: 1100px) {
+            body.staff-profile-page #tab-support .support-ticket-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             .dashboard-content-wrapper.is-switching-tab,
             .tab-pane.active-pane {
@@ -597,6 +659,369 @@
         .role-tag.teacher { background: #f3e8ff; color: #7c3aed; }
         .role-tag.staff   { background: #dbeafe; color: #2563eb; }
         .role-tag.admin   { background: #fee2e2; color: #dc2626; }
+
+        .tab-pane-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-dark);
+            padding-bottom: 1rem;
+        }
+
+        .tab-pane-header-left h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0 0 0.35rem 0;
+            letter-spacing: -0.5px;
+        }
+
+        .tab-pane-header-left p {
+            font-size: 0.95rem;
+            color: #475569;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .tab-pane-header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .date-badge {
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 1024px) {
+            .metrics-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .metrics-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .metric-card {
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 140px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-top: 4px solid var(--primary);
+            color: var(--text-main);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        .metrics-row .metric-card:nth-child(1) { border-top-color: var(--primary); }
+        .metrics-row .metric-card:nth-child(2) { border-top-color: #7c3aed; }
+        .metrics-row .metric-card:nth-child(3) { border-top-color: #ea580c; }
+        .metrics-row .metric-card:nth-child(4) { border-top-color: #2563eb; }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1);
+        }
+
+        .metric-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .metric-card-title {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+        }
+
+        .metric-arrow-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-dark);
+            background: var(--border-light);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        .metric-card-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0.75rem 0 0.35rem 0;
+            line-height: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .metric-card-sub {
+            font-size: 0.78rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.24rem 0.62rem;
+            border-radius: 0.5rem;
+            width: fit-content;
+            position: relative;
+            z-index: 1;
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .metric-ghost-icon {
+            position: absolute;
+            right: 1.15rem;
+            bottom: 1rem;
+            width: 64px;
+            height: 64px;
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            background: var(--primary-light);
+            opacity: 0.28;
+            transform: rotate(-6deg);
+            pointer-events: none;
+        }
+
+        .metric-ghost-icon svg {
+            width: 34px;
+            height: 34px;
+            stroke-width: 2.1;
+        }
+
+        .dashboard-grid-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .premium-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .premium-card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-main);
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .premium-card-title svg {
+            color: var(--primary);
+        }
+
+        .account-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .profile-edit-btn {
+            background: var(--primary) !important;
+            color: #ffffff !important;
+            box-shadow: 0 12px 24px rgba(5, 150, 105, 0.18);
+        }
+
+        .account-summary-panel {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 1.25rem;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .account-summary-main {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .account-avatar-wrap {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            flex-shrink: 0;
+        }
+
+        .account-avatar-img,
+        .account-avatar-placeholder {
+            width: 76px;
+            height: 76px;
+            border-radius: 1.15rem;
+            border: 1px solid rgba(4, 120, 87, 0.12);
+            box-shadow: 0 10px 20px rgba(4, 120, 87, 0.08);
+        }
+
+        .account-avatar-img {
+            object-fit: cover;
+            display: block;
+        }
+
+        .account-avatar-placeholder {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-camera-btn {
+            position: absolute;
+            right: -6px;
+            bottom: -6px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            background: var(--primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(4, 120, 87, 0.24);
+            transition: all 0.2s ease;
+        }
+
+        .avatar-camera-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .account-identity {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .account-name {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.25rem;
+            font-weight: 850;
+            line-height: 1.25;
+        }
+
+        .account-email {
+            display: block;
+            margin-top: 0.25rem;
+            color: #475569;
+            font-size: 0.92rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .account-side-meta {
+            display: flex;
+            align-items: stretch;
+            gap: 0.75rem;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .account-meta-pill {
+            min-width: 150px;
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            background: #f8fafc;
+            padding: 0.75rem 0.9rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.22rem;
+        }
+
+        .account-meta-label {
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            font-weight: 850;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .account-meta-value {
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 640px) {
+            .account-summary-panel {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .account-summary-main,
+            .account-side-meta {
+                width: 100%;
+            }
+
+            .account-side-meta {
+                margin-left: 0;
+                flex-direction: column;
+            }
+
+            .account-meta-pill {
+                min-width: 0;
+            }
+        }
 
         .highlight-meta-info {
             display: flex;
@@ -2114,6 +2539,22 @@
             background: rgba(100, 116, 139, 0.22);
         }
 
+        html:has(body.staff-profile-page)::-webkit-scrollbar,
+        body.staff-profile-page::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        html:has(body.staff-profile-page)::-webkit-scrollbar-thumb,
+        body.staff-profile-page::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        html:has(body.staff-profile-page)::-webkit-scrollbar-track,
+        body.staff-profile-page::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
         body.staff-profile-page .sidebar-brand-horizontal {
             display: flex;
             align-items: center;
@@ -2296,6 +2737,25 @@
         List<String> classSubjects = (List<String>) request.getAttribute("classSubjects");
         List<Course> managedCourses = (List<Course>) request.getAttribute("managedCourses");
         List<Course> courseSubjects = (List<Course>) request.getAttribute("courseSubjects");
+        List<SupportTicket> staffSupportTickets = (List<SupportTicket>) request.getAttribute("staffSupportTickets");
+        SupportTicket selectedSupportTicket = (SupportTicket) request.getAttribute("selectedSupportTicket");
+        List<SupportMessage> supportMessages = (List<SupportMessage>) request.getAttribute("supportMessages");
+        int supportOpenCount = 0;
+        int supportWaitingStaffCount = 0;
+        int supportResolvedCount = 0;
+        if (staffSupportTickets != null) {
+            for (SupportTicket supportTicket : staffSupportTickets) {
+                if (supportTicket == null || supportTicket.getStatus() == null) continue;
+                if ("resolved".equals(supportTicket.getStatus()) || "closed".equals(supportTicket.getStatus())) {
+                    supportResolvedCount++;
+                } else {
+                    supportOpenCount++;
+                    if ("waiting_staff".equals(supportTicket.getStatus()) || "open".equals(supportTicket.getStatus())) {
+                        supportWaitingStaffCount++;
+                    }
+                }
+            }
+        }
         String searchTeacher = (String) request.getAttribute("searchTeacher");
         if (searchTeacher == null) searchTeacher = "";
         String teacherTypeParam = (String) request.getAttribute("teacherType");
@@ -2312,6 +2772,14 @@
         if (courseSubjectParam == null || courseSubjectParam.isEmpty()) courseSubjectParam = "ALL";
         String courseStatusParam = (String) request.getAttribute("courseStatus");
         if (courseStatusParam == null || courseStatusParam.isEmpty()) courseStatusParam = "ALL";
+        Object staffTotalUsersObj = request.getAttribute("staffTotalUsers");
+        int staffTotalUsers = staffTotalUsersObj instanceof Number ? ((Number) staffTotalUsersObj).intValue() : 0;
+        Object staffActiveClassCountObj = request.getAttribute("staffActiveClassCount");
+        int staffActiveClassCount = staffActiveClassCountObj instanceof Number ? ((Number) staffActiveClassCountObj).intValue() : 0;
+        Object staffCourseCountObj = request.getAttribute("staffCourseCount");
+        int staffCourseCount = staffCourseCountObj instanceof Number ? ((Number) staffCourseCountObj).intValue() : 0;
+        Object staffMaterialCountObj = request.getAttribute("staffMaterialCount");
+        int staffMaterialCount = staffMaterialCountObj instanceof Number ? ((Number) staffMaterialCountObj).intValue() : 0;
         String activeStaffTab = request.getParameter("tab");
         if (activeStaffTab == null || activeStaffTab.trim().isEmpty()) {
             activeStaffTab = "tab-teacher-approval";
@@ -2414,7 +2882,7 @@
                 <li>
                     <a id="nav-tab-security" class="<%= "tab-security".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-security')">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        <span>Bảo mật và mật khẩu</span>
+                        <span>Bảo mật</span>
                     </a>
                 </li>
                 <li>
@@ -2924,122 +3392,132 @@
             </section>
 
             <section id="tab-profile" class="tab-pane <%= "tab-profile".equals(activeStaffTab) ? "active-pane" : "" %>">
-                <div class="tab-grouped-container">
-                    <div class="tab-header-accent">
-                        <div class="tab-header-title-text">Hồ sơ cá nhân</div>
-                        <div class="tab-header-date-pill">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <div class="tab-pane-header">
+                    <div class="tab-pane-header-left">
+                        <h1>Hồ sơ cá nhân</h1>
+                        <p>Xem và quản lý thông tin tài khoản nhân viên của bạn trên HIPZI.</p>
+                    </div>
+                    <div class="tab-pane-header-right">
+                        <div class="date-badge">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                             <span><%= currentDateDisplay %></span>
                         </div>
                     </div>
+                </div>
 
-                    <div class="tab-body-content">
-                        <div style="background:linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); display:flex; flex-direction:column; gap:2rem; flex:1; min-height:0;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.5rem; padding-bottom:1.5rem; border-bottom:1px solid #f1f5f9;">
-                                <div class="highlight-left-group" style="margin:0;">
-                                <div class="highlight-avatar-container">
-                                    <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
-                                        <img src="<%= user.getAvatarUrl() %>" alt="Avatar">
-                                    <% } else { %>
-                                        <div class="highlight-avatar-placeholder"><%= initials %></div>
-                                    <% } %>
-                                    <label class="btn-avatar-camera" title="Thay đổi ảnh đại diện" onclick="document.getElementById('avatarFileInput').click();">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                                    </label>
-
-                                    <!-- Form ngầm upload ảnh đại diện -->
-                                    <form id="avatarUploadForm" action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" style="display:none;">
-                                        <input type="hidden" name="action" value="updateAvatar">
-                                        <input type="file" id="avatarFileInput" name="avatarFile" accept="image/*" onchange="if(this.files.length > 0) { showToast('Đang tải ảnh lên...', 'info'); document.getElementById('avatarUploadForm').submit(); }">
-                                    </form>
-                                </div>
-                                <div class="highlight-user-info">
-                                    <h2><%= user != null ? user.getDisplayName() : "Nhân viên HIPZI" %></h2>
-                                    <div class="highlight-meta-info" style="margin-top:0.35rem;">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                        <span>Thành viên tích cực</span>
-                                    </div>
-                                </div>
+                <div class="metrics-row">
+                    <div class="metric-card primary">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Tổng người dùng</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
                             </div>
-
-                                <div style="display:flex; flex-direction:column; align-items:flex-end; text-align:right;">
-                                    <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.35rem;">Vai trò chính</span>
-                                    <div class="highlight-user-roles" style="margin:0;">
-                                        <% if (roles != null && !roles.isEmpty()) {
-                                            for (Role r : roles) { %>
-                                                <span class="role-tag <%= r.getName() %>" style="font-size:0.85rem; padding:0.4rem 1.15rem; border-radius:2rem;">
-                                                    <%= r.getName().equals("student")  ? "Học viên"    :
-                                                        r.getName().equals("parent")   ? "Phụ huynh"   :
-                                                        r.getName().equals("teacher")  ? "Giảng viên"  :
-                                                        r.getName().equals("staff")    ? "Nhân viên"   :
-                                                        r.getName().equals("admin")    ? "Quản trị"    : r.getName() %>
-                                                </span>
-                                        <% }} else { %>
-                                            <span class="role-tag staff" style="font-size:0.85rem; padding:0.4rem 1.15rem; border-radius:2rem;">Nhân viên</span>
-                                        <% } %>
-                                    </div>
-                                </div>
                         </div>
+                        <div>
+                            <div class="metric-card-value"><%= staffTotalUsers %></div>
+                            <span class="metric-card-sub">Tài khoản</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                    </div>
 
-                            <div>
-                                <div class="card-header-layout" style="padding:0 0 1.25rem 0; margin:0; border-bottom:none; background:transparent;">
-                                <div class="card-header-title">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                    <span>Thông tin cá nhân</span>
-                                </div>
-                                <button onclick="switchTab('tab-edit')" class="btn-card-edit" title="Chuyển sang tab cập nhật">
+                    <div class="metric-card secondary">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Lớp học hoạt động</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-card-value"><%= staffActiveClassCount %></div>
+                            <span class="metric-card-sub" style="background:#f5f3ff; color:#7c3aed;">Đang vận hành</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#7c3aed; background:#f5f3ff;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="metric-card secondary">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Khóa học hiện có</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-card-value"><%= staffCourseCount %></div>
+                            <span class="metric-card-sub" style="background:#fff7ed; color:#ea580c;">Khóa học</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#ea580c; background:#fff7ed;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="metric-card secondary">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Tài liệu</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-card-value"><%= staffMaterialCount %></div>
+                            <span class="metric-card-sub" style="background:#eff6ff; color:#2563eb;">Kho học liệu</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#2563eb; background:#eff6ff;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid-layout">
+                    <div class="premium-card" style="grid-column: 1 / -1;">
+                        <div class="premium-card-header">
+                            <span class="premium-card-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                Chi tiết tài khoản
+                            </span>
+                            <div class="account-header-actions">
+                                <button type="button" onclick="switchTab('tab-edit')" class="btn-premium profile-edit-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
                                     <span>Chỉnh sửa</span>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                                 </button>
                             </div>
+                        </div>
 
-                                <div class="card-body-grid" style="padding:0; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1.25rem;">
-                                    <div style="background:#ffffff; border-radius:1.25rem; padding:1.25rem 1.35rem; border:1px solid #dcfce7; box-shadow:0 4px 12px rgba(16, 185, 129, 0.03); display:flex; align-items:center; gap:1rem; transition:transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
-                                        <div style="width:48px; height:48px; border-radius:50%; background:#ecfdf5; display:flex; justify-content:center; align-items:center; flex-shrink:0; color:#059669;">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                        </div>
-                                        <div style="min-width:0; flex-grow:1;">
-                                            <span style="font-size:0.75rem; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.15rem;">Họ và tên hiển thị</span>
-                                            <span style="font-size:1.15rem; font-weight:700; color:#0f172a; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= user != null ? user.getDisplayName() : "—" %></span>
-                                            <span style="font-size:0.75rem; color:#64748b; display:block; margin-top:0.1rem;">Thành viên hệ thống</span>
-                                        </div>
+                        <form id="staffAvatarUploadForm" action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" style="display:none;">
+                            <input type="hidden" name="action" value="updateAvatar">
+                            <input type="file" id="staffAvatarFile" name="avatarFile" accept="image/*" onchange="document.getElementById('staffAvatarUploadForm').submit();">
+                        </form>
+
+                        <div class="account-summary-panel">
+                            <div class="account-summary-main">
+                                <div class="account-avatar-wrap">
+                                    <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+                                        <img src="<%= user.getAvatarUrl() %>" class="account-avatar-img" alt="Avatar">
+                                    <% } else { %>
+                                        <div class="account-avatar-placeholder"><%= initials %></div>
+                                    <% } %>
+                                    <button type="button" class="avatar-camera-btn" title="Cập nhật ảnh đại diện" onclick="document.getElementById('staffAvatarFile').click();">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                    </button>
                                 </div>
-
-                                    <div style="background:#ffffff; border-radius:1.25rem; padding:1.25rem 1.35rem; border:1px solid #e0e7ff; box-shadow:0 4px 12px rgba(99, 102, 241, 0.03); display:flex; align-items:center; gap:1rem; transition:transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
-                                        <div style="width:48px; height:48px; border-radius:50%; background:#e0e7ff; display:flex; justify-content:center; align-items:center; flex-shrink:0; color:#4f46e5;">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                        </div>
-                                        <div style="min-width:0; flex-grow:1;">
-                                            <span style="font-size:0.75rem; font-weight:700; color:#4f46e5; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.15rem;">Ngày tham gia</span>
-                                            <span style="font-size:1.15rem; font-weight:700; color:#0f172a; display:block;"><%= joinDate %></span>
-                                            <span style="font-size:0.75rem; color:#64748b; display:block; margin-top:0.1rem;">Thời gian kích hoạt</span>
-                                        </div>
+                                <div class="account-identity">
+                                    <h3 class="account-name"><%= user != null ? user.getDisplayName() : "Nhân viên HIPZI" %></h3>
+                                    <span class="account-email" title="<%= user != null ? user.getEmail() : "" %>"><%= user != null ? user.getEmail() : "staff@hipzi.vn" %></span>
                                 </div>
-
-                                    <div style="background:#ffffff; border-radius:1.25rem; padding:1.25rem 1.35rem; border:1px solid #fef3c7; box-shadow:0 4px 12px rgba(245, 158, 11, 0.03); display:flex; align-items:center; gap:1rem; transition:transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
-                                        <div style="width:48px; height:48px; border-radius:50%; background:#fffbeb; display:flex; justify-content:center; align-items:center; flex-shrink:0; color:#d97706;">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                                        </div>
-                                        <div style="min-width:0; flex-grow:1;">
-                                            <span style="font-size:0.75rem; font-weight:700; color:#d97706; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.15rem;">Địa chỉ Email</span>
-                                            <span style="font-size:1.05rem; font-weight:700; color:#0f172a; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="<%= user != null ? user.getEmail() : "" %>"><%= user != null ? user.getEmail() : "—" %></span>
-                                            <span style="font-size:0.75rem; color:#64748b; display:block; margin-top:0.1rem;">Tài khoản liên kết</span>
-                                        </div>
+                            </div>
+                            <div class="account-side-meta">
+                                <div class="account-meta-pill">
+                                    <span class="account-meta-label">Ngày tham gia</span>
+                                    <span class="account-meta-value"><%= joinDate %></span>
                                 </div>
-
-                                    <div style="background:#ffffff; border-radius:1.25rem; padding:1.25rem 1.35rem; border:1px solid #fee2e2; box-shadow:0 4px 12px rgba(239, 68, 68, 0.03); display:flex; align-items:center; gap:1rem; transition:transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
-                                        <div style="width:48px; height:48px; border-radius:50%; background:#fef2f2; display:flex; justify-content:center; align-items:center; flex-shrink:0; color:#ef4444;">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                        </div>
-                                        <div style="min-width:0; flex-grow:1;">
-                                            <span style="font-size:0.75rem; font-weight:700; color:#ef4444; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.15rem;">Trạng thái tài khoản</span>
-                                        <% String status = (user != null) ? user.getAccountStatus() : "active"; %>
-                                            <span class="acc-status-tag <%= status %>" style="display:inline-block; font-size:0.8rem; padding:0.25rem 0.75rem; margin-top:0.1rem;">
-                                            <%= "active".equals(status) ? "Đang hoạt động" : "suspended".equals(status) ? "Tạm khóa" : "Vô hiệu hóa" %>
-                                        </span>
-                                            <span style="font-size:0.75rem; color:#64748b; display:block; margin-top:0.2rem;">Bảo mật hệ thống</span>
-                                        </div>
-                                    </div>
+                                <div class="account-meta-pill">
+                                    <span class="account-meta-label">Vai trò</span>
+                                    <span class="account-meta-value">
+                                        <span class="role-tag staff">Nhân viên</span>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -3093,82 +3571,79 @@
             <!-- TAB 3: BẢO MẬT VÀ MẬT KHẨU                 -->
             <!-- ========================================== -->
             <section id="tab-security" class="tab-pane <%= "tab-security".equals(activeStaffTab) ? "active-pane" : "" %>">
-                <div class="tab-grouped-container">
-                    <div class="tab-header-accent">
-                        <div class="tab-header-title-text">Bảo mật tài khoản</div>
-                        <div class="tab-header-date-pill">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <div class="tab-pane-header">
+                    <div class="tab-pane-header-left">
+                        <h1>Bảo mật tài khoản</h1>
+                        <p>Quản lý mật khẩu đăng nhập, bảo mật hai lớp và phiên đăng nhập.</p>
+                    </div>
+                    <div class="tab-pane-header-right">
+                        <div class="date-badge">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                             <span><%= currentDateDisplay %></span>
                         </div>
                     </div>
+                </div>
 
-                    <div class="tab-body-content">
-                        <!-- KHUNG CHÍNH TOP: MẬT KHẨU ĐĂNG NHẬP -->
-                        <div style="background:#ffffff; border-radius:1.25rem; border:1px solid rgba(226, 232, 240, 0.9); box-shadow:0 8px 24px rgba(0, 0, 0, 0.02); overflow:hidden;">
-                            <div style="padding:1.75rem; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.25rem;">
-                                <div>
-                                    <span style="font-weight:800; font-size:1.15rem; color:#b45309; letter-spacing:0.5px; text-transform:uppercase; display:block;">Mật khẩu đăng nhập</span>
-                                    <p style="font-size:0.85rem; color:var(--text-muted); margin:0.35rem 0 0 0;">Cập nhật mật khẩu định kỳ để bảo mật tốt hơn.</p>
-                                </div>
-                                <button type="button" onclick="document.getElementById('pwd-modal-overlay').style.display='flex';" style="display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; background:#059669; color:#ffffff; font-weight:800; font-size:0.85rem; padding:0.65rem 1.35rem; border-radius:9999px; border:none; box-shadow:0 4px 14px rgba(5, 150, 105, 0.25); cursor:pointer; transition:all 0.2s ease;" onmouseover="this.style.background='#047857'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#059669'; this.style.transform='translateY(0)';">
-                                    <span>Đổi mật khẩu</span>
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                                </button>
+                <div class="premium-card security-password-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem;">
+                        <div>
+                            <span style="font-weight: 800; font-size: 1.15rem; color: var(--text-main); letter-spacing: 0.5px; text-transform: uppercase; display: block;">Mật khẩu đăng nhập</span>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.35rem 0 0 0;">Cập nhật mật khẩu định kỳ để bảo mật tốt hơn.</p>
+                        </div>
+                        <button type="button" onclick="document.getElementById('pwd-modal-overlay').style.display='flex';" class="btn-premium primary" style="background: #059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
+                            <span>Đổi mật khẩu</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        </button>
+                    </div>
+
+                    <div style="padding: 1rem 0 0 0; border-top: 1px solid var(--border-light); display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.4rem; color: #10b981; font-weight: 700; font-size: 0.85rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <span>Mật khẩu mạnh</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.4rem; color: <%= (user != null && user.isTwoFactorEnabled()) ? "#10b981" : "var(--text-muted)" %>; font-weight: 700; font-size: 0.85rem;">
+                            <% if (user != null && user.isTwoFactorEnabled()) { %>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                <span>Xác thực 2 lớp: Đang bật</span>
+                            <% } else { %>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                                <span>Xác thực 2 lớp: Tắt</span>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="security-card-grid">
+                    <div class="premium-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Bảo mật 2 lớp (OTP)</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.1rem;">
+                            <div>
+                                <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); display: block;">Mã OTP qua Email</span>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; line-height: 1.5; margin: 0.35rem 0 0 0;">Tăng cường bảo vệ tài khoản khi đăng nhập ở thiết bị lạ.</p>
                             </div>
+                            
+                            <form id="toggle2faForm" action="${pageContext.request.contextPath}/profile" method="POST" style="display: none;">
+                                <input type="hidden" name="action" value="toggle2FA">
+                            </form>
 
-                            <div style="padding:1rem 1.75rem; border-top:1px solid var(--border-dark); background:rgba(248, 250, 252, 0.4); display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
-                                <div style="display:flex; align-items:center; gap:0.4rem; color:#10b981; font-weight:700; font-size:0.85rem;">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                    <span>Mật khẩu mạnh</span>
-                                </div>
-                                <div style="display:flex; align-items:center; gap:0.4rem; color:<%= (user != null && user.isTwoFactorEnabled()) ? "#10b981" : "var(--text-muted)" %>; font-weight:700; font-size:0.85rem;">
-                                    <% if (user != null && user.isTwoFactorEnabled()) { %>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                                        <span>Xác thực 2 lớp: Đang bật</span>
-                                    <% } else { %>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                        <span>Xác thực 2 lớp: Tắt</span>
-                                    <% } %>
-                                </div>
+                            <% boolean is2fa = (user != null && user.isTwoFactorEnabled()); %>
+                            <div id="otp-toggle-btn" onclick="document.getElementById('toggle2faForm').submit();" style="width: 44px; height: 24px; background: <%= is2fa ? "#10b981" : "#cbd5e1" %>; border-radius: 12px; padding: 2px; cursor: pointer; transition: background 0.3s ease; display: flex; align-items: center;">
+                                <div class="toggle-circle" style="width: 20px; height: 20px; background: #ffffff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); transform: translateX(<%= is2fa ? "20px" : "0" %>);"></div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- LƯỚI HAI KHUNG CON BÊN DƯỚI -->
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem;">
-                            
-                            <!-- KHUNG TRÁI: BẢO MẬT 2 LỚP (OTP) -->
-                            <div style="background:#ffffff; border-radius:1.25rem; border:1px solid rgba(226, 232, 240, 0.9); box-shadow:0 8px 24px rgba(0, 0, 0, 0.02); padding:1.5rem; display:flex; flex-direction:column; justify-content:space-between; gap:1.5rem;">
-                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                    <span style="font-weight:800; font-size:0.9rem; color:var(--text-main); text-transform:uppercase; letter-spacing:0.5px;">Bảo mật 2 lớp (OTP)</span>
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                </div>
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <span style="font-weight:700; font-size:0.95rem; color:var(--text-main);">Mã OTP qua Email</span>
-                                    
-                                    <!-- Form ngầm xử lý toggle 2FA -->
-                                    <form id="toggle2faForm" action="${pageContext.request.contextPath}/profile" method="POST" style="display:none;">
-                                        <input type="hidden" name="action" value="toggle2FA">
-                                    </form>
-
-                                    <!-- NÚT TOGGLE SWITCH THỰC TẾ -->
-                                    <% boolean is2fa = (user != null && user.isTwoFactorEnabled()); %>
-                                    <div id="otp-toggle-btn" onclick="document.getElementById('toggle2faForm').submit();" style="width:44px; height:24px; background:<%= is2fa ? "#10b981" : "#cbd5e1" %>; border-radius:12px; padding:2px; cursor:pointer; transition:background 0.3s ease; display:flex; align-items:center;">
-                                        <div class="toggle-circle" style="width:20px; height:20px; background:#ffffff; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); transform:translateX(<%= is2fa ? "20px" : "0" %>);"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- KHUNG PHẢI: THIẾT BỊ HIỆN TẠI -->
-                            <div style="background:#ffffff; border-radius:1.25rem; border:1px solid rgba(226, 232, 240, 0.9); box-shadow:0 8px 24px rgba(0, 0, 0, 0.02); padding:1.5rem; display:flex; flex-direction:column; justify-content:space-between; gap:1.5rem;">
-                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                    <span style="font-weight:800; font-size:0.9rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Thiết bị hiện tại</span>
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                                </div>
-                                <div>
-                                    <span style="font-weight:800; font-size:1.1rem; color:var(--text-main); display:block;">Windows - Chrome (Vietnam)</span>
-                                    <span style="font-size:0.75rem; color:#10b981; font-weight:600; display:inline-block; margin-top:0.25rem; background:#ecfdf5; padding:0.15rem 0.5rem; border-radius:0.25rem;">Phiên truy cập an toàn</span>
-                                </div>
-                            </div>
+                    <div class="premium-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Thiết bị hiện tại</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        </div>
+                        <div>
+                            <span style="font-weight: 800; font-size: 1.1rem; color: var(--text-main); display: block;">Windows - Chrome (Vietnam)</span>
+                            <span style="font-size: 0.75rem; color: #10b981; font-weight: 600; display: inline-block; margin-top: 0.25rem; background: #ecfdf5; padding: 0.15rem 0.5rem; border-radius: 0.25rem;">Phiên truy cập an toàn</span>
                         </div>
                     </div>
                 </div>
@@ -3289,7 +3764,7 @@
                 <div class="tab-pane-header">
                     <div class="tab-pane-header-left">
                         <h1>Hỗ trợ nghiệp vụ</h1>
-                        <p>Giải đáp thắc mắc và gửi yêu cầu trợ giúp kỹ thuật dành cho nhân viên HIPZI.</p>
+                        <p>Tiếp nhận yêu cầu hỗ trợ từ học viên, giảng viên và phản hồi trực tiếp trong hệ thống.</p>
                     </div>
                     <div class="tab-pane-header-right">
                         <div class="date-badge">
@@ -3299,6 +3774,135 @@
                     </div>
                 </div>
 
+                <div class="support-ticket-layout">
+                    <div class="premium-card" style="min-height:560px;">
+                        <div class="premium-card-header" style="border-bottom:1px solid var(--border-dark); padding-bottom:1rem; margin-bottom:0;">
+                            <span class="premium-card-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+                                Hộp thư hỗ trợ
+                            </span>
+                            <span style="font-size:0.78rem; font-weight:850; color:#059669; background:#dcfce7; padding:0.25rem 0.75rem; border-radius:999px;"><%= supportWaitingStaffCount %> cần phản hồi</span>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.75rem;">
+                            <div style="border:1px solid #dbeafe; background:#eff6ff; border-radius:0.9rem; padding:0.85rem;">
+                                <span style="display:block; color:#2563eb; font-weight:900; font-size:1.35rem; line-height:1;"><%= supportOpenCount %></span>
+                                <span style="display:block; color:#64748b; font-size:0.72rem; font-weight:800; margin-top:0.25rem;">Đang mở</span>
+                            </div>
+                            <div style="border:1px solid #fef3c7; background:#fffbeb; border-radius:0.9rem; padding:0.85rem;">
+                                <span style="display:block; color:#d97706; font-weight:900; font-size:1.35rem; line-height:1;"><%= supportWaitingStaffCount %></span>
+                                <span style="display:block; color:#64748b; font-size:0.72rem; font-weight:800; margin-top:0.25rem;">Chờ phản hồi</span>
+                            </div>
+                            <div style="border:1px solid #dcfce7; background:#f0fdf4; border-radius:0.9rem; padding:0.85rem;">
+                                <span style="display:block; color:#059669; font-weight:900; font-size:1.35rem; line-height:1;"><%= supportResolvedCount %></span>
+                                <span style="display:block; color:#64748b; font-size:0.72rem; font-weight:800; margin-top:0.25rem;">Đã xử lý</span>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                            <button type="button" style="border:none; background:#059669; color:#ffffff; border-radius:999px; padding:0.48rem 0.9rem; font-size:0.78rem; font-weight:850; cursor:pointer;">Tất cả</button>
+                            <button type="button" style="border:1px solid #dbeafe; background:#ffffff; color:#475569; border-radius:999px; padding:0.48rem 0.9rem; font-size:0.78rem; font-weight:850; cursor:pointer;">Học viên</button>
+                            <button type="button" style="border:1px solid #dbeafe; background:#ffffff; color:#475569; border-radius:999px; padding:0.48rem 0.9rem; font-size:0.78rem; font-weight:850; cursor:pointer;">Giảng viên</button>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:0.85rem;">
+                            <% if (staffSupportTickets != null && !staffSupportTickets.isEmpty()) {
+                                for (SupportTicket ticket : staffSupportTickets) {
+                                    boolean isSelectedTicket = selectedSupportTicket != null && selectedSupportTicket.getId() != null && selectedSupportTicket.getId().equals(ticket.getId());
+                                    String statusText = "Đang mở";
+                                    String statusColor = "#2563eb";
+                                    String statusBg = "#eff6ff";
+                                    if ("waiting_staff".equals(ticket.getStatus()) || "open".equals(ticket.getStatus())) {
+                                        statusText = "Cần phản hồi";
+                                        statusColor = "#059669";
+                                        statusBg = "#dcfce7";
+                                    } else if ("waiting_user".equals(ticket.getStatus())) {
+                                        statusText = "Chờ user";
+                                        statusColor = "#d97706";
+                                        statusBg = "#fffbeb";
+                                    } else if ("resolved".equals(ticket.getStatus()) || "closed".equals(ticket.getStatus())) {
+                                        statusText = "Đã xử lý";
+                                        statusColor = "#64748b";
+                                        statusBg = "#f1f5f9";
+                                    }
+                                    String ticketTime = ticket.getLatestMessageAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(ticket.getLatestMessageAt()) : "Chưa có tin nhắn";
+                            %>
+                            <a href="${pageContext.request.contextPath}/staff-profile?tab=support&supportTicketId=<%= h(ticket.getId()) %>" style="display:block; text-decoration:none; text-align:left; border:1px solid <%= isSelectedTicket ? "#99f6e4" : "#e2e8f0" %>; border-left:4px solid <%= isSelectedTicket ? "#059669" : "#e2e8f0" %>; background:<%= isSelectedTicket ? "#f0fdfa" : "#ffffff" %>; border-radius:1rem; padding:1rem; cursor:pointer; box-shadow:0 10px 20px rgba(15,23,42,0.04);">
+                                <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start;">
+                                    <div style="min-width:0;">
+                                        <span style="display:block; color:#0f172a; font-weight:900; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= h(ticket.getTitle()) %></span>
+                                        <span style="display:block; color:#64748b; font-weight:700; font-size:0.78rem; margin-top:0.25rem;"><%= h(ticket.getUserName()) %> - <%= h(ticket.getSourceRole()) %></span>
+                                    </div>
+                                    <span style="flex-shrink:0; color:<%= statusColor %>; background:<%= statusBg %>; border-radius:999px; padding:0.18rem 0.55rem; font-size:0.68rem; font-weight:900;"><%= statusText %></span>
+                                </div>
+                                <p style="margin:0.7rem 0 0 0; color:#475569; font-size:0.82rem; line-height:1.45;"><%= h(ticket.getLatestMessage()) %></p>
+                                <span style="display:block; color:#94a3b8; font-size:0.72rem; font-weight:700; margin-top:0.65rem;"><%= ticketTime %> · <%= ticket.getMessageCount() %> tin nhắn</span>
+                            </a>
+                            <% } } else { %>
+                            <div style="border:1px dashed #cbd5e1; border-radius:1rem; padding:1.25rem; text-align:center; color:#64748b; font-weight:800;">
+                                Chưa có yêu cầu hỗ trợ nào.
+                            </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="premium-card" style="min-height:560px;">
+                        <div class="premium-card-header" style="border-bottom:1px solid var(--border-dark); padding-bottom:1rem; margin-bottom:0;">
+                            <span class="premium-card-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16v12H5.17L4 17.17V4z"/><path d="M8 8h8"/><path d="M8 12h5"/></svg>
+                                Chi tiết yêu cầu
+                            </span>
+                            <% if (selectedSupportTicket != null) { %>
+                            <span style="font-size:0.78rem; font-weight:850; color:#059669; background:#dcfce7; padding:0.25rem 0.75rem; border-radius:999px;"><%= h(selectedSupportTicket.getStatus()) %></span>
+                            <% } %>
+                        </div>
+
+                        <% if (selectedSupportTicket != null) { %>
+                        <div style="display:grid; grid-template-columns:1fr auto; gap:1rem; align-items:start; padding:1rem; border:1px solid #e2e8f0; border-radius:1rem; background:#f8fafc;">
+                            <div>
+                                <h3 style="margin:0; color:#0f172a; font-size:1.15rem; font-weight:900;"><%= h(selectedSupportTicket.getTitle()) %></h3>
+                                <p style="margin:0.35rem 0 0 0; color:#64748b; font-size:0.85rem; font-weight:650;"><%= h(selectedSupportTicket.getUserName()) %> - <%= h(selectedSupportTicket.getSourceRole()) %> - <%= h(selectedSupportTicket.getUserEmail()) %></p>
+                            </div>
+                            <div style="text-align:right;">
+                                <span style="display:block; color:#64748b; font-size:0.72rem; font-weight:850; text-transform:uppercase;">Mã ticket</span>
+                                <span style="display:block; color:#0f172a; font-size:0.9rem; font-weight:900; margin-top:0.2rem;"><%= h(selectedSupportTicket.getId().substring(0, 8).toUpperCase()) %></span>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:1rem; flex:1; min-height:0;">
+                            <% if (supportMessages != null && !supportMessages.isEmpty()) {
+                                for (SupportMessage message : supportMessages) {
+                                    boolean fromStaff = "staff".equals(message.getSenderRole()) || "admin".equals(message.getSenderRole());
+                                    String messageTime = message.getCreatedAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(message.getCreatedAt()) : "";
+                            %>
+                            <div style="align-self:<%= fromStaff ? "flex-end" : "flex-start" %>; max-width:78%; background:<%= fromStaff ? "#ecfdf5" : "#f1f5f9" %>; border:1px solid <%= fromStaff ? "#bbf7d0" : "#e2e8f0" %>; border-radius:<%= fromStaff ? "1rem 1rem 0.25rem 1rem" : "1rem 1rem 1rem 0.25rem" %>; padding:1rem;">
+                                <span style="display:block; color:<%= fromStaff ? "#047857" : "#64748b" %>; font-size:0.72rem; font-weight:850; margin-bottom:0.35rem;"><%= fromStaff ? "HIPZI Support" : h(message.getSenderName()) %> - <%= messageTime %></span>
+                                <p style="margin:0; color:#0f172a; font-size:0.9rem; line-height:1.55;"><%= h(message.getMessage()) %></p>
+                            </div>
+                            <% } } %>
+                        </div>
+
+                        <form id="supportReplyForm" action="${pageContext.request.contextPath}/support" method="POST" style="display:flex; flex-direction:column; gap:1rem; border-top:1px solid var(--border-dark); padding-top:1rem;">
+                            <input type="hidden" name="action" value="reply">
+                            <input type="hidden" name="ticketId" value="<%= h(selectedSupportTicket.getId()) %>">
+                            <div class="form-group-premium">
+                                <label>Nội dung phản hồi <span class="field-required">*</span></label>
+                                <textarea name="replyContent" rows="4" required placeholder="Nhập phản hồi để gửi lại người dùng trong tab hỗ trợ của họ..."></textarea>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+                                <button type="submit" name="nextStatus" value="waiting_user" class="btn-premium primary" style="min-width:190px;">
+                                    <span>Gửi phản hồi</span>
+                                </button>
+                                <button type="submit" name="nextStatus" value="resolved" class="btn-premium secondary" style="min-width:150px;">Đánh dấu đã xử lý</button>
+                            </div>
+                        </form>
+                        <% } else { %>
+                        <div style="border:1px dashed #cbd5e1; border-radius:1rem; padding:2rem; text-align:center; color:#64748b; font-weight:800;">
+                            Chọn một yêu cầu hỗ trợ để xem nội dung và phản hồi.
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
                 <div class="dashboard-grid-layout" style="align-items: start;">
                     <!-- FAQ -->
                     <div class="premium-card">
@@ -3522,7 +4126,7 @@
             'tab-manage-courses': 'Quản lý khóa học',
             'tab-profile': 'Hồ sơ cá nhân',
             'tab-edit': 'Cập nhật thông tin',
-            'tab-security': 'Bảo mật và mật khẩu',
+            'tab-security': 'Bảo mật',
             'tab-materials': 'Hàng đợi duyệt tài liệu',
             'tab-practice': 'Đăng ký giảng viên',
             'tab-notifications': 'Thông báo hệ thống',
@@ -3729,7 +4333,7 @@
                 })
                 .then(async response => {
                     if (response.ok) {
-                        showToast('Đã gửi thành công đến quản trị viên, phản hồi sẽ gửi đến email của bạn.');
+                        showToast('Đã gửi yêu cầu hỗ trợ. Phản hồi sẽ hiển thị trong tab hỗ trợ của bạn.');
                         this.reset();
                     } else {
                         const errorMsg = await response.text();
@@ -3751,3 +4355,4 @@
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
 </html>
+
