@@ -551,10 +551,138 @@
             grid-template-columns: 0.82fr 1.18fr;
             gap: 1.5rem;
             align-items: stretch;
+            margin-top: 0.35rem;
         }
 
         body.staff-profile-page #tab-support .support-ticket-layout .premium-card {
             background: #ffffff;
+            padding: 1.5rem !important;
+            gap: 1.25rem;
+            overflow: hidden;
+        }
+
+        body.staff-profile-page #tab-support .support-ticket-layout.is-mailbox-only {
+            grid-template-columns: 1fr;
+            width: 100%;
+            max-width: none;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        body.staff-profile-page #tab-support .support-ticket-layout.is-mailbox-only .premium-card {
+            width: 100%;
+            min-height: 520px !important;
+        }
+
+        body.staff-profile-page #tab-support .support-ticket-layout .premium-card-header {
+            margin-bottom: 1.25rem !important;
+        }
+
+        body.staff-profile-page #tab-support .support-ticket-layout .premium-card > div:not(.premium-card-header),
+        body.staff-profile-page #tab-support .support-ticket-layout .premium-card > form {
+            margin-top: 0.25rem;
+        }
+
+        body.staff-profile-page #tab-support .support-ticket-layout .premium-card > div[style*="grid-template-columns:repeat(3"] {
+            margin-bottom: 0.35rem;
+        }
+
+        body.staff-profile-page #tab-support .support-ticket-layout textarea {
+            min-height: 120px;
+        }
+
+        body.staff-profile-page .support-toolbar {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 190px;
+            gap: 1rem;
+            align-items: center;
+            margin: 0.25rem 0 0.3rem;
+        }
+
+        body.staff-profile-page .support-search-input {
+            width: 100%;
+            border: 1px solid var(--border-dark);
+            background: #f8fafc;
+            border-radius: 999px;
+            padding: 0.7rem 1rem;
+            font-size: 0.88rem;
+            font-weight: 650;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        body.staff-profile-page .support-filter-select-wrap {
+            position: relative;
+            min-width: 190px;
+        }
+
+        body.staff-profile-page .support-filter-select-wrap::after {
+            content: "";
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            width: 0.55rem;
+            height: 0.55rem;
+            border-right: 2px solid #059669;
+            border-bottom: 2px solid #059669;
+            transform: translateY(-65%) rotate(45deg);
+            pointer-events: none;
+        }
+
+        body.staff-profile-page .support-filter-select {
+            width: 100%;
+            appearance: none;
+            border: 1px solid #bbf7d0;
+            background: #ffffff;
+            color: #047857;
+            border-radius: 999px;
+            padding: 0.7rem 2.4rem 0.7rem 1rem;
+            font-size: 0.88rem;
+            font-weight: 900;
+            cursor: pointer;
+            outline: none;
+            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.08);
+        }
+
+        body.staff-profile-page .support-filter-select:focus {
+            border-color: #059669;
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
+        }
+
+        body.staff-profile-page .support-ticket-card.is-hidden {
+            display: none !important;
+        }
+
+        body.staff-profile-page #support-ticket-list {
+            margin-top: 0.45rem;
+        }
+
+        body.staff-profile-page .support-ticket-card {
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, background-color 0.18s ease;
+        }
+
+        body.staff-profile-page .support-ticket-card:hover {
+            border-color: #86efac !important;
+            border-left-color: #059669 !important;
+            box-shadow: 0 18px 36px rgba(5, 150, 105, 0.14) !important;
+            transform: translateY(-2px);
+            background: #f0fdf4 !important;
+        }
+
+        body.staff-profile-page #tab-support .support-ticket-layout.is-mailbox-only #support-ticket-list {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem !important;
+        }
+
+        @media (max-width: 760px) {
+            body.staff-profile-page .support-toolbar {
+                grid-template-columns: 1fr;
+            }
+
+            body.staff-profile-page .support-filter-select-wrap {
+                min-width: 0;
+            }
         }
 
         @media (max-width: 1100px) {
@@ -2539,18 +2667,15 @@
             background: rgba(100, 116, 139, 0.22);
         }
 
-        html:has(body.staff-profile-page)::-webkit-scrollbar,
         body.staff-profile-page::-webkit-scrollbar {
             width: 8px;
         }
 
-        html:has(body.staff-profile-page)::-webkit-scrollbar-thumb,
         body.staff-profile-page::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 4px;
         }
 
-        html:has(body.staff-profile-page)::-webkit-scrollbar-track,
         body.staff-profile-page::-webkit-scrollbar-track {
             background: #f1f5f9;
         }
@@ -2743,6 +2868,9 @@
         int supportOpenCount = 0;
         int supportWaitingStaffCount = 0;
         int supportResolvedCount = 0;
+        int supportUnreadTodayCount = 0;
+        int supportViewedCount = 0;
+        String todaySupportKey = new SimpleDateFormat("yyyyMMdd").format(new Date());
         if (staffSupportTickets != null) {
             for (SupportTicket supportTicket : staffSupportTickets) {
                 if (supportTicket == null || supportTicket.getStatus() == null) continue;
@@ -2753,6 +2881,13 @@
                     if ("waiting_staff".equals(supportTicket.getStatus()) || "open".equals(supportTicket.getStatus())) {
                         supportWaitingStaffCount++;
                     }
+                }
+                boolean supportUnread = supportTicket.getUnreadMessageCount() > 0;
+                if (!supportUnread) {
+                    supportViewedCount++;
+                } else if (supportTicket.getLatestUserMessageAt() != null
+                        && todaySupportKey.equals(new SimpleDateFormat("yyyyMMdd").format(supportTicket.getLatestUserMessageAt()))) {
+                    supportUnreadTodayCount++;
                 }
             }
         }
@@ -2892,7 +3027,7 @@
                     </a>
                 </li>
                 <li>
-                    <a id="nav-tab-support" class="<%= "tab-support".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-support')">
+                    <a id="nav-tab-support" class="<%= "tab-support".equals(activeStaffTab) ? "active" : "" %>" onclick="window.location.href='${pageContext.request.contextPath}/staff-profile?tab=support'">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                         <span>Hỗ trợ nghiệp vụ</span>
                     </a>
@@ -3774,38 +3909,29 @@
                     </div>
                 </div>
 
-                <div class="support-ticket-layout">
+                <div class="support-ticket-layout <%= selectedSupportTicket == null ? "is-mailbox-only" : "" %>">
                     <div class="premium-card" style="min-height:560px;">
                         <div class="premium-card-header" style="border-bottom:1px solid var(--border-dark); padding-bottom:1rem; margin-bottom:0;">
                             <span class="premium-card-title">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
                                 Hộp thư hỗ trợ
                             </span>
-                            <span style="font-size:0.78rem; font-weight:850; color:#059669; background:#dcfce7; padding:0.25rem 0.75rem; border-radius:999px;"><%= supportWaitingStaffCount %> cần phản hồi</span>
+                            <span style="font-size:0.78rem; font-weight:850; color:#059669; background:#dcfce7; padding:0.25rem 0.75rem; border-radius:999px;"><%= supportUnreadTodayCount %> chưa đọc hôm nay</span>
                         </div>
 
-                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.75rem;">
-                            <div style="border:1px solid #dbeafe; background:#eff6ff; border-radius:0.9rem; padding:0.85rem;">
-                                <span style="display:block; color:#2563eb; font-weight:900; font-size:1.35rem; line-height:1;"><%= supportOpenCount %></span>
-                                <span style="display:block; color:#64748b; font-size:0.72rem; font-weight:800; margin-top:0.25rem;">Đang mở</span>
-                            </div>
-                            <div style="border:1px solid #fef3c7; background:#fffbeb; border-radius:0.9rem; padding:0.85rem;">
-                                <span style="display:block; color:#d97706; font-weight:900; font-size:1.35rem; line-height:1;"><%= supportWaitingStaffCount %></span>
-                                <span style="display:block; color:#64748b; font-size:0.72rem; font-weight:800; margin-top:0.25rem;">Chờ phản hồi</span>
-                            </div>
-                            <div style="border:1px solid #dcfce7; background:#f0fdf4; border-radius:0.9rem; padding:0.85rem;">
-                                <span style="display:block; color:#059669; font-weight:900; font-size:1.35rem; line-height:1;"><%= supportResolvedCount %></span>
-                                <span style="display:block; color:#64748b; font-size:0.72rem; font-weight:800; margin-top:0.25rem;">Đã xử lý</span>
+                        <div class="support-toolbar" style="margin-top:0.9rem;">
+                            <input id="support-ticket-search" class="support-search-input" type="search" placeholder="Tìm theo tiêu đề, người gửi hoặc vai trò...">
+                            <div class="support-filter-select-wrap">
+                                <select id="support-ticket-filter" class="support-filter-select" aria-label="Lọc yêu cầu hỗ trợ">
+                                    <option value="all">Tất cả</option>
+                                    <option value="unread">Chưa đọc</option>
+                                    <option value="viewed">Đã xem</option>
+                                    <option value="replied">Đã phản hồi</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
-                            <button type="button" style="border:none; background:#059669; color:#ffffff; border-radius:999px; padding:0.48rem 0.9rem; font-size:0.78rem; font-weight:850; cursor:pointer;">Tất cả</button>
-                            <button type="button" style="border:1px solid #dbeafe; background:#ffffff; color:#475569; border-radius:999px; padding:0.48rem 0.9rem; font-size:0.78rem; font-weight:850; cursor:pointer;">Học viên</button>
-                            <button type="button" style="border:1px solid #dbeafe; background:#ffffff; color:#475569; border-radius:999px; padding:0.48rem 0.9rem; font-size:0.78rem; font-weight:850; cursor:pointer;">Giảng viên</button>
-                        </div>
-
-                        <div style="display:flex; flex-direction:column; gap:0.85rem;">
+                        <div id="support-ticket-list" style="display:flex; flex-direction:column; gap:0.85rem;">
                             <% if (staffSupportTickets != null && !staffSupportTickets.isEmpty()) {
                                 for (SupportTicket ticket : staffSupportTickets) {
                                     boolean isSelectedTicket = selectedSupportTicket != null && selectedSupportTicket.getId() != null && selectedSupportTicket.getId().equals(ticket.getId());
@@ -3814,29 +3940,78 @@
                                     String statusBg = "#eff6ff";
                                     if ("waiting_staff".equals(ticket.getStatus()) || "open".equals(ticket.getStatus())) {
                                         statusText = "Cần phản hồi";
-                                        statusColor = "#059669";
+                                        statusColor = "#047857";
                                         statusBg = "#dcfce7";
                                     } else if ("waiting_user".equals(ticket.getStatus())) {
                                         statusText = "Chờ user";
-                                        statusColor = "#d97706";
-                                        statusBg = "#fffbeb";
+                                        statusColor = "#b45309";
+                                        statusBg = "#ffedd5";
                                     } else if ("resolved".equals(ticket.getStatus()) || "closed".equals(ticket.getStatus())) {
                                         statusText = "Đã xử lý";
-                                        statusColor = "#64748b";
+                                        statusColor = "#475569";
                                         statusBg = "#f1f5f9";
                                     }
-                                    String ticketTime = ticket.getLatestMessageAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(ticket.getLatestMessageAt()) : "Chưa có tin nhắn";
+                                    boolean isUnreadTicket = ticket.getUnreadMessageCount() > 0;
+                                    boolean isRepliedTicket = !isUnreadTicket
+                                            && ("staff".equals(ticket.getLatestSenderRole()) || "admin".equals(ticket.getLatestSenderRole()));
+                                    String cardState = isUnreadTicket ? "unread" : (isRepliedTicket ? "replied" : "viewed");
+                                    String cardBadgeText = "Đã xem";
+                                    String cardBadgeColor = "#047857";
+                                    String cardBadgeBg = "#dcfce7";
+                                    if (isUnreadTicket) {
+                                        int newMessageCount = ticket.getUnreadMessageCount();
+                                        cardBadgeText = newMessageCount + " tin nhắn mới";
+                                        cardBadgeColor = "#b45309";
+                                        cardBadgeBg = "#ffedd5";
+                                    } else if (isRepliedTicket) {
+                                        cardBadgeText = "Đã phản hồi";
+                                        cardBadgeColor = "#2563eb";
+                                        cardBadgeBg = "#dbeafe";
+                                    }
+                                    String sourceRoleLabel = h(ticket.getSourceRole());
+                                    if ("teacher".equals(ticket.getSourceRole())) {
+                                        sourceRoleLabel = "Giảng viên";
+                                    } else if ("student".equals(ticket.getSourceRole())) {
+                                        sourceRoleLabel = "Học viên";
+                                    } else if ("parent".equals(ticket.getSourceRole())) {
+                                        sourceRoleLabel = "Phụ huynh";
+                                    } else if ("staff".equals(ticket.getSourceRole())) {
+                                        sourceRoleLabel = "Nhân viên";
+                                    } else if ("admin".equals(ticket.getSourceRole())) {
+                                        sourceRoleLabel = "Quản trị viên";
+                                    }
+                                    String userMessageTime = ticket.getLatestUserMessageAt() != null
+                                            ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(ticket.getLatestUserMessageAt())
+                                            : "Chưa có tin nhắn";
+                                    String staffViewedTime = ticket.getStaffLastReadAt() != null
+                                            ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(ticket.getStaffLastReadAt())
+                                            : "Chưa xem";
+                                    String staffReplyTime = ticket.getLatestStaffMessageAt() != null
+                                            ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(ticket.getLatestStaffMessageAt())
+                                            : "Chưa phản hồi";
+                                    String ticketSearchText = (String.valueOf(ticket.getTitle()) + " "
+                                            + String.valueOf(ticket.getUserName()) + " "
+                                            + String.valueOf(ticket.getSourceRole())).toLowerCase();
                             %>
-                            <a href="${pageContext.request.contextPath}/staff-profile?tab=support&supportTicketId=<%= h(ticket.getId()) %>" style="display:block; text-decoration:none; text-align:left; border:1px solid <%= isSelectedTicket ? "#99f6e4" : "#e2e8f0" %>; border-left:4px solid <%= isSelectedTicket ? "#059669" : "#e2e8f0" %>; background:<%= isSelectedTicket ? "#f0fdfa" : "#ffffff" %>; border-radius:1rem; padding:1rem; cursor:pointer; box-shadow:0 10px 20px rgba(15,23,42,0.04);">
+                            <a class="support-ticket-card" data-support-state="<%= cardState %>" data-support-search="<%= h(ticketSearchText) %>" href="${pageContext.request.contextPath}/staff-profile?tab=support&supportView=detail&supportTicketId=<%= h(ticket.getId()) %>" style="display:block; text-decoration:none; text-align:left; border:1px solid <%= isSelectedTicket ? "#99f6e4" : "#e2e8f0" %>; border-left:4px solid <%= isSelectedTicket ? "#059669" : "#e2e8f0" %>; background:<%= isSelectedTicket ? "#f0fdfa" : "#ffffff" %>; border-radius:1rem; padding:1rem; cursor:pointer; box-shadow:0 10px 20px rgba(15,23,42,0.04);">
                                 <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start;">
                                     <div style="min-width:0;">
                                         <span style="display:block; color:#0f172a; font-weight:900; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= h(ticket.getTitle()) %></span>
-                                        <span style="display:block; color:#64748b; font-weight:700; font-size:0.78rem; margin-top:0.25rem;"><%= h(ticket.getUserName()) %> - <%= h(ticket.getSourceRole()) %></span>
+                                        <span style="display:block; color:#475569; font-weight:800; font-size:0.78rem; margin-top:0.35rem;">Người gửi: <%= h(ticket.getUserName()) %></span>
                                     </div>
-                                    <span style="flex-shrink:0; color:<%= statusColor %>; background:<%= statusBg %>; border-radius:999px; padding:0.18rem 0.55rem; font-size:0.68rem; font-weight:900;"><%= statusText %></span>
+                                    <span style="flex-shrink:0; color:<%= cardBadgeColor %>; background:<%= cardBadgeBg %>; border-radius:999px; padding:0.18rem 0.55rem; font-size:0.68rem; font-weight:900;"><%= cardBadgeText %></span>
                                 </div>
-                                <p style="margin:0.7rem 0 0 0; color:#475569; font-size:0.82rem; line-height:1.45;"><%= h(ticket.getLatestMessage()) %></p>
-                                <span style="display:block; color:#94a3b8; font-size:0.72rem; font-weight:700; margin-top:0.65rem;"><%= ticketTime %> · <%= ticket.getMessageCount() %> tin nhắn</span>
+                                <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-top:0.8rem;">
+                                    <span style="color:#334155; font-size:0.78rem; font-weight:850;">Vai trò: <%= sourceRoleLabel %></span>
+                                    <span style="display:flex; flex-direction:column; gap:0.18rem; color:#64748b; font-size:0.72rem; font-weight:850; text-align:right; line-height:1.25;">
+                                        <span>Người dùng gửi: <%= userMessageTime %></span>
+                                        <% if (isRepliedTicket) { %>
+                                        <span>Phản hồi: <%= staffReplyTime %></span>
+                                        <% } else if (!isUnreadTicket) { %>
+                                        <span>Đã xem: <%= staffViewedTime %></span>
+                                        <% } %>
+                                    </span>
+                                </div>
                             </a>
                             <% } } else { %>
                             <div style="border:1px dashed #cbd5e1; border-radius:1rem; padding:1.25rem; text-align:center; color:#64748b; font-weight:800;">
@@ -3846,6 +4021,7 @@
                         </div>
                     </div>
 
+                    <% if (selectedSupportTicket != null) { %>
                     <div class="premium-card" style="min-height:560px;">
                         <div class="premium-card-header" style="border-bottom:1px solid var(--border-dark); padding-bottom:1rem; margin-bottom:0;">
                             <span class="premium-card-title">
@@ -3857,7 +4033,6 @@
                             <% } %>
                         </div>
 
-                        <% if (selectedSupportTicket != null) { %>
                         <div style="display:grid; grid-template-columns:1fr auto; gap:1rem; align-items:start; padding:1rem; border:1px solid #e2e8f0; border-radius:1rem; background:#f8fafc;">
                             <div>
                                 <h3 style="margin:0; color:#0f172a; font-size:1.15rem; font-weight:900;"><%= h(selectedSupportTicket.getTitle()) %></h3>
@@ -3896,12 +4071,8 @@
                                 <button type="submit" name="nextStatus" value="resolved" class="btn-premium secondary" style="min-width:150px;">Đánh dấu đã xử lý</button>
                             </div>
                         </form>
-                        <% } else { %>
-                        <div style="border:1px dashed #cbd5e1; border-radius:1rem; padding:2rem; text-align:center; color:#64748b; font-weight:800;">
-                            Chọn một yêu cầu hỗ trợ để xem nội dung và phản hồi.
-                        </div>
-                        <% } %>
                     </div>
+                    <% } %>
                 </div>
                 <div class="dashboard-grid-layout" style="align-items: start;">
                     <!-- FAQ -->
@@ -4111,6 +4282,11 @@
             if (!window.history || !window.history.pushState) return;
             const url = new URL(window.location.href);
             url.searchParams.set('tab', getProfileTabSlug(targetTabId));
+            const isSupportDetail = targetTabId === 'tab-support' && url.searchParams.get('supportView') === 'detail';
+            if (!isSupportDetail) {
+                url.searchParams.delete('supportView');
+                url.searchParams.delete('supportTicketId');
+            }
             const state = { profileTab: targetTabId };
             if (replace) {
                 window.history.replaceState(state, '', url);
@@ -4261,15 +4437,40 @@
             if (container && localStorage.getItem('staffSidebarCollapsed') === 'true') {
                 container.classList.add('collapsed');
             }
+            setupSupportTicketFilters();
             const urlParams = new URLSearchParams(window.location.search);
             const tabParam = urlParams.get('tab');
             if (tabParam) {
-                switchTab(tabParam, { replaceUrl: true });
+                switchTab(tabParam, { replaceUrl: true, updateUrl: true });
             } else {
                 const activePane = document.querySelector('.tab-pane.active-pane');
                 if (activePane) updateProfileTabUrl(activePane.id, true);
             }
         });
+
+        function setupSupportTicketFilters() {
+            const searchInput = document.getElementById('support-ticket-search');
+            const filterSelect = document.getElementById('support-ticket-filter');
+            const cards = document.querySelectorAll('.support-ticket-card');
+
+            function applyFilters() {
+                const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
+                const activeFilter = filterSelect ? filterSelect.value : 'all';
+                cards.forEach(card => {
+                    const matchesText = !keyword || (card.dataset.supportSearch || '').includes(keyword);
+                    const matchesState = activeFilter === 'all' || card.dataset.supportState === activeFilter;
+                    card.classList.toggle('is-hidden', !(matchesText && matchesState));
+                });
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', applyFilters);
+            }
+
+            if (filterSelect) {
+                filterSelect.addEventListener('change', applyFilters);
+            }
+        }
 
         window.addEventListener('popstate', (event) => {
             const stateTab = event.state && event.state.profileTab;

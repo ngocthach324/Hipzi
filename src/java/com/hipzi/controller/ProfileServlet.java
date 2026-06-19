@@ -126,6 +126,13 @@ public class ProfileServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/profile");
             return;
         }
+        if ("/staff-profile".equals(path)
+                && "support".equals(cleanParam(request.getParameter("tab")))
+                && !"detail".equals(cleanParam(request.getParameter("supportView")))
+                && !cleanParam(request.getParameter("supportTicketId")).isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/staff-profile?tab=support");
+            return;
+        }
         String targetJsp = "/WEB-INF/views/student-profile.jsp";
         if ("/parent-profile".equals(path)) targetJsp = "/WEB-INF/views/parent-profile.jsp";
         else if ("/teacher-profile".equals(path)) targetJsp = "/WEB-INF/views/teacher-profile.jsp";
@@ -1141,14 +1148,16 @@ public class ProfileServlet extends HttpServlet {
         SupportTicket selectedTicket = null;
 
         if (supportTicketDao.tableExists()) {
-            tickets = supportTicketDao.listForStaff(30);
+            String supportView = cleanParam(request.getParameter("supportView"));
             String selectedTicketId = cleanParam(request.getParameter("supportTicketId"));
-            if (!selectedTicketId.isEmpty()) {
+            if ("detail".equals(supportView) && !selectedTicketId.isEmpty()) {
+                User user = (User) request.getSession(false).getAttribute("loggedUser");
+                if (user != null && user.getId() != null) {
+                    supportTicketDao.markViewedByStaff(selectedTicketId, user.getId());
+                }
                 selectedTicket = supportTicketDao.findById(selectedTicketId);
             }
-            if (selectedTicket == null && !tickets.isEmpty()) {
-                selectedTicket = tickets.get(0);
-            }
+            tickets = supportTicketDao.listForStaff(30);
             if (selectedTicket != null) {
                 messages = supportTicketDao.listMessages(selectedTicket.getId());
             }

@@ -67,6 +67,7 @@ public class SupportTicketDao {
                 + "VALUES (?::uuid, ?::uuid, ?, ?)";
         String updateTicketSql = "UPDATE support_tickets "
                 + "SET status = ?, assigned_staff_id = CASE WHEN ? = 'staff' OR ? = 'admin' THEN ?::uuid ELSE assigned_staff_id END, "
+                + "staff_last_read_at = CASE WHEN ? = 'staff' OR ? = 'admin' THEN NOW() ELSE staff_last_read_at END, "
                 + "updated_at = NOW(), resolved_at = CASE WHEN ? = 'resolved' THEN NOW() ELSE resolved_at END "
                 + "WHERE id = ?::uuid";
 
@@ -89,8 +90,10 @@ public class SupportTicketDao {
                     ps.setString(2, normalizedRole);
                     ps.setString(3, normalizedRole);
                     ps.setString(4, senderId);
-                    ps.setString(5, normalizedStatus);
-                    ps.setString(6, ticketId);
+                    ps.setString(5, normalizedRole);
+                    ps.setString(6, normalizedRole);
+                    ps.setString(7, normalizedStatus);
+                    ps.setString(8, ticketId);
                     if (ps.executeUpdate() == 0) {
                         conn.rollback();
                         return false;
@@ -127,6 +130,22 @@ public class SupportTicketDao {
             System.err.println("Error in SupportTicketDao.findById: " + e.getMessage());
         }
         return null;
+    }
+
+    public boolean markViewedByStaff(String ticketId, String staffId) {
+        String sql = "UPDATE support_tickets "
+                + "SET staff_last_read_at = NOW(), "
+                + "assigned_staff_id = COALESCE(assigned_staff_id, ?::uuid) "
+                + "WHERE id = ?::uuid";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, staffId);
+            ps.setString(2, ticketId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error in SupportTicketDao.markViewedByStaff: " + e.getMessage());
+        }
+        return false;
     }
 
     public List<SupportTicket> listByUserId(String userId, int limit) {
@@ -202,11 +221,27 @@ public class SupportTicketDao {
         try (Connection conn = DBContext.getConnection();
              Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
-            return rs.next() && rs.getBoolean(1);
+            boolean exists = rs.next() && rs.getBoolean(1);
+            if (exists) {
+                ensureReadStateSchema();
+            }
+            return exists;
         } catch (SQLException e) {
             System.err.println("Error in SupportTicketDao.tableExists: " + e.getMessage());
         }
         return false;
+    }
+
+    private void ensureReadStateSchema() {
+        String sql = "ALTER TABLE support_tickets ADD COLUMN IF NOT EXISTS staff_last_read_at TIMESTAMPTZ";
+        try (Connection conn = DBContext.getConnection();
+             Statement st = conn.createStatement()) {
+            st.execute(sql);
+            st.execute("CREATE INDEX IF NOT EXISTS idx_support_tickets_staff_read_state "
+                    + "ON support_tickets(status, staff_last_read_at, updated_at DESC)");
+        } catch (SQLException e) {
+            System.err.println("Error in SupportTicketDao.ensureReadStateSchema: " + e.getMessage());
+        }
     }
 
     private List<SupportTicket> listTickets(String sql, String id, int limit) {
@@ -231,7 +266,12 @@ public class SupportTicketDao {
                 + "(SELECT m.message FROM support_messages m WHERE m.ticket_id = t.id ORDER BY m.created_at DESC LIMIT 1) AS latest_message, "
                 + "(SELECT m.sender_role FROM support_messages m WHERE m.ticket_id = t.id ORDER BY m.created_at DESC LIMIT 1) AS latest_sender_role, "
                 + "(SELECT m.created_at FROM support_messages m WHERE m.ticket_id = t.id ORDER BY m.created_at DESC LIMIT 1) AS latest_message_at, "
-                + "(SELECT COUNT(*) FROM support_messages m WHERE m.ticket_id = t.id) AS message_count "
+                + "(SELECT m.created_at FROM support_messages m WHERE m.ticket_id = t.id AND m.sender_role NOT IN ('staff', 'admin') ORDER BY m.created_at DESC LIMIT 1) AS latest_user_message_at, "
+                + "(SELECT m.created_at FROM support_messages m WHERE m.ticket_id = t.id AND m.sender_role IN ('staff', 'admin') ORDER BY m.created_at DESC LIMIT 1) AS latest_staff_message_at, "
+                + "(SELECT COUNT(*) FROM support_messages m WHERE m.ticket_id = t.id) AS message_count, "
+                + "(SELECT COUNT(*) FROM support_messages m WHERE m.ticket_id = t.id "
+                + "AND m.sender_role NOT IN ('staff', 'admin') "
+                + "AND (t.staff_last_read_at IS NULL OR m.created_at > t.staff_last_read_at)) AS unread_message_count "
                 + "FROM support_tickets t "
                 + "JOIN users u ON u.id = t.user_id ";
     }
@@ -249,6 +289,7 @@ public class SupportTicketDao {
         ticket.setUpdatedAt(rs.getTimestamp("updated_at"));
         ticket.setResolvedAt(rs.getTimestamp("resolved_at"));
         ticket.setClosedAt(rs.getTimestamp("closed_at"));
+        ticket.setStaffLastReadAt(rs.getTimestamp("staff_last_read_at"));
         return ticket;
     }
 
@@ -259,7 +300,10 @@ public class SupportTicketDao {
         ticket.setLatestMessage(rs.getString("latest_message"));
         ticket.setLatestSenderRole(rs.getString("latest_sender_role"));
         ticket.setLatestMessageAt(rs.getTimestamp("latest_message_at"));
+        ticket.setLatestUserMessageAt(rs.getTimestamp("latest_user_message_at"));
+        ticket.setLatestStaffMessageAt(rs.getTimestamp("latest_staff_message_at"));
         ticket.setMessageCount(rs.getInt("message_count"));
+        ticket.setUnreadMessageCount(rs.getInt("unread_message_count"));
         return ticket;
     }
 

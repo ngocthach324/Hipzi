@@ -14,13 +14,17 @@ public class SupportTicket {
     private Timestamp updatedAt;
     private Timestamp resolvedAt;
     private Timestamp closedAt;
+    private Timestamp staffLastReadAt;
 
     private String userName;
     private String userEmail;
     private String latestMessage;
     private String latestSenderRole;
     private Timestamp latestMessageAt;
+    private Timestamp latestUserMessageAt;
+    private Timestamp latestStaffMessageAt;
     private int messageCount;
+    private int unreadMessageCount;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -55,6 +59,9 @@ public class SupportTicket {
     public Timestamp getClosedAt() { return closedAt; }
     public void setClosedAt(Timestamp closedAt) { this.closedAt = closedAt; }
 
+    public Timestamp getStaffLastReadAt() { return staffLastReadAt; }
+    public void setStaffLastReadAt(Timestamp staffLastReadAt) { this.staffLastReadAt = staffLastReadAt; }
+
     public String getUserName() { return userName; }
     public void setUserName(String userName) { this.userName = userName; }
 
@@ -70,6 +77,15 @@ public class SupportTicket {
     public Timestamp getLatestMessageAt() { return latestMessageAt; }
     public void setLatestMessageAt(Timestamp latestMessageAt) { this.latestMessageAt = latestMessageAt; }
 
+    public Timestamp getLatestUserMessageAt() { return latestUserMessageAt; }
+    public void setLatestUserMessageAt(Timestamp latestUserMessageAt) { this.latestUserMessageAt = latestUserMessageAt; }
+
+    public Timestamp getLatestStaffMessageAt() { return latestStaffMessageAt; }
+    public void setLatestStaffMessageAt(Timestamp latestStaffMessageAt) { this.latestStaffMessageAt = latestStaffMessageAt; }
+
     public int getMessageCount() { return messageCount; }
     public void setMessageCount(int messageCount) { this.messageCount = messageCount; }
+
+    public int getUnreadMessageCount() { return unreadMessageCount; }
+    public void setUnreadMessageCount(int unreadMessageCount) { this.unreadMessageCount = unreadMessageCount; }
 }

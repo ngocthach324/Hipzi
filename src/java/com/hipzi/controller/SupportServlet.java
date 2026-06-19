@@ -122,7 +122,7 @@ public class SupportServlet extends HttpServlet {
             session.setAttribute("toastType", "error");
         }
 
-        response.sendRedirect(request.getContextPath() + "/staff-profile?tab=support&supportTicketId=" + ticketId);
+        response.sendRedirect(request.getContextPath() + "/staff-profile?tab=support&supportView=detail&supportTicketId=" + ticketId);
     }
 
     private String cleanParam(String value) {
