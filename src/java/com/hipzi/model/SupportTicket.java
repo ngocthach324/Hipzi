@@ -18,6 +18,7 @@ public class SupportTicket {
 
     private String userName;
     private String userEmail;
+    private String userAvatarUrl;
     private String latestMessage;
     private String latestSenderRole;
     private Timestamp latestMessageAt;
@@ -67,6 +68,9 @@ public class SupportTicket {
 
     public String getUserEmail() { return userEmail; }
     public void setUserEmail(String userEmail) { this.userEmail = userEmail; }
+
+    public String getUserAvatarUrl() { return userAvatarUrl; }
+    public void setUserAvatarUrl(String userAvatarUrl) { this.userAvatarUrl = userAvatarUrl; }
 
     public String getLatestMessage() { return latestMessage; }
     public void setLatestMessage(String latestMessage) { this.latestMessage = latestMessage; }

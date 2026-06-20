@@ -262,7 +262,7 @@ public class SupportTicketDao {
     }
 
     private String baseTicketSelect() {
-        return "SELECT t.*, u.display_name AS user_name, u.email AS user_email, "
+        return "SELECT t.*, u.display_name AS user_name, u.email AS user_email, u.avatar_url AS user_avatar_url, "
                 + "(SELECT m.message FROM support_messages m WHERE m.ticket_id = t.id ORDER BY m.created_at DESC LIMIT 1) AS latest_message, "
                 + "(SELECT m.sender_role FROM support_messages m WHERE m.ticket_id = t.id ORDER BY m.created_at DESC LIMIT 1) AS latest_sender_role, "
                 + "(SELECT m.created_at FROM support_messages m WHERE m.ticket_id = t.id ORDER BY m.created_at DESC LIMIT 1) AS latest_message_at, "
@@ -297,6 +297,7 @@ public class SupportTicketDao {
         SupportTicket ticket = mapTicket(rs);
         ticket.setUserName(rs.getString("user_name"));
         ticket.setUserEmail(rs.getString("user_email"));
+        ticket.setUserAvatarUrl(rs.getString("user_avatar_url"));
         ticket.setLatestMessage(rs.getString("latest_message"));
         ticket.setLatestSenderRole(rs.getString("latest_sender_role"));
         ticket.setLatestMessageAt(rs.getTimestamp("latest_message_at"));

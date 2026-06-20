@@ -508,6 +508,572 @@
             gap: 2rem;
         }
 
+        body.staff-profile-page #tab-teacher-approval .tab-grouped-container,
+        body.staff-profile-page #tab-manage-teachers .tab-grouped-container,
+        body.staff-profile-page #tab-manage-classes .tab-grouped-container,
+        body.staff-profile-page #tab-manage-courses .tab-grouped-container,
+        body.staff-profile-page #tab-materials .tab-grouped-container,
+        body.staff-profile-page #tab-practice .tab-grouped-container {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 0;
+            min-height: 0;
+            overflow: visible;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .tab-header-accent,
+        body.staff-profile-page #tab-manage-teachers .tab-header-accent,
+        body.staff-profile-page #tab-manage-classes .tab-header-accent,
+        body.staff-profile-page #tab-manage-courses .tab-header-accent,
+        body.staff-profile-page #tab-materials .tab-header-accent,
+        body.staff-profile-page #tab-practice .tab-header-accent {
+            display: flex;
+            color: var(--text-main);
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 0 0 1rem 0;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        body.staff-profile-page #tab-teacher-approval .tab-header-title-text,
+        body.staff-profile-page #tab-manage-teachers .tab-header-title-text,
+        body.staff-profile-page #tab-manage-classes .tab-header-title-text,
+        body.staff-profile-page #tab-manage-courses .tab-header-title-text,
+        body.staff-profile-page #tab-materials .tab-header-title-text,
+        body.staff-profile-page #tab-practice .tab-header-title-text {
+            font-size: 1.75rem;
+            line-height: 1.15;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+
+        body.staff-profile-page #tab-teacher-approval .tab-header-title-text::after,
+        body.staff-profile-page #tab-manage-teachers .tab-header-title-text::after,
+        body.staff-profile-page #tab-manage-classes .tab-header-title-text::after,
+        body.staff-profile-page #tab-manage-courses .tab-header-title-text::after,
+        body.staff-profile-page #tab-materials .tab-header-title-text::after,
+        body.staff-profile-page #tab-practice .tab-header-title-text::after {
+            display: block;
+            margin-top: 0.35rem;
+            color: #475569;
+            font-size: 0.95rem;
+            line-height: 1.45;
+            font-weight: 600;
+            letter-spacing: 0;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .tab-header-title-text::after {
+            content: "Xét duyệt hồ sơ đăng kí giảng dạy và cập nhật trạng thái cho giảng viên.";
+        }
+
+        body.staff-profile-page #tab-manage-teachers .tab-header-title-text::after {
+            content: "Theo dõi danh sách giảng viên đã được duyệt và lọc theo nhóm chuyên môn.";
+        }
+
+        body.staff-profile-page #tab-manage-classes .tab-header-title-text::after {
+            content: "Quản lý các lớp học đang mở, sắp khai giảng hoặc đã đóng trên HIPZI.";
+        }
+
+        body.staff-profile-page #tab-manage-courses .tab-header-title-text::after {
+            content: "Rà soát khóa học, trạng thái duyệt và nội dung liên kết Google Drive.";
+        }
+
+        body.staff-profile-page #tab-materials .tab-header-title-text::after {
+            content: "Kiểm tra hàng đợi tài liệu học tập do giảng viên gửi lên kho học liệu.";
+        }
+
+        body.staff-profile-page #tab-practice .tab-header-title-text::after {
+            content: "Theo dõi yêu cầu đăng kí giảng viên và các bước xác minh nghiệp vụ.";
+        }
+
+        body.staff-profile-page #tab-teacher-approval .tab-header-date-pill,
+        body.staff-profile-page #tab-manage-teachers .tab-header-date-pill,
+        body.staff-profile-page #tab-manage-classes .tab-header-date-pill,
+        body.staff-profile-page #tab-manage-courses .tab-header-date-pill,
+        body.staff-profile-page #tab-materials .tab-header-date-pill,
+        body.staff-profile-page #tab-practice .tab-header-date-pill {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 0.5rem 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        body.staff-profile-page #tab-teacher-approval .tab-body-content,
+        body.staff-profile-page #tab-manage-teachers .tab-body-content,
+        body.staff-profile-page #tab-manage-classes .tab-body-content,
+        body.staff-profile-page #tab-manage-courses .tab-body-content,
+        body.staff-profile-page #tab-materials .tab-body-content,
+        body.staff-profile-page #tab-practice .tab-body-content {
+            padding: 0;
+            overflow: visible;
+            gap: 1.5rem;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .section-data-card,
+        body.staff-profile-page #tab-manage-teachers .section-data-card,
+        body.staff-profile-page #tab-manage-classes .section-data-card,
+        body.staff-profile-page #tab-manage-courses .section-data-card,
+        body.staff-profile-page #tab-materials .section-data-card,
+        body.staff-profile-page #tab-practice .section-data-card {
+            background: #ffffff;
+            border: 1px solid #dbe4ee;
+            border-radius: 1.25rem;
+            padding: 1.65rem;
+            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.04);
+            min-height: 420px;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .card-header-layout,
+        body.staff-profile-page #tab-manage-teachers .card-header-layout,
+        body.staff-profile-page #tab-manage-classes .card-header-layout,
+        body.staff-profile-page #tab-manage-courses .card-header-layout,
+        body.staff-profile-page #tab-materials .card-header-layout,
+        body.staff-profile-page #tab-practice .card-header-layout {
+            padding-bottom: 1.15rem !important;
+            margin-bottom: 1.5rem !important;
+            border-bottom: 1px solid #dbe4ee !important;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .section-data-card > form,
+        body.staff-profile-page #tab-manage-classes .section-data-card > form,
+        body.staff-profile-page #tab-manage-courses .section-data-card > form {
+            background: #ffffff !important;
+            border: 1px solid #dbe4ee !important;
+            border-radius: 1rem !important;
+            padding: 1rem !important;
+            margin-bottom: 1.75rem !important;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.035);
+        }
+
+        body.staff-profile-page #tab-manage-teachers .section-data-card > form.management-toolbar,
+        body.staff-profile-page #tab-manage-classes .section-data-card > form.management-toolbar,
+        body.staff-profile-page #tab-manage-courses .section-data-card > form.management-toolbar {
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+            margin: 0.9rem 0 1.35rem !important;
+            box-shadow: none !important;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .section-data-card > form input,
+        body.staff-profile-page #tab-manage-teachers .section-data-card > form select,
+        body.staff-profile-page #tab-manage-classes .section-data-card > form input,
+        body.staff-profile-page #tab-manage-classes .section-data-card > form select,
+        body.staff-profile-page #tab-manage-courses .section-data-card > form input,
+        body.staff-profile-page #tab-manage-courses .section-data-card > form select {
+            background: #f8fafc !important;
+            border-color: #dbe4ee !important;
+            border-radius: 0.85rem !important;
+            min-height: 3rem;
+            font-weight: 700;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .section-data-card > form.management-toolbar input,
+        body.staff-profile-page #tab-manage-teachers .section-data-card > form.management-toolbar select,
+        body.staff-profile-page #tab-manage-classes .section-data-card > form.management-toolbar input,
+        body.staff-profile-page #tab-manage-classes .section-data-card > form.management-toolbar select,
+        body.staff-profile-page #tab-manage-courses .section-data-card > form.management-toolbar input,
+        body.staff-profile-page #tab-manage-courses .section-data-card > form.management-toolbar select {
+            min-height: 0 !important;
+            border: 1px solid var(--border-dark) !important;
+            border-radius: 999px !important;
+            padding: 0.7rem 1rem !important;
+            font-size: 0.88rem !important;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03) !important;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .section-data-card > form.management-toolbar input,
+        body.staff-profile-page #tab-manage-classes .section-data-card > form.management-toolbar input,
+        body.staff-profile-page #tab-manage-courses .section-data-card > form.management-toolbar input {
+            background: #f8fafc !important;
+            color: var(--text-main) !important;
+            font-weight: 650 !important;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .section-data-card > form.management-toolbar select,
+        body.staff-profile-page #tab-manage-classes .section-data-card > form.management-toolbar select,
+        body.staff-profile-page #tab-manage-courses .section-data-card > form.management-toolbar select {
+            appearance: none !important;
+            background-color: #ffffff !important;
+            background-image: linear-gradient(45deg, transparent 50%, #059669 50%), linear-gradient(135deg, #059669 50%, transparent 50%) !important;
+            background-position: calc(100% - 1.25rem) 50%, calc(100% - 0.9rem) 50% !important;
+            background-size: 0.45rem 0.45rem, 0.45rem 0.45rem !important;
+            background-repeat: no-repeat !important;
+            color: #0f172a !important;
+            padding: 0.7rem 2.4rem 0.7rem 1rem !important;
+            font-weight: 900 !important;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .section-data-card > form button,
+        body.staff-profile-page #tab-manage-classes .section-data-card > form button,
+        body.staff-profile-page #tab-manage-courses .section-data-card > form button {
+            background: #059669 !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 0.85rem !important;
+            min-height: 3rem;
+            box-shadow: 0 14px 28px rgba(5, 150, 105, 0.18);
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-approval-grid,
+        body.staff-profile-page #tab-manage-teachers .teacher-approval-grid,
+        body.staff-profile-page #tab-manage-classes .staff-class-list,
+        body.staff-profile-page #tab-manage-courses .staff-class-list {
+            gap: 1.15rem;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-approval-card,
+        body.staff-profile-page #tab-manage-teachers .teacher-approval-card,
+        body.staff-profile-page #tab-manage-classes .staff-class-card,
+        body.staff-profile-page #tab-manage-courses .staff-class-card {
+            border: 1px solid #dbe4ee;
+            border-left: 4px solid #059669;
+            border-radius: 1rem;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.035);
+        }
+
+        body.staff-profile-page #tab-teacher-approval .empty-status-panel,
+        body.staff-profile-page #tab-manage-teachers .empty-status-panel,
+        body.staff-profile-page #tab-manage-classes .empty-status-panel,
+        body.staff-profile-page #tab-manage-courses .empty-status-panel,
+        body.staff-profile-page #tab-materials .empty-status-panel,
+        body.staff-profile-page #tab-practice .empty-status-panel {
+            background: #ffffff;
+            border: 1px dashed #dbe4ee;
+            border-radius: 1.25rem;
+            box-shadow: none;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .section-data-card {
+            background: #ffffff;
+            border: 1px solid #dbe4ee;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            min-height: 560px;
+            overflow: hidden;
+            box-shadow: none;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .section-data-card.system-management-card,
+        body.staff-profile-page #tab-manage-teachers .section-data-card.system-management-card,
+        body.staff-profile-page #tab-manage-classes .section-data-card.system-management-card,
+        body.staff-profile-page #tab-manage-courses .section-data-card.system-management-card {
+            background: #ffffff;
+            border: 1px solid #dbe4ee;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            min-height: 560px;
+            overflow: hidden;
+            box-shadow: none;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .card-header-layout {
+            padding: 0 0 1rem 0 !important;
+            margin: 0 0 1.35rem 0 !important;
+            background: transparent !important;
+            border-bottom: 1px solid var(--border-dark) !important;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .system-management-card .card-header-layout,
+        body.staff-profile-page #tab-manage-teachers .system-management-card .card-header-layout,
+        body.staff-profile-page #tab-manage-classes .system-management-card .card-header-layout,
+        body.staff-profile-page #tab-manage-courses .system-management-card .card-header-layout {
+            padding: 0 0 1rem 0 !important;
+            margin: 0 0 1.45rem 0 !important;
+            background: transparent !important;
+            border-bottom: 1px solid var(--border-dark) !important;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .card-header-title,
+        body.staff-profile-page #tab-manage-teachers .card-header-title,
+        body.staff-profile-page #tab-manage-classes .card-header-title,
+        body.staff-profile-page #tab-manage-courses .card-header-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 900;
+            line-height: 1.25;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .card-header-title svg,
+        body.staff-profile-page #tab-manage-teachers .card-header-title svg,
+        body.staff-profile-page #tab-manage-classes .card-header-title svg,
+        body.staff-profile-page #tab-manage-courses .card-header-title svg {
+            color: #059669;
+            stroke: currentColor;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .card-header-layout > span,
+        body.staff-profile-page #tab-manage-teachers .card-header-layout > span,
+        body.staff-profile-page #tab-manage-classes .card-header-layout > span,
+        body.staff-profile-page #tab-manage-courses .card-header-layout > span {
+            font-size: 0.78rem !important;
+            font-weight: 850 !important;
+            color: #059669 !important;
+            background: #dcfce7 !important;
+            padding: 0.25rem 0.75rem !important;
+            border-radius: 999px !important;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar {
+            display: grid !important;
+            grid-template-columns: minmax(420px, calc((100% - 1rem) / 2)) 1fr 190px 190px auto;
+            gap: 1rem !important;
+            align-items: center;
+            margin: 0.9rem 0 1.35rem !important;
+            padding: 0 !important;
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .management-toolbar,
+        body.staff-profile-page #tab-manage-teachers .management-toolbar {
+            grid-template-columns: minmax(420px, calc((100% - 1rem) / 2)) 1fr 190px 190px auto;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .management-toolbar select {
+            grid-column: auto;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .management-toolbar .support-filter-select-wrap {
+            grid-column: 4;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .management-toolbar .support-filter-select-wrap {
+            grid-column: 4;
+        }
+
+        body.staff-profile-page #tab-manage-classes .management-toolbar .support-filter-select-wrap:first-of-type,
+        body.staff-profile-page #tab-manage-courses .management-toolbar .support-filter-select-wrap:first-of-type {
+            grid-column: 3;
+        }
+
+        body.staff-profile-page #tab-manage-classes .management-toolbar .support-filter-select-wrap:nth-of-type(2),
+        body.staff-profile-page #tab-manage-courses .management-toolbar .support-filter-select-wrap:nth-of-type(2) {
+            grid-column: 4;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .management-toolbar button,
+        body.staff-profile-page #tab-manage-classes .management-toolbar button,
+        body.staff-profile-page #tab-manage-courses .management-toolbar button {
+            display: none !important;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar input,
+        body.staff-profile-page .system-management-card .management-toolbar select {
+            width: 100% !important;
+            min-height: 0 !important;
+            border: 1px solid var(--border-dark) !important;
+            background-color: #ffffff !important;
+            color: var(--text-main) !important;
+            border-radius: 999px !important;
+            padding: 0.7rem 1rem !important;
+            font-size: 0.88rem !important;
+            font-weight: 900 !important;
+            outline: none !important;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03) !important;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar input {
+            background-color: #f8fafc !important;
+            font-weight: 650 !important;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar select {
+            appearance: none;
+            cursor: pointer;
+            color: #0f172a !important;
+            padding: 0.7rem 2.4rem 0.7rem 1rem !important;
+            background: #ffffff linear-gradient(45deg, transparent 50%, #059669 50%), linear-gradient(135deg, #059669 50%, transparent 50%) !important;
+            background-position: calc(100% - 1.25rem) 50%, calc(100% - 0.9rem) 50%;
+            background-size: 0.45rem 0.45rem, 0.45rem 0.45rem;
+            background-repeat: no-repeat;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .system-management-card .management-toolbar select,
+        body.staff-profile-page #tab-manage-teachers .system-management-card .management-toolbar select,
+        body.staff-profile-page #tab-manage-classes .system-management-card .management-toolbar select,
+        body.staff-profile-page #tab-manage-courses .system-management-card .management-toolbar select {
+            background: #ffffff linear-gradient(45deg, transparent 50%, #059669 50%), linear-gradient(135deg, #059669 50%, transparent 50%) !important;
+            background-position: calc(100% - 1.25rem) 50%, calc(100% - 0.9rem) 50% !important;
+            background-size: 0.45rem 0.45rem, 0.45rem 0.45rem !important;
+            background-repeat: no-repeat !important;
+            color: #0f172a !important;
+            border: 1px solid var(--border-dark) !important;
+            border-radius: 999px !important;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03) !important;
+        }
+
+        body.staff-profile-page .management-filter-select-wrap {
+            position: relative;
+            min-width: 190px;
+            width: 100%;
+        }
+
+        body.staff-profile-page .management-filter-select-wrap::after {
+            content: "";
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            width: 0.55rem;
+            height: 0.55rem;
+            border-right: 2px solid #059669;
+            border-bottom: 2px solid #059669;
+            transform: translateY(-65%) rotate(45deg);
+            pointer-events: none;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar .management-filter-select {
+            width: 100% !important;
+            appearance: none !important;
+            border: 1px solid var(--border-dark) !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border-radius: 999px !important;
+            padding: 0.7rem 2.4rem 0.7rem 1rem !important;
+            font-size: 0.88rem !important;
+            font-weight: 900 !important;
+            cursor: pointer !important;
+            outline: none !important;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04) !important;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar .management-filter-select:focus {
+            border-color: #059669 !important;
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12) !important;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar .management-filter-select option {
+            background: #ffffff !important;
+            color: #475569 !important;
+            font-weight: 700 !important;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar input:focus,
+        body.staff-profile-page .system-management-card .management-toolbar select:focus {
+            border-color: #059669 !important;
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12) !important;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar button {
+            min-height: 0 !important;
+            border-radius: 999px !important;
+            background: #059669 !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 0.7rem 1.35rem !important;
+            font-size: 0.88rem !important;
+            font-weight: 900 !important;
+            box-shadow: 0 14px 28px rgba(5, 150, 105, 0.16) !important;
+            white-space: nowrap;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-approval-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+            padding-top: 0.45rem !important;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .teacher-approval-grid,
+        body.staff-profile-page #tab-manage-classes .staff-class-list,
+        body.staff-profile-page #tab-manage-courses .staff-class-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-approval-card {
+            border: 1px solid #dbe4ee;
+            border-left: 4px solid #059669;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.035);
+        }
+
+        body.staff-profile-page #tab-manage-teachers .teacher-approval-card,
+        body.staff-profile-page #tab-manage-classes .staff-class-card,
+        body.staff-profile-page #tab-manage-courses .staff-class-card {
+            border: 1px solid #dbe4ee !important;
+            border-left: 4px solid #e2e8f0 !important;
+            border-radius: 1rem !important;
+            padding: 1.35rem !important;
+            background: #ffffff !important;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.04) !important;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, background-color 0.18s ease;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .teacher-approval-card:hover,
+        body.staff-profile-page #tab-manage-classes .staff-class-card:hover,
+        body.staff-profile-page #tab-manage-courses .staff-class-card:hover {
+            border-color: #86efac !important;
+            border-left-color: #059669 !important;
+            box-shadow: 0 18px 36px rgba(5, 150, 105, 0.12) !important;
+            transform: translateY(-2px);
+            background: #f0fdf4 !important;
+        }
+
+        body.staff-profile-page #tab-manage-courses .staff-class-card {
+            grid-template-columns: 1fr !important;
+        }
+
+        body.staff-profile-page #tab-manage-courses .staff-class-card > div:last-child {
+            min-width: 0 !important;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-approval-card:hover {
+            border-color: #86efac;
+            border-left-color: #059669;
+            box-shadow: 0 18px 36px rgba(5, 150, 105, 0.12);
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-detail-open-btn:hover {
+            background: #059669;
+            border-color: #059669;
+            color: #ffffff;
+        }
+
+        @media (max-width: 900px) {
+            body.staff-profile-page #tab-teacher-approval .teacher-approval-grid,
+            body.staff-profile-page #tab-manage-teachers .teacher-approval-grid,
+            body.staff-profile-page #tab-manage-classes .staff-class-list,
+            body.staff-profile-page #tab-manage-courses .staff-class-list {
+                grid-template-columns: 1fr;
+            }
+
+            body.staff-profile-page .system-management-card .management-toolbar,
+            body.staff-profile-page #tab-teacher-approval .management-toolbar,
+            body.staff-profile-page #tab-manage-teachers .management-toolbar {
+                grid-template-columns: 1fr;
+            }
+
+            body.staff-profile-page #tab-teacher-approval .management-toolbar select,
+            body.staff-profile-page #tab-manage-teachers .management-toolbar select,
+            body.staff-profile-page #tab-manage-classes .management-toolbar select,
+            body.staff-profile-page #tab-manage-courses .management-toolbar select,
+            body.staff-profile-page #tab-teacher-approval .management-toolbar .support-filter-select-wrap,
+            body.staff-profile-page #tab-manage-teachers .management-toolbar .support-filter-select-wrap,
+            body.staff-profile-page #tab-manage-classes .management-toolbar .support-filter-select-wrap,
+            body.staff-profile-page #tab-manage-courses .management-toolbar .support-filter-select-wrap,
+            body.staff-profile-page #tab-manage-teachers .management-toolbar button,
+            body.staff-profile-page #tab-manage-classes .management-toolbar button,
+            body.staff-profile-page #tab-manage-courses .management-toolbar button {
+                grid-column: auto;
+            }
+        }
+
         body.staff-profile-page #tab-profile .metrics-row,
         body.staff-profile-page #tab-profile .dashboard-grid-layout {
             margin: 0;
@@ -593,10 +1159,10 @@
 
         body.staff-profile-page .support-toolbar {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 190px;
+            grid-template-columns: minmax(420px, calc((100% - 1rem) / 2)) 1fr 190px 190px;
             gap: 1rem;
             align-items: center;
-            margin: 0.25rem 0 0.3rem;
+            margin: 0.25rem 0 1.25rem;
         }
 
         body.staff-profile-page .support-search-input {
@@ -649,12 +1215,94 @@
             box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
         }
 
+        body.staff-profile-page .system-management-card .management-toolbar .support-filter-select-wrap {
+            position: relative;
+            min-width: 190px;
+            width: 100%;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar .support-filter-select-wrap::after {
+            content: "";
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            width: 0.55rem;
+            height: 0.55rem;
+            border-right: 2px solid #059669;
+            border-bottom: 2px solid #059669;
+            transform: translateY(-65%) rotate(45deg);
+            pointer-events: none;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar .support-filter-select {
+            width: 100% !important;
+            appearance: none !important;
+            border: 1px solid #bbf7d0 !important;
+            background: #ffffff !important;
+            color: #047857 !important;
+            border-radius: 999px !important;
+            padding: 0.7rem 2.4rem 0.7rem 1rem !important;
+            font-size: 0.88rem !important;
+            font-weight: 900 !important;
+            cursor: pointer !important;
+            outline: none !important;
+            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.08) !important;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar .support-filter-select:focus {
+            border-color: #059669 !important;
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12) !important;
+        }
+
+        body.staff-profile-page .system-management-card .management-toolbar .support-filter-select option {
+            background: #ffffff !important;
+            color: #475569 !important;
+            font-weight: 700 !important;
+        }
+
         body.staff-profile-page .support-ticket-card.is-hidden {
             display: none !important;
         }
 
+        body.staff-profile-page .support-load-more-wrap {
+            display: flex;
+            justify-content: center;
+            margin-top: 1.35rem;
+        }
+
+        body.staff-profile-page .support-load-more-btn {
+            min-width: 260px;
+            border: 2px solid #059669;
+            background: #f0fdf4;
+            color: #047857;
+            border-radius: 999px;
+            padding: 0.9rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 900;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.65rem;
+            box-shadow: 0 14px 28px rgba(5, 150, 105, 0.08);
+            transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        body.staff-profile-page .support-load-more-btn:hover {
+            background: #059669;
+            color: #ffffff;
+            box-shadow: 0 18px 34px rgba(5, 150, 105, 0.18);
+            transform: translateY(-1px);
+        }
+
+        body.staff-profile-page .support-load-more-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+        }
+
         body.staff-profile-page #support-ticket-list {
-            margin-top: 0.45rem;
+            margin-top: 1.35rem;
         }
 
         body.staff-profile-page .support-ticket-card {
@@ -669,9 +1317,61 @@
             background: #f0fdf4 !important;
         }
 
+        body.staff-profile-page .support-sender-line {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            min-width: 0;
+        }
+
+        body.staff-profile-page .support-sender-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 999px;
+            flex: 0 0 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #dcfce7;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+            font-size: 0.78rem;
+            font-weight: 950;
+            overflow: hidden;
+            box-shadow: 0 8px 18px rgba(5, 150, 105, 0.08);
+        }
+
+        body.staff-profile-page .support-sender-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        body.staff-profile-page .support-sender-name {
+            min-width: 0;
+            color: #334155;
+            font-weight: 850;
+            font-size: 0.82rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.staff-profile-page .support-ticket-title {
+            display: block;
+            color: #0f172a;
+            font-weight: 900;
+            font-size: 0.98rem;
+            margin-top: 0.55rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         body.staff-profile-page #tab-support .support-ticket-layout.is-mailbox-only #support-ticket-list {
             display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1rem !important;
         }
 
@@ -682,6 +1382,11 @@
 
             body.staff-profile-page .support-filter-select-wrap {
                 min-width: 0;
+                grid-column: auto !important;
+            }
+
+            body.staff-profile-page #tab-support .support-ticket-layout.is-mailbox-only #support-ticket-list {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -3135,7 +3840,7 @@
                     </div>
 
                     <div class="tab-body-content">
-                        <div class="section-data-card">
+                        <div class="section-data-card system-management-card">
                             <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
                                 <div class="card-header-title">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
@@ -3146,12 +3851,31 @@
                                 </span>
                             </div>
 
+                            <div class="management-toolbar">
+                                <input id="teacher-approval-search" type="search" placeholder="Tìm hồ sơ giảng viên">
+                                <div class="management-filter-select-wrap support-filter-select-wrap">
+                                    <select id="teacher-approval-status-filter" class="management-filter-select support-filter-select" aria-label="Lọc trạng thái hồ sơ">
+                                        <option value="all">Tất cả trạng thái</option>
+                                        <option value="pending">Chờ duyệt</option>
+                                        <option value="approved">Đã duyệt</option>
+                                        <option value="needs_more_info">Cần bổ sung</option>
+                                        <option value="rejected">Từ chối</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <% if (teacherApplications != null && !teacherApplications.isEmpty()) { %>
                                 <div class="teacher-approval-grid" style="padding-top:1.5rem;">
                                     <% for (TeacherApplication app : teacherApplications) {
                                         String status = app.getStatus() != null ? app.getStatus() : "pending";
+                                        String approvalSearchText = (String.valueOf(app.getApplicantName()) + " "
+                                                + String.valueOf(app.getApplicantEmail()) + " "
+                                                + String.valueOf(app.getTeachingSubjects()) + " "
+                                                + String.valueOf(app.getInstitutionName()) + " "
+                                                + String.valueOf(app.getSpecialization()) + " "
+                                                + teacherTypeLabel(app.getTeacherType())).toLowerCase();
                                     %>
-                                        <div class="teacher-approval-card">
+                                        <div class="teacher-approval-card" data-approval-status="<%= h(status) %>" data-approval-search="<%= h(approvalSearchText) %>">
                                             <div class="teacher-approval-card-head">
                                                 <div>
                                                     <h3 class="teacher-approval-name"><%= h(app.getApplicantName()) %></h3>
@@ -3293,16 +4017,26 @@
                         </div>
                     </div>
                     <div class="tab-body-content">
-                        <div class="section-data-card">
-                            <form method="GET" action="${pageContext.request.contextPath}/profile" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0;">
+                        <div class="section-data-card system-management-card">
+                            <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
+                                <div class="card-header-title">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    <span>Danh sách giảng viên</span>
+                                </div>
+                                <span><%= approvedTeachers != null ? approvedTeachers.size() : 0 %> giảng viên</span>
+                            </div>
+
+                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/profile" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0;">
                                 <input type="hidden" name="tab" value="manage-teachers">
                                 <input type="text" name="searchTeacher" value="<%= h(searchTeacher) %>" placeholder="Tìm tên giảng viên..." style="flex: 1; min-width: 200px; padding: 0.6rem 1rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; outline: none; font-size: 0.9rem;">
-                                <select name="teacherType" style="padding: 0.6rem 1rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; outline: none; font-size: 0.9rem; min-width: 200px;">
-                                    <option value="ALL" <%= "ALL".equals(teacherTypeParam) ? "selected" : "" %>>Tất cả nhóm giảng viên</option>
-                                    <option value="student_tutor" <%= "student_tutor".equals(teacherTypeParam) ? "selected" : "" %>>Nhóm 1: Gia sư sinh viên</option>
-                                    <option value="certified_pedagogy" <%= "certified_pedagogy".equals(teacherTypeParam) ? "selected" : "" %>>Nhóm 2: Giảng viên có chứng chỉ sư phạm</option>
-                                    <option value="degree_specialist" <%= "degree_specialist".equals(teacherTypeParam) ? "selected" : "" %>>Nhóm 3: Giảng viên chuyên môn</option>
-                                </select>
+                                <div class="management-filter-select-wrap support-filter-select-wrap">
+                                    <select name="teacherType" class="management-filter-select support-filter-select" onchange="this.form.submit()">
+                                        <option value="ALL" <%= "ALL".equals(teacherTypeParam) ? "selected" : "" %>>Tất cả nhóm giảng viên</option>
+                                        <option value="student_tutor" <%= "student_tutor".equals(teacherTypeParam) ? "selected" : "" %>>Nhóm 1: Gia sư sinh viên</option>
+                                        <option value="certified_pedagogy" <%= "certified_pedagogy".equals(teacherTypeParam) ? "selected" : "" %>>Nhóm 2: Giảng viên có chứng chỉ sư phạm</option>
+                                        <option value="degree_specialist" <%= "degree_specialist".equals(teacherTypeParam) ? "selected" : "" %>>Nhóm 3: Giảng viên chuyên môn</option>
+                                    </select>
+                                </div>
                                 <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.25rem; border-radius: 0.5rem; font-weight: 700;">Lọc kết quả</button>
                             </form>
 
@@ -3361,24 +4095,36 @@
                         </div>
                     </div>
                     <div class="tab-body-content">
-                        <div class="section-data-card">
-                            <form method="GET" action="${pageContext.request.contextPath}/profile" style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; background:#f8fafc; padding:1rem; border-radius:0.75rem; border:1px solid #e2e8f0;">
+                        <div class="section-data-card system-management-card">
+                            <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
+                                <div class="card-header-title">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                    <span>Danh sách lớp học</span>
+                                </div>
+                                <span><%= managedClassrooms != null ? managedClassrooms.size() : 0 %> lớp học</span>
+                            </div>
+
+                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/profile" style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; background:#f8fafc; padding:1rem; border-radius:0.75rem; border:1px solid #e2e8f0;">
                                 <input type="hidden" name="tab" value="manage-classes">
                                 <input type="text" name="classTitle" value="<%= h(classTitle) %>" placeholder="Tìm tên lớp học..." style="flex:1; min-width:220px; padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem;">
-                                <select name="classSubject" style="padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem; min-width:180px;">
-                                    <option value="ALL" <%= "ALL".equals(classSubjectParam) ? "selected" : "" %>>Tất cả môn học</option>
-                                    <% if (classSubjects != null) {
-                                        for (String subject : classSubjects) { %>
-                                            <option value="<%= h(subject) %>" <%= subject.equals(classSubjectParam) ? "selected" : "" %>><%= h(subject) %></option>
-                                    <%  }
-                                    } %>
-                                </select>
-                                <select name="classStatus" style="padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem; min-width:180px;">
-                                    <option value="ALL" <%= "ALL".equals(classStatusParam) ? "selected" : "" %>>Tất cả trạng thái</option>
-                                    <option value="open" <%= "open".equals(classStatusParam) ? "selected" : "" %>>Đang mở</option>
-                                    <option value="upcoming" <%= "upcoming".equals(classStatusParam) ? "selected" : "" %>>Sắp khai giảng</option>
-                                    <option value="closed" <%= "closed".equals(classStatusParam) ? "selected" : "" %>>Đã đóng</option>
-                                </select>
+                                <div class="management-filter-select-wrap support-filter-select-wrap">
+                                    <select name="classSubject" class="management-filter-select support-filter-select" onchange="this.form.submit()">
+                                        <option value="ALL" <%= "ALL".equals(classSubjectParam) ? "selected" : "" %>>Tất cả môn học</option>
+                                        <% if (classSubjects != null) {
+                                            for (String subject : classSubjects) { %>
+                                                <option value="<%= h(subject) %>" <%= subject.equals(classSubjectParam) ? "selected" : "" %>><%= h(subject) %></option>
+                                        <%  }
+                                        } %>
+                                    </select>
+                                </div>
+                                <div class="management-filter-select-wrap support-filter-select-wrap">
+                                    <select name="classStatus" class="management-filter-select support-filter-select" onchange="this.form.submit()">
+                                        <option value="ALL" <%= "ALL".equals(classStatusParam) ? "selected" : "" %>>Tất cả trạng thái</option>
+                                        <option value="open" <%= "open".equals(classStatusParam) ? "selected" : "" %>>Đang mở</option>
+                                        <option value="upcoming" <%= "upcoming".equals(classStatusParam) ? "selected" : "" %>>Sắp khai giảng</option>
+                                        <option value="closed" <%= "closed".equals(classStatusParam) ? "selected" : "" %>>Đã đóng</option>
+                                    </select>
+                                </div>
                                 <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.25rem; border-radius:0.5rem; font-weight:700;">Lọc lớp học</button>
                             </form>
 
@@ -3437,25 +4183,37 @@
                         </div>
                     </div>
                     <div class="tab-body-content">
-                        <div class="section-data-card">
-                            <form method="GET" action="${pageContext.request.contextPath}/profile" style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; background:#f8fafc; padding:1rem; border-radius:0.75rem; border:1px solid #e2e8f0;">
+                        <div class="section-data-card system-management-card">
+                            <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
+                                <div class="card-header-title">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 6.5v12"/><path d="M5 8.5c2.6 0 4.9.5 7 2 2.1-1.5 4.4-2 7-2v11c-2.6 0-4.9.5-7 2-2.1-1.5-4.4-2-7-2z"/></svg>
+                                    <span>Danh sách khóa học</span>
+                                </div>
+                                <span><%= managedCourses != null ? managedCourses.size() : 0 %> khóa học</span>
+                            </div>
+
+                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/profile" style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; background:#f8fafc; padding:1rem; border-radius:0.75rem; border:1px solid #e2e8f0;">
                                 <input type="hidden" name="tab" value="manage-courses">
                                 <input type="text" name="courseTitle" value="<%= h(courseTitle) %>" placeholder="Tìm tên khóa học hoặc giảng viên..." style="flex:1; min-width:220px; padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem;">
-                                <select name="courseSubject" style="padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem; min-width:180px;">
-                                    <option value="ALL" <%= "ALL".equals(courseSubjectParam) ? "selected" : "" %>>Tất cả môn học</option>
-                                    <% if (courseSubjects != null) {
-                                        for (Course subject : courseSubjects) { %>
-                                            <option value="<%= h(subject.getSubjectCode()) %>" <%= subject.getSubjectCode() != null && subject.getSubjectCode().equals(courseSubjectParam) ? "selected" : "" %>><%= h(subject.getSubjectName()) %></option>
-                                    <%  }
-                                    } %>
-                                </select>
-                                <select name="courseStatus" style="padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem; min-width:180px;">
-                                    <option value="ALL" <%= "ALL".equals(courseStatusParam) ? "selected" : "" %>>Tất cả trạng thái</option>
-                                    <option value="pending_review" <%= "pending_review".equals(courseStatusParam) ? "selected" : "" %>>Chờ duyệt</option>
-                                    <option value="approved" <%= "approved".equals(courseStatusParam) ? "selected" : "" %>>Đã duyệt</option>
-                                    <option value="needs_revision" <%= "needs_revision".equals(courseStatusParam) ? "selected" : "" %>>Cần chỉnh sửa</option>
-                                    <option value="rejected" <%= "rejected".equals(courseStatusParam) ? "selected" : "" %>>Từ chối</option>
-                                </select>
+                                <div class="management-filter-select-wrap support-filter-select-wrap">
+                                    <select name="courseSubject" class="management-filter-select support-filter-select" onchange="this.form.submit()">
+                                        <option value="ALL" <%= "ALL".equals(courseSubjectParam) ? "selected" : "" %>>Tất cả môn học</option>
+                                        <% if (courseSubjects != null) {
+                                            for (Course subject : courseSubjects) { %>
+                                                <option value="<%= h(subject.getSubjectCode()) %>" <%= subject.getSubjectCode() != null && subject.getSubjectCode().equals(courseSubjectParam) ? "selected" : "" %>><%= h(subject.getSubjectName()) %></option>
+                                        <%  }
+                                        } %>
+                                    </select>
+                                </div>
+                                <div class="management-filter-select-wrap support-filter-select-wrap">
+                                    <select name="courseStatus" class="management-filter-select support-filter-select" onchange="this.form.submit()">
+                                        <option value="ALL" <%= "ALL".equals(courseStatusParam) ? "selected" : "" %>>Tất cả trạng thái</option>
+                                        <option value="pending_review" <%= "pending_review".equals(courseStatusParam) ? "selected" : "" %>>Chờ duyệt</option>
+                                        <option value="approved" <%= "approved".equals(courseStatusParam) ? "selected" : "" %>>Đã duyệt</option>
+                                        <option value="needs_revision" <%= "needs_revision".equals(courseStatusParam) ? "selected" : "" %>>Cần chỉnh sửa</option>
+                                        <option value="rejected" <%= "rejected".equals(courseStatusParam) ? "selected" : "" %>>Từ chối</option>
+                                    </select>
+                                </div>
                                 <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.25rem; border-radius:0.5rem; font-weight:700;">Lọc khóa học</button>
                             </form>
 
@@ -3920,8 +4678,15 @@
                         </div>
 
                         <div class="support-toolbar" style="margin-top:0.9rem;">
-                            <input id="support-ticket-search" class="support-search-input" type="search" placeholder="Tìm theo tiêu đề, người gửi hoặc vai trò...">
-                            <div class="support-filter-select-wrap">
+                            <input id="support-ticket-search" class="support-search-input" type="search" placeholder="Tìm kiếm tin nhắn">
+                            <div class="support-filter-select-wrap" style="grid-column:3;">
+                                <select id="support-role-filter" class="support-filter-select" aria-label="Lọc vai trò người gửi">
+                                    <option value="all">Tất cả vai trò</option>
+                                    <option value="student">Học sinh</option>
+                                    <option value="teacher">Giảng viên</option>
+                                </select>
+                            </div>
+                            <div class="support-filter-select-wrap" style="grid-column:4;">
                                 <select id="support-ticket-filter" class="support-filter-select" aria-label="Lọc yêu cầu hỗ trợ">
                                     <option value="all">Tất cả</option>
                                     <option value="unread">Chưa đọc</option>
@@ -3980,6 +4745,10 @@
                                     } else if ("admin".equals(ticket.getSourceRole())) {
                                         sourceRoleLabel = "Quản trị viên";
                                     }
+                                    String senderInitial = "U";
+                                    if (ticket.getUserName() != null && !ticket.getUserName().trim().isEmpty()) {
+                                        senderInitial = ticket.getUserName().trim().substring(0, 1).toUpperCase();
+                                    }
                                     String userMessageTime = ticket.getLatestUserMessageAt() != null
                                             ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(ticket.getLatestUserMessageAt())
                                             : "Chưa có tin nhắn";
@@ -3993,11 +4762,20 @@
                                             + String.valueOf(ticket.getUserName()) + " "
                                             + String.valueOf(ticket.getSourceRole())).toLowerCase();
                             %>
-                            <a class="support-ticket-card" data-support-state="<%= cardState %>" data-support-search="<%= h(ticketSearchText) %>" href="${pageContext.request.contextPath}/staff-profile?tab=support&supportView=detail&supportTicketId=<%= h(ticket.getId()) %>" style="display:block; text-decoration:none; text-align:left; border:1px solid <%= isSelectedTicket ? "#99f6e4" : "#e2e8f0" %>; border-left:4px solid <%= isSelectedTicket ? "#059669" : "#e2e8f0" %>; background:<%= isSelectedTicket ? "#f0fdfa" : "#ffffff" %>; border-radius:1rem; padding:1rem; cursor:pointer; box-shadow:0 10px 20px rgba(15,23,42,0.04);">
+                            <a class="support-ticket-card" data-support-role="<%= h(ticket.getSourceRole()) %>" data-support-state="<%= cardState %>" data-support-search="<%= h(ticketSearchText) %>" href="${pageContext.request.contextPath}/staff-profile?tab=support&supportView=detail&supportTicketId=<%= h(ticket.getId()) %>" style="display:block; text-decoration:none; text-align:left; border:1px solid <%= isSelectedTicket ? "#99f6e4" : "#e2e8f0" %>; border-left:4px solid <%= isSelectedTicket ? "#059669" : "#e2e8f0" %>; background:<%= isSelectedTicket ? "#f0fdfa" : "#ffffff" %>; border-radius:1rem; padding:1rem; cursor:pointer; box-shadow:0 10px 20px rgba(15,23,42,0.04);">
                                 <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start;">
                                     <div style="min-width:0;">
-                                        <span style="display:block; color:#0f172a; font-weight:900; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= h(ticket.getTitle()) %></span>
-                                        <span style="display:block; color:#475569; font-weight:800; font-size:0.78rem; margin-top:0.35rem;">Người gửi: <%= h(ticket.getUserName()) %></span>
+                                        <span class="support-sender-line">
+                                            <span class="support-sender-avatar">
+                                                <% if (ticket.getUserAvatarUrl() != null && !ticket.getUserAvatarUrl().trim().isEmpty()) { %>
+                                                    <img src="<%= h(ticket.getUserAvatarUrl()) %>" alt="<%= h(ticket.getUserName()) %>">
+                                                <% } else { %>
+                                                    <%= h(senderInitial) %>
+                                                <% } %>
+                                            </span>
+                                            <span class="support-sender-name"><%= h(ticket.getUserName()) %></span>
+                                        </span>
+                                        <span class="support-ticket-title"><%= h(ticket.getTitle()) %></span>
                                     </div>
                                     <span style="flex-shrink:0; color:<%= cardBadgeColor %>; background:<%= cardBadgeBg %>; border-radius:999px; padding:0.18rem 0.55rem; font-size:0.68rem; font-weight:900;"><%= cardBadgeText %></span>
                                 </div>
@@ -4018,6 +4796,12 @@
                                 Chưa có yêu cầu hỗ trợ nào.
                             </div>
                             <% } %>
+                        </div>
+                        <div class="support-load-more-wrap">
+                            <button id="support-load-more" type="button" class="support-load-more-btn">
+                                Xem thêm yêu cầu
+                                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+                            </button>
                         </div>
                     </div>
 
@@ -4437,6 +5221,7 @@
             if (container && localStorage.getItem('staffSidebarCollapsed') === 'true') {
                 container.classList.add('collapsed');
             }
+            setupTeacherApprovalFilters();
             setupSupportTicketFilters();
             const urlParams = new URLSearchParams(window.location.search);
             const tabParam = urlParams.get('tab');
@@ -4448,28 +5233,77 @@
             }
         });
 
-        function setupSupportTicketFilters() {
-            const searchInput = document.getElementById('support-ticket-search');
-            const filterSelect = document.getElementById('support-ticket-filter');
-            const cards = document.querySelectorAll('.support-ticket-card');
+        function setupTeacherApprovalFilters() {
+            const searchInput = document.getElementById('teacher-approval-search');
+            const statusSelect = document.getElementById('teacher-approval-status-filter');
+            const cards = Array.from(document.querySelectorAll('#tab-teacher-approval .teacher-approval-card'));
+            if (!searchInput && !statusSelect) return;
 
             function applyFilters() {
                 const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
-                const activeFilter = filterSelect ? filterSelect.value : 'all';
+                const status = statusSelect ? statusSelect.value : 'all';
                 cards.forEach(card => {
-                    const matchesText = !keyword || (card.dataset.supportSearch || '').includes(keyword);
-                    const matchesState = activeFilter === 'all' || card.dataset.supportState === activeFilter;
-                    card.classList.toggle('is-hidden', !(matchesText && matchesState));
+                    const matchesText = !keyword || (card.dataset.approvalSearch || '').includes(keyword);
+                    const matchesStatus = status === 'all' || card.dataset.approvalStatus === status;
+                    card.style.display = matchesText && matchesStatus ? '' : 'none';
                 });
             }
 
+            if (searchInput) searchInput.addEventListener('input', applyFilters);
+            if (statusSelect) statusSelect.addEventListener('change', applyFilters);
+            applyFilters();
+        }
+
+        function setupSupportTicketFilters() {
+            const searchInput = document.getElementById('support-ticket-search');
+            const filterSelect = document.getElementById('support-ticket-filter');
+            const roleSelect = document.getElementById('support-role-filter');
+            const loadMoreButton = document.getElementById('support-load-more');
+            const cards = Array.from(document.querySelectorAll('.support-ticket-card'));
+            const pageSize = 10;
+            let visibleLimit = pageSize;
+
+            function applyFilters(resetLimit = false) {
+                if (resetLimit) visibleLimit = pageSize;
+                const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
+                const activeFilter = filterSelect ? filterSelect.value : 'all';
+                const activeRole = roleSelect ? roleSelect.value : 'all';
+                const matchedCards = cards.filter(card => {
+                    const matchesText = !keyword || (card.dataset.supportSearch || '').includes(keyword);
+                    const matchesState = activeFilter === 'all' || card.dataset.supportState === activeFilter;
+                    const matchesRole = activeRole === 'all' || card.dataset.supportRole === activeRole;
+                    return matchesText && matchesState && matchesRole;
+                });
+
+                cards.forEach(card => card.classList.add('is-hidden'));
+                matchedCards.slice(0, visibleLimit).forEach(card => card.classList.remove('is-hidden'));
+
+                if (loadMoreButton) {
+                    const hasMore = matchedCards.length > visibleLimit;
+                    loadMoreButton.parentElement.style.display = hasMore ? 'flex' : 'none';
+                }
+            }
+
             if (searchInput) {
-                searchInput.addEventListener('input', applyFilters);
+                searchInput.addEventListener('input', () => applyFilters(true));
             }
 
             if (filterSelect) {
-                filterSelect.addEventListener('change', applyFilters);
+                filterSelect.addEventListener('change', () => applyFilters(true));
             }
+
+            if (roleSelect) {
+                roleSelect.addEventListener('change', () => applyFilters(true));
+            }
+
+            if (loadMoreButton) {
+                loadMoreButton.addEventListener('click', () => {
+                    visibleLimit += pageSize;
+                    applyFilters(false);
+                });
+            }
+
+            applyFilters(true);
         }
 
         window.addEventListener('popstate', (event) => {
