@@ -168,11 +168,13 @@ public class ProfileServlet extends HttpServlet {
             loadStaffSupportData(request);
             request.setAttribute("teacherApplications", teacherApplicationDao.listForStaffReview());
             
-            String searchTeacher = cleanParam(request.getParameter("searchTeacher"));
-            String teacherType = cleanParam(request.getParameter("teacherType"));
-            request.setAttribute("approvedTeachers", teacherApplicationDao.listApprovedTeachers(searchTeacher, teacherType));
-            request.setAttribute("searchTeacher", searchTeacher);
-            request.setAttribute("teacherType", teacherType);
+            String searchUser = cleanParam(request.getParameter("searchUser"));
+            String userRole = cleanParam(request.getParameter("userRole"));
+            String userStatus = cleanParam(request.getParameter("userStatus"));
+            request.setAttribute("managedUsers", adminUserDao.listStaffManagedLearnersAndTeachers(searchUser, userRole, userStatus));
+            request.setAttribute("searchUser", searchUser);
+            request.setAttribute("userRole", userRole);
+            request.setAttribute("userStatus", userStatus);
 
             String classTitle = cleanParam(request.getParameter("classTitle"));
             String classSubject = cleanParam(request.getParameter("classSubject"));

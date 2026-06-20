@@ -44,6 +44,54 @@ public class AdminUserDao {
         return users;
     }
 
+    public List<AdminUserSummary> listStaffManagedLearnersAndTeachers(String searchQuery, String roleFilter, String statusFilter) {
+        List<AdminUserSummary> users = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT u.id, u.display_name, u.email, u.account_status, "
+                + "STRING_AGG(DISTINCT r.name, ', ' ORDER BY r.name) AS roles "
+                + "FROM users u "
+                + "JOIN user_roles ur ON ur.user_id = u.id AND ur.is_active = true "
+                + "JOIN roles r ON r.id = ur.role_id "
+                + "WHERE u.deleted_at IS NULL "
+                + "AND LOWER(r.name) IN ('student', 'teacher') ");
+
+        List<Object> params = new ArrayList<>();
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            sql.append("AND (u.display_name ILIKE ? OR u.email ILIKE ?) ");
+            String keyword = "%" + searchQuery.trim() + "%";
+            params.add(keyword);
+            params.add(keyword);
+        }
+
+        if (roleFilter != null && !roleFilter.trim().isEmpty() && !"ALL".equalsIgnoreCase(roleFilter.trim())) {
+            sql.append("AND LOWER(r.name) = ? ");
+            params.add(roleFilter.trim().toLowerCase());
+        }
+
+        if (statusFilter != null && !statusFilter.trim().isEmpty() && !"ALL".equalsIgnoreCase(statusFilter.trim())) {
+            sql.append("AND LOWER(u.account_status) = ? ");
+            params.add(statusFilter.trim().toLowerCase());
+        }
+
+        sql.append("GROUP BY u.id, u.display_name, u.email, u.account_status, u.created_at ")
+           .append("ORDER BY u.created_at DESC NULLS LAST, u.display_name ASC");
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    users.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in AdminUserDao.listStaffManagedLearnersAndTeachers: " + e.getMessage());
+        }
+        return users;
+    }
+
     public int countManagedUsers() {
         String sql = "SELECT COUNT(DISTINCT u.id) AS total " +
                      "FROM users u " +

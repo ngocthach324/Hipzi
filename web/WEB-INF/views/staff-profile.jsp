@@ -1,6 +1,7 @@
 ﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Role"%>
+<%@page import="com.hipzi.model.AdminUserSummary"%>
 <%@page import="com.hipzi.model.Classroom"%>
 <%@page import="com.hipzi.model.Course"%>
 <%@page import="com.hipzi.model.TeacherApplication"%>
@@ -44,6 +45,22 @@
         if ("year_5_plus".equals(value)) return "Năm 5 trở lên";
         if ("graduated".equals(value)) return "Đã tốt nghiệp";
         return "Không áp dụng";
+    }
+
+    private String userRoleLabel(String roles) {
+        if (roles == null || roles.trim().isEmpty()) return "Chưa phân quyền";
+        String lowered = roles.toLowerCase();
+        if (lowered.contains("teacher") && lowered.contains("student")) return "Giảng viên, Học sinh";
+        if (lowered.contains("teacher")) return "Giảng viên";
+        if (lowered.contains("student")) return "Học sinh";
+        return roles;
+    }
+
+    private String userStatusLabel(String status) {
+        if ("active".equalsIgnoreCase(status)) return "Đang hoạt động";
+        if ("disabled".equalsIgnoreCase(status)) return "Đã khóa";
+        if ("pending".equalsIgnoreCase(status)) return "Chờ xác nhận";
+        return status != null && !status.trim().isEmpty() ? status : "Chưa rõ";
     }
 %>
 <html lang="vi">
@@ -573,7 +590,7 @@
         }
 
         body.staff-profile-page #tab-manage-teachers .tab-header-title-text::after {
-            content: "Theo dõi danh sách giảng viên đã được duyệt và lọc theo nhóm chuyên môn.";
+            content: "Theo dõi danh sách giảng viên và học sinh đang sử dụng nền tảng.";
         }
 
         body.staff-profile-page #tab-manage-classes .tab-header-title-text::after {
@@ -713,9 +730,9 @@
             font-weight: 900 !important;
         }
 
-        body.staff-profile-page #tab-manage-teachers .section-data-card > form button,
-        body.staff-profile-page #tab-manage-classes .section-data-card > form button,
-        body.staff-profile-page #tab-manage-courses .section-data-card > form button {
+        body.staff-profile-page #tab-manage-teachers .section-data-card > form > button,
+        body.staff-profile-page #tab-manage-classes .section-data-card > form > button,
+        body.staff-profile-page #tab-manage-courses .section-data-card > form > button {
             background: #059669 !important;
             color: #ffffff !important;
             border: none !important;
@@ -828,7 +845,7 @@
 
         body.staff-profile-page .system-management-card .management-toolbar {
             display: grid !important;
-            grid-template-columns: minmax(420px, calc((100% - 1rem) / 2)) 1fr 190px 190px auto;
+            grid-template-columns: minmax(420px, calc((100% - 1rem) / 2)) 1fr 220px 220px auto;
             gap: 1rem !important;
             align-items: center;
             margin: 0.9rem 0 1.35rem !important;
@@ -841,34 +858,38 @@
 
         body.staff-profile-page #tab-teacher-approval .management-toolbar,
         body.staff-profile-page #tab-manage-teachers .management-toolbar {
-            grid-template-columns: minmax(420px, calc((100% - 1rem) / 2)) 1fr 190px 190px auto;
+            grid-template-columns: minmax(420px, calc((100% - 1rem) / 2)) 1fr 220px 220px auto;
         }
 
         body.staff-profile-page #tab-teacher-approval .management-toolbar select {
             grid-column: auto;
         }
 
-        body.staff-profile-page #tab-teacher-approval .management-toolbar .support-filter-select-wrap {
+        body.staff-profile-page #tab-teacher-approval .management-toolbar .management-filter-dropdown {
             grid-column: 4;
         }
 
-        body.staff-profile-page #tab-manage-teachers .management-toolbar .support-filter-select-wrap {
-            grid-column: 4;
-        }
-
-        body.staff-profile-page #tab-manage-classes .management-toolbar .support-filter-select-wrap:first-of-type,
-        body.staff-profile-page #tab-manage-courses .management-toolbar .support-filter-select-wrap:first-of-type {
+        body.staff-profile-page #tab-manage-teachers .management-toolbar .management-filter-dropdown:first-of-type {
             grid-column: 3;
         }
 
-        body.staff-profile-page #tab-manage-classes .management-toolbar .support-filter-select-wrap:nth-of-type(2),
-        body.staff-profile-page #tab-manage-courses .management-toolbar .support-filter-select-wrap:nth-of-type(2) {
+        body.staff-profile-page #tab-manage-teachers .management-toolbar .management-filter-dropdown:nth-of-type(2) {
             grid-column: 4;
         }
 
-        body.staff-profile-page #tab-manage-teachers .management-toolbar button,
-        body.staff-profile-page #tab-manage-classes .management-toolbar button,
-        body.staff-profile-page #tab-manage-courses .management-toolbar button {
+        body.staff-profile-page #tab-manage-classes .management-toolbar .management-filter-dropdown:first-of-type,
+        body.staff-profile-page #tab-manage-courses .management-toolbar .management-filter-dropdown:first-of-type {
+            grid-column: 3;
+        }
+
+        body.staff-profile-page #tab-manage-classes .management-toolbar .management-filter-dropdown:nth-of-type(2),
+        body.staff-profile-page #tab-manage-courses .management-toolbar .management-filter-dropdown:nth-of-type(2) {
+            grid-column: 4;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .management-toolbar > button,
+        body.staff-profile-page #tab-manage-classes .management-toolbar > button,
+        body.staff-profile-page #tab-manage-courses .management-toolbar > button {
             display: none !important;
         }
 
@@ -962,13 +983,128 @@
             font-weight: 700 !important;
         }
 
+        body.staff-profile-page .management-filter-dropdown {
+            position: relative;
+            min-width: 220px;
+            width: 100%;
+        }
+
+        body.staff-profile-page .management-filter-trigger {
+            width: 100%;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.9rem;
+            border: 1px solid #99f6e4;
+            background: #ffffff;
+            color: #334155;
+            border-radius: 0.9rem;
+            padding: 0.7rem 0.9rem 0.7rem 1rem;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            outline: none;
+            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.06);
+            white-space: nowrap;
+            transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease;
+        }
+
+        body.staff-profile-page .management-filter-trigger svg {
+            flex: 0 0 auto;
+            color: #059669;
+        }
+
+        body.staff-profile-page .management-filter-label {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.staff-profile-page .management-filter-dropdown.is-open .management-filter-trigger,
+        body.staff-profile-page .management-filter-trigger:focus {
+            border-color: #10b981;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+        }
+
+        body.staff-profile-page .management-filter-menu {
+            position: absolute;
+            top: calc(100% + 0.55rem);
+            right: 0;
+            z-index: 40;
+            display: grid;
+            gap: 0.2rem;
+            width: 100%;
+            min-width: 100%;
+            padding: 0.45rem;
+            border: 1px solid #ccfbf1;
+            border-radius: 0.9rem;
+            background: #ffffff;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-0.35rem) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 170ms ease, transform 170ms cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 170ms;
+        }
+
+        body.staff-profile-page .management-filter-dropdown.is-open .management-filter-menu {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+            transition-delay: 0s;
+        }
+
+        body.staff-profile-page .management-filter-option {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            border: 0;
+            background: transparent;
+            color: #475569;
+            border-radius: 0.65rem;
+            padding: 0.58rem 0.7rem;
+            font-size: 0.86rem;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            white-space: nowrap;
+            box-sizing: border-box;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background-color 150ms ease, color 150ms ease;
+        }
+
+        body.staff-profile-page .management-filter-option:hover,
+        body.staff-profile-page .management-filter-option.is-selected {
+            background: #dff8ee;
+            color: #059669;
+        }
+
+        body.staff-profile-page .management-filter-check {
+            color: #059669;
+            font-weight: 800;
+            opacity: 0;
+            transition: opacity 140ms ease;
+        }
+
+        body.staff-profile-page .management-filter-option.is-selected .management-filter-check {
+            opacity: 1;
+        }
+
         body.staff-profile-page .system-management-card .management-toolbar input:focus,
         body.staff-profile-page .system-management-card .management-toolbar select:focus {
             border-color: #059669 !important;
             box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12) !important;
         }
 
-        body.staff-profile-page .system-management-card .management-toolbar button {
+        body.staff-profile-page .system-management-card .management-toolbar > button {
             min-height: 0 !important;
             border-radius: 999px !important;
             background: #059669 !important;
@@ -996,11 +1132,116 @@
         }
 
         body.staff-profile-page #tab-teacher-approval .teacher-approval-card {
-            border: 1px solid #dbe4ee;
-            border-left: 4px solid #059669;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #e2e8f0;
             border-radius: 1rem;
-            padding: 1.25rem;
-            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.035);
+            padding: 1rem;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.04);
+            transition: border-color 0.18s ease, border-left-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, background-color 0.18s ease;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-approval-card:hover,
+        body.staff-profile-page #tab-teacher-approval .teacher-approval-card:focus-visible {
+            border-color: #86efac;
+            border-left-color: #059669;
+            box-shadow: 0 18px 36px rgba(5, 150, 105, 0.14);
+            transform: translateY(-2px);
+            background: #f0fdf4;
+            outline: none;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-application-summary {
+            display: block;
+            min-width: 0;
+            margin: -1rem;
+            padding: 1rem;
+            border-radius: inherit;
+            outline: none;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-application-summary:focus-visible {
+            outline: none;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-application-summary-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-application-summary-identity {
+            min-width: 0;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-application-summary-line {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            min-width: 0;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-application-summary-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 999px;
+            flex: 0 0 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #dcfce7;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+            font-size: 0.78rem;
+            font-weight: 900;
+            overflow: hidden;
+            box-shadow: 0 8px 18px rgba(5, 150, 105, 0.08);
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-application-summary-name {
+            min-width: 0;
+            color: #334155;
+            font-weight: 850;
+            font-size: 0.82rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-application-summary-title {
+            display: block;
+            color: #0f172a;
+            font-weight: 900;
+            font-size: 0.98rem;
+            margin-top: 0.55rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-application-summary-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.8rem;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-application-summary-role {
+            color: #334155;
+            font-size: 0.78rem;
+            font-weight: 850;
+        }
+
+        body.staff-profile-page #tab-teacher-approval .teacher-application-summary-date {
+            color: #64748b;
+            font-size: 0.72rem;
+            font-weight: 850;
+            text-align: right;
+            line-height: 1.25;
         }
 
         body.staff-profile-page #tab-manage-teachers .teacher-approval-card,
@@ -1026,23 +1267,119 @@
         }
 
         body.staff-profile-page #tab-manage-courses .staff-class-card {
-            grid-template-columns: 1fr !important;
+            cursor: pointer;
+            max-width: 680px;
         }
 
-        body.staff-profile-page #tab-manage-courses .staff-class-card > div:last-child {
-            min-width: 0 !important;
+        body.staff-profile-page #tab-manage-teachers .user-management-table {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.035);
         }
 
-        body.staff-profile-page #tab-teacher-approval .teacher-approval-card:hover {
-            border-color: #86efac;
-            border-left-color: #059669;
-            box-shadow: 0 18px 36px rgba(5, 150, 105, 0.12);
+        body.staff-profile-page #tab-manage-teachers .user-management-row {
+            display: grid;
+            grid-template-columns: minmax(260px, 1.7fr) 0.9fr 0.9fr 0.75fr;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid #eef2f7;
         }
 
-        body.staff-profile-page #tab-teacher-approval .teacher-detail-open-btn:hover {
-            background: #059669;
-            border-color: #059669;
-            color: #ffffff;
+        body.staff-profile-page #tab-manage-teachers .user-management-row:last-child {
+            border-bottom: 0;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .user-management-head {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 0.76rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .user-management-item {
+            transition: background-color 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .user-management-item:hover {
+            background: #f0fdf4;
+            box-shadow: inset 4px 0 0 #059669;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .user-management-main {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .user-management-avatar {
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 0.55rem;
+            flex: 0 0 2.2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #dcfce7;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+            font-size: 0.82rem;
+            font-weight: 900;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .user-management-name {
+            display: block;
+            color: #0f172a;
+            font-size: 0.9rem;
+            font-weight: 900;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .user-management-email {
+            display: block;
+            color: #64748b;
+            font-size: 0.76rem;
+            font-weight: 700;
+            margin-top: 0.12rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .user-management-cell {
+            color: #334155;
+            font-size: 0.82rem;
+            font-weight: 800;
+            min-width: 0;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .user-management-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 0.22rem 0.7rem;
+            font-size: 0.72rem;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .user-management-pill.active {
+            background: #dcfce7;
+            color: #047857;
+        }
+
+        body.staff-profile-page #tab-manage-teachers .user-management-pill.disabled {
+            background: #fee2e2;
+            color: #dc2626;
         }
 
         @media (max-width: 900px) {
@@ -1051,6 +1388,15 @@
             body.staff-profile-page #tab-manage-classes .staff-class-list,
             body.staff-profile-page #tab-manage-courses .staff-class-list {
                 grid-template-columns: 1fr;
+            }
+
+            body.staff-profile-page #tab-manage-teachers .user-management-row {
+                grid-template-columns: 1fr;
+                gap: 0.55rem;
+            }
+
+            body.staff-profile-page #tab-manage-teachers .user-management-head {
+                display: none;
             }
 
             body.staff-profile-page .system-management-card .management-toolbar,
@@ -1063,13 +1409,17 @@
             body.staff-profile-page #tab-manage-teachers .management-toolbar select,
             body.staff-profile-page #tab-manage-classes .management-toolbar select,
             body.staff-profile-page #tab-manage-courses .management-toolbar select,
+            body.staff-profile-page #tab-teacher-approval .management-toolbar .management-filter-dropdown,
+            body.staff-profile-page #tab-manage-teachers .management-toolbar .management-filter-dropdown,
+            body.staff-profile-page #tab-manage-classes .management-toolbar .management-filter-dropdown,
+            body.staff-profile-page #tab-manage-courses .management-toolbar .management-filter-dropdown,
             body.staff-profile-page #tab-teacher-approval .management-toolbar .support-filter-select-wrap,
             body.staff-profile-page #tab-manage-teachers .management-toolbar .support-filter-select-wrap,
             body.staff-profile-page #tab-manage-classes .management-toolbar .support-filter-select-wrap,
             body.staff-profile-page #tab-manage-courses .management-toolbar .support-filter-select-wrap,
-            body.staff-profile-page #tab-manage-teachers .management-toolbar button,
-            body.staff-profile-page #tab-manage-classes .management-toolbar button,
-            body.staff-profile-page #tab-manage-courses .management-toolbar button {
+            body.staff-profile-page #tab-manage-teachers .management-toolbar > button,
+            body.staff-profile-page #tab-manage-classes .management-toolbar > button,
+            body.staff-profile-page #tab-manage-courses .management-toolbar > button {
                 grid-column: auto;
             }
         }
@@ -1183,23 +1533,16 @@
         }
 
         body.staff-profile-page .support-filter-select-wrap::after {
-            content: "";
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            width: 0.55rem;
-            height: 0.55rem;
-            border-right: 2px solid #059669;
-            border-bottom: 2px solid #059669;
-            transform: translateY(-65%) rotate(45deg);
-            pointer-events: none;
+            content: none;
         }
 
         body.staff-profile-page .support-filter-select {
             width: 100%;
-            appearance: none;
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
             border: 1px solid #bbf7d0;
-            background: #ffffff;
+            background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23059669' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 1rem center / 1rem 1rem !important;
             color: #047857;
             border-radius: 999px;
             padding: 0.7rem 2.4rem 0.7rem 1rem;
@@ -1208,6 +1551,10 @@
             cursor: pointer;
             outline: none;
             box-shadow: 0 8px 20px rgba(5, 150, 105, 0.08);
+        }
+
+        body.staff-profile-page .support-filter-select::-ms-expand {
+            display: none;
         }
 
         body.staff-profile-page .support-filter-select:focus {
@@ -1237,8 +1584,11 @@
         body.staff-profile-page .system-management-card .management-toolbar .support-filter-select {
             width: 100% !important;
             appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
             border: 1px solid #bbf7d0 !important;
             background: #ffffff !important;
+            background-image: none !important;
             color: #047857 !important;
             border-radius: 999px !important;
             padding: 0.7rem 2.4rem 0.7rem 1rem !important;
@@ -2195,6 +2545,15 @@
             align-items: start;
         }
 
+        body.staff-profile-page #tab-manage-classes .staff-class-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 1rem;
+            align-items: start;
+            cursor: pointer;
+            max-width: 680px;
+        }
+
         .staff-class-title {
             margin: 0 0 0.45rem 0;
             font-size: 1.05rem;
@@ -2217,6 +2576,88 @@
         .class-status-pill.open { background: #dcfce7; color: #15803d; }
         .class-status-pill.upcoming { background: #fef9c3; color: #a16207; }
         .class-status-pill.closed { background: #fee2e2; color: #b91c1c; }
+
+        .class-detail-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 180ms ease, visibility 0s linear 180ms;
+        }
+
+        .class-detail-modal.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition-delay: 0s;
+        }
+
+        .class-detail-modal-card {
+            width: min(100%, 680px);
+            max-height: calc(100vh - 2.5rem);
+            overflow: auto;
+            border: 1px solid #dbe4ee;
+            border-left: 4px solid #059669;
+            border-radius: 1rem;
+            background: #ffffff;
+            padding: 1.35rem;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.2);
+            transform: translateY(0.6rem) scale(0.98);
+            transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .class-detail-modal.active .class-detail-modal-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .class-detail-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 1.1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eef2f7;
+        }
+
+        .class-detail-cancel,
+        .class-detail-delete {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 2.75rem;
+            border-radius: 0.8rem;
+            padding: 0 1.15rem;
+            font-weight: 850;
+            cursor: pointer;
+            background: #ffffff;
+        }
+
+        .class-detail-cancel {
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
+        }
+
+        .class-detail-delete {
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+
+        .class-detail-cancel:hover {
+            background: #f8fafc;
+        }
+
+        .class-detail-delete:hover {
+            background: #fef2f2;
+        }
 
         .teacher-approval-meta-grid {
             display: grid;
@@ -2446,6 +2887,7 @@
 
         .teacher-review-actions {
             display: flex;
+            justify-content: flex-end;
             gap: 0.65rem;
             flex-wrap: wrap;
         }
@@ -3562,7 +4004,7 @@
         // Lấy danh sách thông báo hệ thống
         List<Notification> notifications = (List<Notification>) request.getAttribute("notifications");
         List<TeacherApplication> teacherApplications = (List<TeacherApplication>) request.getAttribute("teacherApplications");
-        List<TeacherApplication> approvedTeachers = (List<TeacherApplication>) request.getAttribute("approvedTeachers");
+        List<AdminUserSummary> managedUsers = (List<AdminUserSummary>) request.getAttribute("managedUsers");
         List<Classroom> managedClassrooms = (List<Classroom>) request.getAttribute("managedClassrooms");
         List<String> classSubjects = (List<String>) request.getAttribute("classSubjects");
         List<Course> managedCourses = (List<Course>) request.getAttribute("managedCourses");
@@ -3596,10 +4038,12 @@
                 }
             }
         }
-        String searchTeacher = (String) request.getAttribute("searchTeacher");
-        if (searchTeacher == null) searchTeacher = "";
-        String teacherTypeParam = (String) request.getAttribute("teacherType");
-        if (teacherTypeParam == null) teacherTypeParam = "ALL";
+        String searchUser = (String) request.getAttribute("searchUser");
+        if (searchUser == null) searchUser = "";
+        String userRoleParam = (String) request.getAttribute("userRole");
+        if (userRoleParam == null || userRoleParam.isEmpty()) userRoleParam = "ALL";
+        String userStatusParam = (String) request.getAttribute("userStatus");
+        if (userStatusParam == null || userStatusParam.isEmpty()) userStatusParam = "ALL";
         String classTitle = (String) request.getAttribute("classTitle");
         if (classTitle == null) classTitle = "";
         String classSubjectParam = (String) request.getAttribute("classSubject");
@@ -3612,6 +4056,29 @@
         if (courseSubjectParam == null || courseSubjectParam.isEmpty()) courseSubjectParam = "ALL";
         String courseStatusParam = (String) request.getAttribute("courseStatus");
         if (courseStatusParam == null || courseStatusParam.isEmpty()) courseStatusParam = "ALL";
+        String userRoleFilterLabel = "ALL".equals(userRoleParam) ? "Tất cả" : userRoleLabel(userRoleParam);
+        String userStatusFilterLabel = "Tất cả";
+        if ("active".equals(userStatusParam)) userStatusFilterLabel = "Đang hoạt động";
+        else if ("disabled".equals(userStatusParam)) userStatusFilterLabel = "Bị ban";
+        String classSubjectFilterLabel = "ALL".equals(classSubjectParam) ? "Tất cả môn học" : classSubjectParam;
+        String classStatusFilterLabel = "Tất cả trạng thái";
+        if ("open".equals(classStatusParam)) classStatusFilterLabel = "Đang mở";
+        else if ("upcoming".equals(classStatusParam)) classStatusFilterLabel = "Sắp khai giảng";
+        else if ("closed".equals(classStatusParam)) classStatusFilterLabel = "Đã đóng";
+        String courseSubjectFilterLabel = "Tất cả môn học";
+        if (courseSubjects != null && !"ALL".equals(courseSubjectParam)) {
+            for (Course subject : courseSubjects) {
+                if (subject.getSubjectCode() != null && subject.getSubjectCode().equals(courseSubjectParam)) {
+                    courseSubjectFilterLabel = subject.getSubjectName();
+                    break;
+                }
+            }
+        }
+        String courseStatusFilterLabel = "Tất cả trạng thái";
+        if ("pending_review".equals(courseStatusParam)) courseStatusFilterLabel = "Chờ duyệt";
+        else if ("approved".equals(courseStatusParam)) courseStatusFilterLabel = "Đã duyệt";
+        else if ("needs_revision".equals(courseStatusParam)) courseStatusFilterLabel = "Cần chỉnh sửa";
+        else if ("rejected".equals(courseStatusParam)) courseStatusFilterLabel = "Từ chối";
         Object staffTotalUsersObj = request.getAttribute("staffTotalUsers");
         int staffTotalUsers = staffTotalUsersObj instanceof Number ? ((Number) staffTotalUsersObj).intValue() : 0;
         Object staffActiveClassCountObj = request.getAttribute("staffActiveClassCount");
@@ -3750,7 +4217,7 @@
                 <li>
                     <a id="nav-tab-manage-teachers" class="<%= "tab-manage-teachers".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-manage-teachers')">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                        <span>Quản lý giảng viên</span>
+                        <span>Quản lý người dùng</span>
                     </a>
                 </li>
                 <li>
@@ -3853,14 +4320,19 @@
 
                             <div class="management-toolbar">
                                 <input id="teacher-approval-search" type="search" placeholder="Tìm hồ sơ giảng viên">
-                                <div class="management-filter-select-wrap support-filter-select-wrap">
-                                    <select id="teacher-approval-status-filter" class="management-filter-select support-filter-select" aria-label="Lọc trạng thái hồ sơ">
-                                        <option value="all">Tất cả trạng thái</option>
-                                        <option value="pending">Chờ duyệt</option>
-                                        <option value="approved">Đã duyệt</option>
-                                        <option value="needs_more_info">Cần bổ sung</option>
-                                        <option value="rejected">Từ chối</option>
-                                    </select>
+                                <input id="teacher-approval-status-filter" type="hidden" value="all">
+                                <div class="management-filter-dropdown" data-target-input="teacher-approval-status-filter">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label">Tất cả trạng thái</span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option is-selected" data-value="all">Tất cả trạng thái <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option" data-value="pending">Chờ duyệt <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option" data-value="approved">Đã duyệt <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option" data-value="needs_more_info">Cần bổ sung <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option" data-value="rejected">Từ chối <span class="management-filter-check">&#10003;</span></button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -3874,38 +4346,35 @@
                                                 + String.valueOf(app.getInstitutionName()) + " "
                                                 + String.valueOf(app.getSpecialization()) + " "
                                                 + teacherTypeLabel(app.getTeacherType())).toLowerCase();
+                                        String applicantName = app.getApplicantName() != null ? app.getApplicantName().trim() : "";
+                                        String applicantInitial = "G";
+                                        if (!applicantName.isEmpty()) {
+                                            String[] applicantNameParts = applicantName.split("\\s+");
+                                            applicantInitial = applicantNameParts[applicantNameParts.length - 1].substring(0, 1).toUpperCase();
+                                        }
+                                        String applicationSubmittedAt = app.getSubmittedAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(app.getSubmittedAt()) : "Chưa có dữ liệu";
                                     %>
                                         <div class="teacher-approval-card" data-approval-status="<%= h(status) %>" data-approval-search="<%= h(approvalSearchText) %>">
-                                            <div class="teacher-approval-card-head">
-                                                <div>
-                                                    <h3 class="teacher-approval-name"><%= h(app.getApplicantName()) %></h3>
-                                                    <div class="teacher-approval-email"><%= h(app.getApplicantEmail()) %></div>
+                                            <div class="teacher-application-summary"
+                                                 role="button"
+                                                 tabindex="0"
+                                                 onclick="openTeacherApplicationModal('teacher-application-modal-<%= h(app.getId()) %>')"
+                                                 onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openTeacherApplicationModal('teacher-application-modal-<%= h(app.getId()) %>'); }">
+                                                <div class="teacher-application-summary-top">
+                                                    <div class="teacher-application-summary-identity">
+                                                        <span class="teacher-application-summary-line">
+                                                            <span class="teacher-application-summary-avatar"><%= h(applicantInitial) %></span>
+                                                            <span class="teacher-application-summary-name"><%= h(app.getApplicantName()) %></span>
+                                                        </span>
+                                                        <span class="teacher-application-summary-title"><%= h(app.getApplicantEmail()) %></span>
+                                                    </div>
+                                                    <span class="teacher-application-status <%= h(status) %>"><%= applicationStatusLabel(status) %></span>
                                                 </div>
-                                                <span class="teacher-application-status <%= h(status) %>"><%= applicationStatusLabel(status) %></span>
-                                            </div>
-
-                                            <div class="teacher-approval-meta-grid">
-                                                <div class="teacher-approval-meta">
-                                                    <span>Nhóm giảng viên</span>
-                                                    <strong><%= teacherTypeLabel(app.getTeacherType()) %></strong>
-                                                </div>
-                                                <div class="teacher-approval-meta">
-                                                    <span>Môn có thể dạy</span>
-                                                    <strong><%= h(app.getTeachingSubjects()) %></strong>
-                                                </div>
-                                                <div class="teacher-approval-meta">
-                                                    <span>Đơn vị / trường</span>
-                                                    <strong><%= h(app.getInstitutionName()) %></strong>
-                                                </div>
-                                                <div class="teacher-approval-meta">
-                                                    <span>Chuyên môn</span>
-                                                    <strong><%= h(app.getSpecialization()) %></strong>
+                                                <div class="teacher-application-summary-bottom">
+                                                    <span class="teacher-application-summary-role">Nhóm: <%= teacherTypeLabel(app.getTeacherType()) %></span>
+                                                    <span class="teacher-application-summary-date">Ngày gửi: <%= h(applicationSubmittedAt) %></span>
                                                 </div>
                                             </div>
-
-                                            <button type="button" class="teacher-detail-open-btn" onclick="openTeacherApplicationModal('teacher-application-modal-<%= h(app.getId()) %>')">
-                                                Xem chi tiết hồ sơ
-                                            </button>
 
                                             <div id="teacher-application-modal-<%= h(app.getId()) %>" class="teacher-application-modal" onclick="closeTeacherApplicationModalOnBackdrop(event, this)">
                                                 <div class="teacher-application-modal-card" role="dialog" aria-modal="true" aria-labelledby="teacher-application-title-<%= h(app.getId()) %>">
@@ -3981,7 +4450,6 @@
                                                 <div class="teacher-review-actions">
                                                     <button type="button" class="teacher-review-btn cancel" onclick="closeTeacherApplicationModal('teacher-application-modal-<%= h(app.getId()) %>')">Hủy bỏ</button>
                                                     <button type="submit" name="decision" value="approved" class="teacher-review-btn approve">Duyệt</button>
-                                                    <button type="submit" name="decision" value="needs_more_info" class="teacher-review-btn more">Yêu cầu bổ sung</button>
                                                     <button type="submit" name="decision" value="rejected" class="teacher-review-btn reject">Từ chối</button>
                                                 </div>
                                             </form>
@@ -4005,12 +4473,12 @@
             </section>
 
             <!-- ========================================== -->
-            <!-- TAB: QUẢN LÝ GIẢNG VIÊN (MOCKUP)          -->
+            <!-- TAB: QUẢN LÝ NGƯỜI DÙNG                   -->
             <!-- ========================================== -->
             <section id="tab-manage-teachers" class="tab-pane <%= "tab-manage-teachers".equals(activeStaffTab) ? "active-pane" : "" %>">
                 <div class="tab-grouped-container">
                     <div class="tab-header-accent">
-                        <div class="tab-header-title-text">Quản lý giảng viên</div>
+                        <div class="tab-header-title-text">Quản lý người dùng</div>
                         <div class="tab-header-date-pill">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                             <span><%= currentDateDisplay %></span>
@@ -4021,51 +4489,76 @@
                             <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
                                 <div class="card-header-title">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                    <span>Danh sách giảng viên</span>
+                                    <span>Danh sách người dùng</span>
                                 </div>
-                                <span><%= approvedTeachers != null ? approvedTeachers.size() : 0 %> giảng viên</span>
+                                <span><%= managedUsers != null ? managedUsers.size() : 0 %> người dùng</span>
                             </div>
 
-                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/profile" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0;">
+                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/staff-profile" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0;">
                                 <input type="hidden" name="tab" value="manage-teachers">
-                                <input type="text" name="searchTeacher" value="<%= h(searchTeacher) %>" placeholder="Tìm tên giảng viên..." style="flex: 1; min-width: 200px; padding: 0.6rem 1rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; outline: none; font-size: 0.9rem;">
-                                <div class="management-filter-select-wrap support-filter-select-wrap">
-                                    <select name="teacherType" class="management-filter-select support-filter-select" onchange="this.form.submit()">
-                                        <option value="ALL" <%= "ALL".equals(teacherTypeParam) ? "selected" : "" %>>Tất cả nhóm giảng viên</option>
-                                        <option value="student_tutor" <%= "student_tutor".equals(teacherTypeParam) ? "selected" : "" %>>Nhóm 1: Gia sư sinh viên</option>
-                                        <option value="certified_pedagogy" <%= "certified_pedagogy".equals(teacherTypeParam) ? "selected" : "" %>>Nhóm 2: Giảng viên có chứng chỉ sư phạm</option>
-                                        <option value="degree_specialist" <%= "degree_specialist".equals(teacherTypeParam) ? "selected" : "" %>>Nhóm 3: Giảng viên chuyên môn</option>
-                                    </select>
+                                <input type="text" name="searchUser" value="<%= h(searchUser) %>" placeholder="Tìm tên hoặc email người dùng..." style="flex: 1; min-width: 200px; padding: 0.6rem 1rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; outline: none; font-size: 0.9rem;">
+                                <input id="user-role-filter" type="hidden" name="userRole" value="<%= h(userRoleParam) %>">
+                                <div class="management-filter-dropdown" data-target-input="user-role-filter" data-submit-on-change="true">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label"><%= h(userRoleFilterLabel) %></span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option <%= "ALL".equals(userRoleParam) ? "is-selected" : "" %>" data-value="ALL">Tất cả <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "teacher".equals(userRoleParam) ? "is-selected" : "" %>" data-value="teacher">Giảng viên <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "student".equals(userRoleParam) ? "is-selected" : "" %>" data-value="student">Học sinh <span class="management-filter-check">&#10003;</span></button>
+                                    </div>
+                                </div>
+                                <input id="user-status-filter" type="hidden" name="userStatus" value="<%= h(userStatusParam) %>">
+                                <div class="management-filter-dropdown" data-target-input="user-status-filter" data-submit-on-change="true">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label"><%= h(userStatusFilterLabel) %></span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option <%= "ALL".equals(userStatusParam) ? "is-selected" : "" %>" data-value="ALL">Tất cả <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "active".equals(userStatusParam) ? "is-selected" : "" %>" data-value="active">Đang hoạt động <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "disabled".equals(userStatusParam) ? "is-selected" : "" %>" data-value="disabled">Bị ban <span class="management-filter-check">&#10003;</span></button>
+                                    </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.25rem; border-radius: 0.5rem; font-weight: 700;">Lọc kết quả</button>
                             </form>
 
-                            <% if (approvedTeachers != null && !approvedTeachers.isEmpty()) { %>
-                                <div class="teacher-approval-grid">
-                                    <% for (TeacherApplication app : approvedTeachers) {
-                                        boolean teacherOnline = UserStatusWebSocket.isUserOnline(app.getUserId());
+                            <% if (managedUsers != null && !managedUsers.isEmpty()) { %>
+                                <div class="user-management-table">
+                                    <div class="user-management-row user-management-head">
+                                        <span>Người dùng</span>
+                                        <span>Vai trò</span>
+                                        <span>Tài khoản</span>
+                                        <span>Trực tuyến</span>
+                                    </div>
+                                    <% for (AdminUserSummary managedUser : managedUsers) {
+                                        boolean managedUserOnline = UserStatusWebSocket.isUserOnline(managedUser.getId());
+                                        String managedUserRoleNames = managedUser.getRoles() != null ? managedUser.getRoles() : "";
+                                        boolean isTeacherUser = managedUserRoleNames.toLowerCase().contains("teacher");
+                                        String managedUserName = managedUser.getDisplayName() != null ? managedUser.getDisplayName().trim() : "";
+                                        String managedUserInitial = "U";
+                                        if (!managedUserName.isEmpty()) {
+                                            String[] managedUserNameParts = managedUserName.split("\\s+");
+                                            managedUserInitial = managedUserNameParts[managedUserNameParts.length - 1].substring(0, 1).toUpperCase();
+                                        }
+                                        String accountStatus = managedUser.getAccountStatus() != null ? managedUser.getAccountStatus().toLowerCase() : "";
+                                        String statusClass = "disabled".equals(accountStatus) ? "disabled" : "active";
                                     %>
-                                        <div class="teacher-approval-card" style="border-left: 4px solid #10b981;">
-                                            <div class="teacher-approval-card-head" style="margin-bottom: 0.75rem;">
-                                                <div>
-                                                    <h3 class="teacher-approval-name"><%= h(app.getApplicantName()) %></h3>
-                                                    <div class="teacher-approval-email"><%= h(app.getApplicantEmail()) %></div>
+                                        <div class="user-management-row user-management-item">
+                                            <div class="user-management-main">
+                                                <span class="user-management-avatar" style="background:<%= isTeacherUser ? "#dcfce7" : "#e0f2fe" %>; color:<%= isTeacherUser ? "#047857" : "#0284c7" %>; border-color:<%= isTeacherUser ? "#bbf7d0" : "#bae6fd" %>;"><%= h(managedUserInitial) %></span>
+                                                <div style="min-width:0;">
+                                                    <span class="user-management-name"><%= h(managedUser.getDisplayName()) %></span>
+                                                    <span class="user-management-email"><%= h(managedUser.getEmail()) %></span>
                                                 </div>
-                                                <span class="teacher-presence-status <%= teacherOnline ? "online" : "offline" %>" data-teacher-status-user-id="<%= h(app.getUserId()) %>"><%= teacherOnline ? "Online" : "Offline" %></span>
                                             </div>
-                                            
-                                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                                                <span>
-                                                    <%= teacherTypeLabel(app.getTeacherType()) %>
-                                                </span>
+                                            <div class="user-management-cell"><%= h(userRoleLabel(managedUserRoleNames)) %></div>
+                                            <div class="user-management-cell">
+                                                <span class="user-management-pill <%= h(statusClass) %>"><%= h(userStatusLabel(managedUser.getAccountStatus())) %></span>
                                             </div>
-
-                                            <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%= h(app.getTeachingSubjects() != null ? app.getTeachingSubjects() : "") %>">
-                                                    <%= app.getTeachingSubjects() != null && !app.getTeachingSubjects().trim().isEmpty() ? h(app.getTeachingSubjects()) : "Chưa cập nhật môn" %>
-                                                </span>
+                                            <div class="user-management-cell">
+                                                <span class="teacher-presence-status <%= managedUserOnline ? "online" : "offline" %>" data-teacher-status-user-id="<%= h(managedUser.getId()) %>"><%= managedUserOnline ? "Online" : "Offline" %></span>
                                             </div>
                                         </div>
                                     <% } %>
@@ -4073,8 +4566,8 @@
                             <% } else { %>
                                 <div class="empty-status-panel" style="padding:4rem 2rem;">
                                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5; margin-bottom: 1rem;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                                    <span style="font-weight:700; color:var(--text-main);">Không tìm thấy giảng viên</span>
-                                    <p style="font-size:0.85rem; max-width:420px; margin:0; margin-top: 0.5rem;">Không có dữ liệu giảng viên phù hợp với bộ lọc hiện tại.</p>
+                                    <span style="font-weight:700; color:var(--text-main);">Không tìm thấy người dùng</span>
+                                    <p style="font-size:0.85rem; max-width:420px; margin:0; margin-top: 0.5rem;">Không có giảng viên hoặc học sinh phù hợp với bộ lọc hiện tại.</p>
                                 </div>
                             <% } %>
                         </div>
@@ -4104,26 +4597,36 @@
                                 <span><%= managedClassrooms != null ? managedClassrooms.size() : 0 %> lớp học</span>
                             </div>
 
-                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/profile" style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; background:#f8fafc; padding:1rem; border-radius:0.75rem; border:1px solid #e2e8f0;">
+                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/staff-profile" style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; background:#f8fafc; padding:1rem; border-radius:0.75rem; border:1px solid #e2e8f0;">
                                 <input type="hidden" name="tab" value="manage-classes">
                                 <input type="text" name="classTitle" value="<%= h(classTitle) %>" placeholder="Tìm tên lớp học..." style="flex:1; min-width:220px; padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem;">
-                                <div class="management-filter-select-wrap support-filter-select-wrap">
-                                    <select name="classSubject" class="management-filter-select support-filter-select" onchange="this.form.submit()">
-                                        <option value="ALL" <%= "ALL".equals(classSubjectParam) ? "selected" : "" %>>Tất cả môn học</option>
+                                <input id="class-subject-filter" type="hidden" name="classSubject" value="<%= h(classSubjectParam) %>">
+                                <div class="management-filter-dropdown" data-target-input="class-subject-filter" data-submit-on-change="true">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label"><%= h(classSubjectFilterLabel) %></span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option <%= "ALL".equals(classSubjectParam) ? "is-selected" : "" %>" data-value="ALL">Tất cả môn học <span class="management-filter-check">&#10003;</span></button>
                                         <% if (classSubjects != null) {
                                             for (String subject : classSubjects) { %>
-                                                <option value="<%= h(subject) %>" <%= subject.equals(classSubjectParam) ? "selected" : "" %>><%= h(subject) %></option>
+                                                <button type="button" class="management-filter-option <%= subject.equals(classSubjectParam) ? "is-selected" : "" %>" data-value="<%= h(subject) %>"><%= h(subject) %> <span class="management-filter-check">&#10003;</span></button>
                                         <%  }
                                         } %>
-                                    </select>
+                                    </div>
                                 </div>
-                                <div class="management-filter-select-wrap support-filter-select-wrap">
-                                    <select name="classStatus" class="management-filter-select support-filter-select" onchange="this.form.submit()">
-                                        <option value="ALL" <%= "ALL".equals(classStatusParam) ? "selected" : "" %>>Tất cả trạng thái</option>
-                                        <option value="open" <%= "open".equals(classStatusParam) ? "selected" : "" %>>Đang mở</option>
-                                        <option value="upcoming" <%= "upcoming".equals(classStatusParam) ? "selected" : "" %>>Sắp khai giảng</option>
-                                        <option value="closed" <%= "closed".equals(classStatusParam) ? "selected" : "" %>>Đã đóng</option>
-                                    </select>
+                                <input id="class-status-filter" type="hidden" name="classStatus" value="<%= h(classStatusParam) %>">
+                                <div class="management-filter-dropdown" data-target-input="class-status-filter" data-submit-on-change="true">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label"><%= h(classStatusFilterLabel) %></span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option <%= "ALL".equals(classStatusParam) ? "is-selected" : "" %>" data-value="ALL">Tất cả trạng thái <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "open".equals(classStatusParam) ? "is-selected" : "" %>" data-value="open">Đang mở <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "upcoming".equals(classStatusParam) ? "is-selected" : "" %>" data-value="upcoming">Sắp khai giảng <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "closed".equals(classStatusParam) ? "is-selected" : "" %>" data-value="closed">Đã đóng <span class="management-filter-check">&#10003;</span></button>
+                                    </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.25rem; border-radius:0.5rem; font-weight:700;">Lọc lớp học</button>
                             </form>
@@ -4131,33 +4634,69 @@
                             <% if (managedClassrooms != null && !managedClassrooms.isEmpty()) { %>
                                 <div class="staff-class-list">
                                     <% for (Classroom cls : managedClassrooms) { %>
-                                        <div class="staff-class-card">
-                                            <div>
-                                                <div style="display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap; margin-bottom:0.55rem;">
-                                                    <span class="subject-badge" style="background:#ecfdf5; color:#047857;"><%= h(cls.getSubject()) %></span>
-                                                    <span class="class-status-pill <%= h(cls.getStatus()) %>"><%= h(cls.getStatusLabel()) %></span>
-                                                    <% if (cls.getGrade() != null && !cls.getGrade().isEmpty()) { %>
-                                                        <span style="font-size:0.75rem; font-weight:800; color:#64748b;"><%= h(cls.getGrade()) %></span>
-                                                    <% } %>
-                                                </div>
+                                        <%
+                                            String classModalId = "class-detail-modal-" + cls.getId();
+                                        %>
+                                        <div class="staff-class-card"
+                                             role="button"
+                                             tabindex="0"
+                                             onclick="openClassDetailModal('<%= h(classModalId) %>')"
+                                             onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClassDetailModal('<%= h(classModalId) %>'); }">
+                                            <div style="min-width:0;">
                                                 <h3 class="staff-class-title"><%= h(cls.getTitle()) %></h3>
                                                 <div style="display:flex; gap:1rem; flex-wrap:wrap; color:var(--text-muted); font-size:0.86rem; font-weight:650;">
                                                     <span>Giảng viên: <strong style="color:var(--text-main);"><%= h(cls.getTeacherName()) %></strong></span>
-                                                    <span>Lịch: <strong style="color:#047857;"><%= h(cls.getSchedule()) %></strong></span>
-                                                    <span>Sĩ số: <strong style="color:var(--text-main);"><%= cls.getStudentCount() %></strong></span>
+                                                </div>
+                                            </div>
+                                            <span class="class-status-pill <%= h(cls.getStatus()) %>"><%= h(cls.getStatusLabel()) %></span>
+                                        </div>
+                                        <div id="<%= h(classModalId) %>" class="class-detail-modal" onclick="closeClassDetailModalOnBackdrop(event, this)">
+                                            <div class="class-detail-modal-card" role="dialog" aria-modal="true" aria-labelledby="class-detail-title-<%= h(cls.getId()) %>">
+                                                <h3 id="class-detail-title-<%= h(cls.getId()) %>" class="staff-class-title"><%= h(cls.getTitle()) %></h3>
+                                                <div class="teacher-approval-meta-grid" style="margin-top:1rem;">
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Môn học</span>
+                                                        <strong><%= h(cls.getSubject()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Lớp</span>
+                                                        <strong><%= h(cls.getGrade() != null && !cls.getGrade().isEmpty() ? cls.getGrade() : "Chưa cập nhật") %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Giảng viên</span>
+                                                        <strong><%= h(cls.getTeacherName()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Lịch học</span>
+                                                        <strong><%= h(cls.getSchedule()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Sĩ số</span>
+                                                        <strong><%= cls.getStudentCount() %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Mã lớp</span>
+                                                        <strong><%= h(cls.getClassCode()) %></strong>
+                                                    </div>
                                                 </div>
                                                 <% if (cls.getDescription() != null && !cls.getDescription().trim().isEmpty()) { %>
-                                                    <p style="margin:0.75rem 0 0 0; color:var(--text-muted); font-size:0.9rem; line-height:1.55;"><%= h(cls.getDescription()) %></p>
+                                                    <div class="teacher-approval-note" style="margin-top:1rem;">
+                                                        <span>Mô tả</span>
+                                                        <p><%= h(cls.getDescription()) %></p>
+                                                    </div>
                                                 <% } %>
+                                                <div class="class-detail-actions">
+                                                    <button type="button" class="class-detail-cancel" onclick="closeClassDetailModal('<%= h(classModalId) %>')">Hủy bỏ</button>
+                                                    <form action="${pageContext.request.contextPath}/staff-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa lớp học này khỏi hệ thống?');">
+                                                        <input type="hidden" name="action" value="deleteManagedClass">
+                                                        <input type="hidden" name="classId" value="<%= h(cls.getId()) %>">
+                                                        <button type="submit" class="class-detail-delete" title="Xóa lớp học">
+                                                            <span>Xóa</span>
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
-                                            <form action="${pageContext.request.contextPath}/staff-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa lớp học này khỏi hệ thống?');">
-                                                <input type="hidden" name="action" value="deleteManagedClass">
-                                                <input type="hidden" name="classId" value="<%= h(cls.getId()) %>">
-                                                <button type="submit" class="btn-card-edit-light" style="color:#dc2626; border-color:#fecaca;" title="Xóa lớp học">
-                                                    <span>Xóa</span>
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
-                                                </button>
-                                            </form>
                                         </div>
                                     <% } %>
                                 </div>
@@ -4192,27 +4731,37 @@
                                 <span><%= managedCourses != null ? managedCourses.size() : 0 %> khóa học</span>
                             </div>
 
-                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/profile" style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; background:#f8fafc; padding:1rem; border-radius:0.75rem; border:1px solid #e2e8f0;">
+                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/staff-profile" style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; background:#f8fafc; padding:1rem; border-radius:0.75rem; border:1px solid #e2e8f0;">
                                 <input type="hidden" name="tab" value="manage-courses">
                                 <input type="text" name="courseTitle" value="<%= h(courseTitle) %>" placeholder="Tìm tên khóa học hoặc giảng viên..." style="flex:1; min-width:220px; padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem;">
-                                <div class="management-filter-select-wrap support-filter-select-wrap">
-                                    <select name="courseSubject" class="management-filter-select support-filter-select" onchange="this.form.submit()">
-                                        <option value="ALL" <%= "ALL".equals(courseSubjectParam) ? "selected" : "" %>>Tất cả môn học</option>
+                                <input id="course-subject-filter" type="hidden" name="courseSubject" value="<%= h(courseSubjectParam) %>">
+                                <div class="management-filter-dropdown" data-target-input="course-subject-filter" data-submit-on-change="true">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label"><%= h(courseSubjectFilterLabel) %></span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option <%= "ALL".equals(courseSubjectParam) ? "is-selected" : "" %>" data-value="ALL">Tất cả môn học <span class="management-filter-check">&#10003;</span></button>
                                         <% if (courseSubjects != null) {
                                             for (Course subject : courseSubjects) { %>
-                                                <option value="<%= h(subject.getSubjectCode()) %>" <%= subject.getSubjectCode() != null && subject.getSubjectCode().equals(courseSubjectParam) ? "selected" : "" %>><%= h(subject.getSubjectName()) %></option>
+                                                <button type="button" class="management-filter-option <%= subject.getSubjectCode() != null && subject.getSubjectCode().equals(courseSubjectParam) ? "is-selected" : "" %>" data-value="<%= h(subject.getSubjectCode()) %>"><%= h(subject.getSubjectName()) %> <span class="management-filter-check">&#10003;</span></button>
                                         <%  }
                                         } %>
-                                    </select>
+                                    </div>
                                 </div>
-                                <div class="management-filter-select-wrap support-filter-select-wrap">
-                                    <select name="courseStatus" class="management-filter-select support-filter-select" onchange="this.form.submit()">
-                                        <option value="ALL" <%= "ALL".equals(courseStatusParam) ? "selected" : "" %>>Tất cả trạng thái</option>
-                                        <option value="pending_review" <%= "pending_review".equals(courseStatusParam) ? "selected" : "" %>>Chờ duyệt</option>
-                                        <option value="approved" <%= "approved".equals(courseStatusParam) ? "selected" : "" %>>Đã duyệt</option>
-                                        <option value="needs_revision" <%= "needs_revision".equals(courseStatusParam) ? "selected" : "" %>>Cần chỉnh sửa</option>
-                                        <option value="rejected" <%= "rejected".equals(courseStatusParam) ? "selected" : "" %>>Từ chối</option>
-                                    </select>
+                                <input id="course-status-filter" type="hidden" name="courseStatus" value="<%= h(courseStatusParam) %>">
+                                <div class="management-filter-dropdown" data-target-input="course-status-filter" data-submit-on-change="true">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label"><%= h(courseStatusFilterLabel) %></span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option <%= "ALL".equals(courseStatusParam) ? "is-selected" : "" %>" data-value="ALL">Tất cả trạng thái <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "pending_review".equals(courseStatusParam) ? "is-selected" : "" %>" data-value="pending_review">Chờ duyệt <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "approved".equals(courseStatusParam) ? "is-selected" : "" %>" data-value="approved">Đã duyệt <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "needs_revision".equals(courseStatusParam) ? "is-selected" : "" %>" data-value="needs_revision">Cần chỉnh sửa <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "rejected".equals(courseStatusParam) ? "is-selected" : "" %>" data-value="rejected">Từ chối <span class="management-filter-check">&#10003;</span></button>
+                                    </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.25rem; border-radius:0.5rem; font-weight:700;">Lọc khóa học</button>
                             </form>
@@ -4223,50 +4772,88 @@
                                         String courseStatus = course.getStatus() != null ? course.getStatus() : "pending_review";
                                         String statusBg = "approved".equals(courseStatus) ? "#dcfce7" : ("rejected".equals(courseStatus) ? "#fee2e2" : ("needs_revision".equals(courseStatus) ? "#ffedd5" : "#fef9c3"));
                                         String statusColor = "approved".equals(courseStatus) ? "#15803d" : ("rejected".equals(courseStatus) ? "#b91c1c" : ("needs_revision".equals(courseStatus) ? "#c2410c" : "#a16207"));
+                                        String courseModalId = "course-detail-modal-" + course.getId();
                                     %>
-                                        <div class="staff-class-card" style="align-items:stretch;">
-                                            <div style="flex:1;">
-                                                <div style="display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap; margin-bottom:0.55rem;">
-                                                    <span class="subject-badge" style="background:#ecfdf5; color:#047857;"><%= h(course.getSubjectName()) %></span>
-                                                    <span style="font-size:0.75rem; font-weight:800; color:<%= statusColor %>; background:<%= statusBg %>; padding:0.25rem 0.65rem; border-radius:999px;"><%= h(course.getStatusLabel()) %></span>
-                                                    <span style="font-size:0.75rem; font-weight:800; color:#64748b;"><%= h(course.getPriceLabel()) %></span>
-                                                </div>
+                                        <div class="staff-class-card"
+                                             role="button"
+                                             tabindex="0"
+                                             onclick="openClassDetailModal('<%= h(courseModalId) %>')"
+                                             onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClassDetailModal('<%= h(courseModalId) %>'); }">
+                                            <div style="min-width:0;">
                                                 <h3 class="staff-class-title"><%= h(course.getTitle()) %></h3>
                                                 <div style="display:flex; gap:1rem; flex-wrap:wrap; color:var(--text-muted); font-size:0.86rem; font-weight:650;">
                                                     <span>Giảng viên: <strong style="color:var(--text-main);"><%= h(course.getTeacherName()) %></strong></span>
-                                                    <span>Email Drive: <strong style="color:#047857;"><%= h(course.getDriveOwnerEmail()) %></strong></span>
-                                                    <span>Bài học: <strong style="color:var(--text-main);"><%= course.getLessonsCount() %></strong></span>
-                                                    <span>Học viên: <strong style="color:var(--text-main);"><%= course.getStudentsCount() %></strong></span>
-                                                </div>
-                                                <% if (course.getShortDescription() != null && !course.getShortDescription().trim().isEmpty()) { %>
-                                                    <p style="margin:0.75rem 0 0 0; color:var(--text-muted); font-size:0.9rem; line-height:1.55;"><%= h(course.getShortDescription()) %></p>
-                                                <% } %>
-                                                <div style="margin-top:0.8rem; display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center;">
-                                                    <a href="<%= h(course.getGoogleDriveUrl()) %>" target="_blank" rel="noopener" style="color:#047857; font-weight:800; font-size:0.84rem; text-decoration:none;">Mở Google Drive →</a>
-                                                    <% if (course.getSubmittedAt() != null) { %>
-                                                        <span style="color:#94a3b8; font-size:0.8rem; font-weight:700;">Gửi ngày <%= new SimpleDateFormat("dd/MM/yyyy HH:mm").format(course.getSubmittedAt()) %></span>
-                                                    <% } %>
                                                 </div>
                                             </div>
-                                            <div style="min-width:280px; display:flex; flex-direction:column; gap:0.75rem;">
-                                                <form action="${pageContext.request.contextPath}/staff-profile" method="POST" style="display:flex; flex-direction:column; gap:0.6rem;">
+                                            <span style="font-size:0.75rem; font-weight:800; color:<%= statusColor %>; background:<%= statusBg %>; padding:0.25rem 0.65rem; border-radius:999px; white-space:nowrap;"><%= h(course.getStatusLabel()) %></span>
+                                        </div>
+                                        <div id="<%= h(courseModalId) %>" class="class-detail-modal" onclick="closeClassDetailModalOnBackdrop(event, this)">
+                                            <div class="class-detail-modal-card" role="dialog" aria-modal="true" aria-labelledby="course-detail-title-<%= h(course.getId()) %>">
+                                                <h3 id="course-detail-title-<%= h(course.getId()) %>" class="staff-class-title"><%= h(course.getTitle()) %></h3>
+                                                <div class="teacher-approval-meta-grid" style="margin-top:1rem;">
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Môn học</span>
+                                                        <strong><%= h(course.getSubjectName()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Trạng thái</span>
+                                                        <strong><%= h(course.getStatusLabel()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Giá</span>
+                                                        <strong><%= h(course.getPriceLabel()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Giảng viên</span>
+                                                        <strong><%= h(course.getTeacherName()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Email Drive</span>
+                                                        <strong><%= h(course.getDriveOwnerEmail()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Bài học</span>
+                                                        <strong><%= course.getLessonsCount() %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Học viên</span>
+                                                        <strong><%= course.getStudentsCount() %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Ngày gửi</span>
+                                                        <strong><%= course.getSubmittedAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(course.getSubmittedAt()) : "Chưa cập nhật" %></strong>
+                                                    </div>
+                                                </div>
+                                                <% if (course.getShortDescription() != null && !course.getShortDescription().trim().isEmpty()) { %>
+                                                    <div class="teacher-approval-note" style="margin-top:1rem;">
+                                                        <span>Mô tả</span>
+                                                        <p><%= h(course.getShortDescription()) %></p>
+                                                    </div>
+                                                <% } %>
+                                                <div style="margin-top:1rem;">
+                                                    <a href="<%= h(course.getGoogleDriveUrl()) %>" target="_blank" rel="noopener" style="color:#047857; font-weight:850; font-size:0.9rem; text-decoration:none;">Mở Google Drive →</a>
+                                                </div>
+                                                <form action="${pageContext.request.contextPath}/staff-profile" method="POST" style="display:flex; flex-direction:column; gap:0.75rem; margin-top:1rem;">
                                                     <input type="hidden" name="action" value="reviewCourse">
                                                     <input type="hidden" name="courseId" value="<%= h(course.getId()) %>">
-                                                    <textarea name="reviewNote" rows="2" placeholder="Ghi chú duyệt hoặc yêu cầu chỉnh sửa..." style="width:100%; resize:vertical; padding:0.65rem 0.75rem; border:1px solid #cbd5e1; border-radius:0.65rem; font-size:0.86rem;"><%= h(course.getReviewNote()) %></textarea>
-                                                    <div style="display:flex; gap:0.45rem; flex-wrap:wrap;">
-                                                        <button type="submit" name="decision" value="approved" class="btn-card-edit-light" style="color:#047857; border-color:#bbf7d0;">Duyệt</button>
-                                                        <button type="submit" name="decision" value="needs_revision" class="btn-card-edit-light" style="color:#c2410c; border-color:#fed7aa;">Yêu cầu sửa</button>
-                                                        <button type="submit" name="decision" value="rejected" class="btn-card-edit-light" style="color:#b91c1c; border-color:#fecaca;">Từ chối</button>
+                                                    <textarea name="reviewNote" rows="3" placeholder="Ghi chú duyệt hoặc yêu cầu chỉnh sửa..." style="width:100%; resize:vertical; padding:0.8rem 0.9rem; border:1px solid #cbd5e1; border-radius:0.8rem; font-size:0.9rem;"><%= h(course.getReviewNote()) %></textarea>
+                                                    <div class="class-detail-actions" style="margin-top:0; padding-top:0; border-top:0;">
+                                                        <button type="button" class="class-detail-cancel" onclick="closeClassDetailModal('<%= h(courseModalId) %>')">Hủy bỏ</button>
+                                                        <button type="submit" name="decision" value="approved" class="class-detail-cancel" style="border-color:#bbf7d0; color:#047857;">Duyệt</button>
+                                                        <button type="submit" name="decision" value="needs_revision" class="class-detail-cancel" style="border-color:#fed7aa; color:#c2410c;">Yêu cầu sửa</button>
+                                                        <button type="submit" name="decision" value="rejected" class="class-detail-delete">Từ chối</button>
                                                     </div>
                                                 </form>
-                                                <form action="${pageContext.request.contextPath}/staff-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa tạm khóa học này?');" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                                                <form action="${pageContext.request.contextPath}/staff-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa tạm khóa học này?');">
                                                     <input type="hidden" name="action" value="deleteManagedCourse">
                                                     <input type="hidden" name="courseId" value="<%= h(course.getId()) %>">
                                                     <input type="hidden" name="deleteReason" value="Staff soft delete from profile">
-                                                    <button type="submit" class="btn-card-edit-light" style="color:#dc2626; border-color:#fecaca;" title="Xóa tạm khóa học">
-                                                        <span>Xóa tạm</span>
-                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
-                                                    </button>
+                                                    <div class="class-detail-actions" style="margin-top:0.75rem;">
+                                                        <button type="submit" class="class-detail-delete" title="Xóa tạm khóa học">
+                                                            <span>Xóa tạm</span>
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                                                        </button>
+                                                    </div>
                                                 </form>
                                             </div>
                                         </div>
@@ -5081,7 +5668,7 @@
 
         const TAB_TITLES = {
             'tab-teacher-approval': 'Duyệt hồ sơ giảng viên',
-            'tab-manage-teachers': 'Quản lý giảng viên',
+            'tab-manage-teachers': 'Quản lý người dùng',
             'tab-manage-classes': 'Quản lý lớp học',
             'tab-manage-courses': 'Quản lý khóa học',
             'tab-profile': 'Hồ sơ cá nhân',
@@ -5197,9 +5784,36 @@
             }
         }
 
+        function openClassDetailModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            if (modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeClassDetailModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function closeClassDetailModalOnBackdrop(event, modal) {
+            if (event.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
                 document.querySelectorAll('.teacher-application-modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                document.querySelectorAll('.class-detail-modal.active').forEach(modal => {
                     modal.classList.remove('active');
                 });
                 document.body.style.overflow = '';
@@ -5221,6 +5835,7 @@
             if (container && localStorage.getItem('staffSidebarCollapsed') === 'true') {
                 container.classList.add('collapsed');
             }
+            setupManagementFilterDropdowns();
             setupTeacherApprovalFilters();
             setupSupportTicketFilters();
             const urlParams = new URLSearchParams(window.location.search);
@@ -5232,6 +5847,58 @@
                 if (activePane) updateProfileTabUrl(activePane.id, true);
             }
         });
+
+        function setupManagementFilterDropdowns() {
+            const dropdowns = Array.from(document.querySelectorAll('.management-filter-dropdown'));
+            if (!dropdowns.length) return;
+
+            function closeDropdown(dropdown) {
+                dropdown.classList.remove('is-open');
+                const trigger = dropdown.querySelector('.management-filter-trigger');
+                if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            }
+
+            dropdowns.forEach(dropdown => {
+                const trigger = dropdown.querySelector('.management-filter-trigger');
+                const label = dropdown.querySelector('.management-filter-label');
+                const options = Array.from(dropdown.querySelectorAll('.management-filter-option'));
+                const targetInput = document.getElementById(dropdown.dataset.targetInput || '');
+                if (!trigger || !label || !targetInput) return;
+
+                trigger.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const willOpen = !dropdown.classList.contains('is-open');
+                    dropdowns.forEach(closeDropdown);
+                    dropdown.classList.toggle('is-open', willOpen);
+                    trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+                });
+
+                options.forEach(option => {
+                    option.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        const value = option.dataset.value || '';
+                        targetInput.value = value;
+                        label.textContent = option.textContent.replace(/\u2713/g, '').trim();
+                        options.forEach(item => item.classList.toggle('is-selected', item === option));
+                        targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                        closeDropdown(dropdown);
+
+                        if (dropdown.dataset.submitOnChange === 'true') {
+                            const form = dropdown.closest('form');
+                            if (form) {
+                                if (typeof form.requestSubmit === 'function') form.requestSubmit();
+                                else form.submit();
+                            }
+                        }
+                    });
+                });
+            });
+
+            document.addEventListener('click', () => dropdowns.forEach(closeDropdown));
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') dropdowns.forEach(closeDropdown);
+            });
+        }
 
         function setupTeacherApprovalFilters() {
             const searchInput = document.getElementById('teacher-approval-search');
