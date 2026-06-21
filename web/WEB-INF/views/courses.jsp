@@ -893,6 +893,7 @@
 
         <% if (user != null) { %>
             <div class="navbar-user-controls">
+                <%@ include file="/WEB-INF/fragments/cart-icon.jspf" %>
                 <%@ include file="/WEB-INF/fragments/notification-bell.jspf" %>
                 <div class="nav-avatar-dropdown">
                     <div class="nav-avatar-frame" title="<%= profileMenuLabel %>">
@@ -1133,7 +1134,14 @@
                 <% } %>
                 <div class="card-footer">
                     <span class="<%= course.isFree() ? "card-price-free" : "card-price-paid" %>"><%= h(course.getPriceLabel()) %></span>
-                    <span class="card-cta <%= course.isViewerEnrolled() ? "enrolled" : "" %>"><%= course.isViewerEnrolled() ? "Tiếp tục học" : (course.isFree() ? "Học ngay" : "Xem chi tiết") %></span>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <% if (profileHasStudent && !course.isViewerEnrolled() && !course.isFree()) { %>
+                            <button class="card-add-to-cart-btn" onclick="addToCart(event, this, '<%= h(course.getId()) %>')" title="Thêm vào giỏ">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                            </button>
+                        <% } %>
+                        <span class="card-cta <%= course.isViewerEnrolled() ? "enrolled" : "" %>"><%= course.isViewerEnrolled() ? "Tiếp tục học" : (course.isFree() ? "Học ngay" : "Xem chi tiết") %></span>
+                    </div>
                 </div>
             </div>
         </a>

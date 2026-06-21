@@ -1976,8 +1976,8 @@
                                                             </ul>
                                                             <div class="navbar-user-controls">
                                                                 <!-- Khung Dropdown Thông báo hệ thống cao cấp -->
-                                                                <%@ include
-                                                                    file="/WEB-INF/fragments/notification-bell.jspf" %>
+                                                                <%@ include file="/WEB-INF/fragments/cart-icon.jspf" %>
+                                                                <%@ include file="/WEB-INF/fragments/notification-bell.jspf" %>
 
                                                                     <!-- Khung Avatar Người dùng kèm Dropdown Menu -->
                                                                     <div class="nav-avatar-dropdown">

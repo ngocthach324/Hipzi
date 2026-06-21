@@ -21,6 +21,36 @@ public class CourseDao {
         ensureSchema();
     }
 
+    public Course findById(String id, String viewerId) {
+        String sql = "SELECT c.*, u.display_name AS teacher_name, u.email AS teacher_email, u.avatar_url AS teacher_avatar_url, "
+                + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school, "
+                + "(ce.id IS NOT NULL) AS viewer_enrolled, COALESCE(ce.progress_percent, 0) AS viewer_progress_percent "
+                + "FROM courses c "
+                + "JOIN users u ON u.id = c.teacher_id "
+                + "LEFT JOIN LATERAL ("
+                + "SELECT institution_name, workplace FROM teacher_applications "
+                + "WHERE user_id = c.teacher_id ORDER BY submitted_at DESC LIMIT 1"
+                + ") ta ON true "
+                + "LEFT JOIN course_enrollments ce ON ce.course_id = c.id "
+                + "AND ce.student_id = ?::uuid "
+                + "AND ce.status IN ('pending_access', 'active') "
+                + "WHERE c.id = ?::uuid AND c.deleted_at IS NULL";
+        
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, viewerId);
+            ps.setString(2, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in CourseDao.findById: " + e.getMessage());
+        }
+        return null;
+    }
+
     public List<Course> listPublic(String subjectCode, String priceFilter, String searchQuery, String sort, String viewerId) {
         StringBuilder sql = new StringBuilder(
                 "SELECT c.*, u.display_name AS teacher_name, u.email AS teacher_email, u.avatar_url AS teacher_avatar_url, "
