@@ -621,6 +621,7 @@
             border-top: 4px solid var(--primary);
             color: var(--text-main);
             box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+            cursor: pointer;
         }
 
         .metric-card.primary {
@@ -823,11 +824,22 @@
         }
 
         .overview-summary-pill.taught strong {
-            color: #0284c7;
+            color: #059669;
         }
 
         .overview-summary-pill.scheduled strong {
             color: #d97706;
+        }
+
+        .overview-summary-pill.trend {
+            background: #dcfce7;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+
+        .overview-summary-pill.trend strong {
+            color: #166534;
+            font-weight: 750;
         }
 
         .overview-chart-subtitle {
@@ -1018,54 +1030,139 @@
             display: inline-block;
         }
 
-        .overview-bar-chart {
-            height: 218px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            align-items: end;
-            gap: 1rem;
-            padding: 0.25rem 0.35rem 0;
-        }
-
-        .overview-bar-item {
+        .overview-donut-chart-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-end;
-            gap: 0.62rem;
-            min-width: 0;
+            justify-content: center;
+            height: 100%;
+            position: relative;
+            padding: 1rem;
+            gap: 1.5rem;
+            flex-grow: 1;
+            margin-top: -15px;
         }
 
-        .overview-bar-track {
-            width: 100%;
-            max-width: 54px;
-            height: 150px;
-            border-radius: 999px 999px 0.75rem 0.75rem;
-            background: #f1f5f9;
+        .overview-donut-chart {
+            width: 164px;
+            height: 164px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #059669 0deg 245deg,
+                #f59e0b 245deg 324deg,
+                #ef4444 324deg 360deg
+            );
+            position: relative;
             display: flex;
-            align-items: flex-end;
-            overflow: hidden;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            animation: donutScaleUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
         }
 
-        .overview-bar-fill {
-            width: 100%;
-            border-radius: 999px 999px 0.75rem 0.75rem;
-            min-height: 18px;
-            box-shadow: inset 0 -10px 18px rgba(255, 255, 255, 0.16);
+        .overview-donut-chart:hover {
+            transform: scale(1.05) rotate(0deg);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
         }
 
-        .overview-bar-value {
+        .overview-donut-hole {
+            width: 122px;
+            height: 122px;
+            background: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.02);
+            transition: transform 0.3s ease;
+        }
+
+        .overview-donut-chart:hover .overview-donut-hole {
+            transform: scale(0.96);
+        }
+
+        .overview-donut-score {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
             color: var(--text-main);
-            font-size: 0.9rem;
+            font-size: 1.6rem;
             font-weight: 900;
+            line-height: 1.1;
         }
 
-        .overview-bar-label {
-            color: #64748b;
-            font-size: 0.72rem;
+        .overview-donut-total {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-top: 0.2rem;
+        }
+
+        @keyframes donutScaleUp {
+            from { transform: scale(0.8) rotate(-15deg); opacity: 0; }
+            to { transform: scale(1) rotate(0); opacity: 1; }
+        }
+
+        .overview-donut-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            width: 100%;
+            padding: 0 0.5rem;
+        }
+
+        .overview-donut-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-main);
+            transition: transform 0.2s ease;
+            width: 100%;
+        }
+
+        .overview-donut-legend-item:hover {
+            transform: translateX(4px);
+        }
+
+        .overview-donut-legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .overview-donut-legend-label {
+            flex-grow: 1;
+        }
+
+        .overview-donut-legend-value {
+            color: var(--text-muted);
             font-weight: 800;
-            text-align: center;
-            white-space: nowrap;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .overview-donut-progress-bg {
+            width: 48px;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 99px;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .overview-donut-progress-fill {
+            height: 100%;
+            display: block;
+            border-radius: 99px;
         }
 
         /* ===== LAYOUT BÀN CỜ ĐA CỘT ===== */
@@ -3110,7 +3207,7 @@
                 <!-- METRICS ROW (Donezo style) -->
                 <div class="metrics-row">
                     <!-- Metric 1: Active classrooms -->
-                    <div class="metric-card primary">
+                    <div class="metric-card primary" onclick="switchTab('tab-class-registration')">
                         <div class="metric-card-top">
                             <span class="metric-card-title">Lớp đang dạy</span>
                             <div class="metric-arrow-btn">
@@ -3127,7 +3224,7 @@
                     </div>
 
                     <!-- Metric 2: Active courses -->
-                    <div class="metric-card secondary">
+                    <div class="metric-card secondary" onclick="switchTab('tab-course-registration')">
                         <div class="metric-card-top">
                             <span class="metric-card-title">Khóa học của tôi</span>
                             <div class="metric-arrow-btn">
@@ -3144,7 +3241,7 @@
                     </div>
 
                     <!-- Metric 3: Uploaded materials -->
-                    <div class="metric-card secondary">
+                    <div class="metric-card secondary" onclick="switchTab('tab-upload-material')">
                         <div class="metric-card-top">
                             <span class="metric-card-title">Số tài liệu</span>
                             <div class="metric-arrow-btn">
@@ -3188,9 +3285,10 @@
                                         <strong id="overviewTotalTaught">18.5</strong>
                                         <span>gi&#7901; &#273;&#227; d&#7841;y</span>
                                     </span>
-                                    <span class="overview-summary-pill scheduled">
-                                        <strong id="overviewTotalScheduled">14</strong>
-                                        <span>gi&#7901; &#273;&#227; l&#234;n l&#7883;ch</span>
+                                    <span class="overview-summary-pill trend">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: -0.2rem;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                                        <strong>12%</strong>
+                                        <span>so với tuần trước</span>
                                     </span>
                                 </div>
                             </div>
@@ -3204,12 +3302,8 @@
                             <svg class="overview-line-chart" viewBox="0 0 640 214" role="img" aria-label="Biểu đồ thời lượng giảng dạy">
                                 <defs>
                                     <linearGradient id="overviewTaughtFill" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.18"/>
-                                        <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0"/>
-                                    </linearGradient>
-                                    <linearGradient id="overviewScheduledFill" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.14"/>
-                                        <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                                        <stop offset="0%" stop-color="#059669" stop-opacity="0.18"/>
+                                        <stop offset="100%" stop-color="#059669" stop-opacity="0"/>
                                     </linearGradient>
                                 </defs>
                                 <line x1="52" y1="24" x2="610" y2="24" stroke="#e2e8f0" stroke-width="1"/>
@@ -3223,14 +3317,10 @@
                                 <text x="4" y="166">0 giờ</text>
 
                                 <path id="overviewTaughtArea" d="M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62 L610 162 L64 162 Z" fill="url(#overviewTaughtFill)"/>
-                                <path id="overviewScheduledArea" d="M64 116 C104 84, 120 136, 160 128 C204 120, 214 92, 250 104 C290 118, 302 148, 344 136 C382 124, 400 92, 438 104 C476 116, 488 154, 526 146 C568 138, 574 96, 610 112 L610 162 L64 162 Z" fill="url(#overviewScheduledFill)"/>
-
-                                <path id="overviewTaughtLine" d="M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62" fill="none" stroke="#0ea5e9" stroke-width="3.2" stroke-linecap="round"/>
-                                <path id="overviewScheduledLine" d="M64 116 C104 84, 120 136, 160 128 C204 120, 214 92, 250 104 C290 118, 302 148, 344 136 C382 124, 400 92, 438 104 C476 116, 488 154, 526 146 C568 138, 574 96, 610 112" fill="none" stroke="#f59e0b" stroke-width="3.2" stroke-linecap="round"/>
+                                <path id="overviewTaughtLine" d="M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62" fill="none" stroke="#059669" stroke-width="3.2" stroke-linecap="round"/>
 
                                 <line id="overviewGuideLine" x1="250" y1="34" x2="250" y2="174" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 6"/>
-                                <circle id="overviewTaughtDot" cx="250" cy="64" r="5" fill="#0ea5e9" stroke="#ffffff" stroke-width="3"/>
-                                <circle id="overviewScheduledDot" cx="250" cy="104" r="5" fill="#f59e0b" stroke="#ffffff" stroke-width="3"/>
+                                <circle id="overviewTaughtDot" cx="250" cy="64" r="5" fill="#059669" stroke="#ffffff" stroke-width="3"/>
 
                                 <text id="overviewTick1" x="58" y="202">01/05</text>
                                 <text id="overviewTick2" x="150" y="202">02/05</text>
@@ -3244,58 +3334,66 @@
                             <div class="overview-line-tooltip" id="overviewLineTooltip">
                                 <strong id="overviewTooltipDate">03/05/2026</strong>
                                 <div class="overview-tooltip-row">
-                                    <span class="overview-tooltip-label"><span class="overview-tooltip-dot" style="background:#0ea5e9;"></span>Đã dạy</span>
+                                    <span class="overview-tooltip-label"><span class="overview-tooltip-dot" style="background:#059669;"></span>Đã dạy</span>
                                     <span id="overviewTooltipTaught">4 giờ</span>
-                                </div>
-                                <div class="overview-tooltip-row">
-                                    <span class="overview-tooltip-label"><span class="overview-tooltip-dot" style="background:#f59e0b;"></span>Lên lịch</span>
-                                    <span id="overviewTooltipScheduled">3 giờ</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="overview-chart-legend">
-                            <span class="overview-legend-item"><span class="overview-legend-dot" style="background:#0ea5e9;"></span>Giờ đã dạy</span>
-                            <span class="overview-legend-item"><span class="overview-legend-dot" style="background:#f59e0b;"></span>Giờ đã lên lịch</span>
+                            <span class="overview-legend-item"><span class="overview-legend-dot" style="background:#059669;"></span>Giờ đã dạy</span>
                         </div>
                     </div>
 
                     <div class="overview-chart-card">
                         <div class="overview-chart-head">
                             <div>
-                                <h2 class="overview-chart-title">Tổng nội dung theo loại</h2>
+                                <h2 class="overview-chart-title">Đánh giá học sinh</h2>
                             </div>
                             <span class="overview-chart-chip">Mẫu</span>
                         </div>
 
-                        <div class="overview-bar-chart" aria-label="Biểu đồ cột tổng nội dung theo loại">
-                            <div class="overview-bar-item">
-                                <span class="overview-bar-value">6</span>
-                                <div class="overview-bar-track">
-                                    <div class="overview-bar-fill" style="height: 72%; background: #0f8a67;"></div>
+                        <div class="overview-donut-chart-container" aria-label="Biểu đồ tròn đánh giá học sinh">
+                            <div class="overview-donut-chart">
+                                <div class="overview-donut-hole">
+                                    <div class="overview-donut-score">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                        <span>4.2</span>
+                                    </div>
+                                    <span class="overview-donut-total">67 đánh giá</span>
                                 </div>
-                                <span class="overview-bar-label">Lớp học</span>
                             </div>
-                            <div class="overview-bar-item">
-                                <span class="overview-bar-value">4</span>
-                                <div class="overview-bar-track">
-                                    <div class="overview-bar-fill" style="height: 52%; background: #6375f2;"></div>
+                            <div class="overview-donut-legend">
+                                <div class="overview-donut-legend-item">
+                                    <div class="overview-donut-legend-color" style="background: #059669;"></div>
+                                    <div class="overview-donut-legend-label">Hài lòng</div>
+                                    <div class="overview-donut-legend-value">
+                                        68%
+                                        <div class="overview-donut-progress-bg">
+                                            <div class="overview-donut-progress-fill" style="width: 68%; background: #059669;"></div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="overview-bar-label">Khóa học</span>
-                            </div>
-                            <div class="overview-bar-item">
-                                <span class="overview-bar-value">8</span>
-                                <div class="overview-bar-track">
-                                    <div class="overview-bar-fill" style="height: 88%; background: #8ac7d8;"></div>
+                                <div class="overview-donut-legend-item">
+                                    <div class="overview-donut-legend-color" style="background: #f59e0b;"></div>
+                                    <div class="overview-donut-legend-label">Tạm được</div>
+                                    <div class="overview-donut-legend-value">
+                                        22%
+                                        <div class="overview-donut-progress-bg">
+                                            <div class="overview-donut-progress-fill" style="width: 22%; background: #f59e0b;"></div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="overview-bar-label">Tài liệu</span>
-                            </div>
-                            <div class="overview-bar-item">
-                                <span class="overview-bar-value">5</span>
-                                <div class="overview-bar-track">
-                                    <div class="overview-bar-fill" style="height: 64%; background: #f59e0b;"></div>
+                                <div class="overview-donut-legend-item">
+                                    <div class="overview-donut-legend-color" style="background: #ef4444;"></div>
+                                    <div class="overview-donut-legend-label">Cần cải thiện</div>
+                                    <div class="overview-donut-legend-value">
+                                        10%
+                                        <div class="overview-donut-progress-bg">
+                                            <div class="overview-donut-progress-fill" style="width: 10%; background: #ef4444;"></div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="overview-bar-label">Lịch dạy</span>
                             </div>
                         </div>
                     </div>
