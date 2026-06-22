@@ -98,7 +98,7 @@ public class ProfileServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + preferredProfilePath);
                 return;
             }
-            String tab = "/teacher-wallet".equals(path) ? "wallet" : "management";
+            String tab = "/teacher-wallet".equals(path) ? "balance-stats" : "teaching-registration";
             response.sendRedirect(request.getContextPath() + "/teacher-profile?tab=" + tab);
             return;
         }

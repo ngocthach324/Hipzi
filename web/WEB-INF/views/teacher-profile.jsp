@@ -749,6 +749,325 @@
             stroke-width: 2.1;
         }
 
+        .overview-analytics-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
+            gap: 1.25rem;
+            margin-top: 1.25rem;
+        }
+
+        @media (max-width: 1100px) {
+            .overview-analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .overview-chart-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+            padding: 1.25rem;
+            min-height: 300px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .overview-chart-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .overview-chart-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.72rem;
+            min-width: 0;
+        }
+
+        .overview-chart-title {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .overview-chart-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+        }
+
+        .overview-summary-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 999px;
+            background: #f8fafc;
+            color: #475569;
+            padding: 0.34rem 0.68rem;
+            font-size: 0.72rem;
+            font-weight: 850;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .overview-summary-pill strong {
+            color: var(--text-main);
+            font-size: 0.8rem;
+            font-weight: 900;
+        }
+
+        .overview-summary-pill.taught strong {
+            color: #0284c7;
+        }
+
+        .overview-summary-pill.scheduled strong {
+            color: #d97706;
+        }
+
+        .overview-chart-subtitle {
+            margin: 0.28rem 0 0;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+
+        .overview-chart-chip {
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #475569;
+            border-radius: 999px;
+            padding: 0.36rem 0.72rem;
+            font-size: 0.74rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .overview-period-switch {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 136px;
+            height: 36px;
+            border: 1px solid #dbe3ee;
+            border-radius: 999px;
+            background: #f8fafc;
+            padding: 2px;
+            box-sizing: border-box;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 8px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .overview-period-switch::before {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: calc(50% - 10px);
+            height: calc(100% - 6px);
+            border-radius: 999px;
+            background: #ffffff;
+            border: 1px solid #cde8dd;
+            box-shadow: 0 8px 18px rgba(5, 150, 105, 0.16);
+            transform: translateX(0);
+            transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease;
+        }
+
+        .overview-period-switch[data-active="month"]::before {
+            transform: translateX(calc(100% + 14px));
+        }
+
+        .overview-period-btn {
+            position: relative;
+            z-index: 1;
+            border: 0;
+            background: transparent;
+            color: #64748b;
+            border-radius: 999px;
+            font-size: 0.74rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: color 0.22s ease, transform 0.22s ease;
+        }
+
+        .overview-period-btn[data-period="month"] {
+            padding-left: 0.62rem;
+            padding-right: 0.08rem;
+        }
+
+        .overview-period-btn:hover {
+            color: var(--primary);
+        }
+
+        .overview-period-btn.is-active {
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .overview-period-btn:focus-visible {
+            outline: 2px solid rgba(5, 150, 105, 0.35);
+            outline-offset: 3px;
+        }
+
+        @media (max-width: 640px) {
+            .overview-chart-head {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .overview-period-switch {
+                align-self: flex-start;
+            }
+        }
+
+        .overview-line-wrap {
+            position: relative;
+            min-height: 214px;
+        }
+
+        .overview-line-wrap.is-switching .overview-line-chart,
+        .overview-line-wrap.is-switching .overview-line-tooltip {
+            opacity: 0.38;
+        }
+
+        .overview-line-chart {
+            width: 100%;
+            height: 214px;
+            display: block;
+            transition: opacity 0.22s ease;
+        }
+
+        .overview-line-chart text {
+            fill: #94a3b8;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .overview-line-tooltip {
+            position: absolute;
+            top: 44px;
+            left: 46%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: #ffffff;
+            border-radius: 0.75rem;
+            padding: 0.85rem 0.95rem;
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.28);
+            min-width: 146px;
+            transition: opacity 0.22s ease;
+        }
+
+        .overview-line-tooltip strong {
+            display: block;
+            font-size: 0.78rem;
+            margin-bottom: 0.55rem;
+        }
+
+        .overview-tooltip-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            color: #cbd5e1;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+
+        .overview-tooltip-row + .overview-tooltip-row {
+            margin-top: 0.4rem;
+        }
+
+        .overview-tooltip-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.42rem;
+        }
+
+        .overview-tooltip-dot {
+            width: 3px;
+            height: 18px;
+            border-radius: 999px;
+            display: inline-block;
+        }
+
+        .overview-chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.85rem;
+            margin-top: 0.85rem;
+            color: var(--text-muted);
+            font-size: 0.76rem;
+            font-weight: 800;
+        }
+
+        .overview-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.42rem;
+        }
+
+        .overview-legend-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .overview-bar-chart {
+            height: 218px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            align-items: end;
+            gap: 1rem;
+            padding: 0.25rem 0.35rem 0;
+        }
+
+        .overview-bar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.62rem;
+            min-width: 0;
+        }
+
+        .overview-bar-track {
+            width: 100%;
+            max-width: 54px;
+            height: 150px;
+            border-radius: 999px 999px 0.75rem 0.75rem;
+            background: #f1f5f9;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+
+        .overview-bar-fill {
+            width: 100%;
+            border-radius: 999px 999px 0.75rem 0.75rem;
+            min-height: 18px;
+            box-shadow: inset 0 -10px 18px rgba(255, 255, 255, 0.16);
+        }
+
+        .overview-bar-value {
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 900;
+        }
+
+        .overview-bar-label {
+            color: #64748b;
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-align: center;
+            white-space: nowrap;
+        }
+
         /* ===== LAYOUT BÀN CỜ ĐA CỘT ===== */
         .dashboard-grid-layout {
             display: grid;
@@ -2007,15 +2326,15 @@
             <div class="sidebar-section-label">Tổng quan</div>
             <ul class="sidebar-menu">
                 <li>
-                    <a id="nav-tab-profile" class="<%= ("tab-profile".equals(initialTeacherTab) || "tab-edit".equals(initialTeacherTab)) ? "active" : "" %>" onclick="switchTab('tab-profile')" title="Hồ sơ cá nhân">
+                    <a id="nav-tab-profile" class="<%= ("tab-profile".equals(initialTeacherTab) || "tab-edit".equals(initialTeacherTab)) ? "active" : "" %>" onclick="switchTab('tab-profile')" title="Tổng quan hệ thống">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-                        <span>Hồ sơ cá nhân</span>
+                        <span>Tổng quan hệ thống</span>
                     </a>
                 </li>
                 <li>
-                    <a id="nav-tab-security" class="<%= "tab-security".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-security')" title="Bảo mật">
+                    <a id="nav-tab-security" class="<%= "tab-security".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-security')" title="Hồ sơ cá nhân">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        <span>Bảo mật</span>
+                        <span>Hồ sơ cá nhân</span>
                     </a>
                 </li>
                 <li>
@@ -2777,8 +3096,8 @@
             <section id="tab-profile" class="tab-pane <%= "tab-profile".equals(initialTeacherTab) ? "active-pane" : "" %>">
                 <div class="tab-pane-header">
                     <div class="tab-pane-header-left">
-                        <h1>Hồ sơ cá nhân</h1>
-                        <p>Xem và quản lý thông tin tài khoản giảng viên của bạn trên HIPZI.</p>
+                        <h1>Tổng quan hệ thống</h1>
+                        <p>Theo dõi nhanh hoạt động giảng dạy, khóa học, tài liệu và lịch dạy của bạn trên HIPZI.</p>
                     </div>
                     <div class="tab-pane-header-right">
                         <div class="date-badge">
@@ -2859,70 +3178,129 @@
                     </div>
                 </div>
 
-                <!-- MAIN GRID LAYOUT -->
-                <div class="dashboard-grid-layout">
-                    <!-- Cột Trái: Thông tin cá nhân -->
-                    <div class="premium-card" style="grid-column: 1 / -1;">
-                        <div class="premium-card-header">
-                            <span class="premium-card-title">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                Chi tiết tài khoản
-                            </span>
-                            <div class="account-header-actions">
-                                <button type="button" id="accountEditTrigger" onclick="toggleAccountNameEdit(true)" class="btn-premium profile-edit-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
-                                    <span>Chỉnh sửa</span>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                                </button>
-                                <div id="accountEditActions" class="account-edit-actions" style="display: none;">
-                                    <button type="button" class="btn-premium account-cancel-btn" onclick="toggleAccountNameEdit(false)" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">Hủy bỏ</button>
-                                    <button type="submit" form="accountNameInlineForm" class="btn-premium account-save-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">Lưu</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <form id="teacherAvatarUploadForm" action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" style="display:none;">
-                            <input type="hidden" name="action" value="updateAvatar">
-                            <input type="file" id="teacherAvatarFile" name="avatarFile" accept="image/*" onchange="document.getElementById('teacherAvatarUploadForm').submit();">
-                        </form>
-
-                        <div class="account-summary-panel">
-                            <div class="account-summary-main">
-                                <div class="account-avatar-wrap">
-                                    <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
-                                        <img src="<%= user.getAvatarUrl() %>" class="account-avatar-img" alt="Avatar">
-                                    <% } else { %>
-                                        <div class="account-avatar-placeholder"><%= initials %></div>
-                                    <% } %>
-                                    <button type="button" class="avatar-camera-btn" title="Cập nhật ảnh đại diện" onclick="document.getElementById('teacherAvatarFile').click();">
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                                    </button>
-                                </div>
-                                <div class="account-identity">
-                                    <h3 class="account-name"><%= user != null ? user.getDisplayName() : "Giảng viên HIPZI" %></h3>
-                                    <form id="accountNameInlineForm" class="account-name-edit-form" action="${pageContext.request.contextPath}/profile" method="POST" style="display: none;">
-                                        <input type="hidden" name="action" value="updateName">
-                                        <input id="accountDisplayNameInput" class="account-name-input" type="text" name="displayName" required value="<%= user != null ? user.getDisplayName() : "" %>" placeholder="Nhập họ và tên của bạn...">
-                                    </form>
-                                    <span class="account-email" title="<%= user != null ? user.getEmail() : "" %>"><%= user != null ? user.getEmail() : "info@hipzi.vn" %></span>
-                                </div>
-                            </div>
-                            <div class="account-side-meta">
-                                <div class="account-meta-pill">
-                                    <span class="account-meta-label">Ngày tham gia</span>
-                                    <span class="account-meta-value"><%= joinDate %></span>
-                                </div>
-                                <div class="account-meta-pill">
-                                    <span class="account-meta-label">Vai trò</span>
-                                    <span class="account-meta-value">
-                                        <span class="role-tag teacher">Giảng viên</span>
+                <div class="overview-analytics-grid">
+                    <div class="overview-chart-card">
+                        <div class="overview-chart-head">
+                            <div class="overview-chart-title-block">
+                                <h2 class="overview-chart-title">Th&#7901;i l&#432;&#7907;ng gi&#7843;ng d&#7841;y</h2>
+                                <div class="overview-chart-summary" aria-label="T&#7893;ng quan th&#7901;i l&#432;&#7907;ng gi&#7843;ng d&#7841;y">
+                                    <span class="overview-summary-pill taught">
+                                        <strong id="overviewTotalTaught">18.5</strong>
+                                        <span>gi&#7901; &#273;&#227; d&#7841;y</span>
+                                    </span>
+                                    <span class="overview-summary-pill scheduled">
+                                        <strong id="overviewTotalScheduled">14</strong>
+                                        <span>gi&#7901; &#273;&#227; l&#234;n l&#7883;ch</span>
                                     </span>
                                 </div>
                             </div>
+                            <div class="overview-period-switch" id="overviewPeriodSwitch" data-active="week" aria-label="Chọn khoảng thời gian biểu đồ">
+                                <button type="button" class="overview-period-btn is-active" data-period="week" aria-pressed="true">Tuần</button>
+                                <button type="button" class="overview-period-btn" data-period="month" aria-pressed="false">Tháng</button>
+                            </div>
                         </div>
 
+                        <div class="overview-line-wrap" id="overviewLineWrap">
+                            <svg class="overview-line-chart" viewBox="0 0 640 214" role="img" aria-label="Biểu đồ thời lượng giảng dạy">
+                                <defs>
+                                    <linearGradient id="overviewTaughtFill" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.18"/>
+                                        <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0"/>
+                                    </linearGradient>
+                                    <linearGradient id="overviewScheduledFill" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.14"/>
+                                        <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                                    </linearGradient>
+                                </defs>
+                                <line x1="52" y1="24" x2="610" y2="24" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="52" y1="70" x2="610" y2="70" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="52" y1="116" x2="610" y2="116" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="52" y1="162" x2="610" y2="162" stroke="#e2e8f0" stroke-width="1"/>
+
+                                <text x="4" y="28">6 giờ</text>
+                                <text x="4" y="74">4 giờ</text>
+                                <text x="4" y="120">2 giờ</text>
+                                <text x="4" y="166">0 giờ</text>
+
+                                <path id="overviewTaughtArea" d="M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62 L610 162 L64 162 Z" fill="url(#overviewTaughtFill)"/>
+                                <path id="overviewScheduledArea" d="M64 116 C104 84, 120 136, 160 128 C204 120, 214 92, 250 104 C290 118, 302 148, 344 136 C382 124, 400 92, 438 104 C476 116, 488 154, 526 146 C568 138, 574 96, 610 112 L610 162 L64 162 Z" fill="url(#overviewScheduledFill)"/>
+
+                                <path id="overviewTaughtLine" d="M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62" fill="none" stroke="#0ea5e9" stroke-width="3.2" stroke-linecap="round"/>
+                                <path id="overviewScheduledLine" d="M64 116 C104 84, 120 136, 160 128 C204 120, 214 92, 250 104 C290 118, 302 148, 344 136 C382 124, 400 92, 438 104 C476 116, 488 154, 526 146 C568 138, 574 96, 610 112" fill="none" stroke="#f59e0b" stroke-width="3.2" stroke-linecap="round"/>
+
+                                <line id="overviewGuideLine" x1="250" y1="34" x2="250" y2="174" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 6"/>
+                                <circle id="overviewTaughtDot" cx="250" cy="64" r="5" fill="#0ea5e9" stroke="#ffffff" stroke-width="3"/>
+                                <circle id="overviewScheduledDot" cx="250" cy="104" r="5" fill="#f59e0b" stroke="#ffffff" stroke-width="3"/>
+
+                                <text id="overviewTick1" x="58" y="202">01/05</text>
+                                <text id="overviewTick2" x="150" y="202">02/05</text>
+                                <text id="overviewTick3" x="240" y="202">03/05</text>
+                                <text id="overviewTick4" x="332" y="202">04/05</text>
+                                <text id="overviewTick5" x="424" y="202">05/05</text>
+                                <text id="overviewTick6" x="516" y="202">06/05</text>
+                                <text id="overviewTick7" x="586" y="202">07/05</text>
+                            </svg>
+
+                            <div class="overview-line-tooltip" id="overviewLineTooltip">
+                                <strong id="overviewTooltipDate">03/05/2026</strong>
+                                <div class="overview-tooltip-row">
+                                    <span class="overview-tooltip-label"><span class="overview-tooltip-dot" style="background:#0ea5e9;"></span>Đã dạy</span>
+                                    <span id="overviewTooltipTaught">4 giờ</span>
+                                </div>
+                                <div class="overview-tooltip-row">
+                                    <span class="overview-tooltip-label"><span class="overview-tooltip-dot" style="background:#f59e0b;"></span>Lên lịch</span>
+                                    <span id="overviewTooltipScheduled">3 giờ</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="overview-chart-legend">
+                            <span class="overview-legend-item"><span class="overview-legend-dot" style="background:#0ea5e9;"></span>Giờ đã dạy</span>
+                            <span class="overview-legend-item"><span class="overview-legend-dot" style="background:#f59e0b;"></span>Giờ đã lên lịch</span>
+                        </div>
                     </div>
 
+                    <div class="overview-chart-card">
+                        <div class="overview-chart-head">
+                            <div>
+                                <h2 class="overview-chart-title">Tổng nội dung theo loại</h2>
+                            </div>
+                            <span class="overview-chart-chip">Mẫu</span>
+                        </div>
+
+                        <div class="overview-bar-chart" aria-label="Biểu đồ cột tổng nội dung theo loại">
+                            <div class="overview-bar-item">
+                                <span class="overview-bar-value">6</span>
+                                <div class="overview-bar-track">
+                                    <div class="overview-bar-fill" style="height: 72%; background: #0f8a67;"></div>
+                                </div>
+                                <span class="overview-bar-label">Lớp học</span>
+                            </div>
+                            <div class="overview-bar-item">
+                                <span class="overview-bar-value">4</span>
+                                <div class="overview-bar-track">
+                                    <div class="overview-bar-fill" style="height: 52%; background: #6375f2;"></div>
+                                </div>
+                                <span class="overview-bar-label">Khóa học</span>
+                            </div>
+                            <div class="overview-bar-item">
+                                <span class="overview-bar-value">8</span>
+                                <div class="overview-bar-track">
+                                    <div class="overview-bar-fill" style="height: 88%; background: #8ac7d8;"></div>
+                                </div>
+                                <span class="overview-bar-label">Tài liệu</span>
+                            </div>
+                            <div class="overview-bar-item">
+                                <span class="overview-bar-value">5</span>
+                                <div class="overview-bar-track">
+                                    <div class="overview-bar-fill" style="height: 64%; background: #f59e0b;"></div>
+                                </div>
+                                <span class="overview-bar-label">Lịch dạy</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
             </section>
 <!-- ========================================== -->
             <!-- TAB 2: CHỈNH SỬA HỒ SƠ                     -->
@@ -2970,8 +3348,8 @@
             <section id="tab-security" class="tab-pane <%= "tab-security".equals(initialTeacherTab) ? "active-pane" : "" %>">
                 <div class="tab-pane-header">
                     <div class="tab-pane-header-left">
-                        <h1>Bảo mật tài khoản</h1>
-                        <p>Quản lý mật khẩu đăng nhập, bảo mật hai lớp và phiên đăng nhập.</p>
+                        <h1>Hồ sơ cá nhân</h1>
+                        <p>Quản lý thông tin tài khoản, mật khẩu đăng nhập và xác thực hai lớp.</p>
                     </div>
                     <div class="tab-pane-header-right">
                         <div class="date-badge">
@@ -2981,40 +3359,91 @@
                     </div>
                 </div>
 
-                <!-- KHUNG CHÍNH TOP: MẬT KHẨU ĐĂNG NHẬP -->
-                <div class="premium-card">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem;">
-                        <div>
-                            <span style="font-weight: 800; font-size: 1.15rem; color: var(--text-main); letter-spacing: 0.5px; text-transform: uppercase; display: block;">Mật khẩu đăng nhập</span>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.35rem 0 0 0;">Cập nhật mật khẩu định kỳ để bảo mật tốt hơn.</p>
+                <!-- CHI TIẾT TÀI KHOẢN -->
+                <div class="premium-card" style="margin-top: 0.5rem;">
+                    <div class="premium-card-header">
+                        <span class="premium-card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Chi tiết tài khoản
+                        </span>
+                        <div class="account-header-actions">
+                            <button type="button" id="accountEditTrigger" onclick="toggleAccountNameEdit(true)" class="btn-premium profile-edit-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                <span>Chỉnh sửa</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </button>
+                            <div id="accountEditActions" class="account-edit-actions" style="display: none;">
+                                <button type="button" class="btn-premium account-cancel-btn" onclick="toggleAccountNameEdit(false)" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">Hủy bỏ</button>
+                                <button type="submit" form="accountNameInlineForm" class="btn-premium account-save-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">Lưu</button>
+                            </div>
                         </div>
-                        <button type="button" onclick="document.getElementById('pwd-modal-overlay').style.display='flex';" class="btn-premium primary" style="background: #059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
-                            <span>Đổi mật khẩu</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                        </button>
                     </div>
 
-                    <div style="padding: 1rem 0 0 0; border-top: 1px solid var(--border-light); display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-                        <div style="display: flex; align-items: center; gap: 0.4rem; color: #10b981; font-weight: 700; font-size: 0.85rem;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            <span>Mật khẩu mạnh</span>
+                    <form id="teacherAvatarUploadForm" action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" style="display:none;">
+                        <input type="hidden" name="action" value="updateAvatar">
+                        <input type="file" id="teacherAvatarFile" name="avatarFile" accept="image/*" onchange="document.getElementById('teacherAvatarUploadForm').submit();">
+                    </form>
+
+                    <div class="account-summary-panel">
+                        <div class="account-summary-main">
+                            <div class="account-avatar-wrap">
+                                <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+                                    <img src="<%= user.getAvatarUrl() %>" class="account-avatar-img" alt="Avatar">
+                                <% } else { %>
+                                    <div class="account-avatar-placeholder"><%= initials %></div>
+                                <% } %>
+                                <button type="button" class="avatar-camera-btn" title="Cập nhật ảnh đại diện" onclick="document.getElementById('teacherAvatarFile').click();">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                </button>
+                            </div>
+                            <div class="account-identity">
+                                <h3 class="account-name"><%= user != null ? user.getDisplayName() : "Giảng viên HIPZI" %></h3>
+                                <form id="accountNameInlineForm" class="account-name-edit-form" action="${pageContext.request.contextPath}/profile" method="POST" style="display: none;">
+                                    <input type="hidden" name="action" value="updateName">
+                                    <input id="accountDisplayNameInput" class="account-name-input" type="text" name="displayName" required value="<%= user != null ? user.getDisplayName() : "" %>" placeholder="Nhập họ và tên của bạn...">
+                                </form>
+                                <span class="account-email" title="<%= user != null ? user.getEmail() : "" %>"><%= user != null ? user.getEmail() : "info@hipzi.vn" %></span>
+                            </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 0.4rem; color: <%= (user != null && user.isTwoFactorEnabled()) ? "#10b981" : "var(--text-muted)" %>; font-weight: 700; font-size: 0.85rem;">
-                            <% if (user != null && user.isTwoFactorEnabled()) { %>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                                <span>Xác thực 2 lớp: Đang bật</span>
-                            <% } else { %>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                <span>Xác thực 2 lớp: Tắt</span>
-                            <% } %>
+                        <div class="account-side-meta">
+                            <div class="account-meta-pill">
+                                <span class="account-meta-label">Ngày tham gia</span>
+                                <span class="account-meta-value"><%= joinDate %></span>
+                            </div>
+                            <div class="account-meta-pill">
+                                <span class="account-meta-label">Vai trò</span>
+                                <span class="account-meta-value">
+                                    <span class="role-tag teacher">Giảng viên</span>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- LƯỚI HAI KHUNG CON BÊN DƯỚI -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 0.5rem;">
                     
-                    <!-- KHUNG TRÁI: BẢO MẬT 2 LỚP (OTP) -->
+                    <!-- KHUNG TRÁI: MẬT KHẨU ĐĂNG NHẬP -->
+                    <div class="premium-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+                            <div>
+                                <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Mật khẩu đăng nhập</span>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; line-height: 1.5; margin: 0.35rem 0 0 0;">Cập nhật mật khẩu định kỳ để bảo mật tốt hơn.</p>
+                            </div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.1rem; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 0.4rem; color: #10b981; font-weight: 700; font-size: 0.85rem;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                <span>Mật khẩu mạnh</span>
+                            </div>
+                            <button type="button" onclick="document.getElementById('pwd-modal-overlay').style.display='flex';" class="btn-premium primary" style="background: #059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
+                                <span>Đổi mật khẩu</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- KHUNG PHẢI: BẢO MẬT 2 LỚP (OTP) -->
                     <div class="premium-card">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Bảo mật 2 lớp (OTP)</span>
@@ -3039,17 +3468,6 @@
                         </div>
                     </div>
 
-                    <!-- KHUNG PHẢI: THIẾT BỊ HIỆN TẠI -->
-                    <div class="premium-card">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Thiết bị hiện tại</span>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                        </div>
-                        <div>
-                            <span style="font-weight: 800; font-size: 1.1rem; color: var(--text-main); display: block;">Windows - Chrome (Vietnam)</span>
-                            <span style="font-size: 0.75rem; color: #10b981; font-weight: 600; display: inline-block; margin-top: 0.25rem; background: #ecfdf5; padding: 0.15rem 0.5rem; border-radius: 0.25rem;">Phiên truy cập an toàn</span>
-                        </div>
-                    </div>
                 </div>
             </section>
 
@@ -3799,9 +4217,9 @@
         const TAB_TITLES = {
             'tab-teaching-registration': 'Đăng kí giảng dạy',
             'tab-class-registration': 'Đăng kí lớp học',
-            'tab-profile': 'Hồ sơ cá nhân',
+            'tab-profile': 'Tổng quan hệ thống',
             'tab-edit': 'Cập nhật thông tin',
-            'tab-security': 'Bảo mật',
+            'tab-security': 'Hồ sơ cá nhân',
             'tab-upload-material': 'Đăng tải tài liệu',
             'tab-support': 'Hỗ trợ giảng dạy',
             'tab-balance-stats': 'Thống kê số dư',
@@ -3959,6 +4377,127 @@
             });
         }
 
+        const overviewChartPeriods = {
+            week: {
+                ticks: ['01/05', '02/05', '03/05', '04/05', '05/05', '06/05', '07/05'],
+                tooltipDate: '03/05/2026',
+                totalTaught: '18.5',
+                totalScheduled: '14',
+                taught: '4 gi\u1edd',
+                scheduled: '3 gi\u1edd',
+                guideX: '250',
+                taughtDot: { x: '250', y: '64' },
+                scheduledDot: { x: '250', y: '104' },
+                tooltipLeft: '46%',
+                taughtLine: 'M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62',
+                scheduledLine: 'M64 116 C104 84, 120 136, 160 128 C204 120, 214 92, 250 104 C290 118, 302 148, 344 136 C382 124, 400 92, 438 104 C476 116, 488 154, 526 146 C568 138, 574 96, 610 112'
+            },
+            month: {
+                ticks: ['01/05', '05/05', '10/05', '15/05', '20/05', '25/05', '30/05'],
+                tooltipDate: '15/05/2026',
+                totalTaught: '72.5',
+                totalScheduled: '86',
+                taught: '18.5 gi\u1edd',
+                scheduled: '22 gi\u1edd',
+                guideX: '344',
+                taughtDot: { x: '344', y: '82' },
+                scheduledDot: { x: '344', y: '60' },
+                tooltipLeft: '55%',
+                taughtLine: 'M64 132 C102 114, 120 96, 156 104 C196 112, 214 78, 250 84 C290 90, 306 96, 344 82 C384 68, 402 50, 436 58 C476 68, 488 116, 526 104 C566 92, 580 74, 610 82',
+                scheduledLine: 'M64 102 C104 70, 120 88, 160 76 C202 64, 214 118, 250 110 C292 102, 304 52, 344 60 C384 70, 398 94, 438 86 C478 78, 492 126, 528 118 C568 108, 578 70, 610 74'
+            }
+        };
+
+        function setOverviewChartPeriod(period) {
+            const switchEl = document.getElementById('overviewPeriodSwitch');
+            const lineWrap = document.getElementById('overviewLineWrap');
+            const data = overviewChartPeriods[period];
+            if (!switchEl || !data) {
+                return;
+            }
+
+            switchEl.dataset.active = period;
+            switchEl.querySelectorAll('.overview-period-btn').forEach(button => {
+                const isActive = button.dataset.period === period;
+                button.classList.toggle('is-active', isActive);
+                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+
+            if (lineWrap) {
+                lineWrap.classList.add('is-switching');
+            }
+
+            window.setTimeout(() => {
+                data.ticks.forEach((label, index) => {
+                    const tick = document.getElementById('overviewTick' + (index + 1));
+                    if (tick) {
+                        tick.textContent = label;
+                    }
+                });
+
+                const tooltipDate = document.getElementById('overviewTooltipDate');
+                const tooltipTaught = document.getElementById('overviewTooltipTaught');
+                const tooltipScheduled = document.getElementById('overviewTooltipScheduled');
+                const totalTaught = document.getElementById('overviewTotalTaught');
+                const totalScheduled = document.getElementById('overviewTotalScheduled');
+                if (tooltipDate) tooltipDate.textContent = data.tooltipDate;
+                if (tooltipTaught) tooltipTaught.textContent = data.taught;
+                if (tooltipScheduled) tooltipScheduled.textContent = data.scheduled;
+                if (totalTaught) totalTaught.textContent = data.totalTaught;
+                if (totalScheduled) totalScheduled.textContent = data.totalScheduled;
+
+                const taughtLine = document.getElementById('overviewTaughtLine');
+                const scheduledLine = document.getElementById('overviewScheduledLine');
+                const taughtArea = document.getElementById('overviewTaughtArea');
+                const scheduledArea = document.getElementById('overviewScheduledArea');
+                const guideLine = document.getElementById('overviewGuideLine');
+                const taughtDot = document.getElementById('overviewTaughtDot');
+                const scheduledDot = document.getElementById('overviewScheduledDot');
+                const tooltip = document.getElementById('overviewLineTooltip');
+
+                if (taughtLine) taughtLine.setAttribute('d', data.taughtLine);
+                if (scheduledLine) scheduledLine.setAttribute('d', data.scheduledLine);
+                if (taughtArea) taughtArea.setAttribute('d', data.taughtLine + ' L610 162 L64 162 Z');
+                if (scheduledArea) scheduledArea.setAttribute('d', data.scheduledLine + ' L610 162 L64 162 Z');
+                if (guideLine) {
+                    guideLine.setAttribute('x1', data.guideX);
+                    guideLine.setAttribute('x2', data.guideX);
+                }
+                if (taughtDot) {
+                    taughtDot.setAttribute('cx', data.taughtDot.x);
+                    taughtDot.setAttribute('cy', data.taughtDot.y);
+                }
+                if (scheduledDot) {
+                    scheduledDot.setAttribute('cx', data.scheduledDot.x);
+                    scheduledDot.setAttribute('cy', data.scheduledDot.y);
+                }
+                if (tooltip) {
+                    tooltip.style.left = data.tooltipLeft;
+                }
+
+                window.setTimeout(() => {
+                    if (lineWrap) {
+                        lineWrap.classList.remove('is-switching');
+                    }
+                }, 120);
+            }, 120);
+        }
+
+        function initOverviewPeriodSwitch() {
+            const switchEl = document.getElementById('overviewPeriodSwitch');
+            if (!switchEl) {
+                return;
+            }
+            switchEl.querySelectorAll('.overview-period-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    if (button.classList.contains('is-active')) {
+                        return;
+                    }
+                    setOverviewChartPeriod(button.dataset.period);
+                });
+            });
+        }
+
         <% if (session.getAttribute("toastMsg") != null) { 
             String msg = (String) session.getAttribute("toastMsg");
             String type = (String) session.getAttribute("toastType");
@@ -3978,6 +4517,7 @@
                 }
             }
             observeTeacherDashboardFrame();
+            initOverviewPeriodSwitch();
         });
 
         window.addEventListener('DOMContentLoaded', () => {

@@ -35,7 +35,7 @@
     } else if (profileHasStaff) {
         profileMenuHref = request.getContextPath() + "/staff-profile?tab=profile";
     } else if (profileHasTeacher) {
-        profileMenuHref = request.getContextPath() + "/teacher-profile";
+        profileMenuHref = request.getContextPath() + "/teacher-profile?tab=profile";
     } else if (profileHasParent) {
         profileMenuHref = request.getContextPath() + "/parent-profile";
     } else if (profileHasStudent) {

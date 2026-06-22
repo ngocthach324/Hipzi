@@ -1,0 +1,84 @@
+<div class="nav-avatar-dropdown">
+    <div class="nav-avatar-frame" title="<%= profileMenuLabel %>">
+        <% if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+            <img src="<%= user.getAvatarUrl() %>" alt="Avatar">
+        <% } else { %>
+            <span class="nav-avatar-initials"><%= initials %></span>
+        <% } %>
+    </div>
+
+    <div class="dropdown-menu-popup">
+        <a href="<%= profileMenuHref %>">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+            </svg>
+            <span class="avatar-menu-copy">
+                <span class="avatar-menu-title"><%= profileMenuLabel %></span>
+                <span class="avatar-menu-subtitle">Vai tr&#242;: <%= profileRoleLabel %></span>
+            </span>
+        </a>
+        <% if (profileHasTeacher && !profileHasStaff && !profileHasAdmin) { %>
+        <a href="${pageContext.request.contextPath}/teacher-wallet" class="avatar-menu-wallet">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2">
+                <path d="M20 7H5a2 2 0 0 0 0 4h15v8H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16v4z" />
+                <path d="M16 14h.01" />
+            </svg>
+            <span class="avatar-menu-copy">
+                <span class="avatar-menu-title">V&#237; gi&#7843;ng vi&#234;n</span>
+                <span class="avatar-menu-subtitle">S&#7889; d&#432;: 1.250.000&#273;</span>
+            </span>
+        </a>
+        <a href="${pageContext.request.contextPath}/teacher-management">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2">
+                <path d="M12 3l8 4.5-8 4.5-8-4.5L12 3z" />
+                <path d="M4 12l8 4.5 8-4.5" />
+                <path d="M4 16.5l8 4.5 8-4.5" />
+            </svg>
+            <span class="avatar-menu-copy">
+                <span class="avatar-menu-title">Qu&#7843;n l&#253; gi&#7843;ng d&#7841;y</span>
+                <span class="avatar-menu-subtitle">L&#7899;p h&#7885;c, kh&#243;a h&#7885;c v&#224; t&#224;i li&#7879;u</span>
+            </span>
+        </a>
+        <% } else if (profileHasStaff && !profileHasAdmin) { %>
+        <a href="${pageContext.request.contextPath}/staff-profile?tab=teacher-approval">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <polyline points="16 11 18 13 22 9" />
+            </svg>
+            <span class="avatar-menu-copy">
+                <span class="avatar-menu-title">B&#7843;ng &#273;i&#7873;u ph&#7889;i</span>
+                <span class="avatar-menu-subtitle">Ki&#7875;m duy&#7879;t h&#7879; th&#7889;ng</span>
+            </span>
+        </a>
+        <% } else if (profileHasAdmin) { %>
+        <a href="${pageContext.request.contextPath}/admin-profile">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M8 12h8" />
+                <path d="M12 8v8" />
+            </svg>
+            <span class="avatar-menu-copy">
+                <span class="avatar-menu-title">Qu&#7843;n tr&#7883; h&#7879; th&#7889;ng</span>
+                <span class="avatar-menu-subtitle">Ng&#432;&#7901;i d&#249;ng, vai tr&#242; v&#224; ki&#7875;m duy&#7879;t</span>
+            </span>
+        </a>
+        <% } %>
+        <div class="avatar-menu-divider"></div>
+        <a href="${pageContext.request.contextPath}/logout" class="danger-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            <span>&#272;&#259;ng xu&#7845;t</span>
+        </a>
+    </div>
+</div>

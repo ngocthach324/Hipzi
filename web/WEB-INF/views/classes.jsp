@@ -200,27 +200,7 @@
                     <%@ include file="/WEB-INF/fragments/notification-bell.jspf" %>
 
                     <!-- Khung Avatar Người dùng kèm Dropdown Menu -->
-                    <div class="nav-avatar-dropdown">
-                        <div class="nav-avatar-frame" title="<%= profileMenuLabel %>">
-                            <% if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
-                                <img src="<%= user.getAvatarUrl() %>" alt="Avatar">
-                            <% } else { %>
-                                <span class="nav-avatar-initials"><%= initials %></span>
-                            <% } %>
-                        </div>
-                        
-                        <div class="dropdown-menu-popup">
-                            <a href="${pageContext.request.contextPath}/profile">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                                <span><%= profileMenuLabel %></span>
-                            </a>
-                            <div style="height:1px; background:var(--border-dark); margin:0.35rem 0;"></div>
-                            <a href="${pageContext.request.contextPath}/logout" class="danger-link">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                                <span>Đăng xuất</span>
-                            </a>
-                        </div>
-                    </div>
+                                        <%@ include file="/WEB-INF/fragments/avatar-dropdown.jspf" %>
                 </div>
                 <% } else { %>
                 <div class="nav-actions">
