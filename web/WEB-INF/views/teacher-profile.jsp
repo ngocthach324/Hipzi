@@ -1843,6 +1843,65 @@
             to { opacity: 1; transform: scale(1); }
         }
 
+        /* ===== Đăng kí lớp học - Thứ học Checkboxes ===== */
+        .class-day-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .class-day-option {
+            display: flex !important;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600 !important;
+            cursor: pointer;
+            color: var(--text-main) !important;
+            font-size: 0.9rem !important;
+            padding: 0.5rem 0.85rem;
+            border-radius: 0.6rem;
+            border: 1px solid var(--border-dark);
+            background: #ffffff;
+            transition: all 0.2s ease;
+            margin: 0 !important;
+        }
+
+        .class-day-option:hover input[name="scheduleDays"] {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.08);
+        }
+
+        input[name="scheduleDays"] {
+            appearance: none;
+            width: 1.1rem !important;
+            height: 1.1rem !important;
+            min-width: 1.1rem !important;
+            min-height: 1.1rem !important;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.15rem !important;
+            background: #f9fafb;
+            display: inline-grid;
+            place-content: center;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            margin: 0 !important;
+            padding: 0 !important;
+            flex-shrink: 0;
+            box-sizing: border-box !important;
+        }
+
+        input[name="scheduleDays"]:checked {
+            border-color: var(--primary) !important;
+            background-color: var(--primary) !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: center !important;
+            background-size: 0.8rem !important;
+            box-shadow: 0 4px 10px rgba(4, 120, 87, 0.2), 0 0 0 4px rgba(4, 120, 87, 0.1);
+            transform: scale(1.05);
+        }
+
     </style>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=block">
 </head>
@@ -3254,16 +3313,16 @@
                 </div>
 
                 <% if (registeredSubjects != null && registeredSubjects.length > 0) { %>
-                <div id="repository-upload-form-panel" style="display: none; margin-top: 1.5rem; background: #f8fafc; border: 1px solid var(--border-dark); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow);">
+                <div id="repository-upload-form-panel" style="display: none; margin-top: 1.5rem; background: #f8fafc; border: none; border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow);">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.75rem;">
                             <div>
                                 <h3 style="margin: 0; color: var(--text-main); font-size: 1.15rem; font-weight: 800;">Thông tin tài liệu đăng tải</h3>
-                                <p style="margin: 0.25rem 0 0 0; color: var(--text-muted); font-size: 0.85rem;">File sẽ được lưu trên Supabase Storage và hiển thị công khai trong kho tài liệu sau khi đăng.</p>
+                                <p style="margin: 0.25rem 0 0 0; color: var(--text-muted); font-size: 0.85rem;">Tài liệu sẽ được hiển thị công khai trong kho học liệu sau khi hệ thống ghi nhận thành công.</p>
                             </div>
                             <button type="button" onclick="document.getElementById('repository-upload-form-panel').style.display='none';" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--border-light); color: var(--text-muted); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
                         </div>
 
-                        <form class="repository-upload-form form-edit-layout" action="${pageContext.request.contextPath}/material-repository" method="POST" enctype="multipart/form-data" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; padding: 0;">
+                        <form class="repository-upload-form form-edit-layout" action="${pageContext.request.contextPath}/material-repository" method="POST" enctype="multipart/form-data" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; padding: 0;">
                             <input type="hidden" name="action" value="uploadRepositoryMaterial">
 
                             <div class="form-group-premium" style="grid-column: 1 / -1;">
@@ -3306,15 +3365,24 @@
                                 </select>
                             </div>
 
-                            <div class="form-group-premium">
-                                <label>File tài liệu <span style="color:#ef4444;">*</span></label>
-                                <input type="file" name="materialFile" required accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.webp" style="padding: 0.55rem;">
-                                <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">Hỗ trợ PDF, Word, PowerPoint, Excel và ảnh. Tối đa 50MB.</span>
-                            </div>
-
                             <div class="form-group-premium" style="grid-column: 1 / -1;">
                                 <label>Mô tả ngắn</label>
                                 <textarea name="materialDescription" rows="3" maxlength="800" placeholder="Tóm tắt nội dung, mục tiêu học tập hoặc cách sử dụng tài liệu..."></textarea>
+                            </div>
+
+                            <div class="form-group-premium" style="grid-column: 1 / -1;">
+                                <label>File tài liệu <span style="color:#ef4444;">*</span></label>
+                                <div class="teacher-evidence-box">
+                                    <label class="teacher-evidence-dropzone material-file-dropzone">
+                                        <input type="file" id="materialFileUpload" name="materialFile" required accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.webp">
+                                        <span class="teacher-evidence-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                        </span>
+                                        <span class="teacher-evidence-title">Kéo thả file vào đây hoặc nhấn để tải lên</span>
+                                        <span class="teacher-evidence-subtitle">Hỗ trợ PDF, Word, PowerPoint, Excel và ảnh. Tối đa 50MB.</span>
+                                    </label>
+                                    <span id="materialFileNameDisplay" class="teacher-evidence-filename">Không có tệp nào được chọn</span>
+                                </div>
                             </div>
 
                             <div class="form-actions-row-premium full-span" style="grid-column: 1 / -1; margin-top: 1rem;">
@@ -4098,6 +4166,52 @@
                 if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
                     teacherEvidenceInput.files = event.dataTransfer.files;
                     updateTeacherEvidenceFileName(teacherEvidenceInput.files);
+                }
+            });
+        }
+
+        const materialFileInput = document.getElementById('materialFileUpload');
+        const materialFileNameDisplay = document.getElementById('materialFileNameDisplay');
+        const materialFileDropzone = document.querySelector('.material-file-dropzone');
+
+        function updateMaterialFileName(files) {
+            if (!materialFileNameDisplay) return;
+            if (!files || files.length === 0) {
+                materialFileNameDisplay.textContent = 'Không có tệp nào được chọn';
+                return;
+            }
+            if (files.length === 1) {
+                materialFileNameDisplay.textContent = files[0].name;
+                return;
+            }
+            materialFileNameDisplay.textContent = files.length + ' tệp đã được chọn';
+        }
+
+        if (materialFileInput && materialFileDropzone) {
+            materialFileInput.addEventListener('change', () => {
+                updateMaterialFileName(materialFileInput.files);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                materialFileDropzone.addEventListener(eventName, event => {
+                    event.preventDefault();
+                    materialFileDropzone.classList.add('drag-over');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                materialFileDropzone.addEventListener(eventName, event => {
+                    event.preventDefault();
+                    materialFileDropzone.classList.remove('drag-over');
+                });
+            });
+
+            materialFileDropzone.addEventListener('drop', event => {
+                event.preventDefault();
+                materialFileDropzone.classList.remove('drag-over');
+                if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+                    materialFileInput.files = event.dataTransfer.files;
+                    updateMaterialFileName(materialFileInput.files);
                 }
             });
         }

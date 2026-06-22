@@ -1345,6 +1345,507 @@
             overflow-y: auto;
         }
 
+        #tab-profile,
+        #tab-edit {
+            gap: 2rem;
+        }
+
+        #tab-profile .tab-pane-header,
+        #tab-edit .tab-pane-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-dark);
+            padding-bottom: 1rem;
+        }
+
+        .tab-pane-header-left h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0 0 0.35rem 0;
+        }
+
+        .tab-pane-header-left p {
+            font-size: 0.95rem;
+            color: #475569;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .tab-pane-header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .date-badge {
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 1024px) {
+            .metrics-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .metrics-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .metric-card {
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 140px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-top: 4px solid var(--primary);
+            color: var(--text-main);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        .metrics-row .metric-card:nth-child(1) { border-top-color: var(--primary); }
+        .metrics-row .metric-card:nth-child(2) { border-top-color: #7c3aed; }
+        .metrics-row .metric-card:nth-child(3) { border-top-color: #ea580c; }
+        .metrics-row .metric-card:nth-child(4) { border-top-color: #2563eb; }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1);
+        }
+
+        .metric-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .metric-card-title {
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .metric-arrow-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-dark);
+            background: var(--border-light);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .metric-card-value {
+            font-size: 1.45rem;
+            font-weight: 800;
+            margin: 0.75rem 0 0.35rem 0;
+            line-height: 1.15;
+            position: relative;
+            z-index: 1;
+            word-break: break-word;
+        }
+
+        .metric-card-value.compact {
+            font-size: 1rem;
+        }
+
+        .metric-card-sub {
+            font-size: 0.78rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.24rem 0.62rem;
+            border-radius: 0.5rem;
+            width: fit-content;
+            position: relative;
+            z-index: 1;
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .metric-ghost-icon {
+            position: absolute;
+            right: 1.15rem;
+            bottom: 1rem;
+            width: 64px;
+            height: 64px;
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            background: var(--primary-light);
+            opacity: 0.28;
+            transform: rotate(-6deg);
+            pointer-events: none;
+        }
+
+        .metric-ghost-icon svg {
+            width: 34px;
+            height: 34px;
+            stroke-width: 2.1;
+        }
+
+        .dashboard-grid-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .premium-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            box-sizing: border-box;
+        }
+
+        .premium-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 0.85rem;
+            gap: 1rem;
+        }
+
+        .premium-card-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .premium-card-title svg {
+            color: var(--primary);
+            width: 20px;
+            height: 20px;
+        }
+
+        .account-header-actions,
+        .account-edit-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .account-summary-panel {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 1.25rem;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .account-summary-main {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .account-avatar-wrap {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            flex-shrink: 0;
+        }
+
+        .account-avatar-img,
+        .account-avatar-placeholder {
+            width: 76px;
+            height: 76px;
+            border-radius: 1.15rem;
+            border: 1px solid rgba(4, 120, 87, 0.12);
+            box-shadow: 0 10px 20px rgba(4, 120, 87, 0.08);
+        }
+
+        .account-avatar-img {
+            object-fit: cover;
+            display: block;
+        }
+
+        .account-avatar-placeholder {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-camera-btn {
+            position: absolute;
+            right: -6px;
+            bottom: -6px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            background: var(--primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(4, 120, 87, 0.24);
+            transition: all 0.2s ease;
+        }
+
+        .avatar-camera-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .account-identity {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .account-name {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.25rem;
+            font-weight: 850;
+            line-height: 1.25;
+        }
+
+        .account-name-edit-form {
+            width: min(100%, 360px);
+            margin: 0;
+        }
+
+        .account-name-input {
+            width: 100%;
+            min-height: 2.7rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.8rem;
+            background: #ffffff;
+            color: var(--text-main);
+            font: inherit;
+            font-size: 1rem;
+            font-weight: 650;
+            padding: 0.65rem 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .account-name-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.12);
+        }
+
+        .account-email {
+            display: block;
+            margin-top: 0.25rem;
+            color: #475569;
+            font-size: 0.92rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .account-side-meta {
+            display: flex;
+            align-items: stretch;
+            gap: 0.75rem;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .account-meta-pill {
+            min-width: 150px;
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            background: #f8fafc;
+            padding: 0.75rem 0.9rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.22rem;
+        }
+
+        .account-meta-label {
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            font-weight: 850;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .account-meta-value {
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .btn-premium {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            min-height: 44px;
+            padding-block: 0.68rem;
+            padding-inline: 1.25rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            line-height: 1.15;
+            white-space: nowrap;
+            border-radius: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-family: inherit;
+            text-decoration: none;
+        }
+
+        .btn-premium.primary,
+        .btn-premium.profile-edit-btn,
+        .account-save-btn {
+            background: var(--primary);
+            color: #ffffff;
+            border: 1px solid var(--primary);
+            box-shadow: 0 10px 20px rgba(4, 120, 87, 0.16);
+        }
+
+        .btn-premium.primary:hover,
+        .btn-premium.profile-edit-btn:hover,
+        .account-save-btn:hover {
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-premium.secondary,
+        .account-cancel-btn {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-dark);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-premium.secondary:hover,
+        .account-cancel-btn:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .form-group-premium {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group-premium label {
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--text-main);
+        }
+
+        .form-group-premium input,
+        .form-group-premium select,
+        .form-group-premium textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-dark);
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            outline: none;
+            background: #ffffff;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group-premium input:focus,
+        .form-group-premium select:focus,
+        .form-group-premium textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .form-actions-row-premium {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 640px) {
+            .account-summary-panel {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .account-summary-main,
+            .account-side-meta {
+                width: 100%;
+            }
+
+            .account-side-meta {
+                margin-left: 0;
+                flex-direction: column;
+            }
+
+            .account-meta-pill {
+                min-width: 0;
+            }
+        }
+
         /* Profile Specific Styles */
         .profile-hero-section {
             display: flex;
@@ -1759,7 +2260,7 @@
             flex-direction: column;
             gap: 1.5rem;
         }
-        
+
         .security-card-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1775,6 +2276,479 @@
             }
             .system-overview-grid,
             .role-breakdown-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Teacher profile shell for admin profile */
+        body {
+            font-family: var(--font-sans);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        body::before,
+        body::after {
+            display: none !important;
+        }
+
+        .navbar,
+        .dashboard-unified-header {
+            display: none !important;
+        }
+
+        .app-dashboard-container {
+            max-width: 1600px;
+            width: calc(100% - 1.5rem);
+            min-height: 0;
+            height: auto;
+            margin: 0.75rem auto 0 auto;
+            padding: 0 0 0.75rem 0;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: visible;
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .dashboard-body {
+            display: contents;
+        }
+
+        .dashboard-sidebar {
+            width: 270px;
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 1.25rem;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0.75rem;
+            height: calc(100vh - 1.5rem);
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            justify-content: flex-start;
+        }
+
+        .sidebar-brand-horizontal {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            width: 100%;
+            text-decoration: none;
+        }
+
+        .brand-avatar-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #ecfdf5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid rgba(4, 120, 87, 0.08);
+            box-shadow: 0 2px 8px rgba(4, 120, 87, 0.04);
+        }
+
+        .brand-avatar-box img {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+            transition: transform 0.25s ease;
+        }
+
+        .sidebar-brand-horizontal:hover .brand-avatar-box img {
+            transform: scale(1.1) rotate(4deg);
+        }
+
+        .brand-text-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .brand-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .brand-subtitle {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-top: 0.08rem;
+            white-space: nowrap;
+        }
+
+        .sidebar-top-group {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .sidebar-menu {
+            gap: 4.8px;
+        }
+
+        .sidebar-menu li a {
+            justify-content: flex-start;
+            gap: 0.75rem;
+            padding: 0.8rem 0.85rem;
+            border-radius: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transform: none;
+            position: relative;
+        }
+
+        .sidebar-menu li a:hover {
+            transform: none;
+        }
+
+        .sidebar-menu li a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15%;
+            height: 70%;
+            width: 6px;
+            background: var(--primary);
+            border-radius: 0 6px 6px 0;
+        }
+
+        .menu-label-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+
+        .menu-label-group span {
+            white-space: normal;
+            line-height: 1.25;
+        }
+
+        .menu-indicator {
+            display: none;
+        }
+
+        .dashboard-main-section {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+            background: transparent;
+            gap: 1rem;
+        }
+
+        .dashboard-top-bar {
+            height: 70px;
+            min-height: 70px;
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            box-sizing: border-box;
+            z-index: 10;
+            box-shadow: var(--shadow);
+        }
+
+        .top-bar-search-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f1f5f9;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            width: 280px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .top-bar-search-wrapper:focus-within {
+            background: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .top-bar-search-wrapper svg {
+            color: var(--text-muted);
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .top-bar-search-wrapper input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            height: 42px;
+        }
+
+        .top-bar-user-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-left: 0.75rem;
+            border-left: 1px solid var(--border-dark);
+            cursor: pointer;
+            height: 42px;
+            flex: 0 0 auto;
+        }
+
+        .top-bar-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border-dark);
+        }
+
+        .top-bar-avatar-placeholder {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            border: 2px solid var(--primary);
+        }
+
+        .top-bar-user-info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        .top-bar-user-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .top-bar-user-email {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+        }
+
+        .dashboard-content-wrapper {
+            flex: 1;
+            padding: 2rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            background: #f9fafb;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow);
+            min-height: calc(100vh - 6.75rem);
+            overflow: visible;
+        }
+
+        .tab-pane {
+            gap: 2rem;
+            animation: fadeInTab 0.3s ease-out;
+        }
+
+        .tab-grouped-container {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .tab-header-accent {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-dark);
+            padding: 0 0 1rem 0;
+            color: var(--text-main);
+        }
+
+        .tab-header-title-text {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0;
+            letter-spacing: 0;
+        }
+
+        .tab-header-date-pill {
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .tab-body-content {
+            background: transparent;
+            padding: 0;
+            overflow: visible;
+            gap: 2rem;
+        }
+
+        .system-overview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+        }
+
+        .system-metric-card {
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            min-height: 140px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-top: 4px solid var(--primary);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .system-metric-card:nth-child(2) { border-top-color: #7c3aed; }
+        .system-metric-card:nth-child(3) { border-top-color: #ea580c; }
+        .system-metric-card:nth-child(4) { border-top-color: #2563eb; }
+
+        .system-metric-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1);
+        }
+
+        .system-metric-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 1.25rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .system-metric-label {
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-top: 1rem;
+        }
+
+        .system-metric-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--text-main);
+            margin-top: 0.35rem;
+        }
+
+        .system-metric-note {
+            color: #475569;
+            font-size: 0.85rem;
+            font-weight: 650;
+            line-height: 1.35;
+        }
+
+        .role-breakdown-panel,
+        .form-grouped-section,
+        .admin-user-table-wrap {
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        @media (max-width: 1024px) {
+            .app-dashboard-container {
+                width: calc(100% - 1rem);
+                flex-direction: column;
+            }
+
+            .dashboard-sidebar {
+                position: relative;
+                top: auto;
+                width: 100%;
+                height: auto;
+            }
+
+            .system-overview-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .dashboard-top-bar {
+                padding: 1rem;
+                height: auto;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .top-bar-search-wrapper {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .system-overview-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -1910,6 +2884,16 @@
         <div class="dashboard-body">
             <!-- KÊNH SIDEBAR TRÁI (LEFT PANE) -->
             <aside class="dashboard-sidebar">
+                <div class="sidebar-brand-horizontal">
+                    <a href="${pageContext.request.contextPath}/index" class="brand-avatar-box" title="Trang chủ">
+                        <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="Hipzi Logo">
+                    </a>
+                    <div class="brand-text-col">
+                        <span class="brand-title">Hipzi</span>
+                        <span class="brand-subtitle">Admin</span>
+                    </div>
+                </div>
+
                 <div class="sidebar-top-group">
                     <ul class="sidebar-menu">
                         <li>
@@ -1974,6 +2958,36 @@
                     </div>
                 </div>
             </aside>
+
+            <div class="dashboard-main-section">
+                <div class="dashboard-top-bar">
+                    <div class="top-bar-search-wrapper">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" placeholder="Tìm kiếm tác vụ quản trị...">
+                    </div>
+
+                    <div class="top-bar-right">
+                        <button type="button" class="nav-bell-trigger" title="Thông báo" onclick="switchTab('tab-notifications')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        </button>
+
+                        <a href="${pageContext.request.contextPath}/logout" class="nav-bell-trigger" title="Đăng xuất" style="text-decoration:none;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        </a>
+
+                        <div class="top-bar-user-card" onclick="switchTab('tab-profile')">
+                            <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+                                <img src="<%= user.getAvatarUrl() %>" class="top-bar-avatar" alt="Avatar">
+                            <% } else { %>
+                                <div class="top-bar-avatar-placeholder"><%= initials %></div>
+                            <% } %>
+                            <div class="top-bar-user-info">
+                                <span class="top-bar-user-name"><%= user != null ? user.getDisplayName() : "Quản trị viên HIPZI" %></span>
+                                <span class="top-bar-user-email"><%= user != null ? user.getEmail() : "info@hipzi.vn" %></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             <!-- KÊNH NỘI DUNG PHẢI (RIGHT CONTENT PANE) -->
             <main class="dashboard-content-wrapper">
@@ -2060,123 +3074,155 @@
             </section>
 
             <section id="tab-profile" class="tab-pane <%= "tab-profile".equals(activeAdminTab) ? "active-pane" : "" %>">
-                <div class="tab-grouped-container">
-                    <!-- Tab Header -->
-                    <div class="tab-header-accent">
-                        <div class="tab-header-title-text">Hồ sơ cá nhân</div>
-                        <div class="tab-header-date-pill">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <% String adminProfileStatus = (user != null) ? user.getAccountStatus() : "active";
+                   String adminProfileStatusLabel = "active".equals(adminProfileStatus) ? "Đang hoạt động" : "suspended".equals(adminProfileStatus) ? "Tạm khóa" : "Vô hiệu hóa"; %>
+                <div class="tab-pane-header">
+                    <div class="tab-pane-header-left">
+                        <h1>Hồ sơ cá nhân</h1>
+                        <p>Xem và quản lý thông tin tài khoản quản trị viên của bạn trên HIPZI.</p>
+                    </div>
+                    <div class="tab-pane-header-right">
+                        <div class="date-badge">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                             <span><%= currentDateDisplay %></span>
                         </div>
                     </div>
-                    <!-- Tab Body -->
-                    <div class="tab-body-content">
-                        <!-- Hero Section: Avatar & Basic Info -->
-                        <div class="profile-hero-section">
-                            <div class="hero-user-details">
-                                <div class="highlight-avatar-container" style="margin:0;">
-                                    <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
-                                        <img src="<%= user.getAvatarUrl() %>" alt="Avatar">
-                                    <% } else { %>
-                                        <div class="highlight-avatar-placeholder"><%= initials %></div>
-                                    <% } %>
-                                    <label class="btn-avatar-camera" title="Thay đổi ảnh đại diện" onclick="document.getElementById('avatarFileInput').click();">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                                    </label>
-                                    <form id="avatarUploadForm" action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" style="display:none;">
-                                        <input type="hidden" name="action" value="updateAvatar">
-                                        <input type="file" id="avatarFileInput" name="avatarFile" accept="image/*" onchange="if(this.files.length > 0) { showToast('Đang tải ảnh lên...', 'info'); document.getElementById('avatarUploadForm').submit(); }">
-                                    </form>
-                                </div>
-                                <div class="highlight-user-info">
-                                    <h2 style="margin:0;"><%= user != null ? user.getDisplayName() : "Quản trị viên HIPZI" %></h2>
-                                    <div class="highlight-meta-info" style="margin-top:0.35rem;">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                        <span>Thành viên tích cực</span>
-                                    </div>
-                                </div>
-                            </div>
+                </div>
 
-                            <div class="hero-role-display">
-                                <span class="role-display-label">Vai trò hệ thống</span>
-                                <div class="highlight-user-roles" style="margin:0;">
-                                    <% if (roles != null && !roles.isEmpty()) {
-                                        for (Role r : roles) { %>
-                                            <span class="role-tag <%= r.getName() %>" style="font-size:0.85rem; padding:0.4rem 1.15rem; border-radius:2rem;">
-                                                <%= r.getName().equals("student")  ? "Học viên"    :
-                                                    r.getName().equals("parent")   ? "Phụ huynh"   :
-                                                    r.getName().equals("teacher")  ? "Giảng viên"  :
-                                                    r.getName().equals("staff")    ? "Nhân viên"   :
-                                                    r.getName().equals("admin")    ? "Quản trị"    : r.getName() %>
-                                            </span>
-                                    <% }} else { %>
-                                        <span class="role-tag admin" style="font-size:0.85rem; padding:0.4rem 1.15rem; border-radius:2rem;">Quản trị viên</span>
-                                    <% } %>
+                <div class="metrics-row">
+                    <div class="metric-card">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Họ và tên hiển thị</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-card-value"><%= user != null ? user.getDisplayName() : "—" %></div>
+                            <span class="metric-card-sub">Quản trị viên hệ thống</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Ngày tham gia</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-card-value"><%= joinDate %></div>
+                            <span class="metric-card-sub" style="background:#f5f3ff; color:#7c3aed;">Khởi tạo tài khoản</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#7c3aed; background:#f5f3ff;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Địa chỉ Email</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-card-value compact"><%= user != null ? user.getEmail() : "—" %></div>
+                            <span class="metric-card-sub" style="background:#fff7ed; color:#ea580c;">Tài khoản định danh</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#ea580c; background:#fff7ed;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Trạng thái tài khoản</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-card-value" style="font-size:1rem;">
+                                <span class="acc-status-tag <%= adminProfileStatus %>"><%= adminProfileStatusLabel %></span>
+                            </div>
+                            <span class="metric-card-sub" style="background:#eff6ff; color:#2563eb;">Chế độ bảo mật</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#2563eb; background:#eff6ff;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid-layout">
+                    <div class="premium-card" style="grid-column: 1 / -1;">
+                        <div class="premium-card-header">
+                            <span class="premium-card-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                Chi tiết tài khoản
+                            </span>
+                            <div class="account-header-actions">
+                                <button type="button" id="accountEditTrigger" onclick="toggleAccountNameEdit(true)" class="btn-premium profile-edit-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; min-height: 36px;">
+                                    <span>Chỉnh sửa</span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                </button>
+                                <div id="accountEditActions" class="account-edit-actions" style="display: none;">
+                                    <button type="button" class="btn-premium account-cancel-btn" onclick="toggleAccountNameEdit(false)" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; min-height: 36px;">Hủy bỏ</button>
+                                    <button type="submit" form="accountNameInlineForm" class="btn-premium account-save-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; min-height: 36px;">Lưu</button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Data Grid -->
-                        <div class="form-grouped-section">
-                            <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border:none;">
-                                <div class="card-header-title">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                    <span>Thông tin cá nhân</span>
+                        <form id="adminAvatarUploadForm" action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" style="display:none;">
+                            <input type="hidden" name="action" value="updateAvatar">
+                            <input type="file" id="adminAvatarFile" name="avatarFile" accept="image/*" onchange="if(this.files.length > 0) { showToast('Đang tải ảnh lên...', 'info'); document.getElementById('adminAvatarUploadForm').submit(); }">
+                        </form>
+
+                        <div class="account-summary-panel">
+                            <div class="account-summary-main">
+                                <div class="account-avatar-wrap">
+                                    <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+                                        <img src="<%= user.getAvatarUrl() %>" class="account-avatar-img" alt="Avatar">
+                                    <% } else { %>
+                                        <div class="account-avatar-placeholder"><%= initials %></div>
+                                    <% } %>
+                                    <button type="button" class="avatar-camera-btn" title="Cập nhật ảnh đại diện" onclick="document.getElementById('adminAvatarFile').click();">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                    </button>
                                 </div>
-                                <button onclick="switchTab('tab-edit')" class="btn-card-edit" title="Chuyển sang tab cập nhật">
-                                    <span>Chỉnh sửa</span>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                                </button>
+                                <div class="account-identity">
+                                    <h3 class="account-name"><%= user != null ? user.getDisplayName() : "Quản trị viên HIPZI" %></h3>
+                                    <form id="accountNameInlineForm" class="account-name-edit-form" action="${pageContext.request.contextPath}/profile" method="POST" style="display: none;">
+                                        <input type="hidden" name="action" value="updateName">
+                                        <input id="accountDisplayNameInput" class="account-name-input" type="text" name="displayName" required value="<%= user != null ? user.getDisplayName() : "" %>" placeholder="Nhập họ và tên của bạn...">
+                                    </form>
+                                    <span class="account-email" title="<%= user != null ? user.getEmail() : "" %>"><%= user != null ? user.getEmail() : "info@hipzi.vn" %></span>
+                                </div>
                             </div>
-
-                            <div class="premium-data-grid">
-                                <div class="info-card-premium card-green">
-                                    <div class="info-card-icon-box">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                    </div>
-                                    <div class="info-card-text-group">
-                                        <span class="info-card-label">Họ và tên hiển thị</span>
-                                        <span class="info-card-value"><%= user != null ? user.getDisplayName() : "—" %></span>
-                                        <span class="info-card-subtext">Quản trị viên hệ thống</span>
-                                    </div>
+                            <div class="account-side-meta">
+                                <div class="account-meta-pill">
+                                    <span class="account-meta-label">Ngày tham gia</span>
+                                    <span class="account-meta-value"><%= joinDate %></span>
                                 </div>
-
-                                <div class="info-card-premium card-blue">
-                                    <div class="info-card-icon-box">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                    </div>
-                                    <div class="info-card-text-group">
-                                        <span class="info-card-label">Ngày tham gia</span>
-                                        <span class="info-card-value"><%= joinDate %></span>
-                                        <span class="info-card-subtext">Khởi tạo tài khoản</span>
-                                    </div>
-                                </div>
-
-                                <div class="info-card-premium card-amber">
-                                    <div class="info-card-icon-box">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                                    </div>
-                                    <div class="info-card-text-group">
-                                        <span class="info-card-label">Địa chỉ Email</span>
-                                        <span class="info-card-value"><%= user != null ? user.getEmail() : "—" %></span>
-                                        <span class="info-card-subtext">Tài khoản định danh</span>
-                                    </div>
-                                </div>
-
-                                <div class="info-card-premium card-red">
-                                    <div class="info-card-icon-box">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                    </div>
-                                    <div class="info-card-text-group">
-                                        <span class="info-card-label">Trạng thái tài khoản</span>
-                                        <% String status = (user != null) ? user.getAccountStatus() : "active"; %>
-                                        <div style="margin-top:0.25rem;">
-                                            <span class="acc-status-tag <%= status %>">
-                                                <%= "active".equals(status) ? "Đang hoạt động" : "suspended".equals(status) ? "Tạm khóa" : "Vô hiệu hóa" %>
-                                            </span>
-                                        </div>
-                                        <span class="info-card-subtext">Chế độ bảo mật</span>
-                                    </div>
+                                <div class="account-meta-pill">
+                                    <span class="account-meta-label">Vai trò</span>
+                                    <span class="account-meta-value">
+                                        <% if (roles != null && !roles.isEmpty()) {
+                                            for (Role r : roles) { %>
+                                                <span class="role-tag <%= r.getName() %>">
+                                                    <%= r.getName().equals("student")  ? "Học viên"    :
+                                                        r.getName().equals("parent")   ? "Phụ huynh"   :
+                                                        r.getName().equals("teacher")  ? "Giảng viên"  :
+                                                        r.getName().equals("staff")    ? "Nhân viên"   :
+                                                        r.getName().equals("admin")    ? "Quản trị"    : r.getName() %>
+                                                </span>
+                                        <% }} else { %>
+                                            <span class="role-tag admin">Quản trị viên</span>
+                                        <% } %>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -2188,41 +3234,39 @@
             <!-- TAB 2: CHỈNH SỬA HỒ SƠ                     -->
             <!-- ========================================== -->
             <section id="tab-edit" class="tab-pane <%= "tab-edit".equals(activeAdminTab) ? "active-pane" : "" %>">
-                <div class="tab-grouped-container">
-                    <div class="tab-header-accent">
-                        <div class="tab-header-title-text">Cập nhật thông tin</div>
-                        <div class="tab-header-date-pill">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span><%= currentDateDisplay %></span>
-                        </div>
+                <div class="tab-pane-header">
+                    <div class="tab-pane-header-left">
+                        <h1>Cập nhật thông tin</h1>
+                        <p>Thay đổi thông tin cá nhân hiển thị của quản trị viên trên hệ thống.</p>
+                    </div>
+                    <div class="tab-pane-header-right">
+                        <button onclick="switchTab('tab-profile')" class="btn-premium secondary" style="padding: 0.5rem 1rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                            <span>Quay lại</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="premium-card">
+                    <div class="premium-card-header" style="border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <span class="premium-card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            Thông tin hiển thị
+                        </span>
                     </div>
 
-                    <div class="tab-body-content">
-                        <div class="form-grouped-section">
-                            <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
-                                <div class="card-header-title">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                                    <span>Cập nhật thông tin hiển thị</span>
-                                </div>
-                                <button onclick="switchTab('tab-profile')" class="btn-card-edit-light">
-                                    <span>Quay lại</span>
-                                </button>
-                            </div>
-
-                            <form action="${pageContext.request.contextPath}/profile" method="POST" class="form-edit-layout" style="padding:0;">
-                                <input type="hidden" name="action" value="updateName">
-                                <div class="form-group-edit">
-                                    <label>Họ và tên hiển thị</label>
-                                    <input type="text" name="displayName" required value="<%= user != null ? user.getDisplayName() : "" %>" placeholder="Nhập họ và tên của bạn...">
-                                </div>
-
-                                <div class="form-actions-row">
-                                    <button type="button" class="btn btn-ghost" onclick="switchTab('tab-profile')">Hủy bỏ</button>
-                                    <button type="submit" class="btn btn-primary" style="border-radius:0.75rem;">Lưu thay đổi</button>
-                                </div>
-                            </form>
+                    <form action="${pageContext.request.contextPath}/profile" method="POST" class="form-edit-layout" style="padding: 0;">
+                        <input type="hidden" name="action" value="updateName">
+                        <div class="form-group-premium" style="margin-bottom: 1.5rem;">
+                            <label>Họ và tên hiển thị</label>
+                            <input type="text" name="displayName" required value="<%= user != null ? user.getDisplayName() : "" %>" placeholder="Nhập họ và tên của bạn...">
                         </div>
-                    </div>
+
+                        <div class="form-actions-row-premium">
+                            <button type="button" class="btn-premium secondary" onclick="switchTab('tab-profile')">Hủy bỏ</button>
+                            <button type="submit" class="btn-premium primary">Lưu thay đổi</button>
+                        </div>
+                    </form>
                 </div>
             </section>
 
@@ -2672,6 +3716,7 @@
             </div>
 
             </main>
+            </div>
         </div>
     </div>
 
@@ -2846,6 +3891,30 @@
             if (isDeepInsideOldTab || isBelowNewContent) {
                 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                 window.scrollTo({ top: targetTop, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+            }
+        }
+
+        function toggleAccountNameEdit(isEditing) {
+            const nameView = document.querySelector('.account-identity .account-name');
+            const form = document.getElementById('accountNameInlineForm');
+            const editTrigger = document.getElementById('accountEditTrigger');
+            const editActions = document.getElementById('accountEditActions');
+            const input = document.getElementById('accountDisplayNameInput');
+
+            if (!nameView || !form || !editTrigger || !editActions) {
+                return;
+            }
+
+            nameView.style.display = isEditing ? 'none' : '';
+            form.style.display = isEditing ? 'block' : 'none';
+            editTrigger.style.display = isEditing ? 'none' : 'inline-flex';
+            editActions.style.display = isEditing ? 'flex' : 'none';
+
+            if (isEditing && input) {
+                input.focus();
+                input.select();
+            } else if (input) {
+                input.value = input.defaultValue;
             }
         }
 
