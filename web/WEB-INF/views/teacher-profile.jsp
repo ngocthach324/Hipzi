@@ -2318,6 +2318,243 @@
             transform: scale(1.05);
         }
 
+        /* ========================================== */
+        /* SCHEDULE MODAL (FAKE DATA)                 */
+        /* ========================================== */
+        .schedule-modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .schedule-modal-backdrop.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .schedule-modal-box {
+            background: #ffffff;
+            width: 95vw;
+            max-width: 1100px;
+            height: 85vh;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.95) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .schedule-modal-backdrop.show .schedule-modal-box {
+            transform: scale(1) translateY(0);
+        }
+
+        .schedule-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+        }
+
+        .schedule-header h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .schedule-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .schedule-btn-group {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+            justify-self: center;
+        }
+
+        .schedule-btn-group button {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            border-radius: 0.35rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .schedule-btn-group button.active {
+            background: #ffffff;
+            color: var(--text-main);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .schedule-close-btn {
+            background: #f1f5f9;
+            border: none;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center; justify-content: center;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .schedule-close-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .schedule-body {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc;
+        }
+
+        .schedule-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        .schedule-body::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .schedule-body::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .schedule-days-header {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .schedule-day-col {
+            padding: 1rem 0;
+            text-align: center;
+            border-left: 1px solid #f1f5f9;
+        }
+
+        .schedule-day-name {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .schedule-day-num {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-top: 0.25rem;
+        }
+
+        .schedule-day-col.active {
+            background: #0f172a;
+            border-radius: 0.5rem;
+            margin: 0.5rem;
+            padding: 0.5rem 0;
+        }
+
+        .schedule-day-col.active .schedule-day-name,
+        .schedule-day-col.active .schedule-day-num {
+            color: #ffffff;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            flex: 1;
+            position: relative;
+            padding-top: 1.25rem;
+        }
+
+        .schedule-time-col {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .schedule-time-slot {
+            height: 80px;
+            text-align: right;
+            padding-right: 0.75rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 600;
+            position: relative;
+            transform: translateY(-0.5rem);
+        }
+
+        .schedule-grid-cols {
+            display: contents;
+        }
+
+        .schedule-grid-col {
+            border-left: 1px solid #e2e8f0;
+            background-image: linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+            background-size: 100% 80px;
+            position: relative;
+        }
+
+        .schedule-event {
+            position: absolute;
+            left: 0.5rem; right: 0.5rem;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            overflow: hidden;
+        }
+
+        .schedule-event:hover {
+            transform: scale(1.02);
+            z-index: 20;
+        }
+
+        .schedule-event-title {
+            font-weight: 800;
+            font-size: 0.85rem;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .schedule-event-time {
+            font-size: 0.75rem;
+            color: rgba(15, 23, 42, 0.7);
+            font-weight: 600;
+        }
+
+        /* Colors for events */
+        .event-blue { background: #bfdbfe; }
+        .event-green { background: #bbf7d0; }
+        .event-yellow { background: #fef08a; }
+        .event-purple { background: #e9d5ff; }
+        .event-pink { background: #fbcfe8; }
     </style>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=block">
 </head>
@@ -3258,7 +3495,7 @@
                     </div>
 
                     <!-- Metric 4: Teaching schedule placeholder -->
-                    <div class="metric-card secondary">
+                    <div class="metric-card secondary" onclick="openScheduleModal()" style="cursor: pointer; border-top-color: #3b82f6;">
                         <div class="metric-card-top">
                             <span class="metric-card-title">Đặt lịch dạy</span>
                             <div class="metric-arrow-btn">
@@ -3266,8 +3503,8 @@
                             </div>
                         </div>
                         <div>
-                            <div class="metric-card-value" style="font-size: 1.45rem; margin-top: 1.25rem;">Sắp có</div>
-                            <span class="metric-card-sub" style="background:#eff6ff; color:#2563eb;">Đang phát triển</span>
+                            <div class="metric-card-value" style="font-size: 1.45rem; margin-top: 1.25rem;">Xem lịch trình</div>
+                            <span class="metric-card-sub" style="background:#eff6ff; color:#2563eb;">Tuần này</span>
                         </div>
                         <div class="metric-ghost-icon" aria-hidden="true" style="color:#2563eb; background:#eff6ff;">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h4"/><path d="M8 18h8"/></svg>
@@ -5071,6 +5308,159 @@
         }
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
+    <!-- ========================================== -->
+    <!-- SCHEDULE MODAL (FAKE DATA)                 -->
+    <!-- ========================================== -->
+    <div class="schedule-modal-backdrop" id="scheduleModal" onclick="closeScheduleModal(event)">
+        <div class="schedule-modal-box" onclick="event.stopPropagation()">
+            <div class="schedule-header">
+                <h2>Tháng 6, 2026</h2>
+                <div class="schedule-btn-group">
+                    <button>Tháng</button>
+                    <button class="active">Tuần</button>
+                    <button>Ngày</button>
+                </div>
+                <div class="schedule-actions">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="schedule-close-btn" style="border-radius:0.5rem;">&lt;</button>
+                        <button class="schedule-close-btn" style="border-radius:0.5rem; width:auto; padding:0 1rem; font-weight:600; color:var(--text-main);">Hôm nay</button>
+                        <button class="schedule-close-btn" style="border-radius:0.5rem;">&gt;</button>
+                    </div>
+                    <button class="schedule-close-btn" onclick="closeScheduleModal()" style="margin-left: 1rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="schedule-body">
+                <div class="schedule-days-header">
+                    <div></div>
+                    <div class="schedule-day-col">
+                        <div class="schedule-day-name">Thứ 2</div>
+                        <div class="schedule-day-num">15</div>
+                    </div>
+                    <div class="schedule-day-col">
+                        <div class="schedule-day-name">Thứ 3</div>
+                        <div class="schedule-day-num">16</div>
+                    </div>
+                    <div class="schedule-day-col active">
+                        <div class="schedule-day-name">Thứ 4</div>
+                        <div class="schedule-day-num">17</div>
+                    </div>
+                    <div class="schedule-day-col">
+                        <div class="schedule-day-name">Thứ 5</div>
+                        <div class="schedule-day-num">18</div>
+                    </div>
+                    <div class="schedule-day-col">
+                        <div class="schedule-day-name">Thứ 6</div>
+                        <div class="schedule-day-num">19</div>
+                    </div>
+                    <div class="schedule-day-col">
+                        <div class="schedule-day-name">Thứ 7</div>
+                        <div class="schedule-day-num">20</div>
+                    </div>
+                    <div class="schedule-day-col">
+                        <div class="schedule-day-name">CN</div>
+                        <div class="schedule-day-num">21</div>
+                    </div>
+                </div>
+                <div class="schedule-grid">
+                    <div class="schedule-time-col">
+                        <div class="schedule-time-slot" style="margin-top: 0px;">7 am</div>
+                        <div class="schedule-time-slot">8 am</div>
+                        <div class="schedule-time-slot">9 am</div>
+                        <div class="schedule-time-slot">10 am</div>
+                        <div class="schedule-time-slot">11 am</div>
+                        <div class="schedule-time-slot">12 pm</div>
+                        <div class="schedule-time-slot">1 pm</div>
+                        <div class="schedule-time-slot">2 pm</div>
+                        <div class="schedule-time-slot">3 pm</div>
+                        <div class="schedule-time-slot">4 pm</div>
+                        <div class="schedule-time-slot">5 pm</div>
+                        <div class="schedule-time-slot">6 pm</div>
+                        <div class="schedule-time-slot">7 pm</div>
+                        <div class="schedule-time-slot">8 pm</div>
+                        <div class="schedule-time-slot">9 pm</div>
+                        <div class="schedule-time-slot">10 pm</div>
+                    </div>
+                    <div class="schedule-grid-cols">
+                        <div class="schedule-grid-col">
+                            <div class="schedule-event event-blue" style="top: 80px; height: 120px;">
+                                <div class="schedule-event-title">Toán 11A - Đại số</div>
+                                <div class="schedule-event-time">08:00 - 09:30</div>
+                            </div>
+                            <div class="schedule-event event-purple" style="top: 280px; height: 160px;">
+                                <div class="schedule-event-title">Luyện đề THPT Quốc Gia Toán</div>
+                                <div class="schedule-event-time">10:30 - 12:30</div>
+                            </div>
+                        </div>
+                        <div class="schedule-grid-col">
+                            <div class="schedule-event event-green" style="top: 40px; height: 160px;">
+                                <div class="schedule-event-title">Giải tích 12 căn bản</div>
+                                <div class="schedule-event-time">07:30 - 09:30</div>
+                            </div>
+                            <div class="schedule-event event-yellow" style="top: 360px; height: 120px;">
+                                <div class="schedule-event-title">Hình học không gian</div>
+                                <div class="schedule-event-time">11:30 - 13:00</div>
+                            </div>
+                            <div class="schedule-event event-pink" style="top: 600px; height: 160px;">
+                                <div class="schedule-event-title">Dạy kèm 1-1: Tuấn Minh</div>
+                                <div class="schedule-event-time">14:30 - 16:30</div>
+                            </div>
+                        </div>
+                        <div class="schedule-grid-col">
+                            <div class="schedule-event event-blue" style="top: 720px; height: 160px;">
+                                <div class="schedule-event-title">Toán 10 - Lớp Cơ Bản</div>
+                                <div class="schedule-event-time">16:00 - 18:00</div>
+                            </div>
+                        </div>
+                        <div class="schedule-grid-col">
+                            <div class="schedule-event event-purple" style="top: 160px; height: 120px;">
+                                <div class="schedule-event-title">Chữa đề thi thử Đại học</div>
+                                <div class="schedule-event-time">09:00 - 10:30</div>
+                            </div>
+                        </div>
+                        <div class="schedule-grid-col">
+                            <div class="schedule-event event-green" style="top: 240px; height: 160px;">
+                                <div class="schedule-event-title">Hình học phẳng 11</div>
+                                <div class="schedule-event-time">10:00 - 12:00</div>
+                            </div>
+                            <div class="schedule-event event-yellow" style="top: 640px; height: 200px;">
+                                <div class="schedule-event-title">Toán nâng cao 12</div>
+                                <div class="schedule-event-time">15:00 - 17:30</div>
+                            </div>
+                        </div>
+                        <div class="schedule-grid-col">
+                            <div class="schedule-event event-pink" style="top: 320px; height: 160px;">
+                                <div class="schedule-event-title">Lớp cấp tốc cuối tuần</div>
+                                <div class="schedule-event-time">11:00 - 13:00</div>
+                            </div>
+                        </div>
+                        <div class="schedule-grid-col">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openScheduleModal() {
+            var modal = document.getElementById('scheduleModal');
+            if (modal) {
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeScheduleModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            var modal = document.getElementById('scheduleModal');
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+    </script>
 </body>
 </html>
 
