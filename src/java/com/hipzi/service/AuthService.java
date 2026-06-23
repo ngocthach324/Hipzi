@@ -125,6 +125,15 @@ public class AuthService {
         User user = userDao.findByOAuth(provider, sub);
 
         if (user == null) {
+            // Kiểm tra xem email này đã đăng ký thông thường chưa
+            User existingByEmail = userDao.findByEmail(email);
+            if (existingByEmail != null && existingByEmail.getOauthProvider() == null) {
+                throw new Exception(
+                    "Tài khoản đã được đăng ký bằng email và mật khẩu. " +
+                    "Vui lòng đăng nhập theo cách thông thường."
+                );
+            }
+
             // Bước 2a: Chưa có → Tạo mới với onboarding_completed = false
             user = new User();
             user.setEmail(email);

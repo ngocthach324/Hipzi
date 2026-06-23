@@ -7,17 +7,31 @@
     <title>Đăng nhập - HIPZI</title>
     <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=block" rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/auth.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/auth.css?v=3">
 </head>
 <body>
+    <% 
+        String errorMsg = (String) request.getAttribute("errorMsg"); 
+        String successMsg = (String) session.getAttribute("successMsg");
+        String toastMessageToDisplay = null;
+        
+        if (successMsg != null) {
+            toastMessageToDisplay = successMsg;
+            session.removeAttribute("successMsg");
+        } else if (errorMsg != null) {
+            toastMessageToDisplay = errorMsg;
+        }
+        
+        String disableAnimStyle = (toastMessageToDisplay != null) ? "style=\"animation: none;\"" : "";
+    %>
     <div class="auth-page-wrapper login-auth-page">
         <!-- Nút Favicon Về Trang Chủ -->
-        <a href="${pageContext.request.contextPath}/index" class="auth-home-btn" title="Về trang chủ">
+        <a href="${pageContext.request.contextPath}/index" class="auth-home-btn" title="Về trang chủ" <%= disableAnimStyle %>>
             <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="HIPZI Logo">
         </a>
 
         <!-- Cột bên trái: Poster Wall (3 cột cuộn) -->
-        <div class="auth-banner">
+        <div class="auth-banner" <%= disableAnimStyle %>>
             <img class="auth-side-illustration" src="${pageContext.request.contextPath}/assets/images/auth-capybara-classroom-no-math.png" alt="" aria-hidden="true">
             <div class="poster-grid">
                 <% 
@@ -78,31 +92,11 @@
         <!-- Cột bên phải: Form Đăng Nhập -->
         <div class="auth-content">
             <div class="auth-form-container">
-                <div class="auth-form-inner">
+                <div class="auth-form-inner" <%= disableAnimStyle %>>
                     <div class="auth-header">
                         <h1>Chào mừng trở lại!</h1>
                         <p>Vui lòng đăng nhập để tiếp tục hành trình học tập</p>
                     </div>
-
-                    <% 
-                        String errorMsg = (String) request.getAttribute("errorMsg"); 
-                        String successMsg = (String) session.getAttribute("successMsg");
-                        if (successMsg != null) {
-                    %>
-                        <div class="alert alert-success">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span><%= successMsg %></span>
-                        </div>
-                    <% 
-                            session.removeAttribute("successMsg");
-                        }
-                        if (errorMsg != null) { 
-                    %>
-                        <div class="alert alert-error">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span><%= errorMsg %></span>
-                        </div>
-                    <% } %>
 
                     <form action="${pageContext.request.contextPath}/login" method="POST" autocomplete="off">
                         <div class="form-group">
@@ -302,5 +296,14 @@
         document.addEventListener('DOMContentLoaded', animateBannerTitle);
         document.addEventListener('DOMContentLoaded', setupRememberedEmailMenu);
     </script>
+    
+    <% if (toastMessageToDisplay != null) { %>
+    <div id="custom-toast-container" class="custom-toast-container">
+        <div class="custom-toast-msg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><%= toastMessageToDisplay %></span>
+        </div>
+    </div>
+    <% } %>
 </body>
 </html>
