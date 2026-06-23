@@ -31,7 +31,7 @@ public class RegisterServlet extends HttpServlet {
         
         String email           = normalizeEmail(request.getParameter("email"));
         String password        = request.getParameter("password");
-        String confirmPassword = request.getParameter("confirmPassword");
+
         String displayName     = request.getParameter("displayName");
         String role            = request.getParameter("role");
 
@@ -48,10 +48,7 @@ public class RegisterServlet extends HttpServlet {
             forwardError(request, response, email, displayName, "Mật khẩu phải có ít nhất 6 ký tự.");
             return;
         }
-        if (!password.equals(confirmPassword)) {
-            forwardError(request, response, email, displayName, "Mật khẩu xác nhận không khớp.");
-            return;
-        }
+
 
         // --- Kiểm tra email tồn tại ---
         if (userDao.findByEmail(email.trim()) != null) {

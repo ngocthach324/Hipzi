@@ -25,9 +25,9 @@ body {
     background: linear-gradient(135deg, #e6fcf5 0%, #ebfbee 50%, #dcfce7 100%);
     background-repeat: no-repeat;
     background-attachment: fixed;
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 button,
@@ -374,8 +374,7 @@ select {
     box-shadow: none;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
     box-sizing: border-box;
     scrollbar-width: none;
     -ms-overflow-style: none;

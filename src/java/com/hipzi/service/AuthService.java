@@ -132,6 +132,8 @@ public class AuthService {
             user.setAvatarUrl(avatarUrl);
             user.setOauthProvider(provider);
             user.setOauthSub(sub);
+            // Đặt sẵn status = active cho user mới (DB cũng default 'active')
+            user.setAccountStatus("active");
 
             if (!userDao.createUserFromOAuth(user)) {
                 throw new Exception("Không thể tạo tài khoản. Vui lòng thử lại.");
@@ -144,11 +146,11 @@ public class AuthService {
                 // Mặc định OAuth mới là student, khởi tạo profile
                 studentProfileService.createDefaultProfile(user.getId());
             }
-        }
-
-        // Bước 2b / 3: User đã tồn tại → kiểm tra account_status
-        if (!"active".equalsIgnoreCase(user.getAccountStatus())) {
-            throw new Exception("Tài khoản của bạn đã bị vô hiệu hoá.");
+        } else {
+            // Bước 2b: User đã tồn tại → kiểm tra account_status
+            if (!"active".equalsIgnoreCase(user.getAccountStatus())) {
+                throw new Exception("Tài khoản của bạn đã bị vô hiệu hoá.");
+            }
         }
 
         // Gắn roles

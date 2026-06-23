@@ -8,6 +8,17 @@
                             <%@page import="com.hipzi.model.Notification" %>
                                 <%@page import="com.hipzi.model.SupportMessage" %>
                                     <%@page import="com.hipzi.model.SupportTicket" %>
+                                <%!
+                                    /** Escape HTML để tránh XSS khi dùng trong scriptlet */
+                                    private String h(String s) {
+                                        if (s == null) return "";
+                                        return s.replace("&", "&amp;")
+                                                .replace("<", "&lt;")
+                                                .replace(">", "&gt;")
+                                                .replace("\"", "&quot;")
+                                                .replace("'", "&#x27;");
+                                    }
+                                %>
                                 <!DOCTYPE html>
                                 <html lang="vi">
 
