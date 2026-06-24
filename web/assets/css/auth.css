@@ -434,13 +434,17 @@ select {
 }
 
 .login-auth-page .auth-content,
-.register-auth-page .auth-content {
+.register-auth-page .auth-content,
+.forgot-password-auth-page .auth-content,
+.verify-otp-auth-page .auth-content {
     perspective: 1200px;
     perspective-origin: center;
 }
 
 .login-auth-page .auth-form-container,
-.register-auth-page .auth-form-container {
+.register-auth-page .auth-form-container,
+.forgot-password-auth-page .auth-form-container,
+.verify-otp-auth-page .auth-form-container {
     transform-style: preserve-3d;
     transform-origin: center center;
     backface-visibility: hidden;
@@ -449,7 +453,9 @@ select {
 
 @media (prefers-reduced-motion: reduce) {
     .login-auth-page .auth-form-container,
-    .register-auth-page .auth-form-container {
+    .register-auth-page .auth-form-container,
+    .forgot-password-auth-page .auth-form-container,
+    .verify-otp-auth-page .auth-form-container {
         opacity: 1;
         transform: none;
         filter: none;

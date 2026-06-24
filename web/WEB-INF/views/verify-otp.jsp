@@ -124,26 +124,75 @@
 </head>
 <body>
 
-<div class="auth-page-wrapper">
+<div class="auth-page-wrapper verify-otp-auth-page">
     <!-- Nút Favicon Về Trang Chủ -->
     <a href="${pageContext.request.contextPath}/index" class="auth-home-btn" title="Về trang chủ">
         <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="HIPZI Logo">
     </a>
 
-    <!-- Cột bên trái: Banner Capybara Cute & Animation (Premium Brand Sync) -->
+    <!-- Cột bên trái: Poster Wall (3 cột cuộn) -->
     <div class="auth-banner">
-        <div class="banner-image-container">
-            <img src="${pageContext.request.contextPath}/assets/images/capybara_study.png" alt="Capybara Study" class="banner-image">
+        <img class="auth-side-illustration" src="${pageContext.request.contextPath}/assets/images/auth-capybara-classroom-no-math.png" alt="" aria-hidden="true">
+        <div class="poster-grid">
+            <% 
+                String[] myPosters = null;
+                try {
+                    String path = application.getRealPath("/assets/images");
+                    if (path != null) {
+                        java.io.File folder = new java.io.File(path);
+                        if (folder.exists() && folder.isDirectory()) {
+                            myPosters = folder.list(new java.io.FilenameFilter() {
+                                @Override
+                                public boolean accept(java.io.File dir, String name) {
+                                    String lower = name.toLowerCase();
+                                    return lower.endsWith(".webp") || lower.endsWith(".jpg") 
+                                        || lower.endsWith(".png") || lower.endsWith(".jpeg");
+                                }
+                            });
+                        }
+                    }
+                } catch (Exception e) {
+                    // Bỏ qua ngoại lệ nếu có lỗi
+                }
+                
+                if (myPosters == null || myPosters.length == 0) {
+                    myPosters = new String[]{"placeholder.jpg"};
+                }
+                myPosters = new String[]{"auth-capybara-classroom-no-math.png"};
+                
+                // Vòng lặp 3 cột
+                for (int col = 0; col < 3; col++) { 
+            %>
+            <div class="poster-col">
+                <!-- Lặp poster lần 1 để hiệu ứng infinite scroll -->
+                <% for (int i = 0; i < 12; i++) { 
+                    String posterFile = myPosters[(i + col * 4) % myPosters.length];
+                %>
+                <div class="poster-item" 
+                     style="background-image: url('${pageContext.request.contextPath}/assets/images/<%= posterFile %>');"></div>
+                <% } %>
+                
+                <!-- Lặp lần 2 cho infinite effect -->
+                <% for (int i = 0; i < 12; i++) { 
+                    String posterFile = myPosters[(i + col * 4) % myPosters.length];
+                %>
+                <div class="poster-item" 
+                     style="background-image: url('${pageContext.request.contextPath}/assets/images/<%= posterFile %>');"></div>
+                <% } %>
+            </div>
+            <% } %>
         </div>
-        <div class="banner-content">
-            <h2 class="banner-title">Bảo mật tuyệt đối cùng HIPZI</h2>
-            <p class="banner-subtitle">Hệ thống áp dụng xác thực đa yếu tố bằng mã OTP nhằm bảo vệ vẹn toàn tài khoản và kho tài liệu bài giảng cá nhân của bạn.</p>
+        <div class="poster-overlay"></div>
+        <div class="auth-banner-copy" hidden>
+            <strong>Bảo mật tuyệt đối cùng HIPZI</strong>
+            <span>Hệ thống áp dụng xác thực đa yếu tố bằng mã OTP nhằm bảo vệ vẹn toàn tài khoản.</span>
         </div>
     </div>
 
     <!-- Cột bên phải: Form Nhập OTP -->
     <div class="auth-content">
         <div class="auth-form-container">
+            <div class="auth-form-inner" style="animation: none;">
             
             <%
                 String purpose     = (String) request.getAttribute("purpose");
@@ -233,6 +282,7 @@
                 </a>
             </div>
 
+            </div>
         </div>
     </div>
 </div>

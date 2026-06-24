@@ -181,17 +181,7 @@ public class VerifyOtpServlet extends HttpServlet {
         newUser.setRoles(roles);
         session.setAttribute("loggedUser", newUser);
 
-        String targetUrl = "student-profile";
-        if (roleName != null) {
-            switch (roleName.toLowerCase()) {
-                case "parent":  targetUrl = "parent-profile"; break;
-                case "teacher": targetUrl = "teacher-profile"; break;
-                case "staff":   targetUrl = "staff-profile"; break;
-                case "admin":   targetUrl = "admin-profile"; break;
-                default:        targetUrl = "student-profile"; break;
-            }
-        }
-        resp.sendRedirect(req.getContextPath() + "/" + targetUrl + "?welcome=true");
+        resp.sendRedirect(req.getContextPath() + "/index?welcome=true");
     }
 
     // =========================================================================
@@ -228,23 +218,7 @@ public class VerifyOtpServlet extends HttpServlet {
             return;
         }
 
-        String targetUrl = "student-profile";
-        if (roles != null) {
-            boolean hasParent = false, hasTeacher = false, hasStaff = false, hasAdmin = false;
-            for (com.hipzi.model.Role r : roles) {
-                String rn = r.getName().toLowerCase();
-                if ("parent".equals(rn)) hasParent = true;
-                if ("teacher".equals(rn)) hasTeacher = true;
-                if ("staff".equals(rn)) hasStaff = true;
-                if ("admin".equals(rn)) hasAdmin = true;
-            }
-            if (hasAdmin) targetUrl = "admin-profile";
-            else if (hasStaff) targetUrl = "staff-profile";
-            else if (hasTeacher) targetUrl = "teacher-profile";
-            else if (hasParent) targetUrl = "parent-profile";
-        }
-
-        resp.sendRedirect(req.getContextPath() + "/" + targetUrl);
+        resp.sendRedirect(req.getContextPath() + "/index");
     }
 
     // =========================================================================

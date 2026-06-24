@@ -46,6 +46,17 @@ public class ForgotPasswordServlet extends HttpServlet {
         String normalizedEmail = email.trim().toLowerCase();
         try {
             User user = userDao.findByEmail(normalizedEmail);
+
+            // Tài khoản Google OAuth không có mật khẩu → chặn và hướng dẫn rõ ràng
+            if (user != null && user.getOauthProvider() != null) {
+                request.setAttribute("errorMsg",
+                    "Tài khoản này đăng nhập bằng Google. Vui lòng sử dụng nút \"Đăng nhập với Google\" để truy cập.");
+                request.setAttribute("email", normalizedEmail);
+                request.getRequestDispatcher("/WEB-INF/views/forgot-password.jsp").forward(request, response);
+                return;
+            }
+
+            // Tài khoản email thường → reset mật khẩu bình thường
             if (user != null && "active".equalsIgnoreCase(user.getAccountStatus())) {
                 String newPassword = generatePassword(12);
                 if (!userDao.updatePassword(user.getId(), PasswordUtil.hashPassword(newPassword))) {
