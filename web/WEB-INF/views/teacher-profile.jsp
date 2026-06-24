@@ -1190,7 +1190,7 @@
             box-sizing: border-box;
         }
 
-        #tab-security .premium-card {
+        #tab-profile .premium-card {
             background: #ffffff;
         }
 
@@ -2622,9 +2622,9 @@
             }
             if (!initialTeacherTab.equals("tab-teaching-registration") &&
                 !initialTeacherTab.equals("tab-class-registration") &&
-                !initialTeacherTab.equals("tab-profile") &&
+                !initialTeacherTab.equals("tab-dashboard") &&
                 !initialTeacherTab.equals("tab-edit") &&
-                !initialTeacherTab.equals("tab-security") &&
+                !initialTeacherTab.equals("tab-profile") &&
                 !initialTeacherTab.equals("tab-upload-material") &&
                 !initialTeacherTab.equals("tab-support") &&
                 !initialTeacherTab.equals("tab-balance-stats") &&
@@ -2660,13 +2660,13 @@
             <div class="sidebar-section-label">Tổng quan</div>
             <ul class="sidebar-menu">
                 <li>
-                    <a id="nav-tab-profile" class="<%= ("tab-profile".equals(initialTeacherTab) || "tab-edit".equals(initialTeacherTab)) ? "active" : "" %>" onclick="switchTab('tab-profile')" title="Tổng quan hệ thống">
+                    <a id="nav-tab-dashboard" class="<%= "tab-dashboard".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-dashboard')" title="Tổng quan hệ thống">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
                         <span>Tổng quan hệ thống</span>
                     </a>
                 </li>
                 <li>
-                    <a id="nav-tab-security" class="<%= "tab-security".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-security')" title="Hồ sơ cá nhân">
+                    <a id="nav-tab-profile" class="<%= ("tab-profile".equals(initialTeacherTab) || "tab-edit".equals(initialTeacherTab)) ? "active" : "" %>" onclick="switchTab('tab-profile')" title="Hồ sơ cá nhân">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         <span>Hồ sơ cá nhân</span>
                     </a>
@@ -3427,7 +3427,7 @@
             <!-- ========================================== -->
             <!-- TAB 1: HỒ SƠ CÁ NHÂN TỔNG QUAN             -->
             <!-- ========================================== -->
-            <section id="tab-profile" class="tab-pane <%= "tab-profile".equals(initialTeacherTab) ? "active-pane" : "" %>">
+            <section id="tab-dashboard" class="tab-pane <%= "tab-dashboard".equals(initialTeacherTab) ? "active-pane" : "" %>">
                 <div class="tab-pane-header">
                     <div class="tab-pane-header-left">
                         <h1>Tổng quan hệ thống</h1>
@@ -3680,7 +3680,7 @@
             <!-- ========================================== -->
             <!-- TAB 3: BẢO MẬT VÀ MẬT KHẨU                 -->
             <!-- ========================================== -->
-            <section id="tab-security" class="tab-pane <%= "tab-security".equals(initialTeacherTab) ? "active-pane" : "" %>">
+            <section id="tab-profile" class="tab-pane <%= "tab-profile".equals(initialTeacherTab) ? "active-pane" : "" %>">
                 <div class="tab-pane-header">
                     <div class="tab-pane-header-left">
                         <h1>Hồ sơ cá nhân</h1>
@@ -4552,9 +4552,9 @@
         const TAB_TITLES = {
             'tab-teaching-registration': 'Đăng kí giảng dạy',
             'tab-class-registration': 'Đăng kí lớp học',
-            'tab-profile': 'Tổng quan hệ thống',
+            'tab-dashboard': 'Tổng quan hệ thống',
             'tab-edit': 'Cập nhật thông tin',
-            'tab-security': 'Hồ sơ cá nhân',
+            'tab-profile': 'Hồ sơ cá nhân',
             'tab-upload-material': 'Đăng tải tài liệu',
             'tab-support': 'Hỗ trợ giảng dạy',
             'tab-balance-stats': 'Thống kê số dư',

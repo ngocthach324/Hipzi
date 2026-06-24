@@ -1,1464 +1,33 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" %>
-    <%@page import="com.hipzi.model.StudentProfile" %>
-        <%@page import="com.hipzi.model.User" %>
-            <%@page import="com.hipzi.model.Role" %>
-                <%@page import="java.util.List" %>
-                    <%@page import="java.text.SimpleDateFormat" %>
-                        <%@page import="java.util.Date" %>
-                            <%@page import="com.hipzi.model.Notification" %>
-                                <%@page import="com.hipzi.model.SupportMessage" %>
-                                    <%@page import="com.hipzi.model.SupportTicket" %>
-                                <%!
-                                    /** Escape HTML để tránh XSS khi dùng trong scriptlet */
-                                    private String h(String s) {
-                                        if (s == null) return "";
-                                        return s.replace("&", "&amp;")
-                                                .replace("<", "&lt;")
-                                                .replace(">", "&gt;")
-                                                .replace("\"", "&quot;")
-                                                .replace("'", "&#x27;");
-                                    }
-                                %>
-                                <!DOCTYPE html>
-                                <html lang="vi">
-
-                                <head>
-                                    <meta charset="UTF-8">
-                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                    <title>Hồ sơ học viên - HIPZI</title>
-                                    <meta name="description"
-                                        content="Quản lý thông tin tài khoản và tiến trình học tập của học viên trên nền tảng HIPZI.">
-                                    <link rel="icon" type="image/png"
-                                        href="${pageContext.request.contextPath}/assets/images/favicon.png">
-                                    <link rel="stylesheet"
-                                        href="${pageContext.request.contextPath}/assets/css/landing.css?v=5">
-                                    <style>
-                                        /* ===== OVERRIDE N?N T?NG & GIAO DI?N PREMIUM TUONG T? B?N THI?T K? ===== */
-                                        body {
-                                            background: linear-gradient(135deg, #e6fcf5 0%, #ebfbee 50%, #dcfce7 100%);
-                                            background-repeat: no-repeat;
-                                            background-attachment: fixed;
-                                            min-height: 100vh;
-                                        }
-
-                                        body.student-profile-page {
-                                            display: block;
-                                            min-height: 100vh;
-                                            overflow-x: hidden;
-                                        }
-
-                                        body.student-profile-page > .app-dashboard-container {
-                                            display: flex !important;
-                                            visibility: visible !important;
-                                            opacity: 1 !important;
-                                            background: #ffffff !important;
-                                            position: relative !important;
-                                            z-index: 1 !important;
-                                            flex: none !important;
-                                        }
-
-                                        body.student-profile-page .dashboard-unified-header,
-                                        body.student-profile-page .dashboard-body,
-                                        body.student-profile-page .dashboard-sidebar,
-                                        body.student-profile-page .dashboard-content-wrapper {
-                                            visibility: visible !important;
-                                            opacity: 1 !important;
-                                        }
-
-                                        body.student-profile-page .dashboard-body {
-                                            display: flex !important;
-                                        }
-
-                                        /* ===== B? C?C CH�NH C?A TRANG PROFILE ===== */
-                                        .app-dashboard-container {
-                                            max-width: 1320px;
-                                            width: calc(100% - 3rem);
-                                            height: calc(100vh - 12rem - 10px);
-                                            min-height: 560px;
-                                            margin: calc(1rem + 10px) auto 1.5rem auto;
-                                            padding: 0;
-                                            display: flex;
-                                            flex-direction: column;
-                                            background: #ffffff;
-                                            border: 1px solid rgba(226, 232, 240, 0.8);
-                                            border-radius: 1.5rem;
-                                            box-shadow: 0 16px 38px rgba(5, 150, 105, 0.08);
-                                            overflow: hidden;
-                                            visibility: visible !important;
-                                            opacity: 1 !important;
-                                            position: relative;
-                                            z-index: 1;
-                                        }
-
-                                        /* ===== HEADER THỐNG NHẤT FULL-WIDTH ===== */
-                                        .dashboard-unified-header {
-                                            background: linear-gradient(135deg, var(--primary) 0%, #047857 100%);
-                                            padding: 0 1.75rem;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: flex-end;
-                                            position: relative;
-                                            gap: 1rem;
-                                            flex-shrink: 0;
-                                            height: 64px;
-                                            min-height: 64px;
-                                            border-radius: 1.5rem 1.5rem 0 0;
-                                        }
-
-                                        /* .unified-header-left and .unified-header-divider removed (logo removed) */
-
-                                        .unified-header-tab-title {
-                                            position: absolute;
-                                            left: 50%;
-                                            transform: translateX(-50%);
-                                            font-size: 1.2rem;
-                                            font-weight: 800;
-                                            color: #ffffff;
-                                            letter-spacing: 0.3px;
-                                            white-space: nowrap;
-                                            overflow: hidden;
-                                            text-overflow: ellipsis;
-                                            transition: opacity 0.2s ease;
-                                            pointer-events: none;
-                                        }
-
-                                        .unified-header-right {
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 0.5rem;
-                                            color: #ffffff;
-                                            font-size: 0.85rem;
-                                            font-weight: 600;
-                                            background: rgba(255,255,255,0.15);
-                                            padding: 0.4rem 0.85rem;
-                                            border-radius: 1rem;
-                                            flex-shrink: 0;
-                                        }
-
-                                        /* ===== BODY: SIDEBAR + CONTENT ROW ===== */
-                                        .dashboard-body {
-                                            display: flex;
-                                            flex-direction: row;
-                                            flex: 1;
-                                            min-height: 0;
-                                            overflow: hidden;
-                                        }
-
-                                        /* ===== KHU VỰC SIDEBAR BÊN TRÁI (LEFT NAVIGATION PANE) ===== */
-                                        .dashboard-sidebar {
-                                            background: transparent;
-                                            border-right: 1px solid rgba(226, 232, 240, 0.9);
-                                            padding: 1rem 1rem;
-                                            display: flex;
-                                            flex-direction: column;
-                                            gap: 1rem;
-                                            width: 270px;
-                                            flex-shrink: 0;
-                                            height: 100%;
-                                            min-height: 0;
-                                            overflow-y: auto;
-                                            overflow-x: hidden;
-                                            justify-content: space-between;
-                                        }
-
-                                        /* sidebar-section-header is now removed — header is unified */
-                                        .sidebar-section-header {
-                                            display: none;
-                                        }
-
-                                        .sidebar-section-header .animated-brand-box {
-                                            width: 100%;
-                                            height: 100%;
-                                            min-height: 0;
-                                            box-sizing: border-box;
-                                            border-radius: 1.5rem 0 0 0;
-                                            justify-content: flex-start;
-                                            padding: 0.7rem 1.25rem;
-                                            transition: none;
-                                        }
-
-                                        .sidebar-section-header .animated-brand-box:hover {
-                                            transform: none;
-                                        }
-
-                                        .sidebar-section-header .animated-brand-box::before,
-                                        .sidebar-section-header .brand-logo-ring,
-                                        .sidebar-section-header .brand-logo-ring img {
-                                            animation: none;
-                                        }
-
-                                        .sidebar-greeting-box {
-                                            width: 100%;
-                                            height: 100%;
-                                            border-radius: 1.5rem 0 0 0;
-                                            background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(236, 253, 245, 0.92) 100%);
-                                            display: flex;
-                                            flex-direction: column;
-                                            justify-content: center;
-                                            padding: 0.65rem 1.25rem;
-                                            box-sizing: border-box;
-                                            overflow: hidden;
-                                        }
-
-                                        .sidebar-greeting-eyebrow {
-                                            font-size: 0.78rem;
-                                            font-weight: 700;
-                                            color: #059669;
-                                            letter-spacing: 0.04em;
-                                            line-height: 1.1;
-                                        }
-
-                                        .sidebar-greeting-name {
-                                            margin-top: 0.2rem;
-                                            font-size: 1.08rem;
-                                            font-weight: 900;
-                                            color: #0f172a;
-                                            line-height: 1.15;
-                                            white-space: nowrap;
-                                            overflow: hidden;
-                                            text-overflow: ellipsis;
-                                        }
-
-                                        .sidebar-mascot-box {
-                                            width: 100%;
-                                            height: auto;
-                                            margin-top: 26px;
-                                            background: transparent;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            box-sizing: border-box;
-                                            overflow: visible;
-                                        }
-
-                                        .sidebar-cute-mascot {
-                                            width: 68px;
-                                            height: 68px;
-                                            object-fit: contain;
-                                            filter: drop-shadow(0 8px 14px rgba(15, 23, 42, 0.12));
-                                            animation: mascotFloat 3.2s ease-in-out infinite;
-                                            transform-origin: bottom center;
-                                            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s ease;
-                                            cursor: pointer;
-                                        }
-
-                                        .sidebar-cute-mascot:hover {
-                                            transform: scale(1.18) rotate(4deg) translateY(-6px);
-                                            filter: drop-shadow(0 12px 20px rgba(16, 185, 129, 0.28));
-                                        }
-
-                                        @keyframes mascotFloat {
-                                            0%, 100% {
-                                                transform: translateY(0) rotate(-2deg);
-                                            }
-
-                                            50% {
-                                                transform: translateY(-6px) rotate(2deg);
-                                            }
-                                        }
-
-                                        /* sidebar-section-header rules removed — replaced by unified header */
-
-                                        .sidebar-section-title {
-                                            display: block;
-                                            font-size: 1.1rem;
-                                            font-weight: 800;
-                                            line-height: 1.25;
-                                            letter-spacing: 0.2px;
-                                        }
-
-                                        /* Nav menu items */
-                                        .sidebar-menu {
-                                            display: flex;
-                                            flex-direction: column;
-                                            gap: 0.35rem;
-                                            list-style: none;
-                                            padding: 0;
-                                            margin: 0;
-                                        }
-
-                                        .sidebar-menu li a {
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: space-between;
-                                            padding: 0.85rem 1rem;
-                                            border-radius: 0.85rem;
-                                            color: var(--text-muted);
-                                            font-weight: 600;
-                                            font-size: 0.95rem;
-                                            text-decoration: none;
-                                            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-                                            cursor: pointer;
-                                        }
-
-                                        .sidebar-menu li a .menu-label-group {
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 0.75rem;
-                                        }
-
-                                        .sidebar-menu li a svg {
-                                            stroke-width: 2.2;
-                                            transition: transform 0.2s ease;
-                                            flex-shrink: 0;
-                                        }
-
-                                        .sidebar-menu li a:hover {
-                                            color: var(--primary);
-                                            background: var(--primary-light);
-                                            transform: translateX(4px);
-                                        }
-
-                                        .sidebar-menu li a.active {
-                                            color: var(--primary);
-                                            background: var(--primary-light);
-                                            font-weight: 700;
-                                        }
-
-                                        .sidebar-menu li a.active svg {
-                                            stroke: var(--primary);
-                                        }
-
-                                        .menu-indicator {
-                                            font-size: 1.1rem;
-                                            color: var(--border-dark);
-                                            transition: color 0.2s ease;
-                                        }
-
-                                        .sidebar-menu li a:hover .menu-indicator,
-                                        .sidebar-menu li a.active .menu-indicator {
-                                            color: var(--primary);
-                                        }
-
-                                        .menu-divider {
-                                            height: 1px;
-                                            background: var(--border-dark);
-                                            margin: 0.75rem 0.5rem;
-                                        }
-
-                                        /* Th? User t�m t?t ? du?i c�ng sidebar (L?y c?m h?ng t? g�c du?i b�n tr�i c?a thi?t k?) */
-                                        .sidebar-user-card {
-                                            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-                                            border-radius: 1rem;
-                                            padding: 0.85rem 1rem;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: space-between;
-                                            color: #ffffff;
-                                            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
-                                            text-decoration: none;
-                                            transition: transform 0.2s ease, box-shadow 0.2s ease;
-                                            flex-shrink: 0;
-                                        }
-
-                                        .sidebar-user-card:hover {
-                                            transform: translateY(-2px);
-                                            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
-                                        }
-
-                                        .sidebar-user-info {
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 0.65rem;
-                                            overflow: hidden;
-                                        }
-
-                                        .sidebar-user-avatar {
-                                            width: 36px;
-                                            height: 36px;
-                                            border-radius: 50%;
-                                            background: #ffffff;
-                                            color: #d97706;
-                                            font-weight: 800;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            font-size: 0.85rem;
-                                            flex-shrink: 0;
-                                            border: 2px solid rgba(255, 255, 255, 0.6);
-                                            object-fit: cover;
-                                        }
-
-                                        .sidebar-user-details {
-                                            display: flex;
-                                            flex-direction: column;
-                                            overflow: hidden;
-                                        }
-
-                                        .sidebar-user-name {
-                                            font-weight: 700;
-                                            font-size: 0.85rem;
-                                            white-space: nowrap;
-                                            overflow: hidden;
-                                            text-overflow: ellipsis;
-                                        }
-
-                                        .sidebar-user-email {
-                                            font-size: 0.7rem;
-                                            opacity: 0.9;
-                                            white-space: nowrap;
-                                            overflow: hidden;
-                                            text-overflow: ellipsis;
-                                        }
-
-                                        .sidebar-user-action {
-                                            background: rgba(255, 255, 255, 0.2);
-                                            width: 24px;
-                                            height: 24px;
-                                            border-radius: 50%;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            flex-shrink: 0;
-                                            transition: background 0.2s ease;
-                                        }
-
-                                        .sidebar-user-card:hover .sidebar-user-action {
-                                            background: rgba(255, 255, 255, 0.3);
-                                        }
-
-
-                                        /* ===== NỘI DUNG CHÍNH (RIGHT CONTENT PANE) ===== */
-                                        .dashboard-content-wrapper {
-                                            display: flex;
-                                            flex-direction: column;
-                                            gap: 0;
-                                            flex: 1;
-                                            min-width: 0;
-                                            padding: 0;
-                                            min-height: 0;
-                                            overflow-y: auto;
-                                        }
-
-                                        /* D?i ti�u d? trang tr?ng ph�a tr�n c�ng */
-                                        .dashboard-top-strip {
-                                            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
-                                            border-radius: 1.25rem;
-                                            padding: 1.15rem 1.75rem;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: space-between;
-                                            color: #ffffff;
-                                            box-shadow: 0 10px 25px rgba(4, 120, 87, 0.15);
-                                        }
-
-                                        .strip-right-controls {
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 1.5rem;
-                                        }
-
-                                        .strip-date {
-                                            font-size: 0.9rem;
-                                            font-weight: 600;
-                                            color: #ecfdf5;
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 0.5rem;
-                                        }
-
-                                        .strip-actions-group {
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 0.75rem;
-                                        }
-
-                                        .strip-btn {
-                                            background: rgba(255, 255, 255, 0.15);
-                                            border: 1px solid rgba(255, 255, 255, 0.2);
-                                            width: 40px;
-                                            height: 40px;
-                                            border-radius: 50%;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            color: #ffffff;
-                                            cursor: pointer;
-                                            position: relative;
-                                            transition: all 0.2s ease;
-                                        }
-
-                                        .strip-btn:hover {
-                                            background: rgba(255, 255, 255, 0.25);
-                                            transform: scale(1.05);
-                                        }
-
-                                        .strip-pill-btn {
-                                            background: rgba(255, 255, 255, 0.15);
-                                            border: 1px solid rgba(255, 255, 255, 0.2);
-                                            height: 40px;
-                                            padding: 0 1rem;
-                                            border-radius: 20px;
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 0.5rem;
-                                            color: #ffffff;
-                                            cursor: pointer;
-                                            transition: all 0.2s ease;
-                                            font-weight: 700;
-                                            font-size: 0.85rem;
-                                        }
-
-                                        .strip-pill-btn:hover {
-                                            background: rgba(255, 255, 255, 0.25);
-                                            transform: scale(1.03);
-                                        }
-
-                                        .badge-counter {
-                                            position: absolute;
-                                            top: -2px;
-                                            right: -2px;
-                                            background: #ef4444;
-                                            color: #ffffff;
-                                            font-size: 0.65rem;
-                                            font-weight: 800;
-                                            width: 16px;
-                                            height: 16px;
-                                            border-radius: 50%;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-                                        }
-
-                                        /* ===== QUẢN LÝ TAB VIEW ===== */
-                                        .tab-pane {
-                                            display: none;
-                                            flex-direction: column;
-                                            flex: 1;
-                                            min-height: 0;
-                                        }
-
-                                        .tab-pane.active-pane {
-                                            display: flex;
-                                        }
-
-                                        .profile-tab-panel {
-                                            height: 100%;
-                                            border-radius: 0;
-                                            overflow: hidden;
-                                            border: none;
-                                            box-shadow: none;
-                                            display: flex;
-                                            flex-direction: column;
-                                        }
-
-                                        /* Obsolete: green headers removed from tabs, unified header used instead */
-
-                                        .profile-tab-body {
-                                            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-                                            padding: 2rem;
-                                            display: flex;
-                                            flex-direction: column;
-                                            gap: 1.5rem;
-                                            flex: 1;
-                                            min-height: 0;
-                                            overflow-y: auto;
-                                        }
-
-                                        .profile-tab-fill-card {
-                                            flex: 1;
-                                            min-height: 0;
-                                            display: flex;
-                                            flex-direction: column;
-                                        }
-
-                                        /* ===== CARD 1: USER HIGHLIGHT CARD ===== */
-                                        .profile-highlight-card {
-                                            background: #ffffff;
-                                            border-radius: 1.25rem;
-                                            border: 1px solid rgba(226, 232, 240, 0.8);
-                                            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02);
-                                            padding: 1.5rem 2rem;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: space-between;
-                                            gap: 1.5rem;
-                                        }
-
-                                        .highlight-left-group {
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 1.5rem;
-                                        }
-
-                                        .highlight-avatar-container {
-                                            position: relative;
-                                            width: 80px;
-                                            height: 80px;
-                                            border-radius: 50%;
-                                            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-                                            padding: 3px;
-                                            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-                                            flex-shrink: 0;
-                                        }
-
-                                        .highlight-avatar-container img,
-                                        .highlight-avatar-placeholder {
-                                            width: 100%;
-                                            height: 100%;
-                                            border-radius: 50%;
-                                            object-fit: cover;
-                                            border: 2px solid #ffffff;
-                                        }
-
-                                        .highlight-avatar-placeholder {
-                                            background: #ffffff;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            font-size: 2rem;
-                                            font-weight: 800;
-                                            color: var(--secondary);
-                                        }
-
-                                        .highlight-user-info {
-                                            display: flex;
-                                            flex-direction: column;
-                                            gap: 0.35rem;
-                                        }
-
-                                        .highlight-user-info h2 {
-                                            font-size: 1.4rem;
-                                            font-weight: 800;
-                                            color: var(--text-main);
-                                            margin: 0;
-                                        }
-
-                                        .highlight-user-roles {
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 0.5rem;
-                                            flex-wrap: wrap;
-                                        }
-
-                                        .role-tag {
-                                            font-size: 0.75rem;
-                                            font-weight: 700;
-                                            padding: 0.2rem 0.75rem;
-                                            border-radius: 0.5rem;
-                                            text-transform: uppercase;
-                                            letter-spacing: 0.5px;
-                                        }
-
-                                        .role-tag.student {
-                                            background: #e0f2fe;
-                                            color: #0284c7;
-                                        }
-
-                                        .role-tag.parent {
-                                            background: #fef3c7;
-                                            color: #d97706;
-                                        }
-
-                                        .role-tag.teacher {
-                                            background: #f3e8ff;
-                                            color: #7c3aed;
-                                        }
-
-                                        .role-tag.staff {
-                                            background: #dbeafe;
-                                            color: #2563eb;
-                                        }
-
-                                        .role-tag.admin {
-                                            background: #fee2e2;
-                                            color: #dc2626;
-                                        }
-
-                                        .highlight-meta-info {
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 0.4rem;
-                                            color: var(--text-muted);
-                                            font-size: 0.85rem;
-                                            font-weight: 500;
-                                            margin-top: 0.15rem;
-                                        }
-
-                                        .highlight-right-badge {
-                                            background: var(--primary-light);
-                                            border: 1px solid rgba(5, 150, 105, 0.15);
-                                            padding: 0.75rem 1.25rem;
-                                            border-radius: 1rem;
-                                            display: flex;
-                                            flex-direction: column;
-                                            align-items: flex-end;
-                                            gap: 0.15rem;
-                                        }
-
-                                        .badge-sub-label {
-                                            font-size: 0.7rem;
-                                            font-weight: 700;
-                                            color: var(--primary);
-                                            text-transform: uppercase;
-                                            letter-spacing: 0.5px;
-                                        }
-
-                                        .badge-main-text {
-                                            font-size: 1.05rem;
-                                            font-weight: 800;
-                                            color: var(--text-main);
-                                        }
-
-
-                                        /* ===== CARD 2: SECTION DATA CARD ===== */
-                                        .section-data-card {
-                                            background: #ffffff;
-                                            border-radius: 1.25rem;
-                                            border: 1px solid rgba(226, 232, 240, 0.8);
-                                            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02);
-                                            overflow: hidden;
-                                            display: flex;
-                                            flex-direction: column;
-                                        }
-
-                                        .card-header-layout {
-                                            padding: 1.25rem 1.75rem;
-                                            border-bottom: 1px solid var(--border-dark);
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: space-between;
-                                            background: rgba(248, 250, 252, 0.4);
-                                        }
-
-                                        .card-header-title {
-                                            font-size: 1.1rem;
-                                            font-weight: 800;
-                                            color: var(--text-main);
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 0.65rem;
-                                        }
-
-                                        .card-header-title svg {
-                                            color: var(--primary);
-                                        }
-
-                                        .btn-card-edit {
-                                            background: var(--primary);
-                                            color: #ffffff;
-                                            font-weight: 700;
-                                            font-size: 0.85rem;
-                                            padding: 0.5rem 1.15rem;
-                                            border-radius: 0.65rem;
-                                            display: inline-flex;
-                                            align-items: center;
-                                            gap: 0.4rem;
-                                            text-decoration: none;
-                                            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.2);
-                                            transition: all 0.2s ease;
-                                            cursor: pointer;
-                                            border: none;
-                                        }
-
-                                        .btn-card-edit:hover {
-                                            background: var(--primary-hover);
-                                            box-shadow: 0 6px 14px rgba(5, 150, 105, 0.3);
-                                            transform: translateY(-1px);
-                                        }
-
-                                        .btn-card-edit-light {
-                                            background: #ffffff;
-                                            color: var(--text-main);
-                                            font-weight: 600;
-                                            font-size: 0.85rem;
-                                            padding: 0.5rem 1.15rem;
-                                            border-radius: 0.65rem;
-                                            display: inline-flex;
-                                            align-items: center;
-                                            gap: 0.4rem;
-                                            text-decoration: none;
-                                            border: 1px solid var(--border-dark);
-                                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-                                            transition: all 0.2s ease;
-                                            cursor: pointer;
-                                        }
-
-                                        .btn-card-edit-light:hover {
-                                            background: #f1f5f9;
-                                            border-color: #cbd5e1;
-                                        }
-
-                                        /* N?i dung lu?i th�ng tin */
-                                        .card-body-grid {
-                                            padding: 1.75rem;
-                                            display: grid;
-                                            grid-template-columns: repeat(3, 1fr);
-                                            gap: 1.75rem;
-                                        }
-
-                                        .data-item-group {
-                                            display: flex;
-                                            flex-direction: column;
-                                            gap: 0.35rem;
-                                        }
-
-                                        .data-item-label {
-                                            font-size: 0.75rem;
-                                            font-weight: 600;
-                                            color: var(--text-muted);
-                                        }
-
-                                        .data-item-value {
-                                            font-size: 0.95rem;
-                                            font-weight: 700;
-                                            color: var(--text-main);
-                                            word-break: break-word;
-                                        }
-
-                                        .data-item-value.muted {
-                                            color: var(--text-muted);
-                                            font-weight: 500;
-                                        }
-
-                                        /* Tr?ng th�i t�i kho?n badge */
-                                        .acc-status-tag {
-                                            display: inline-flex;
-                                            align-items: center;
-                                            gap: 0.35rem;
-                                            font-size: 0.8rem;
-                                            font-weight: 700;
-                                            padding: 0.15rem 0.65rem;
-                                            border-radius: 0.4rem;
-                                        }
-
-                                        .acc-status-tag.active {
-                                            background: #dcfce7;
-                                            color: #15803d;
-                                        }
-
-                                        .acc-status-tag.suspended {
-                                            background: #fef9c3;
-                                            color: #a16207;
-                                        }
-
-                                        .acc-status-tag.disabled {
-                                            background: #fee2e2;
-                                            color: #b91c1c;
-                                        }
-
-                                        /* Provider badge */
-                                        .provider-pill {
-                                            display: inline-flex;
-                                            align-items: center;
-                                            gap: 0.4rem;
-                                            font-size: 0.8rem;
-                                            font-weight: 600;
-                                            color: #1e293b;
-                                            background: #f1f5f9;
-                                            padding: 0.2rem 0.75rem;
-                                            border-radius: 1rem;
-                                            border: 1px solid var(--border-dark);
-                                        }
-
-                                        /* ===== FORM C?P NH?T TRONG TAB CH?NH S?A ===== */
-                                        .form-edit-layout {
-                                            padding: 1.75rem;
-                                            display: flex;
-                                            flex-direction: column;
-                                            gap: 1.25rem;
-                                        }
-
-                                        .form-group-edit {
-                                            display: flex;
-                                            flex-direction: column;
-                                            gap: 0.4rem;
-                                        }
-
-                                        .form-group-edit label {
-                                            font-weight: 600;
-                                            font-size: 0.85rem;
-                                            color: var(--text-main);
-                                        }
-
-                                        .form-group-edit input,
-                                        .form-group-edit textarea {
-                                            width: 100%;
-                                            padding: 0.75rem 1rem;
-                                            border-radius: 0.75rem;
-                                            border: 1px solid var(--border-dark);
-                                            font-family: inherit;
-                                            font-size: 0.95rem;
-                                            color: var(--text-main);
-                                            outline: none;
-                                            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-                                        }
-
-                                        .form-group-edit input:focus,
-                                        .form-group-edit textarea:focus {
-                                            border-color: var(--primary);
-                                            box-shadow: 0 0 0 3px var(--primary-light);
-                                        }
-
-                                        .form-actions-row {
-                                            display: flex;
-                                            justify-content: flex-end;
-                                            gap: 1rem;
-                                            margin-top: 0.5rem;
-                                        }
-
-
-                                        /* ===== C�C STYLES CHO NAVBAR KHI �� �ANG NH?P ===== */
-                                        .navbar-user-controls {
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 1.25rem;
-                                        }
-
-                                        .nav-bell-trigger {
-                                            position: relative;
-                                            color: var(--text-muted);
-                                            cursor: pointer;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            width: 38px;
-                                            height: 38px;
-                                            border-radius: 50%;
-                                            background: #f1f5f9;
-                                            transition: all 0.2s ease;
-                                        }
-
-                                        .nav-bell-trigger:hover {
-                                            color: var(--primary);
-                                            background: #e2e8f0;
-                                            transform: scale(1.05);
-                                        }
-
-                                        .nav-bell-trigger .badge-dot {
-                                            position: absolute;
-                                            top: 6px;
-                                            right: 6px;
-                                            width: 8px;
-                                            height: 8px;
-                                            background-color: #ef4444;
-                                            border-radius: 50%;
-                                            border: 2px solid #ffffff;
-                                        }
-
-                                        .nav-avatar-dropdown {
-                                            position: relative;
-                                            display: inline-block;
-                                        }
-
-                                        .nav-avatar-frame {
-                                            width: 42px;
-                                            height: 42px;
-                                            border-radius: 50%;
-                                            border: 2px solid var(--primary);
-                                            padding: 2px;
-                                            background: #ffffff;
-                                            cursor: pointer;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            overflow: hidden;
-                                            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.15);
-                                            transition: transform 0.2s ease, box-shadow 0.2s ease;
-                                        }
-
-                                        .nav-avatar-frame:hover {
-                                            transform: scale(1.05);
-                                            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
-                                        }
-
-                                        .nav-avatar-frame img {
-                                            width: 100%;
-                                            height: 100%;
-                                            border-radius: 50%;
-                                            object-fit: cover;
-                                        }
-
-                                        .nav-avatar-initials {
-                                            font-weight: 800;
-                                            font-size: 1rem;
-                                            color: var(--primary);
-                                        }
-
-                                        .dropdown-menu-popup {
-                                            position: absolute;
-                                            right: 0;
-                                            top: calc(100% + 0.5rem);
-                                            background: #ffffff;
-                                            border-radius: 1rem;
-                                            border: 1px solid var(--border-dark);
-                                            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-                                            min-width: 180px;
-                                            padding: 0.5rem 0;
-                                            opacity: 0;
-                                            visibility: hidden;
-                                            transform: translateY(10px);
-                                            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-                                            z-index: 100;
-                                        }
-
-                                        /* Th�m c?u n?i gap bridge d? chu?t di chuy?n t? Avatar xu?ng menu kh�ng b? m?t hover */
-                                        .dropdown-menu-popup::before {
-                                            content: '';
-                                            position: absolute;
-                                            top: -15px;
-                                            left: 0;
-                                            width: 100%;
-                                            height: 15px;
-                                        }
-
-                                        .nav-avatar-dropdown:hover .dropdown-menu-popup {
-                                            opacity: 1;
-                                            visibility: visible;
-                                            transform: translateY(0);
-                                        }
-
-                                        .dropdown-menu-popup a {
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 0.5rem;
-                                            padding: 0.65rem 1.25rem;
-                                            color: var(--text-main);
-                                            text-decoration: none;
-                                            font-weight: 600;
-                                            font-size: 0.85rem;
-                                            transition: background 0.2s ease, color 0.2s ease;
-                                        }
-
-                                        .dropdown-menu-popup a:hover {
-                                            background: var(--primary-light);
-                                            color: var(--primary);
-                                        }
-
-                                        .dropdown-menu-popup a.danger-link {
-                                            color: #ef4444;
-                                        }
-
-                                        .dropdown-menu-popup a.danger-link:hover {
-                                            background: #fef2f2;
-                                            color: #ef4444;
-                                        }
-
-                                        /* ===== DANH S�CH TH�NG B�O POPUP (LIGHT MODE �?NG B?) ===== */
-                                        .nav-bell-dropdown {
-                                            position: relative;
-                                            display: inline-block;
-                                        }
-
-                                        .notification-popup-menu {
-                                            position: absolute;
-                                            right: -10px;
-                                            top: calc(100% + 25px);
-                                            background: #ffffff;
-                                            border: 1px solid var(--border-dark);
-                                            border-radius: 1.25rem;
-                                            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-                                            width: 320px;
-                                            opacity: 0;
-                                            visibility: hidden;
-                                            transform: translateY(10px);
-                                            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-                                            z-index: 200;
-                                            overflow: hidden;
-                                        }
-
-                                        /* Th�m c?u n?i gap bridge cho menu th�ng b�o */
-                                        .notification-popup-menu::before {
-                                            content: '';
-                                            position: absolute;
-                                            top: -25px;
-                                            left: 0;
-                                            width: 100%;
-                                            height: 25px;
-                                        }
-
-                                        .notification-popup-menu.show {
-                                            opacity: 1;
-                                            visibility: visible;
-                                            transform: translateY(0);
-                                        }
-
-                                        .noti-popup-header {
-                                            padding: 1rem 1.25rem;
-                                            border-bottom: 1px solid #f1f5f9;
-                                            text-align: left;
-                                        }
-
-                                        .noti-popup-header span {
-                                            color: #0f172a;
-                                            font-size: 1.15rem;
-                                            font-weight: 800;
-                                            letter-spacing: 0.3px;
-                                        }
-
-                                        .noti-popup-list {
-                                            max-height: 280px;
-                                            overflow-y: auto;
-                                            display: flex;
-                                            flex-direction: column;
-                                        }
-
-                                        .noti-popup-list::-webkit-scrollbar {
-                                            width: 4px;
-                                        }
-
-                                        .noti-popup-list::-webkit-scrollbar-thumb {
-                                            background: #cbd5e1;
-                                            border-radius: 2px;
-                                        }
-
-                                        .noti-popup-item {
-                                            padding: 0.85rem 1.25rem;
-                                            border-bottom: 1px solid #f8fafc;
-                                            display: flex;
-                                            gap: 0.85rem;
-                                            align-items: flex-start;
-                                            cursor: pointer;
-                                            transition: background 0.2s ease;
-                                            text-align: left;
-                                        }
-
-                                        .noti-popup-item:hover {
-                                            background: #f1f5f9;
-                                        }
-
-                                        .noti-icon-round {
-                                            width: 36px;
-                                            height: 36px;
-                                            border-radius: 0.75rem;
-                                            background: #ecfdf5;
-                                            color: var(--primary);
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            flex-shrink: 0;
-                                            margin-top: 0.1rem;
-                                        }
-
-                                        .noti-info-col {
-                                            display: flex;
-                                            flex-direction: column;
-                                            gap: 0.2rem;
-                                            overflow: hidden;
-                                            width: 100%;
-                                        }
-
-                                        .noti-title {
-                                            color: #0f172a;
-                                            font-weight: 700;
-                                            font-size: 0.9rem;
-                                            line-height: 1.2;
-                                            white-space: nowrap;
-                                            overflow: hidden;
-                                            text-overflow: ellipsis;
-                                        }
-
-                                        .noti-desc {
-                                            color: #475569;
-                                            font-size: 0.8rem;
-                                            line-height: 1.3;
-                                            white-space: nowrap;
-                                            overflow: hidden;
-                                            text-overflow: ellipsis;
-                                        }
-
-                                        .noti-date {
-                                            color: #94a3b8;
-                                            font-size: 0.72rem;
-                                            margin-top: 0.1rem;
-                                        }
-
-                                        .noti-popup-footer {
-                                            padding: 0.85rem;
-                                            text-align: center;
-                                            border-top: 1px solid #f1f5f9;
-                                            background: #f8fafc;
-                                        }
-
-                                        .noti-popup-footer a {
-                                            color: var(--primary);
-                                            font-size: 0.85rem;
-                                            font-weight: 700;
-                                            text-decoration: none;
-                                            cursor: pointer;
-                                            transition: color 0.2s ease;
-                                            display: block;
-                                        }
-
-                                        .noti-popup-footer a:hover {
-                                            color: var(--primary-hover);
-                                        }
-
-                                        /* ===== N�T CAMERA OVERLAY �? �?I AVATAR TR�N TH? HIGHLIGHT ===== */
-                                        .btn-avatar-camera {
-                                            position: absolute;
-                                            bottom: 0;
-                                            right: 0;
-                                            width: 28px;
-                                            height: 28px;
-                                            background: #ffffff;
-                                            border: 2px solid #e2e8f0;
-                                            border-radius: 50%;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            color: var(--text-muted);
-                                            cursor: pointer;
-                                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-                                            transition: all 0.2s ease;
-                                        }
-
-                                        .btn-avatar-camera:hover {
-                                            color: var(--primary);
-                                            border-color: var(--primary);
-                                            transform: scale(1.1);
-                                            box-shadow: 0 4px 8px rgba(5, 150, 105, 0.2);
-                                        }
-
-                                        /* C�c ti?n �ch tr?ng mock UI cho sinh vi�n */
-                                        .empty-status-panel {
-                                            padding: 3rem 2rem;
-                                            text-align: center;
-                                            display: flex;
-                                            flex-direction: column;
-                                            align-items: center;
-                                            gap: 0.75rem;
-                                            color: var(--text-muted);
-                                        }
-
-                                        .empty-status-panel svg {
-                                            color: var(--border-dark);
-                                            margin-bottom: 0.5rem;
-                                        }
-
-                                        /* Responsive layout */
-                                        @media (max-width: 1024px) {
-                                            .app-dashboard-container {
-                                                height: auto;
-                                                min-height: 100vh;
-                                            }
-
-                                            .dashboard-body {
-                                                flex-direction: column;
-                                            }
-
-                                            .dashboard-sidebar {
-                                                width: 100%;
-                                                height: auto;
-                                                border-right: none;
-                                                border-bottom: 1px solid rgba(226, 232, 240, 0.9);
-                                            }
-
-                                            .dashboard-unified-header {
-                                                border-radius: 1.5rem 1.5rem 0 0;
-                                            }
-
-                                            .profile-tab-panel {
-                                                border-radius: 0;
-                                            }
-
-                                            .card-body-grid {
-                                                grid-template-columns: repeat(2, 1fr);
-                                            }
-                                        }
-
-                                        @media (max-width: 640px) {
-                                            .card-body-grid {
-                                                grid-template-columns: 1fr;
-                                                gap: 1.25rem;
-                                            }
-
-                                            .dashboard-top-strip {
-                                                flex-direction: column;
-                                                gap: 1rem;
-                                                align-items: stretch;
-                                            }
-
-                                            .strip-right-controls {
-                                                justify-content: space-between;
-                                            }
-
-                                            .profile-highlight-card {
-                                                flex-direction: column;
-                                                align-items: flex-start;
-                                            }
-
-                                            .highlight-right-badge {
-                                                width: 100%;
-                                                align-items: flex-start;
-                                            }
-                                        }
-
-                                        /* ===== H? TH?NG TH�NG B�O TOAST G�C DU?I B�N PH?I ===== */
-                                        .custom-toast-container {
-                                            position: fixed;
-                                            bottom: 2rem;
-                                            right: 2rem;
-                                            z-index: 9999;
-                                            display: flex;
-                                            flex-direction: column;
-                                            gap: 0.75rem;
-                                            pointer-events: none;
-                                        }
-
-                                        .custom-toast-msg {
-                                            background: #10b981;
-                                            color: #ffffff;
-                                            padding: 0.85rem 1.25rem;
-                                            border-radius: 0.75rem;
-                                            font-weight: 700;
-                                            font-size: 0.85rem;
-                                            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 0.5rem;
-                                            pointer-events: auto;
-                                            animation: slideInToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards, fadeOutToast 0.3s ease 2.7s forwards;
-                                        }
-
-                                        .custom-toast-msg.info {
-                                            background: #0ea5e9;
-                                            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.35);
-                                        }
-
-                                        @keyframes slideInToast {
-                                            from {
-                                                transform: translateX(120%);
-                                                opacity: 0;
-                                            }
-
-                                            to {
-                                                transform: translateX(0);
-                                                opacity: 1;
-                                            }
-                                        }
-
-                                        @keyframes fadeOutToast {
-                                            from {
-                                                transform: translateX(0);
-                                                opacity: 1;
-                                            }
-
-                                            to {
-                                                transform: translateX(120%);
-                                                opacity: 0;
-                                            }
-                                        }
-
-                                        @keyframes fadeInOverlay {
-                                            from {
-                                                opacity: 0;
-                                                transform: scale(0.98);
-                                            }
-
-                                            to {
-                                                opacity: 1;
-                                                transform: scale(1);
-                                            }
-                                        }
-
-                                        /* ===== HIPZI ANIMATED BRAND LOGO (BOTTOM SIDEBAR) ===== */
-                                        .animated-brand-box {
-                                            background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.9) 100%);
-                                            border: 1px solid rgba(226, 232, 240, 0.8);
-                                            border-radius: 1rem;
-                                            padding: 0.65rem 0.5rem;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            gap: 0.65rem;
-                                            cursor: pointer;
-                                            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                                            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-                                            position: relative;
-                                            overflow: hidden;
-                                        }
-
-                                        .animated-brand-box::before {
-                                            content: "";
-                                            position: absolute;
-                                            top: -50%;
-                                            left: -50%;
-                                            width: 200%;
-                                            height: 200%;
-                                            background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
-                                            animation: rotateGlow 8s linear infinite;
-                                        }
-
-                                        .animated-brand-box:hover {
-                                            transform: translateY(-2px);
-                                            border-color: rgba(16, 185, 129, 0.3);
-                                            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.12);
-                                        }
-
-                                        .brand-logo-ring {
-                                            width: 42px;
-                                            height: 42px;
-                                            border-radius: 50%;
-                                            background: #ffffff;
-                                            padding: 6px;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-                                            flex-shrink: 0;
-                                            animation: pulseRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-                                            position: relative;
-                                            z-index: 1;
-                                        }
-
-                                        .brand-logo-ring img {
-                                            width: 100%;
-                                            height: 100%;
-                                            object-fit: contain;
-                                            animation: gentleFloat 3s ease-in-out infinite alternate;
-                                        }
-
-                                        .brand-text-pulse {
-                                            display: flex;
-                                            flex-direction: column;
-                                            align-items: center;
-                                            z-index: 1;
-                                        }
-
-                                        .brand-title {
-                                            font-size: 1.25rem;
-                                            font-weight: 900;
-                                            background: linear-gradient(135deg, #047857 0%, #10b981 100%);
-                                            -webkit-background-clip: text;
-                                            -webkit-text-fill-color: transparent;
-                                            letter-spacing: 0.5px;
-                                        }
-
-                                        @keyframes rotateGlow {
-                                            from {
-                                                transform: rotate(0deg);
-                                            }
-
-                                            to {
-                                                transform: rotate(360deg);
-                                            }
-                                        }
-
-                                        @keyframes pulseRing {
-
-                                            0%,
-                                            100% {
-                                                box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-                                            }
-
-                                            50% {
-                                                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.4);
-                                            }
-                                        }
-
-                                        @keyframes gentleFloat {
-                                            from {
-                                                transform: translateY(-1px) scale(0.98);
-                                            }
-
-                                            to {
-                                                transform: translateY(1px) scale(1.02);
-                                            }
-                                        }
-                                    </style>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=block">
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="com.hipzi.model.User"%>
+<%@page import="com.hipzi.model.Role"%>
+<%@page import="com.hipzi.model.Classroom"%>
+<%@page import="com.hipzi.model.TeacherApplication"%>
+<%@page import="com.hipzi.model.Notification"%>
+<%@page import="com.hipzi.model.SupportMessage"%>
+<%@page import="com.hipzi.model.SupportTicket"%>
+<%@page import="com.hipzi.service.NotificationService"%>
+<%@page import="java.util.List"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="java.util.Date"%>
+<%!
+    private String h(String value) {
+        if (value == null) return "";
+        return value.replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\"", "&quot;");
+    }
+%>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ học viên - HIPZI</title>
+    <meta name="description" content="Quản lý thông tin tài khoản, kho tài liệu giảng dạy và học liệu AI của giảng viên trên nền tảng HIPZI.">
+    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=5">
     <style>
         :root {
             --primary: #047857;
@@ -1467,6 +36,7 @@
             --secondary: #10b981;
             --accent: #8b5cf6;
             --accent-light: #f5f3ff;
+            --background: #f3f4f6;
             --surface: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
@@ -1477,48 +47,40 @@
             --font-sans: "Be Vietnam Pro", "Plus Jakarta Sans", "Inter", Arial, sans-serif;
         }
 
-        body.student-profile-page {
-            background: linear-gradient(135deg, #e6fcf5 0%, #ebfbee 50%, #dcfce7 100%) !important;
+        body {
+            background:
+                linear-gradient(135deg, #e6fcf5 0%, #ebfbee 50%, #dcfce7 100%) !important;
             background-attachment: fixed !important;
             font-family: var(--font-sans);
             margin: 0;
             padding: 0;
             min-height: 0;
-            overflow-x: hidden;
+            position: relative;
         }
 
-        body.student-profile-page > .navbar {
+        body::before {
             display: none !important;
         }
 
-        body.student-profile-page .app-dashboard-container {
+        body::after {
+            display: none !important;
+        }
+
+        .app-dashboard-container {
             max-width: 1600px;
             width: calc(100% - 1.5rem);
             min-height: 0;
-            height: var(--student-dashboard-frame-height, auto);
+            height: var(--teacher-dashboard-frame-height, auto);
             margin: 0.75rem auto 0 auto;
-            padding: 0 0 0.75rem 0;
-            background: transparent !important;
-            display: flex !important;
-            flex-direction: row !important;
+            padding-bottom: 0.75rem;
+            background: transparent;
+            display: flex;
+            flex-direction: row;
             gap: 1rem;
             align-items: flex-start;
-            border: none !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            overflow: visible !important;
         }
 
-        body.student-profile-page .dashboard-body,
-        body.student-profile-page .dashboard-unified-header {
-            display: contents !important;
-        }
-
-        body.student-profile-page .dashboard-unified-header {
-            display: none !important;
-        }
-
-        body.student-profile-page .dashboard-sidebar {
+        .dashboard-sidebar {
             width: 270px;
             background: #ffffff;
             border: 1px solid var(--border-dark);
@@ -1532,12 +94,10 @@
             top: 0.75rem;
             height: calc(100vh - 1.5rem);
             overflow-y: auto;
-            overflow-x: hidden;
             box-shadow: var(--shadow);
-            justify-content: flex-start;
         }
 
-        body.student-profile-page .sidebar-brand-horizontal {
+        .sidebar-brand-horizontal {
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -1545,8 +105,7 @@
             width: 100%;
             text-decoration: none;
         }
-
-        body.student-profile-page .brand-avatar-box {
+        .brand-avatar-box {
             width: 44px;
             height: 44px;
             border-radius: 12px;
@@ -1559,19 +118,24 @@
             box-shadow: 0 2px 8px rgba(4, 120, 87, 0.04);
         }
 
-        body.student-profile-page .brand-avatar-box img {
+        .brand-avatar-box img {
             width: 34px;
             height: 34px;
             object-fit: contain;
+            transition: transform 0.25s ease;
         }
 
-        body.student-profile-page .brand-text-col {
+        .sidebar-brand-horizontal:hover .brand-avatar-box img {
+            transform: scale(1.1) rotate(4deg);
+        }
+
+        .brand-text-col {
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
-        body.student-profile-page .brand-title {
+        .brand-title {
             font-size: 1.15rem;
             font-weight: 800;
             color: var(--text-main);
@@ -1579,7 +143,7 @@
             white-space: nowrap;
         }
 
-        body.student-profile-page .brand-subtitle {
+        .brand-subtitle {
             font-size: 0.65rem;
             font-weight: 800;
             color: var(--text-muted);
@@ -1589,7 +153,7 @@
             white-space: nowrap;
         }
 
-        body.student-profile-page .sidebar-toggle-btn {
+        .sidebar-toggle-btn {
             background: #f8fafc;
             border: 1px solid var(--border-dark);
             border-radius: 10px;
@@ -1605,44 +169,14 @@
             padding: 0;
         }
 
-        body.student-profile-page .app-dashboard-container.collapsed .dashboard-sidebar {
-            width: 86px;
-            padding-left: 1rem;
-            padding-right: 1rem;
-            align-items: center;
+        .sidebar-toggle-btn:hover {
+            color: var(--primary);
+            background: var(--primary-light);
+            border-color: rgba(4, 120, 87, 0.2);
+            transform: scale(1.05);
         }
 
-        body.student-profile-page .app-dashboard-container.collapsed .brand-text-col,
-        body.student-profile-page .app-dashboard-container.collapsed .sidebar-section-label,
-        body.student-profile-page .app-dashboard-container.collapsed .sidebar-menu li a span {
-            display: none;
-        }
-
-        body.student-profile-page .app-dashboard-container.collapsed .sidebar-brand-horizontal {
-            justify-content: center;
-            gap: 0;
-        }
-
-        body.student-profile-page .app-dashboard-container.collapsed .sidebar-toggle-btn {
-            margin-left: 0;
-        }
-
-        body.student-profile-page .app-dashboard-container.collapsed .sidebar-toggle-btn .icon-collapse {
-            display: none;
-        }
-
-        body.student-profile-page .app-dashboard-container.collapsed .sidebar-toggle-btn .icon-expand {
-            display: block !important;
-        }
-
-        body.student-profile-page .app-dashboard-container.collapsed .sidebar-menu li a {
-            width: 46px;
-            height: 46px;
-            padding: 0;
-            justify-content: center;
-        }
-
-        body.student-profile-page .sidebar-section-label {
+        .sidebar-section-label {
             font-size: 0.75rem;
             font-weight: 800;
             color: var(--text-muted);
@@ -1652,7 +186,7 @@
             white-space: nowrap;
         }
 
-        body.student-profile-page .sidebar-menu {
+        .sidebar-menu {
             list-style: none;
             padding: 0;
             margin: 0;
@@ -1661,7 +195,7 @@
             gap: 4.8px;
         }
 
-        body.student-profile-page .sidebar-menu li a {
+        .sidebar-menu li a {
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -1676,40 +210,38 @@
             position: relative;
         }
 
-        body.student-profile-page .sidebar-menu li a .menu-label-group {
-            display: contents;
-        }
-
-        body.student-profile-page .sidebar-menu li a .menu-indicator {
-            display: none;
-        }
-
-        body.student-profile-page .sidebar-menu li a span {
+        .sidebar-menu li a span {
             white-space: nowrap;
         }
 
-        body.student-profile-page .sidebar-menu li a svg {
+        .sidebar-menu li a svg {
             width: 20px;
             height: 20px;
             stroke-width: 2.2;
             color: var(--text-muted);
             transition: all 0.2s ease;
-            flex-shrink: 0;
         }
 
-        body.student-profile-page .sidebar-menu li a:hover,
-        body.student-profile-page .sidebar-menu li a.active {
+        .sidebar-menu li a:hover {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .sidebar-menu li a:hover svg {
+            color: var(--primary);
+        }
+
+        .sidebar-menu li a.active {
             color: var(--primary);
             background: var(--primary-light);
             font-weight: 700;
         }
 
-        body.student-profile-page .sidebar-menu li a:hover svg,
-        body.student-profile-page .sidebar-menu li a.active svg {
+        .sidebar-menu li a.active svg {
             color: var(--primary);
         }
 
-        body.student-profile-page .sidebar-menu li a.active::before {
+        .sidebar-menu li a.active::before {
             content: '';
             position: absolute;
             left: 0;
@@ -1720,15 +252,98 @@
             border-radius: 0 6px 6px 0;
         }
 
-        body.student-profile-page .dashboard-main-section {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            gap: 1rem;
-            flex: 1;
+        /* ===== CSS COLLAPSED SIDEBAR (THU GỌN THANH BÊN) ===== */
+        .dashboard-sidebar {
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        body.student-profile-page .dashboard-top-bar {
+        .brand-text-col,
+        .sidebar-section-label,
+        .sidebar-menu li a span {
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .app-dashboard-container.collapsed .dashboard-sidebar {
+            width: 80px;
+            padding: 1.5rem 0.5rem;
+            align-items: center;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-brand-horizontal {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .app-dashboard-container.collapsed .brand-text-col {
+            display: none !important;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-toggle-btn {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-toggle-btn .icon-collapse {
+            display: none !important;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-toggle-btn .icon-expand {
+            display: block !important;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-section-label {
+            display: none !important;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-menu {
+            width: 100%;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-menu li {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-menu li a {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin: 0 auto;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-menu li a span {
+            display: none !important;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .app-dashboard-container.collapsed .sidebar-menu li a.active::before {
+            display: none !important;
+        }
+
+        .dashboard-main-section {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+            background: transparent;
+            gap: 1rem;
+        }
+
+        /* ===== TOP BAR ===== */
+        .dashboard-top-bar {
             height: 70px;
             min-height: 70px;
             background: #ffffff;
@@ -1739,1999 +354,3894 @@
             justify-content: space-between;
             padding: 0 2rem;
             box-sizing: border-box;
+            z-index: 10;
             box-shadow: var(--shadow);
         }
 
-        body.student-profile-page .top-bar-search-wrapper {
-            width: 350px;
-            max-width: 36vw;
-            height: 44px;
-            background: #f1f5f9;
-            border-radius: 1.5rem;
+        .top-bar-search-wrapper {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0 1rem;
-            color: var(--text-muted);
+            gap: 0.5rem;
+            background: #f1f5f9;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            width: 280px;
             border: 1px solid transparent;
+            transition: all 0.2s ease;
         }
 
-        body.student-profile-page .top-bar-search-wrapper svg {
-            width: 19px;
-            height: 19px;
-            flex-shrink: 0;
+        .top-bar-search-wrapper:focus-within {
+            background: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
         }
 
-        body.student-profile-page .top-bar-search-wrapper input {
+        .top-bar-search-wrapper svg {
+            color: var(--text-muted);
+            width: 18px;
+            height: 18px;
+        }
+
+        .top-bar-search-wrapper input {
             border: none;
             background: transparent;
             outline: none;
-            width: 100%;
+            font-size: 0.85rem;
             color: var(--text-main);
-            font-size: 0.9rem;
+            width: 100%;
             font-family: inherit;
-            font-weight: 600;
         }
 
-        body.student-profile-page .top-bar-right {
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            height: 42px;
+        }
+
+        .top-bar-user-card {
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            padding-left: 0.75rem;
+            border-left: 1px solid var(--border-dark);
+            cursor: pointer;
+            height: 42px;
+            flex: 0 0 auto;
         }
 
-        body.student-profile-page .nav-bell-trigger {
-            width: 48px;
-            height: 48px;
+        .top-bar-avatar {
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            border: none;
+            object-fit: cover;
+            border: 2px solid var(--border-dark);
+        }
+
+        .top-bar-avatar-placeholder {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            border: 2px solid var(--primary);
+        }
+
+        .top-bar-user-info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        .top-bar-user-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .top-bar-user-email {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.2;
+        }
+
+        .nav-bell-dropdown {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-bell-trigger {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
             background: #f1f5f9;
             color: var(--text-muted);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            border: none;
             text-decoration: none;
+            padding: 0;
+            box-sizing: border-box;
+            flex: 0 0 42px;
+            line-height: 1;
         }
 
-        body.student-profile-page .top-bar-user-card {
+        .nav-bell-trigger svg {
+            display: block;
+            flex: 0 0 auto;
+        }
+
+        .nav-bell-trigger:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .dashboard-content-wrapper {
+            flex: 1;
+            padding: 2rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            background: #f9fafb;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        /* Scrollbar custom */
+        html::-webkit-scrollbar,
+        .dashboard-sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+        html::-webkit-scrollbar-thumb,
+        .dashboard-sidebar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        html::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        /* ===== TAB VIEW PANE ===== */
+        .tab-pane {
+            display: none;
+            flex-direction: column;
+            gap: 2rem;
+            animation: fadeInTab 0.3s ease-out;
+        }
+
+        .tab-pane.active-pane {
+            display: flex;
+        }
+
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== HEADER CỦA TAB ===== */
+        .tab-pane-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-dark);
+            padding-bottom: 1rem;
+        }
+
+        .tab-pane-header-left h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0 0 0.35rem 0;
+            letter-spacing: -0.5px;
+        }
+
+        .tab-pane-header-left p {
+            font-size: 0.95rem;
+            color: #475569;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .tab-pane-header-right {
             display: flex;
             align-items: center;
             gap: 0.75rem;
+        }
+
+        /* Date badge */
+        .date-badge {
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        /* ===== THỀ METRICS (DONEZO STYLE) ===== */
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 1024px) {
+            .metrics-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .metrics-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .metric-card {
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 140px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-top: 4px solid var(--primary);
+            color: var(--text-main);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
             cursor: pointer;
-            padding-left: 1rem;
-            border-left: 1px solid var(--border-dark);
         }
 
-        body.student-profile-page .top-bar-avatar,
-        body.student-profile-page .top-bar-avatar-placeholder {
-            width: 48px;
-            height: 48px;
+        .metric-card.primary {
+            background: #ffffff;
+            color: var(--text-main);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        .metric-card.secondary {
+            background: #ffffff;
+        }
+
+        .metrics-row .metric-card:nth-child(1) {
+            border-top-color: var(--primary);
+        }
+
+        .metrics-row .metric-card:nth-child(2) {
+            border-top-color: #7c3aed;
+        }
+
+        .metrics-row .metric-card:nth-child(3) {
+            border-top-color: #ea580c;
+        }
+
+        .metrics-row .metric-card:nth-child(4) {
+            border-top-color: #2563eb;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1);
+        }
+
+        .metric-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .metric-card-title {
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+        }
+
+        .metric-card.secondary .metric-card-title {
+            color: var(--text-muted);
+        }
+
+        .metric-card.primary .metric-card-title {
+            color: var(--text-muted);
+        }
+
+        .metric-arrow-btn {
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--primary);
-        }
-
-        body.student-profile-page .top-bar-avatar-placeholder {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--primary-light);
+            border: 1px solid var(--border-dark);
+            background: var(--border-light);
             color: var(--primary);
-            font-weight: 800;
-            font-size: 1.1rem;
+            transition: all 0.2s ease;
         }
 
-        body.student-profile-page .top-bar-user-info {
+        .metric-card.secondary .metric-arrow-btn {
+            border-color: var(--border-dark);
+            background: var(--border-light);
+            color: var(--text-main);
+        }
+
+        .metric-card-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0.75rem 0 0.35rem 0;
+            line-height: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .metric-card-sub {
+            font-size: 0.78rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.24rem 0.62rem;
+            border-radius: 0.5rem;
+            width: fit-content;
+            position: relative;
+            z-index: 1;
+        }
+
+        .metric-card.primary .metric-card-sub {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .metric-card.secondary .metric-card-sub {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .metric-ghost-icon {
+            position: absolute;
+            right: 1.15rem;
+            bottom: 1rem;
+            width: 64px;
+            height: 64px;
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            background: var(--primary-light);
+            opacity: 0.28;
+            transform: rotate(-6deg);
+            pointer-events: none;
+        }
+
+        .metric-ghost-icon svg {
+            width: 34px;
+            height: 34px;
+            stroke-width: 2.1;
+        }
+
+        .overview-analytics-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
+            gap: 1.25rem;
+            margin-top: 1.25rem;
+        }
+
+        @media (max-width: 1100px) {
+            .overview-analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .overview-chart-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+            padding: 1.25rem;
+            min-height: 300px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .overview-chart-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .overview-chart-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.72rem;
+            min-width: 0;
+        }
+
+        .overview-chart-title {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .overview-chart-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+        }
+
+        .overview-summary-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 999px;
+            background: #f8fafc;
+            color: #475569;
+            padding: 0.34rem 0.68rem;
+            font-size: 0.72rem;
+            font-weight: 850;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .overview-summary-pill strong {
+            color: var(--text-main);
+            font-size: 0.8rem;
+            font-weight: 900;
+        }
+
+        .overview-summary-pill.taught strong {
+            color: #059669;
+        }
+
+        .overview-summary-pill.scheduled strong {
+            color: #d97706;
+        }
+
+        .overview-summary-pill.trend {
+            background: #dcfce7;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+
+        .overview-summary-pill.trend strong {
+            color: #166534;
+            font-weight: 750;
+        }
+
+        .overview-chart-subtitle {
+            margin: 0.28rem 0 0;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+
+        .overview-chart-chip {
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #475569;
+            border-radius: 999px;
+            padding: 0.36rem 0.72rem;
+            font-size: 0.74rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .overview-period-switch {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 136px;
+            height: 36px;
+            border: 1px solid #dbe3ee;
+            border-radius: 999px;
+            background: #f8fafc;
+            padding: 2px;
+            box-sizing: border-box;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 8px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .overview-period-switch::before {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: calc(50% - 10px);
+            height: calc(100% - 6px);
+            border-radius: 999px;
+            background: #ffffff;
+            border: 1px solid #cde8dd;
+            box-shadow: 0 8px 18px rgba(5, 150, 105, 0.16);
+            transform: translateX(0);
+            transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease;
+        }
+
+        .overview-period-switch[data-active="month"]::before {
+            transform: translateX(calc(100% + 14px));
+        }
+
+        .overview-period-btn {
+            position: relative;
+            z-index: 1;
+            border: 0;
+            background: transparent;
+            color: #64748b;
+            border-radius: 999px;
+            font-size: 0.74rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: color 0.22s ease, transform 0.22s ease;
+        }
+
+        .overview-period-btn[data-period="month"] {
+            padding-left: 0.62rem;
+            padding-right: 0.08rem;
+        }
+
+        .overview-period-btn:hover {
+            color: var(--primary);
+        }
+
+        .overview-period-btn.is-active {
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .overview-period-btn:focus-visible {
+            outline: 2px solid rgba(5, 150, 105, 0.35);
+            outline-offset: 3px;
+        }
+
+        @media (max-width: 640px) {
+            .overview-chart-head {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .overview-period-switch {
+                align-self: flex-start;
+            }
+        }
+
+        .overview-line-wrap {
+            position: relative;
+            min-height: 214px;
+        }
+
+        .overview-line-wrap.is-switching .overview-line-chart,
+        .overview-line-wrap.is-switching .overview-line-tooltip {
+            opacity: 0.38;
+        }
+
+        .overview-line-chart {
+            width: 100%;
+            height: 214px;
+            display: block;
+            transition: opacity 0.22s ease;
+        }
+
+        .overview-line-chart text {
+            fill: #94a3b8;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .overview-line-tooltip {
+            position: absolute;
+            top: 44px;
+            left: 46%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: #ffffff;
+            border-radius: 0.75rem;
+            padding: 0.85rem 0.95rem;
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.28);
+            min-width: 146px;
+            transition: opacity 0.22s ease;
+        }
+
+        .overview-line-tooltip strong {
+            display: block;
+            font-size: 0.78rem;
+            margin-bottom: 0.55rem;
+        }
+
+        .overview-tooltip-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            color: #cbd5e1;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+
+        .overview-tooltip-row + .overview-tooltip-row {
+            margin-top: 0.4rem;
+        }
+
+        .overview-tooltip-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.42rem;
+        }
+
+        .overview-tooltip-dot {
+            width: 3px;
+            height: 18px;
+            border-radius: 999px;
+            display: inline-block;
+        }
+
+        .overview-chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.85rem;
+            margin-top: 0.85rem;
+            color: var(--text-muted);
+            font-size: 0.76rem;
+            font-weight: 800;
+        }
+
+        .overview-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.42rem;
+        }
+
+        .overview-legend-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .overview-donut-chart-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            position: relative;
+            padding: 1rem;
+            gap: 1.5rem;
+            flex-grow: 1;
+            margin-top: -15px;
+        }
+
+        .overview-donut-chart {
+            width: 164px;
+            height: 164px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #059669 0deg 245deg,
+                #f59e0b 245deg 324deg,
+                #ef4444 324deg 360deg
+            );
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            animation: donutScaleUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+        }
+
+        .overview-donut-chart:hover {
+            transform: scale(1.05) rotate(0deg);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .overview-donut-hole {
+            width: 122px;
+            height: 122px;
+            background: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.02);
+            transition: transform 0.3s ease;
+        }
+
+        .overview-donut-chart:hover .overview-donut-hole {
+            transform: scale(0.96);
+        }
+
+        .overview-donut-score {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: var(--text-main);
+            font-size: 1.6rem;
+            font-weight: 900;
+            line-height: 1.1;
+        }
+
+        .overview-donut-total {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-top: 0.2rem;
+        }
+
+        @keyframes donutScaleUp {
+            from { transform: scale(0.8) rotate(-15deg); opacity: 0; }
+            to { transform: scale(1) rotate(0); opacity: 1; }
+        }
+
+        .overview-donut-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            width: 100%;
+            padding: 0 0.5rem;
+        }
+
+        .overview-donut-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-main);
+            transition: transform 0.2s ease;
+            width: 100%;
+        }
+
+        .overview-donut-legend-item:hover {
+            transform: translateX(4px);
+        }
+
+        .overview-donut-legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .overview-donut-legend-label {
+            flex-grow: 1;
+        }
+
+        .overview-donut-legend-value {
+            color: var(--text-muted);
+            font-weight: 800;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .overview-donut-progress-bg {
+            width: 48px;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 99px;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .overview-donut-progress-fill {
+            height: 100%;
+            display: block;
+            border-radius: 99px;
+        }
+
+        /* ===== LAYOUT BÀN CỜ ĐA CỘT ===== */
+        .dashboard-grid-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .premium-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            box-sizing: border-box;
+        }
+
+        #tab-profile .premium-card {
+            background: #ffffff;
+        }
+
+        #tab-support .premium-card {
+            background: #ffffff;
+        }
+
+        #tab-history .premium-card,
+        #tab-course-registration .premium-card,
+        #tab-upload-material .premium-card {
+            background: #ffffff;
+        }
+
+        #tab-support #supportForm input,
+        #tab-support #supportForm textarea {
+            background: #f8fafc;
+        }
+
+        #tab-support .dashboard-grid-layout {
+            align-items: stretch !important;
+        }
+
+        #tab-support .dashboard-grid-layout > .premium-card {
+            height: 100%;
+        }
+
+        #tab-support #supportForm {
+            flex: 1;
+        }
+
+        #tab-support .support-submit-row {
+            margin-top: auto;
+        }
+
+        .premium-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 0.85rem;
+        }
+
+        .premium-card-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .premium-card-title svg {
+            color: var(--primary);
+            width: 20px;
+            height: 20px;
+        }
+
+        /* LƯỚI THÔNG TIN PROFILE */
+        .profile-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 640px) {
+            .profile-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .profile-info-item {
+            background: #ffffff;
+            border-radius: 1.25rem;
+            padding: 1.25rem;
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .profile-info-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.04);
+        }
+
+        .info-icon-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .info-icon-circle svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2.15;
+        }
+
+        .info-icon-circle.primary { background: var(--primary-light); color: var(--primary); }
+        .info-icon-circle.accent { background: var(--accent-light); color: var(--accent); }
+        .info-icon-circle.warning { background: #fff9db; color: #f59e0b; }
+        .info-icon-circle.danger { background: #ffe3e3; color: #ef4444; }
+
+        .info-content {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex-grow: 1;
+            align-items: flex-start;
+        }
+
+        .info-label {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.15rem;
+        }
+
+        .info-value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .account-summary-panel {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 1.25rem;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .account-summary-main {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .account-avatar-wrap {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            flex-shrink: 0;
+        }
+
+        .account-avatar-img,
+        .account-avatar-placeholder {
+            width: 76px;
+            height: 76px;
+            border-radius: 1.15rem;
+            border: 1px solid rgba(4, 120, 87, 0.12);
+            box-shadow: 0 10px 20px rgba(4, 120, 87, 0.08);
+        }
+
+        .account-avatar-img {
+            object-fit: cover;
+            display: block;
+        }
+
+        .account-avatar-placeholder {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-camera-btn {
+            position: absolute;
+            right: -6px;
+            bottom: -6px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            background: var(--primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(4, 120, 87, 0.24);
+            transition: all 0.2s ease;
+        }
+
+        .avatar-camera-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .account-identity {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .account-name {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.25rem;
+            font-weight: 850;
+            line-height: 1.25;
+        }
+
+        .account-name-view {
+            min-height: 2.35rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .account-name-edit-form {
+            width: min(100%, 360px);
+            margin: 0;
+        }
+
+        .account-name-input {
+            width: 100%;
+            min-height: 2.7rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.8rem;
+            background: #ffffff;
+            color: var(--text-main);
+            font: inherit;
+            font-size: 1rem;
+            font-weight: 650;
+            padding: 0.65rem 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .account-name-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.12);
+        }
+
+        .account-email {
+            display: block;
+            margin-top: 0.25rem;
+            color: #475569;
+            font-size: 0.92rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .account-side-meta {
+            display: flex;
+            align-items: stretch;
+            gap: 0.75rem;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .account-meta-pill {
+            min-width: 150px;
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            background: #f8fafc;
+            padding: 0.75rem 0.9rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.22rem;
+        }
+
+        .account-meta-label {
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            font-weight: 850;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .account-meta-value {
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 640px) {
+            .account-summary-panel {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .account-summary-main,
+            .account-side-meta {
+                width: 100%;
+            }
+
+            .account-side-meta {
+                margin-left: 0;
+                flex-direction: column;
+            }
+
+            .account-meta-pill {
+                min-width: 0;
+            }
+        }
+
+        /* List Items */
+        .dashboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .dashboard-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border-light);
+            transition: all 0.2s ease;
+            background: #ffffff;
+            box-sizing: border-box;
+        }
+
+        .dashboard-list-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.05);
+        }
+
+        .item-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+
+        .item-icon-round {
+            width: 36px;
+            height: 36px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .item-icon-round.primary {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .item-icon-round.accent {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .item-meta {
             display: flex;
             flex-direction: column;
             min-width: 0;
         }
 
-        body.student-profile-page .top-bar-user-name {
-            font-weight: 800;
+        .item-title {
+            font-size: 0.9rem;
+            font-weight: 700;
             color: var(--text-main);
-            font-size: 0.95rem;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        body.student-profile-page .top-bar-user-email {
+        .item-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 0.5rem;
+        }
+
+        .status-badge.open { background: #dcfce7; color: #15803d; }
+        .status-badge.upcoming { background: #fef9c3; color: #a16207; }
+        .status-badge.closed { background: #fee2e2; color: #b91c1c; }
+
+        /* Buttons & Forms */
+        .btn-premium {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            min-height: 44px;
+            padding-block: 0.68rem;
+            padding-inline: 1.25rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            line-height: 1.15;
+            white-space: nowrap;
+            border-radius: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-premium.primary {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
+        }
+
+        .btn-premium.primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-premium.secondary {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-dark);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-premium.secondary:hover {
+            background: var(--border-light);
+        }
+
+        .btn-premium.danger {
+            background: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-premium.danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        /* Form Controls */
+        .form-group-premium {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group-premium label {
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--text-main);
+        }
+
+        .form-group-premium input,
+        .form-group-premium select,
+        .form-group-premium textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-dark);
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            outline: none;
+            background: #ffffff;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group-premium input:focus,
+        .form-group-premium select:focus,
+        .form-group-premium textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .btn-premium.primary {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
+        }
+
+        .btn-premium.primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-premium.secondary {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-dark);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-premium.secondary:hover {
+            background: #f8fafc;
+        }
+
+        .btn-premium.danger {
+            background: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-premium.danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        /* Form Controls */
+        .form-group-premium {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group-premium label {
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--text-main);
+        }
+
+        .form-group-premium input,
+        .form-group-premium select,
+        .form-group-premium textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-dark);
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            outline: none;
+            background: #ffffff;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group-premium input:focus,
+        .form-group-premium select:focus,
+        .form-group-premium textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+            background: #ffffff;
+        }
+
+        .field-required {
+            color: #ef4444;
+            font-weight: 900;
+            margin-left: 0.18rem;
+        }
+
+        .field-optional {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.76rem;
+            margin-left: 0.25rem;
+        }
+
+        .teacher-form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.15rem;
+        }
+
+        .teacher-form-section .form-group-premium {
+            gap: 0.62rem;
+        }
+
+        .teacher-form-section .form-group-premium > label {
+            line-height: 1.45;
+            margin-bottom: 0.05rem;
+        }
+
+        .teacher-form-section + .teacher-form-section {
+            margin-top: 1.6rem;
+            padding-top: 1.4rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .teacher-form-section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             color: var(--text-muted);
             font-size: 0.78rem;
-            font-weight: 600;
-            white-space: nowrap;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
         }
 
-        body.student-profile-page .dashboard-content-wrapper {
+        .teacher-form-section-title::before {
+            content: "";
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 999px;
+            background: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        .teacher-registration-form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.15rem 1rem;
+        }
+
+        .teacher-registration-form-grid .full-span {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 1000px) {
+            .teacher-registration-form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .teacher-registration-select {
+            color: var(--text-main);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.95rem center;
+            background-size: 1rem;
+            padding-right: 2.6rem;
+        }
+
+        .teacher-registration-textarea {
+            min-height: 118px;
+            resize: vertical;
+        }
+
+        input[name="teachingSubjects"] {
+            appearance: none;
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 0.3rem !important;
             background: #f8fafc;
+            display: inline-grid;
+            place-content: center;
+            cursor: pointer;
+            transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        input[name="teachingSubjects"]:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.08);
+        }
+
+        input[name="teachingSubjects"]:checked {
+            border-color: var(--primary);
+            background-color: var(--primary) !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 0.95rem;
+            box-shadow: 0 6px 14px rgba(4, 120, 87, 0.24), 0 0 0 4px rgba(4, 120, 87, 0.1);
+            transform: scale(1.04);
+        }
+
+        .teacher-registration-readonly input[name="teachingSubjects"]:checked,
+        .teacher-registration-readonly input[name="teachingSubjects"]:disabled:checked,
+        .teacher-registration-editing input[name="teachingSubjects"]:checked {
+            border-color: var(--primary) !important;
+            background-color: var(--primary) !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: center !important;
+            background-size: 0.95rem !important;
+        }
+
+        input[name="teachingSubjects"]:checked + span {
+            color: var(--primary);
+        }
+
+        .teacher-subject-selected {
+            color: var(--primary) !important;
+            font-weight: 800 !important;
+        }
+
+        .teacher-evidence-dropzone {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.65rem;
+            min-height: 150px;
+            padding: 1.25rem;
+            border: 1.5px dashed #cbd5e1;
+            border-radius: 1rem;
+            background: #ffffff;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .teacher-evidence-dropzone:hover,
+        .teacher-evidence-dropzone.drag-over {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.08);
+        }
+
+        .teacher-evidence-dropzone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .teacher-evidence-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            background: #ffffff;
             border: 1px solid var(--border-dark);
-            border-radius: 1.5rem;
-            padding: 2.5rem;
-            box-shadow: var(--shadow-lg);
-            min-height: calc(100vh - 6.75rem);
-            overflow: visible;
+            box-shadow: var(--shadow);
         }
 
-        body.student-profile-page .tab-pane {
-            display: none;
-            animation: fadeUp 0.28s ease-out;
+        .teacher-evidence-title {
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-weight: 800;
         }
 
-        body.student-profile-page .tab-pane.active-pane {
+        .teacher-evidence-subtitle,
+        .teacher-evidence-filename {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .teacher-evidence-filename {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .form-actions-row-premium {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .form-actions-row-premium.is-hidden {
+            display: none !important;
+        }
+
+        .teacher-registration-readonly input:not([type="hidden"]),
+        .teacher-registration-readonly select,
+        .teacher-registration-readonly textarea {
+            background-color: #ffffff !important;
+            color: #64748b !important;
+            cursor: not-allowed !important;
+        }
+
+        .teacher-registration-readonly .teacher-type-card,
+        .teacher-registration-readonly .teacher-evidence-dropzone,
+        .teacher-registration-readonly .teacher-subject-option {
+            cursor: not-allowed !important;
+        }
+
+        .teacher-registration-editing input:not([type="hidden"]),
+        .teacher-registration-editing select,
+        .teacher-registration-editing textarea {
+            background-color: #ffffff;
+            color: var(--text-main);
+        }
+
+        .checkbox-grid-premium {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-dark);
+        }
+
+        .checkbox-premium-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .checkbox-premium-input {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin: 0;
+            padding: 0;
+            flex-shrink: 0;
+            border-radius: 0.25rem;
+        }
+
+        .teacher-type-helper-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0 0 1rem 0;
+            line-height: 1.5;
+        }
+
+        /* ===== THẺ PHÂN LOẠI GIẢNG VIÊN (PREMIUM SELECTION) ===== */
+        .teacher-type-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .teacher-type-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .teacher-type-card {
+            cursor: pointer;
+            position: relative;
             display: block;
         }
 
-        body.student-profile-page .profile-tab-panel,
-        body.student-profile-page .premium-card {
-            background: #ffffff !important;
-            border: 1px solid var(--border-dark) !important;
-            border-radius: 1.5rem !important;
-            box-shadow: var(--shadow) !important;
+        .teacher-type-card input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
         }
 
-        @media (max-width: 1024px) {
-            body.student-profile-page .app-dashboard-container {
-                flex-direction: column !important;
-                width: calc(100% - 1rem);
-            }
-
-            body.student-profile-page .dashboard-sidebar {
-                position: relative;
-                top: 0;
-                width: 100%;
-                height: auto;
-            }
-
-            body.student-profile-page .dashboard-top-bar {
-                padding: 0 1rem;
-            }
-
-            body.student-profile-page .top-bar-search-wrapper {
-                max-width: none;
-                width: 100%;
-            }
-
-            body.student-profile-page .top-bar-user-info {
-                display: none;
-            }
+        .teacher-type-card-inner {
+            border: 1px solid var(--border-dark);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            box-sizing: border-box;
         }
+
+        .teacher-type-card-inner::after {
+            content: '\2714';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 0.8rem;
+            opacity: 0;
+            transform: scale(0.7);
+            transition: all 0.2s ease;
+        }
+
+        .teacher-type-card:hover .teacher-type-card-inner {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(4, 120, 87, 0.05);
+        }
+
+        .teacher-type-card input:focus-visible + .teacher-type-card-inner {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .teacher-type-card input:checked + .teacher-type-card-inner {
+            border-color: var(--primary);
+            background: linear-gradient(180deg, var(--primary-light) 0%, #ffffff 60%);
+            box-shadow: 0 12px 24px rgba(4, 120, 87, 0.12);
+            transform: translateY(-3px);
+        }
+
+        .teacher-type-card input:checked + .teacher-type-card-inner::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .teacher-type-kicker {
+            display: inline-flex;
+            padding: 0.2rem 0.6rem;
+            border-radius: 99px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            width: fit-content;
+        }
+
+        .teacher-type-title {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .teacher-type-description {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .teacher-type-examples {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .teacher-type-examples li {
+            position: relative;
+            padding-left: 1.55rem;
+        }
+
+        .teacher-type-examples li::before {
+            content: '\2713';
+            position: absolute;
+            left: 0;
+            top: 0.05rem;
+            color: #10b981;
+            font-weight: 900;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        /* ===== TOAST NOTIFICATIONS ===== */
+        .custom-toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            pointer-events: none;
+        }
+
+        .custom-toast-msg {
+            background: #059669;
+            color: #ffffff;
+            padding: 0.85rem 1.25rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            box-shadow: 0 10px 25px rgba(4, 120, 87, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            pointer-events: auto;
+            animation: slideInToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .custom-toast-msg.info {
+            background: #0ea5e9;
+            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+        }
+
+        .custom-toast-msg.error {
+            background: #ef4444;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+        }
+
+        @keyframes slideInToast {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Account Status tags */
+        .acc-status-tag {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 0.5rem;
+            width: fit-content;
+            max-width: max-content;
+            align-self: flex-start;
+        }
+        .acc-status-tag.active { background: #dcfce7; color: #15803d; }
+        .acc-status-tag.suspended { background: #fef9c3; color: #a16207; }
+
+        /* General role-tag */
+        .role-tag {
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            text-transform: uppercase;
+        }
+        .role-tag.teacher { background: #f3e8ff; color: #7c3aed; }
+        .role-tag.student { background: #e0f2fe; color: #0284c7; }
+        .role-tag.staff { background: #dbeafe; color: #2563eb; }
+        .role-tag.admin { background: #fee2e2; color: #dc2626; }
+
+        .account-header-actions,
+        .account-edit-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .account-cancel-btn {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-dark);
+        }
+
+        .account-cancel-btn:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .btn-premium.profile-edit-btn,
+        .btn-premium.secondary.profile-edit-btn,
+        .account-save-btn {
+            background: var(--primary);
+            color: #ffffff;
+            border: 1px solid var(--primary);
+            box-shadow: 0 10px 20px rgba(4, 120, 87, 0.16);
+        }
+
+        .btn-premium.profile-edit-btn:hover,
+        .btn-premium.secondary.profile-edit-btn:hover,
+        .account-save-btn:hover {
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+
+        .btn-premium.profile-edit-btn svg {
+            color: currentColor;
+        }
+        
+        @keyframes modalScaleUp {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== Lịch sử học tập - Thứ học Checkboxes ===== */
+        .class-day-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .class-day-option {
+            display: flex !important;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600 !important;
+            cursor: pointer;
+            color: var(--text-main) !important;
+            font-size: 0.9rem !important;
+            padding: 0.5rem 0.85rem;
+            border-radius: 0.6rem;
+            border: 1px solid var(--border-dark);
+            background: #ffffff;
+            transition: all 0.2s ease;
+            margin: 0 !important;
+        }
+
+        .class-day-option:hover input[name="scheduleDays"] {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.08);
+        }
+
+        input[name="scheduleDays"] {
+            appearance: none;
+            width: 1.1rem !important;
+            height: 1.1rem !important;
+            min-width: 1.1rem !important;
+            min-height: 1.1rem !important;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.15rem !important;
+            background: #f9fafb;
+            display: inline-grid;
+            place-content: center;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            margin: 0 !important;
+            padding: 0 !important;
+            flex-shrink: 0;
+            box-sizing: border-box !important;
+        }
+
+        input[name="scheduleDays"]:checked {
+            border-color: var(--primary) !important;
+            background-color: var(--primary) !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: center !important;
+            background-size: 0.8rem !important;
+            box-shadow: 0 4px 10px rgba(4, 120, 87, 0.2), 0 0 0 4px rgba(4, 120, 87, 0.1);
+            transform: scale(1.05);
+        }
+
+        /* ========================================== */
+        /* SCHEDULE MODAL (FAKE DATA)                 */
+        /* ========================================== */
+        .schedule-modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .schedule-modal-backdrop.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .schedule-modal-box {
+            background: #ffffff;
+            width: 95vw;
+            max-width: 1100px;
+            height: 85vh;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.95) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .schedule-modal-backdrop.show .schedule-modal-box {
+            transform: scale(1) translateY(0);
+        }
+
+        .schedule-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+        }
+
+        .schedule-header h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .schedule-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .schedule-btn-group {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+            justify-self: center;
+        }
+
+        .schedule-btn-group button {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            border-radius: 0.35rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .schedule-btn-group button.active {
+            background: #ffffff;
+            color: var(--text-main);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .schedule-close-btn {
+            background: #f1f5f9;
+            border: none;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center; justify-content: center;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .schedule-close-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .schedule-body {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc;
+        }
+
+        .schedule-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        .schedule-body::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .schedule-body::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .schedule-days-header {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .schedule-day-col {
+            padding: 1rem 0;
+            text-align: center;
+            border-left: 1px solid #f1f5f9;
+        }
+
+        .schedule-day-name {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .schedule-day-num {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-top: 0.25rem;
+        }
+
+        .schedule-day-col.active {
+            background: #0f172a;
+            border-radius: 0.5rem;
+            margin: 0.5rem;
+            padding: 0.5rem 0;
+        }
+
+        .schedule-day-col.active .schedule-day-name,
+        .schedule-day-col.active .schedule-day-num {
+            color: #ffffff;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            flex: 1;
+            position: relative;
+            padding-top: 1.25rem;
+        }
+
+        .schedule-time-col {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .schedule-time-slot {
+            height: 80px;
+            text-align: right;
+            padding-right: 0.75rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 600;
+            position: relative;
+            transform: translateY(-0.5rem);
+        }
+
+        .schedule-grid-cols {
+            display: contents;
+        }
+
+        .schedule-grid-col {
+            border-left: 1px solid #e2e8f0;
+            background-image: linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+            background-size: 100% 80px;
+            position: relative;
+        }
+
+        .schedule-event {
+            position: absolute;
+            left: 0.5rem; right: 0.5rem;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            overflow: hidden;
+        }
+
+        .schedule-event:hover {
+            transform: scale(1.02);
+            z-index: 20;
+        }
+
+        .schedule-event-title {
+            font-weight: 800;
+            font-size: 0.85rem;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .schedule-event-time {
+            font-size: 0.75rem;
+            color: rgba(15, 23, 42, 0.7);
+            font-weight: 600;
+        }
+
+        /* Colors for events */
+        .event-blue { background: #bfdbfe; }
+        .event-green { background: #bbf7d0; }
+        .event-yellow { background: #fef08a; }
+        .event-purple { background: #e9d5ff; }
+        .event-pink { background: #fbcfe8; }
     </style>
-                                </head>
-
-                                <body class="student-profile-page">
-
-                                    <% User user=(User) request.getAttribute("user"); if (user==null) { user=(User)
-                                        session.getAttribute("loggedUser"); } List<Role> roles = (user != null) ?
-                                        user.getRoles() : null;
-
-                                        StudentProfile studentProfile = (StudentProfile)
-                                        request.getAttribute("studentProfile");
-                                        if (studentProfile == null) {
-                                        studentProfile = new StudentProfile();
-                                        }
-
-                                        // X? l� format ng�y th�ng hi?n th? thu?n Vi?t
-                                        String joinDate = "Chưa cập nhật";
-                                        if (user != null && user.getCreatedAt() != null) {
-                                        joinDate = new SimpleDateFormat("dd/MM/yyyy").format(user.getCreatedAt());
-                                        }
-
-                                        // T?o chu?i ng�y hi?n t?i trang tr?ng cho Header Strip
-                                        String currentDateDisplay = new SimpleDateFormat("'Hôm nay,' dd/MM/yyyy").format(new Date());
-
-                                        // Lấy chữ cái đầu làm Avatar dự phòng
-                                        String initials = "H";
-                                        if (user != null && user.getDisplayName() != null &&
-                                        !user.getDisplayName().isEmpty()) {
-                                        String[] parts = user.getDisplayName().trim().split("\\s+");
-                                        initials = parts[parts.length - 1].substring(0, 1).toUpperCase();
-                                        }
-                                        
-                                        // Lấy danh sách thông báo hệ thống
-                                        List<Notification> notifications = (List<Notification>)
-                                                request.getAttribute("notifications");
-                                        List<SupportTicket> userSupportTickets = (List<SupportTicket>)
-                                                request.getAttribute("userSupportTickets");
-                                        SupportTicket selectedSupportTicket = (SupportTicket)
-                                                request.getAttribute("selectedSupportTicket");
-                                        List<SupportMessage> supportMessages = (List<SupportMessage>)
-                                                request.getAttribute("supportMessages");
-
-                                        // Xác định tab hoạt động hiện tại (Server-side rendering)
-                                        String activeTab = request.getParameter("tab");
-                                        if (activeTab == null || activeTab.trim().isEmpty()) {
-                                            activeTab = "tab-dashboard";
-                                        } else {
-                                            activeTab = activeTab.trim();
-                                            if (activeTab.equals("practice")) {
-                                                activeTab = "tab-dashboard";
-                                            } else if (!activeTab.startsWith("tab-")) {
-                                                activeTab = "tab-" + activeTab;
-                                            }
-                                            // Validate against allowed tab list
-                                            if (!activeTab.equals("tab-dashboard") &&
-                                                !activeTab.equals("tab-profile") &&
-                                                !activeTab.equals("tab-edit") &&
-                                                !activeTab.equals("tab-security") &&
-                                                !activeTab.equals("tab-materials") &&
-                                                !activeTab.equals("tab-notifications") &&
-                                                !activeTab.equals("tab-support")) {
-                                                activeTab = "tab-dashboard";
-                                            }
-                                        }
-                                                %>
-
-                                                <%@ include file="/WEB-INF/fragments/profile-role-label.jspf" %>
-
-                                                    <!-- ===== GLOBAL HEADER NAVBAR ===== -->
-                                                    <header class="navbar" id="navbar">
-                                                        <div class="nav-container">
-                                                            <a href="${pageContext.request.contextPath}/index"
-                                                                class="logo">
-                                                                <img src="${pageContext.request.contextPath}/assets/images/favicon.png"
-                                                                    alt="HIPZI Logo">
-                                                                <span>HIPZI</span>
-                                                            </a>
-                                                            <ul class="nav-links">
-                                                                <li><a
-                                                                        href="${pageContext.request.contextPath}/material-repository">Kho
-                                                                        tài liệu</a></li>
-                                                                <li><a
-                                                                        href="${pageContext.request.contextPath}/classes">Lớp
-                                                                        học</a></li>
-                                                                <li><a
-                                                                        href="${pageContext.request.contextPath}/exam-room">Phòng
-                                                                        thi</a></li>
-                                                                <li><a
-                                                                        href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi
-                                                                        AI</a></li>
-                                                            </ul>
-                                                            <div class="navbar-user-controls">
-                                                                <!-- Khung Dropdown Thông báo hệ thống cao cấp -->
-                                                                <%@ include file="/WEB-INF/fragments/cart-icon.jspf" %>
-                                                                <%@ include file="/WEB-INF/fragments/notification-bell.jspf" %>
-
-                                                                    <!-- Khung Avatar Người dùng kèm Dropdown Menu -->
-                                                                    <div class="nav-avatar-dropdown">
-                                                                        <div class="nav-avatar-frame"
-                                                                            title="<%= profileMenuLabel %>">
-                                                                            <% if (user !=null && user.getAvatarUrl()
-                                                                                !=null &&
-                                                                                !user.getAvatarUrl().isEmpty()) { %>
-                                                                                <img src="<%= user.getAvatarUrl() %>"
-                                                                                    alt="Avatar">
-                                                                                <% } else { %>
-                                                                                    <span class="nav-avatar-initials">
-                                                                                        <%= initials %>
-                                                                                    </span>
-                                                                                    <% } %>
-                                                                        </div>
-
-                                                                        <div class="dropdown-menu-popup">
-                                                                            <a onclick="switchTab('tab-profile')">
-                                                                                <svg width="16" height="16"
-                                                                                    viewBox="0 0 24 24" fill="none"
-                                                                                    stroke="currentColor"
-                                                                                    stroke-width="2.2">
-                                                                                    <circle cx="12" cy="8" r="4" />
-                                                                                    <path
-                                                                                        d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                                                                                </svg>
-                                                                                <span>
-                                                                                    <%= profileMenuLabel %>
-                                                                                </span>
-                                                                            </a>
-                                                                            <div
-                                                                                style="height:1px; background:var(--border-dark); margin:0.35rem 0;">
-                                                                            </div>
-                                                                            <a href="${pageContext.request.contextPath}/logout"
-                                                                                class="danger-link">
-                                                                                <svg width="16" height="16"
-                                                                                    viewBox="0 0 24 24" fill="none"
-                                                                                    stroke="currentColor"
-                                                                                    stroke-width="2.2">
-                                                                                    <path
-                                                                                        d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                                                                                    <polyline
-                                                                                        points="16 17 21 12 16 7" />
-                                                                                    <line x1="21" y1="12" x2="9"
-                                                                                        y2="12" />
-                                                                                </svg>
-                                                                                <span>Đăng xuất</span>
-                                                                            </a>
-                                                                        </div>
-                                                                    </div>
-                                                            </div>
-                                                        </div>
-                                                    </header>
-
-                                                    <!-- ===== DASHBOARD CHÍNH HIPZI: HEADER THỐNG NHẤT + BODY 2 CỘT ===== -->
-                                                    <div class="app-dashboard-container <%= "tab-notifications".equals(activeTab) ? "is-notifications-tab" : "" %>">
-
-                                                        <!-- HEADER THỐNG NHẤT FULL-WIDTH -->
-                                                        <div class="dashboard-unified-header">
-                                                            <!-- Title căn giữa tuyệt đối -->
-                                                            <span class="unified-header-tab-title" id="unified-header-title">
-                                                                <%= "tab-profile".equals(activeTab) ? "Hồ sơ cá nhân" :
-                                                                    "tab-security".equals(activeTab) ? "Bảo mật và mật khẩu" :
-                                                                    "tab-materials".equals(activeTab) ? "Tài liệu đã lưu" :
-                                                                    "tab-notifications".equals(activeTab) ? "Thông báo hệ thống" :
-                                                                    "tab-support".equals(activeTab) ? "Hỗ trợ học tập" :
-                                                                    "tab-edit".equals(activeTab) ? "Cập nhật thông tin học viên" :
-                                                                    "Tổng quan học tập" %>
-                                                            </span>
-                                                            <!-- Date pill phải -->
-                                                            <div class="unified-header-right">
-                                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                                                <span><%= currentDateDisplay %></span>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- BODY: SIDEBAR TRÁI + NỘI DUNG PHẢI -->
-                                                        <div class="dashboard-body">
-
-                                                        <!-- KÊNH SIDEBAR TRÁI (LEFT PANE) -->
-                                                        <aside class="dashboard-sidebar">
-                                                            <div class="sidebar-brand-horizontal">
-                                                                <a href="${pageContext.request.contextPath}/index" class="brand-avatar-box" title="Trang chủ">
-                                                                    <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="Hipzi Logo">
-                                                                </a>
-                                                                <div class="brand-text-col">
-                                                                    <span class="brand-title">Hipzi</span>
-                                                                    <span class="brand-subtitle">Platform</span>
-                                                                </div>
-                                                                <button type="button" class="sidebar-toggle-btn" title="Thu gọn / Mở rộng" onclick="toggleSidebar()">
-                                                                    <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M16 15l-3-3 3-3"/></svg>
-                                                                    <svg class="icon-expand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: none;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M13 9l3 3-3 3"/></svg>
-                                                                </button>
-                                                            </div>
-                                                            <div class="sidebar-top-group">
-                                                                <div class="sidebar-section-label">Tổng quan</div>
-                                                                <ul class="sidebar-menu">
-                                                                    <li>
-                                                                        <a id="nav-tab-dashboard" class="<%= "tab-dashboard".equals(activeTab) ? "active" : "" %>"
-                                                                            onclick="switchTab('tab-dashboard')">
-                                                                            <div class="menu-label-group">
-                                                                                <svg width="20" height="20"
-                                                                                    viewBox="0 0 24 24" fill="none"
-                                                                                    stroke="currentColor">
-                                                                                    <rect x="3" y="3" width="7"
-                                                                                        height="7" rx="1" />
-                                                                                    <rect x="14" y="3" width="7"
-                                                                                        height="7" rx="1" />
-                                                                                    <rect x="14" y="14" width="7"
-                                                                                        height="7" rx="1" />
-                                                                                    <rect x="3" y="14" width="7"
-                                                                                        height="7" rx="1" />
-                                                                                </svg>
-                                                                                <span>Tổng quan học tập</span>
-                                                                            </div>
-                                                                            <span class="menu-indicator">&rarr;</span>
-                                                                        </a>
-                                                                    </li>
-                                                                    <li>
-                                                                        <a id="nav-tab-profile" class="<%= ("tab-profile".equals(activeTab) || "tab-edit".equals(activeTab)) ? "active" : "" %>"
-                                                                            onclick="switchTab('tab-profile')">
-                                                                            <div class="menu-label-group">
-                                                                                <svg width="20" height="20"
-                                                                                    viewBox="0 0 24 24" fill="none"
-                                                                                    stroke="currentColor">
-                                                                                    <path
-                                                                                        d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                                                                    <circle cx="12" cy="7" r="4" />
-                                                                                </svg>
-                                                                                <span>Hồ sơ cá nhân</span>
-                                                                            </div>
-                                                                            <span class="menu-indicator">&rarr;</span>
-                                                                        </a>
-                                                                    </li>
-                                                                    <li>
-                                                                        <a id="nav-tab-security" class="<%= "tab-security".equals(activeTab) ? "active" : "" %>"
-                                                                            onclick="switchTab('tab-security')">
-                                                                            <div class="menu-label-group">
-                                                                                <svg width="20" height="20"
-                                                                                    viewBox="0 0 24 24" fill="none"
-                                                                                    stroke="currentColor">
-                                                                                    <rect x="3" y="11" width="18"
-                                                                                        height="11" rx="2" />
-                                                                                    <path
-                                                                                        d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                                                                </svg>
-                                                                                <span>Bảo mật và mật khẩu</span>
-                                                                            </div>
-                                                                            <span class="menu-indicator">&rarr;</span>
-                                                                        </a>
-                                                                    </li>
-                                                                    <li>
-                                                                        <a id="nav-tab-materials" class="<%= "tab-materials".equals(activeTab) ? "active" : "" %>"
-                                                                            onclick="switchTab('tab-materials')">
-                                                                            <div class="menu-label-group">
-                                                                                <svg width="20" height="20"
-                                                                                    viewBox="0 0 24 24" fill="none"
-                                                                                    stroke="currentColor">
-                                                                                    <path
-                                                                                        d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                                                                                </svg>
-                                                                                <span>Tài liệu đã lưu</span>
-                                                                            </div>
-                                                                            <span class="menu-indicator">&rarr;</span>
-                                                                        </a>
-                                                                    </li>
-                                                                    <li>
-                                                                        <a id="nav-tab-notifications" class="<%= "tab-notifications".equals(activeTab) ? "active" : "" %>"
-                                                                            onclick="switchTab('tab-notifications')">
-                                                                            <div class="menu-label-group">
-                                                                                <svg width="20" height="20"
-                                                                                    viewBox="0 0 24 24" fill="none"
-                                                                                    stroke="currentColor">
-                                                                                    <path
-                                                                                        d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                                                                                    <path
-                                                                                        d="M13.73 21a2 2 0 0 1-3.46 0" />
-                                                                                </svg>
-                                                                                <span>Thông báo hệ thống</span>
-                                                                            </div>
-                                                                            <span class="menu-indicator">&rarr;</span>
-                                                                        </a>
-                                                                    </li>
-                                                                    <li>
-                                                                        <a id="nav-tab-support" class="<%= "tab-support".equals(activeTab) ? "active" : "" %>"
-                                                                            onclick="switchTab('tab-support')">
-                                                                            <div class="menu-label-group">
-                                                                                <svg width="20" height="20"
-                                                                                    viewBox="0 0 24 24" fill="none"
-                                                                                    stroke="currentColor">
-                                                                                    <circle cx="12" cy="12" r="10" />
-                                                                                    <path
-                                                                                        d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                                                                                    <line x1="12" y1="17" x2="12.01"
-                                                                                        y2="17" />
-                                                                                </svg>
-                                                                                <span>Hỗ trợ học tập</span>
-                                                                            </div>
-                                                                            <span class="menu-indicator">&rarr;</span>
-                                                                        </a>
-                                                                    </li>
-                                                                </ul>
-                                                                    <div class="sidebar-mascot-box"
-                                                                        aria-label="HIPZI mascot">
-                                                                        <img class="sidebar-cute-mascot"
-                                                                            src="${pageContext.request.contextPath}/assets/images/capybara-mascot-transparent.png"
-                                                                            alt="HIPZI mascot">
-                                                                    </div>
-                                                                </div>
-                                                            </aside>
-
-                                                        <!-- KÊNH NỘI DUNG PHẢI (RIGHT CONTENT PANE) -->
-                                                        <div class="dashboard-main-section">
-                                                        <div class="dashboard-top-bar">
-                                                            <div class="top-bar-search-wrapper">
-                                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                                                                <input type="text" placeholder="Tìm kiếm tác vụ...">
-                                                            </div>
-
-                                                            <div class="top-bar-right">
-                                                                <button type="button" class="nav-bell-trigger" title="Chuyển chế độ sáng/tối" onclick="alert('Chức năng chuyển đổi giao diện sáng/tối đang được phát triển.')">
-                                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                                                                </button>
-                                                                <button type="button" class="nav-bell-trigger" title="Thông báo hệ thống" onclick="switchTab('tab-notifications')">
-                                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                                                                </button>
-                                                                <a href="${pageContext.request.contextPath}/logout" class="nav-bell-trigger" title="Đăng xuất">
-                                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                                                                </a>
-                                                                <div class="top-bar-user-card" onclick="switchTab('tab-profile')">
-                                                                    <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
-                                                                        <img src="<%= user.getAvatarUrl() %>" class="top-bar-avatar" alt="Avatar">
-                                                                    <% } else { %>
-                                                                        <div class="top-bar-avatar-placeholder"><%= initials %></div>
-                                                                    <% } %>
-                                                                    <div class="top-bar-user-info">
-                                                                        <span class="top-bar-user-name"><%= user != null ? user.getDisplayName() : "Học viên HIPZI" %></span>
-                                                                        <span class="top-bar-user-email"><%= user != null ? user.getEmail() : "student@hipzi.vn" %></span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <main class="dashboard-content-wrapper">
-
-                                                            <!-- Banner dải màu trang trí phía trên cùng (Top Accent Strip) -->
-                                                            <!-- Thông báo nhắc nhở Onboarding (Nếu đăng ký qua Google mà chưa chọn role) -->
-                                                            <% if (user !=null && !user.isOnboardingCompleted()) { %>
-                                                                <div class="onboarding-banner"
-                                                                    style="margin-bottom: 1.25rem;">
-                                                                    <svg width="22" height="22" viewBox="0 0 24 24"
-                                                                        fill="none" stroke="#92400e" stroke-width="2">
-                                                                        <circle cx="12" cy="12" r="10" />
-                                                                        <line x1="12" y1="8" x2="12" y2="12" />
-                                                                        <line x1="12" y1="16" x2="12.01" y2="16" />
-                                                                    </svg>
-                                                                    <p>Hồ sơ của bạn đang chờ hoàn tất thiết lập vai trò
-                                                                        học viên sử dụng nền tảng.</p>
-                                                                    <a
-                                                                        href="${pageContext.request.contextPath}/onboarding">Hoàn
-                                                                        tất ngay</a>
-                                                                </div>
-                                                                <% } %>
-
-                                                                    <!-- ========================================== -->
-                                                                    <!-- TAB: TỔNG QUAN HỌC TẬP (DASHBOARD)         -->
-                                                                    <!-- ========================================== -->
-                                                                    <section id="tab-dashboard"
-                                                                        class="tab-pane <%= "tab-dashboard".equals(activeTab) ? "active-pane" : "" %>">
-
-                                                                        <!-- Bảng nội dung Tổng quan học tập -->
-                                                                        <div
-                                                                            style="flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column;">
-
-                                                                            <!-- Nửa dưới: Nền trắng tích hợp Lời chào & Lưới 4 Thẻ -->
-                                                                            <div
-                                                                                style="background:linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding:2rem; display:flex; flex-direction:column; gap:1.5rem; flex:1; min-height:0; overflow-y:auto;">
-
-                                                                                <!-- Hàng Tiêu đề Lời chào -->
-                                                                                <div
-                                                                                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-                                                                                    <div>
-                                                                                        <h2
-                                                                                            style="font-size:1.65rem; font-weight:800; color:var(--text-main); margin:0.25rem 0 0 0;">
-                                                                                            Chào mừng trở lại, <%= user
-                                                                                                !=null ?
-                                                                                                user.getDisplayName()
-                                                                                                : "Học viên HIPZI" %>!
-                                                                                        </h2>
-                                                                                    </div>
-                                                                                    <div
-                                                                                        style="display:flex; align-items:center; gap:0.75rem;">
-                                                                                        <div style="display:flex; align-items:center; gap:0.5rem; background:#f0fdf4; border:1px solid #bbf7d0; padding:0.35rem 0.85rem; border-radius:1rem;">
-                                                                                            <svg width="14" height="14"
-                                                                                                viewBox="0 0 24 24"
-                                                                                                fill="none"
-                                                                                                stroke="#16a34a"
-                                                                                                stroke-width="2.5"
-                                                                                                stroke-linecap="round"
-                                                                                                stroke-linejoin="round"
-                                                                                                style="cursor:help;"
-                                                                                                onclick="event.stopPropagation(); showToast('Mã này dùng để gửi cho Phụ huynh giúp họ có thể theo dõi tiến độ học tập của bạn trên HipZi.', 'info')"
-                                                                                                title="Nhấn để xem giải thích">
-                                                                                                <circle cx="12" cy="12"
-                                                                                                    r="10" />
-                                                                                                <path
-                                                                                                    d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                                                                                                <line x1="12" y1="17"
-                                                                                                    x2="12.01"
-                                                                                                    y2="17" />
-                                                                                            </svg>
-                                                                                            <span
-                                                                                                style="font-size:0.75rem; font-weight:700; color:#15803d; text-transform:uppercase;">Mã
-                                                                                                học viên:</span>
-                                                                                            <span
-                                                                                                onclick="event.stopPropagation(); copyStudentCode(this.textContent.trim());"
-                                                                                                title="Nhấn để sao chép mã học viên"
-                                                                                                style="font-size:0.85rem; font-weight:800; color:#16a34a; letter-spacing:0.5px; cursor:pointer;">
-                                                                                                <%= (user !=null &&
-                                                                                                    user.getStudentCode()
-                                                                                                    !=null) ?
-                                                                                                    user.getStudentCode()
-                                                                                                    : "HZ-PENDING" %>
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-
-                                                                                <!-- Lưới 4 Thẻ bên trong (2 thẻ trên, 2 thẻ dưới) -->
-                                                                                <div
-                                                                                    style="display:grid; grid-template-columns:repeat(2, 1fr); grid-auto-rows:1fr; gap:1.5rem; flex:1; min-height:0;">
-
-                                                                                    <!-- Thẻ 1 (Trên trái): Cấp độ học viên -->
-                                                                                    <div style="background:#ffffff; border-radius:1.25rem; padding:1.5rem; border:1px solid #dcfce7; box-shadow:0 4px 12px rgba(16, 185, 129, 0.03); display:flex; flex-direction:column; justify-content:center; gap:1rem; transition:transform 0.2s ease;"
-                                                                                        onmouseover="this.style.transform='translateY(-2px)';"
-                                                                                        onmouseout="this.style.transform='translateY(0)';">
-                                                                                        <div
-                                                                                            style="display:flex; align-items:center; gap:1rem;">
-                                                                                            <div
-                                                                                                style="width:56px; height:56px; border-radius:50%; background:#ecfdf5; display:flex; justify-content:center; align-items:center; flex-shrink:0;">
-                                                                                                <span
-                                                                                                    style="font-size:1.55rem;">&#11088;</span>
-                                                                                            </div>
-                                                                                            <div>
-                                                                                                <span
-                                                                                                    style="font-size:0.75rem; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.5px; display:block;">Cấp
-                                                                                                    độ học viên</span>
-                                                                                                <span
-                                                                                                    style="font-size:1.55rem; font-weight:800; color:var(--text-main); display:block; line-height:1.2;">Cấp
-                                                                                                    <%= studentProfile.getCurrentLevel()
-                                                                                                        %></span>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <!-- Mini Progress bar -->
-                                                                                        <div>
-                                                                                            <% int
-                                                                                                currentXp=studentProfile.getCurrentXp();
-                                                                                                int
-                                                                                                targetXp=studentProfile.getCurrentLevel()
-                                                                                                * 1000; int
-                                                                                                xpPercent=(int)
-                                                                                                Math.min(100, ((double)
-                                                                                                currentXp / (targetXp> 0
-                                                                                                ? targetXp : 1000)) *
-                                                                                                100);
-                                                                                                %>
-                                                                                                <div
-                                                                                                    style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:600; color:var(--text-muted); margin-bottom:0.3rem;">
-                                                                                                    <span>Tiến
-                                                                                                        trình</span>
-                                                                                                    <span>
-                                                                                                        <%= currentXp %>
-                                                                                                            /<%= targetXp
-                                                                                                                %> XP
-                                                                                                    </span>
-                                                                                                </div>
-                                                                                                <div
-                                                                                                    style="width:100%; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
-                                                                                                    <div
-                                                                                                        style="width:<%= xpPercent %>%; height:100%; background:linear-gradient(90deg, #34d399 0%, #059669 100%); border-radius:3px;">
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                        </div>
-                                                                                    </div>
-
-                                                                                    <!-- Thẻ 2 (Trên phải): Chuỗi ngày (Streak) -->
-                                                                                    <div style="background:#ffffff; border-radius:1.25rem; padding:2.45rem 1.5rem 1.5rem 1.5rem; border:1px solid #dcfce7; box-shadow:0 4px 12px rgba(16, 185, 129, 0.03); display:flex; align-items:flex-start; gap:1.15rem; transition:transform 0.2s ease;"
-                                                                                        onmouseover="this.style.transform='translateY(-2px)';"
-                                                                                        onmouseout="this.style.transform='translateY(0)';">
-                                                                                        <div
-                                                                                            style="width:56px; height:56px; border-radius:50%; background:#ecfdf5; display:flex; justify-content:center; align-items:center; flex-shrink:0;">
-                                                                                            <span
-                                                                                                style="font-size:1.55rem;">&#128293;</span>
-                                                                                        </div>
-                                                                                        <div>
-                                                                                            <span
-                                                                                                style="font-size:0.75rem; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.5px; display:block;">Chuỗi
-                                                                                                ngày học</span>
-                                                                                            <span
-                                                                                                style="font-size:1.55rem; font-weight:800; color:var(--text-main); display:block; line-height:1.2;">
-                                                                                                <%= studentProfile.getCurrentStreak()
-                                                                                                    %> Ngày
-                                                                                            </span>
-                                                                                            <span
-                                                                                                style="font-size:0.75rem; color:var(--text-muted); display:block;">Liên
-                                                                                                tiếp duy trì</span>
-                                                                                        </div>
-                                                                                    </div>
-
-                                                                                    <!-- Thẻ 3 (Dưới trái): Tổng số Quiz -->
-                                                                                    <div style="background:#ffffff; border-radius:1.25rem; padding:1.5rem; border:1px solid #dcfce7; box-shadow:0 4px 12px rgba(16, 185, 129, 0.03); display:flex; align-items:center; gap:1.15rem; transition:transform 0.2s ease;"
-                                                                                        onmouseover="this.style.transform='translateY(-2px)';"
-                                                                                        onmouseout="this.style.transform='translateY(0)';">
-                                                                                        <div
-                                                                                            style="width:56px; height:56px; border-radius:50%; background:#ecfdf5; display:flex; justify-content:center; align-items:center; flex-shrink:0;">
-                                                                                            <span
-                                                                                                style="font-size:1.55rem;">&#9201;</span>
-                                                                                        </div>
-                                                                                        <div>
-                                                                                            <span
-                                                                                                style="font-size:0.75rem; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.5px; display:block;">Quiz
-                                                                                                hoàn thành</span>
-                                                                                            <span
-                                                                                                style="font-size:1.55rem; font-weight:800; color:var(--text-main); display:block; line-height:1.2;">
-                                                                                                <%= studentProfile.getCompletedQuizzesCount()
-                                                                                                    %> Bài
-                                                                                            </span>
-                                                                                            <span
-                                                                                                style="font-size:0.75rem; color:#10b981; font-weight:600;">&uarr;
-                                                                                                <%= String.format("%.0f",
-                                                                                                    studentProfile.getAverageAccuracy())
-                                                                                                    %>% Tỷ lệ
-                                                                                                    đúng</span>
-                                                                                        </div>
-                                                                                    </div>
-
-                                                                                    <!-- Thẻ 4 (Dưới phải): Số lớp học -->
-                                                                                    <div style="background:#ffffff; border-radius:1.25rem; padding:1.5rem; border:1px solid #dcfce7; box-shadow:0 4px 12px rgba(16, 185, 129, 0.03); display:flex; align-items:center; gap:1.15rem; transition:transform 0.2s ease;"
-                                                                                        onmouseover="this.style.transform='translateY(-2px)';"
-                                                                                        onmouseout="this.style.transform='translateY(0)';">
-                                                                                        <div
-                                                                                            style="width:56px; height:56px; border-radius:50%; background:#ecfdf5; display:flex; justify-content:center; align-items:center; flex-shrink:0;">
-                                                                                            <span
-                                                                                                style="font-size:1.55rem;">&#128101;</span>
-                                                                                        </div>
-                                                                                        <div>
-                                                                                            <span
-                                                                                                style="font-size:0.75rem; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.5px; display:block;">Lớp
-                                                                                                học tham gia</span>
-                                                                                            <span
-                                                                                                style="font-size:1.55rem; font-weight:800; color:var(--text-main); display:block; line-height:1.2;">
-                                                                                                <%= studentProfile.getActiveClassesCount()
-                                                                                                    %> Lớp học
-                                                                                            </span>
-                                                                                            <span
-                                                                                                style="font-size:0.75rem; color:var(--text-muted);">Đang
-                                                                                                hoạt động</span>
-                                                                                        </div>
-                                                                                    </div>
-
-                                                                                </div>
-                                                                            </div>
-
-                                                                        </div>
-
-                                                                    </section>
-
-                                                                    <!-- ========================================== -->
-                                                                    <!-- TAB 1: HỒ SƠ CÁ NHÂN TỔNG QUAN             -->
-                                                                    <!-- ========================================== -->
-                                                                    <section id="tab-profile" class="tab-pane <%= "tab-profile".equals(activeTab) ? "active-pane" : "" %>">
-                                                                        <!-- Bảng nội dung Hồ sơ cá nhân -->
-                                                                        <div class="profile-tab-panel">
-                                                                            <div
-                                                                                style="background:linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding:1.75rem; display:flex; flex-direction:column; gap:2rem; flex:1; min-height:0; overflow-y:auto;">
-
-                                                                                <!-- Bố cục hàng trên: Trái (Logo, Tên, Thành viên) - Phải (Vai trò chính) -->
-                                                                                <div
-                                                                                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.5rem; padding-bottom:1.5rem; border-bottom:1px solid #f1f5f9;">
-
-                                                                                    <!-- Nhóm Trái -->
-                                                                                    <div class="highlight-left-group"
-                                                                                        style="margin:0;">
-                                                                                        <div
-                                                                                            class="highlight-avatar-container">
-                                                                                            <% if (user !=null &&
-                                                                                                user.getAvatarUrl()
-                                                                                                !=null &&
-                                                                                                !user.getAvatarUrl().isEmpty())
-                                                                                                { %>
-                                                                                                <img src="<%= user.getAvatarUrl() %>"
-                                                                                                    alt="Avatar">
-                                                                                                <% } else { %>
-                                                                                                    <div
-                                                                                                        class="highlight-avatar-placeholder">
-                                                                                                        <%= initials %>
-                                                                                                    </div>
-                                                                                                    <% } %>
-                                                                                                        <label
-                                                                                                            class="btn-avatar-camera"
-                                                                                                            title="Thay đổi ảnh đại diện"
-                                                                                                            onclick="document.getElementById('avatarFileInput').click();">
-                                                                                                            <svg width="14"
-                                                                                                                height="14"
-                                                                                                                viewBox="0 0 24 24"
-                                                                                                                fill="none"
-                                                                                                                stroke="currentColor"
-                                                                                                                stroke-width="2.5">
-                                                                                                                <path
-                                                                                                                    d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                                                                                                                <circle
-                                                                                                                    cx="12"
-                                                                                                                    cy="13"
-                                                                                                                    r="4" />
-                                                                                                            </svg>
-                                                                                                        </label>
-
-                                                                                                        <!-- Form ngầm upload ảnh đại diện -->
-                                                                                                        <form
-                                                                                                            id="avatarUploadForm"
-                                                                                                            action="${pageContext.request.contextPath}/profile"
-                                                                                                            method="POST"
-                                                                                                            enctype="multipart/form-data"
-                                                                                                            style="display:none;">
-                                                                                                            <input
-                                                                                                                type="hidden"
-                                                                                                                name="action"
-                                                                                                                value="updateAvatar">
-                                                                                                            <input
-                                                                                                                type="file"
-                                                                                                                id="avatarFileInput"
-                                                                                                                name="avatarFile"
-                                                                                                                accept="image/*"
-                                                                                                                onchange="if(this.files.length > 0) { showToast('Đang tải ảnh lên...', 'info'); document.getElementById('avatarUploadForm').submit(); }">
-                                                                                                        </form>
-                                                                                        </div>
-                                                                                        <div
-                                                                                            class="highlight-user-info">
-                                                                                            <h2>
-                                                                                                <%= user !=null ?
-                                                                                                    user.getDisplayName()
-                                                                                                    : "Học viên HIPZI"
-                                                                                                    %>
-                                                                                            </h2>
-                                                                                            <div class="highlight-meta-info"
-                                                                                                style="margin-top:0.35rem;">
-                                                                                                <svg width="14"
-                                                                                                    height="14"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    fill="none"
-                                                                                                    stroke="currentColor"
-                                                                                                    stroke-width="2">
-                                                                                                    <path
-                                                                                                        d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                                                                                                    <circle cx="12"
-                                                                                                        cy="10" r="3" />
-                                                                                                </svg>
-                                                                                                <span>Thành viên tích
-                                                                                                    cực</span>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-
-                                                                                    <!-- Nhóm Phải: Vai trò chính đưa lên ngang hàng -->
-                                                                                    <div
-                                                                                        style="display:flex; flex-direction:column; align-items:flex-end; text-align:right;">
-                                                                                        <span
-                                                                                            style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.35rem;">Vai
-                                                                                            trò chính</span>
-                                                                                        <div class="highlight-user-roles"
-                                                                                            style="margin:0;">
-                                                                                            <% if (roles !=null &&
-                                                                                                !roles.isEmpty()) { for
-                                                                                                (Role r : roles) { %>
-                                                                                                <span
-                                                                                                    class="role-tag <%= r.getName() %>"
-                                                                                                    style="font-size:0.85rem; padding:0.4rem 1.15rem; border-radius:2rem;">
-                                                                                                    <%= r.getName().equals("student")
-                                                                                                        ? "Học viên" :
-                                                                                                        r.getName().equals("parent")
-                                                                                                        ? "Phụ huynh" :
-                                                                                                        r.getName().equals("teacher")
-                                                                                                        ? "Giảng viên" :
-                                                                                                        r.getName().equals("staff")
-                                                                                                        ? "Nhân viên" :
-                                                                                                        r.getName().equals("admin")
-                                                                                                        ? "Quản trị" :
-                                                                                                        r.getName() %>
-                                                                                                </span>
-                                                                                                <% }} else { %>
-                                                                                                    <span
-                                                                                                        class="role-tag student"
-                                                                                                        style="font-size:0.85rem; padding:0.4rem 1.15rem; border-radius:2rem;">Học
-                                                                                                        viên</span>
-                                                                                                    <% } %>
-                                                                                        </div>
-                                                                                    </div>
-
-                                                                                </div>
-
-                                                                                <!-- Nhóm Thông tin cá nhân bên dưới trong cùng 1 khối -->
-                                                                                <div>
-                                                                                    <div class="card-header-layout"
-                                                                                        style="padding:0 0 1.25rem 0; margin:0; border-bottom:none;">
-                                                                                        <div class="card-header-title">
-                                                                                            <svg width="20" height="20"
-                                                                                                viewBox="0 0 24 24"
-                                                                                                fill="none"
-                                                                                                stroke="currentColor"
-                                                                                                stroke-width="2.5">
-                                                                                                <path
-                                                                                                    d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                                                                                <circle cx="12" cy="7"
-                                                                                                    r="4" />
-                                                                                            </svg>
-                                                                                            <span>Thông tin cá
-                                                                                                nhân</span>
-                                                                                        </div>
-                                                                                        <button
-                                                                                            onclick="switchTab('tab-edit')"
-                                                                                            class="btn-card-edit"
-                                                                                            title="Chuyển sang tab cập nhật">
-                                                                                            <span>Chỉnh sửa</span>
-                                                                                            <svg width="14" height="14"
-                                                                                                viewBox="0 0 24 24"
-                                                                                                fill="none"
-                                                                                                stroke="currentColor"
-                                                                                                stroke-width="2.5">
-                                                                                                <path d="M12 20h9" />
-                                                                                                <path
-                                                                                                    d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                                                                                            </svg>
-                                                                                        </button>
-                                                                                    </div>
-
-                                                                                    <div class="card-body-grid"
-                                                                                        style="padding:0; display:grid; grid-template-columns:repeat(2, 1fr); gap:1.25rem;">
-
-                                                                                        <!-- Thẻ 1: Họ và tên hiển thị -->
-                                                                                        <div style="background:#ffffff; border-radius:1.25rem; padding:1.25rem 1.35rem; border:1px solid #dcfce7; box-shadow:0 4px 12px rgba(16, 185, 129, 0.03); display:flex; align-items:center; gap:1rem; transition:transform 0.2s ease;"
-                                                                                            onmouseover="this.style.transform='translateY(-2px)';"
-                                                                                            onmouseout="this.style.transform='translateY(0)';">
-                                                                                            <div
-                                                                                                style="width:48px; height:48px; border-radius:50%; background:#ecfdf5; display:flex; justify-content:center; align-items:center; flex-shrink:0; color:#059669;">
-                                                                                                <svg width="22"
-                                                                                                    height="22"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    fill="none"
-                                                                                                    stroke="currentColor"
-                                                                                                    stroke-width="2.2">
-                                                                                                    <path
-                                                                                                        d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                                                                                    <circle cx="12"
-                                                                                                        cy="7" r="4" />
-                                                                                                </svg>
-                                                                                            </div>
-                                                                                            <div
-                                                                                                style="min-width:0; flex-grow:1;">
-                                                                                                <span
-                                                                                                    style="font-size:0.75rem; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.15rem;">Họ
-                                                                                                    và tên hiển
-                                                                                                    thị</span>
-                                                                                                <span
-                                                                                                    style="font-size:1.15rem; font-weight:700; color:#0f172a; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                                                                                    <%= user !=null ?
-                                                                                                        user.getDisplayName()
-                                                                                                        : "—" %>
-                                                                                                </span>
-                                                                                                <span
-                                                                                                    style="font-size:0.75rem; color:#64748b; display:block; margin-top:0.1rem;">Thành
-                                                                                                    viên hệ thống</span>
-                                                                                            </div>
-                                                                                        </div>
-
-                                                                                        <!-- Thẻ 2: Ngày tham gia -->
-                                                                                        <div style="background:#ffffff; border-radius:1.25rem; padding:1.25rem 1.35rem; border:1px solid #e0e7ff; box-shadow:0 4px 12px rgba(99, 102, 241, 0.03); display:flex; align-items:center; gap:1rem; transition:transform 0.2s ease;"
-                                                                                            onmouseover="this.style.transform='translateY(-2px)';"
-                                                                                            onmouseout="this.style.transform='translateY(0)';">
-                                                                                            <div
-                                                                                                style="width:48px; height:48px; border-radius:50%; background:#e0e7ff; display:flex; justify-content:center; align-items:center; flex-shrink:0; color:#4f46e5;">
-                                                                                                <svg width="22"
-                                                                                                    height="22"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    fill="none"
-                                                                                                    stroke="currentColor"
-                                                                                                    stroke-width="2.2">
-                                                                                                    <rect x="3" y="4"
-                                                                                                        width="18"
-                                                                                                        height="18"
-                                                                                                        rx="2" ry="2" />
-                                                                                                    <line x1="16" y1="2"
-                                                                                                        x2="16"
-                                                                                                        y2="6" />
-                                                                                                    <line x1="8" y1="2"
-                                                                                                        x2="8" y2="6" />
-                                                                                                    <line x1="3" y1="10"
-                                                                                                        x2="21"
-                                                                                                        y2="10" />
-                                                                                                </svg>
-                                                                                            </div>
-                                                                                            <div
-                                                                                                style="min-width:0; flex-grow:1;">
-                                                                                                <span
-                                                                                                    style="font-size:0.75rem; font-weight:700; color:#4f46e5; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.15rem;">Ngày
-                                                                                                    tham gia</span>
-                                                                                                <span
-                                                                                                    style="font-size:1.15rem; font-weight:700; color:#0f172a; display:block;">
-                                                                                                    <%= joinDate %>
-                                                                                                </span>
-                                                                                                <span
-                                                                                                    style="font-size:0.75rem; color:#64748b; display:block; margin-top:0.1rem;">Thời
-                                                                                                    gian kích
-                                                                                                    hoạt</span>
-                                                                                            </div>
-                                                                                        </div>
-
-                                                                                        <!-- Thẻ 3: Địa chỉ Email -->
-                                                                                        <div style="background:#ffffff; border-radius:1.25rem; padding:1.25rem 1.35rem; border:1px solid #fef3c7; box-shadow:0 4px 12px rgba(245, 158, 11, 0.03); display:flex; align-items:center; gap:1rem; transition:transform 0.2s ease;"
-                                                                                            onmouseover="this.style.transform='translateY(-2px)';"
-                                                                                            onmouseout="this.style.transform='translateY(0)';">
-                                                                                            <div
-                                                                                                style="width:48px; height:48px; border-radius:50%; background:#fffbeb; display:flex; justify-content:center; align-items:center; flex-shrink:0; color:#d97706;">
-                                                                                                <svg width="22"
-                                                                                                    height="22"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    fill="none"
-                                                                                                    stroke="currentColor"
-                                                                                                    stroke-width="2.2">
-                                                                                                    <path
-                                                                                                        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                                                                                                    <polyline
-                                                                                                        points="22,6 12,13 2,6" />
-                                                                                                </svg>
-                                                                                            </div>
-                                                                                            <div
-                                                                                                style="min-width:0; flex-grow:1;">
-                                                                                                <span
-                                                                                                    style="font-size:0.75rem; font-weight:700; color:#d97706; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.15rem;">Địa
-                                                                                                    chỉ Email</span>
-                                                                                                <span
-                                                                                                    style="font-size:1.05rem; font-weight:700; color:#0f172a; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
-                                                                                                    title="<%= user != null ? user.getEmail() : "" %>">
-                                                                                                    <%= user !=null ?
-                                                                                                        user.getEmail()
-                                                                                                        : "—" %>
-                                                                                                </span>
-                                                                                                <span
-                                                                                                    style="font-size:0.75rem; color:#64748b; display:block; margin-top:0.1rem;">Tài
-                                                                                                    khoản liên
-                                                                                                    kết</span>
-                                                                                            </div>
-                                                                                        </div>
-
-                                                                                        <!-- Thẻ 4: Trạng thái tài khoản -->
-                                                                                        <div style="background:#ffffff; border-radius:1.25rem; padding:1.25rem 1.35rem; border:1px solid #fee2e2; box-shadow:0 4px 12px rgba(239, 68, 68, 0.03); display:flex; align-items:center; gap:1rem; transition:transform 0.2s ease;"
-                                                                                            onmouseover="this.style.transform='translateY(-2px)';"
-                                                                                            onmouseout="this.style.transform='translateY(0)';">
-                                                                                            <div
-                                                                                                style="width:48px; height:48px; border-radius:50%; background:#fef2f2; display:flex; justify-content:center; align-items:center; flex-shrink:0; color:#ef4444;">
-                                                                                                <svg width="22"
-                                                                                                    height="22"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    fill="none"
-                                                                                                    stroke="currentColor"
-                                                                                                    stroke-width="2.2">
-                                                                                                    <path
-                                                                                                        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                                                                                                </svg>
-                                                                                            </div>
-                                                                                            <div
-                                                                                                style="min-width:0; flex-grow:1;">
-                                                                                                <span
-                                                                                                    style="font-size:0.75rem; font-weight:700; color:#ef4444; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.15rem;">Trạng
-                                                                                                    thái tài
-                                                                                                    khoản</span>
-                                                                                                <div>
-                                                                                                    <% String
-                                                                                                        status=(user
-                                                                                                        !=null) ?
-                                                                                                        user.getAccountStatus()
-                                                                                                        : "active" ; %>
-                                                                                                        <span
-                                                                                                            class="acc-status-tag <%= status %>"
-                                                                                                            style="display:inline-block; font-size:0.8rem; padding:0.25rem 0.75rem; margin-top:0.1rem;">
-                                                                                                            <%= "active"
-                                                                                                                .equals(status)
-                                                                                                                ? "Đang hoạt động"
-                                                                                                                : "suspended"
-                                                                                                                .equals(status)
-                                                                                                                ? "Tạm khóa"
-                                                                                                                : "Vô hiệu hóa"
-                                                                                                                %>
-                                                                                                        </span>
-                                                                                                </div>
-                                                                                                <span
-                                                                                                    style="font-size:0.75rem; color:#64748b; display:block; margin-top:0.2rem;">Bảo
-                                                                                                    mật hệ thống</span>
-                                                                                            </div>
-                                                                                        </div>
-
-                                                                                    </div>
-                                                                                </div>
-
-                                                                            </div>
-                                                                        </div>
-                                                                    </section>
-
-                                                                    <!-- ========================================== -->
-                                                                    <!-- TAB 2: CHỈNH SỬA HỒ SƠ                     -->
-                                                                    <!-- ========================================== -->
-                                                                    <section id="tab-edit" class="tab-pane <%= "tab-edit".equals(activeTab) ? "active-pane" : "" %>">
-                                                                        <!-- Bảng Header Tích hợp liền khối cho Cập nhật thông tin -->
-                                                                        <div class="profile-tab-panel">
-                                                                            <div class="profile-tab-body">
-                                                                                <div class="section-data-card profile-tab-fill-card"
-                                                                                    style="box-shadow:none; border:none; padding:0; margin:0;">
-                                                                                    <div class="card-header-layout">
-                                                                                        <div class="card-header-title">
-                                                                                            <svg width="20" height="20"
-                                                                                                viewBox="0 0 24 24"
-                                                                                                fill="none"
-                                                                                                stroke="currentColor"
-                                                                                                stroke-width="2.5">
-                                                                                                <path d="M12 20h9" />
-                                                                                                <path
-                                                                                                    d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                                                                                            </svg>
-                                                                                            <span>Cập nhật thông tin học
-                                                                                                viên</span>
-                                                                                        </div>
-                                                                                        <button
-                                                                                            onclick="switchTab('tab-profile')"
-                                                                                            class="btn-card-edit-light">
-                                                                                            <span>Quay lại</span>
-                                                                                        </button>
-                                                                                    </div>
-
-                                                                                    <form
-                                                                                        action="${pageContext.request.contextPath}/profile"
-                                                                                        method="POST"
-                                                                                        class="form-edit-layout">
-                                                                                        <input type="hidden"
-                                                                                            name="action"
-                                                                                            value="updateName">
-                                                                                        <div class="form-group-edit">
-                                                                                            <label>Họ và tên hiển
-                                                                                                thị</label>
-                                                                                            <input type="text"
-                                                                                                name="displayName"
-                                                                                                required
-                                                                                                value="<%= user != null ? user.getDisplayName() : "" %>"
-                                                                                                placeholder="Nhập họ và tên của bạn...">
-                                                                                        </div>
-
-                                                                                        <div class="form-actions-row">
-                                                                                            <button type="button"
-                                                                                                class="btn btn-ghost"
-                                                                                                onclick="switchTab('tab-profile')">Hủy
-                                                                                                bỏ</button>
-                                                                                            <button type="submit"
-                                                                                                class="btn btn-primary"
-                                                                                                style="border-radius:0.75rem;">Lưu
-                                                                                                thay đổi</button>
-                                                                                        </div>
-                                                                                    </form>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </section>
-
-                                                                    <!-- ========================================== -->
-                                                                    <!-- TAB 3: BẢO MẬT VÀ MẬT KHẨU                 -->
-                                                                    <!-- ========================================== -->
-                                                                    <section id="tab-security" class="tab-pane <%= "tab-security".equals(activeTab) ? "active-pane" : "" %>">
-                                                                        <!-- Bảng Header Tích hợp liền khối cho Bảo mật và mật khẩu -->
-                                                                        <div class="profile-tab-panel">
-                                                                            <div class="profile-tab-body">
-                                                                                <!-- KHUNG CHÍNH TOP: MẬT KHẨU ĐĂNG NHẬP -->
-                                                                                <div
-                                                                                    style="background:#ffffff; border-radius:1.25rem; border:1px solid rgba(226, 232, 240, 0.9); box-shadow:0 4px 12px rgba(0, 0, 0, 0.02); overflow:hidden;">
-                                                                                    <div
-                                                                                        style="padding:2rem; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.25rem;">
-                                                                                        <div>
-                                                                                            <span
-                                                                                                style="font-weight:800; font-size:1.15rem; color:#b45309; letter-spacing:0.5px; text-transform:uppercase; display:block;">Mật
-                                                                                                khẩu đăng nhập</span>
-                                                                                            <p
-                                                                                                style="font-size:0.85rem; color:var(--text-muted); margin:0.35rem 0 0 0;">
-                                                                                                Cập nhật mật khẩu định
-                                                                                                kỳ để bảo mật tốt hơn.
-                                                                                            </p>
-                                                                                        </div>
-                                                                                        <button type="button"
-                                                                                            onclick="document.getElementById('pwd-modal-overlay').style.display='flex';"
-                                                                                            style="display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; background:#059669; color:#ffffff; font-weight:800; font-size:0.85rem; padding:0.65rem 1.35rem; border-radius:9999px; border:none; box-shadow:0 4px 14px rgba(5, 150, 105, 0.25); cursor:pointer; transition:all 0.2s ease;"
-                                                                                            onmouseover="this.style.background='#047857'; this.style.transform='translateY(-1px)';"
-                                                                                            onmouseout="this.style.background='#059669'; this.style.transform='translateY(0)';">
-                                                                                            <span>Đổi mật khẩu</span>
-                                                                                            <svg width="15" height="15"
-                                                                                                viewBox="0 0 24 24"
-                                                                                                fill="none"
-                                                                                                stroke="currentColor"
-                                                                                                stroke-width="2.5">
-                                                                                                <path d="M12 20h9" />
-                                                                                                <path
-                                                                                                    d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                                                                                            </svg>
-                                                                                        </button>
-                                                                                    </div>
-
-                                                                                    <div
-                                                                                        style="padding:1rem 1.75rem; border-top:1px solid var(--border-dark); background:rgba(248, 250, 252, 0.4); display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
-                                                                                        <div
-                                                                                            style="display:flex; align-items:center; gap:0.4rem; color:#10b981; font-weight:700; font-size:0.85rem;">
-                                                                                            <svg width="16" height="16"
-                                                                                                viewBox="0 0 24 24"
-                                                                                                fill="none"
-                                                                                                stroke="currentColor"
-                                                                                                stroke-width="2.5">
-                                                                                                <path
-                                                                                                    d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                                                                                            </svg>
-                                                                                            <span>Mật khẩu mạnh</span>
-                                                                                        </div>
-                                                                                        <div style="display:flex; align-items:center; gap:0.4rem; color:<%= (user != null && user.isTwoFactorEnabled()) ? "#10b981" : "var(--text-muted)" %>; font-weight:700; font-size:0.85rem;">
-                                                                                            <% if (user !=null &&
-                                                                                                user.isTwoFactorEnabled())
-                                                                                                { %>
-                                                                                                <svg width="16"
-                                                                                                    height="16"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    fill="none"
-                                                                                                    stroke="currentColor"
-                                                                                                    stroke-width="2.5">
-                                                                                                    <path
-                                                                                                        d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                                                                                                    <polyline
-                                                                                                        points="22 4 12 14.01 9 11.01" />
-                                                                                                </svg>
-                                                                                                <span>Xác thực 2 lớp:
-                                                                                                    Đang bật</span>
-                                                                                                <% } else { %>
-                                                                                                    <svg width="16"
-                                                                                                        height="16"
-                                                                                                        viewBox="0 0 24 24"
-                                                                                                        fill="none"
-                                                                                                        stroke="currentColor"
-                                                                                                        stroke-width="2">
-                                                                                                        <circle cx="12"
-                                                                                                            cy="12"
-                                                                                                            r="10" />
-                                                                                                        <line x1="8"
-                                                                                                            y1="12"
-                                                                                                            x2="16"
-                                                                                                            y2="12" />
-                                                                                                    </svg>
-                                                                                                    <span>Xác thực 2
-                                                                                                        lớp: Tắt</span>
-                                                                                                    <% } %>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-
-                                                                                <!-- LƯỚI HAI KHUNG CON BÊN DƯỚI -->
-                                                                                <div
-                                                                                    style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem; flex:1; min-height:0;">
-
-                                                                                    <!-- KHUNG TRÁI: BẢO MẬT 2 LỚP (OTP) -->
-                                                                                    <div
-                                                                                        style="background:#ffffff; border-radius:1.25rem; border:1px solid rgba(226, 232, 240, 0.9); box-shadow:0 4px 12px rgba(0, 0, 0, 0.02); padding:1.75rem; display:flex; flex-direction:column; justify-content:center; gap:1.5rem;">
-                                                                                        <div
-                                                                                            style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                                                                            <span
-                                                                                                style="font-weight:800; font-size:0.9rem; color:var(--text-main); text-transform:uppercase; letter-spacing:0.5px;">Bảo
-                                                                                                mật 2 lớp (OTP)</span>
-                                                                                            <svg width="20" height="20"
-                                                                                                viewBox="0 0 24 24"
-                                                                                                fill="none"
-                                                                                                stroke="#d97706"
-                                                                                                stroke-width="2">
-                                                                                                <path
-                                                                                                    d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                                                                                            </svg>
-                                                                                        </div>
-                                                                                        <div
-                                                                                            style="display:flex; justify-content:space-between; align-items:center;">
-                                                                                            <span
-                                                                                                style="font-weight:700; font-size:0.95rem; color:var(--text-main);">Mã
-                                                                                                OTP qua Email</span>
-
-                                                                                            <!-- Form ngầm xử lý toggle 2FA -->
-                                                                                            <form id="toggle2faForm"
-                                                                                                action="${pageContext.request.contextPath}/profile"
-                                                                                                method="POST"
-                                                                                                style="display:none;">
-                                                                                                <input type="hidden"
-                                                                                                    name="action"
-                                                                                                    value="toggle2FA">
-                                                                                            </form>
-
-                                                                                            <!-- NÚT TOGGLE SWITCH THỰC TẾ -->
-                                                                                            <% boolean is2fa=(user
-                                                                                                !=null &&
-                                                                                                user.isTwoFactorEnabled());
-                                                                                                %>
-                                                                                                <div id="otp-toggle-btn"
-                                                                                                    onclick="document.getElementById('toggle2faForm').submit();"
-                                                                                                    style="width:44px; height:24px; background:<%= is2fa ? "#10b981" : "#cbd5e1" %>; border-radius:12px; padding:2px; cursor:pointer; transition:background 0.3s ease; display:flex; align-items:center;">
-                                                                                                   <div class="toggle-circle"
-                                                                                                        style="width:20px; height:20px; background:#ffffff; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); transform:translateX(<%= is2fa ? "20px" : "0" %>);"></div>
-                                                                                                </div>
-                                                                                        </div>
-                                                                                    </div>
-
-                                                                                    <!-- KHUNG PHẢI: THIẾT BỊ HIỆN TẠI -->
-                                                                                    <div
-                                                                                        style="background:#ffffff; border-radius:1.25rem; border:1px solid rgba(226, 232, 240, 0.9); box-shadow:0 4px 12px rgba(0, 0, 0, 0.02); padding:1.75rem; display:flex; flex-direction:column; justify-content:center; gap:1.5rem;">
-                                                                                        <div
-                                                                                            style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                                                                            <span
-                                                                                                style="font-weight:800; font-size:0.9rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Thiết
-                                                                                                bị hiện tại</span>
-                                                                                            <svg width="20" height="20"
-                                                                                                viewBox="0 0 24 24"
-                                                                                                fill="none"
-                                                                                                stroke="#d97706"
-                                                                                                stroke-width="2">
-                                                                                                <rect x="2" y="3"
-                                                                                                    width="20"
-                                                                                                    height="14" rx="2"
-                                                                                                    ry="2" />
-                                                                                                <line x1="8" y1="21"
-                                                                                                    x2="16" y2="21" />
-                                                                                                <line x1="12" y1="17"
-                                                                                                    x2="12" y2="21" />
-                                                                                            </svg>
-                                                                                        </div>
-                                                                                        <div>
-                                                                                            <span
-                                                                                                style="font-weight:800; font-size:1.1rem; color:var(--text-main); display:block;">Windows
-                                                                                                - Chrome
-                                                                                                (Vietnam)</span>
-                                                                                            <span
-                                                                                                style="font-size:0.75rem; color:#10b981; font-weight:600; display:inline-block; margin-top:0.25rem; background:#ecfdf5; padding:0.15rem 0.5rem; border-radius:0.25rem;">Phiên
-                                                                                                truy cập an toàn</span>
-                                                                                        </div>
-                                                                                    </div>
-
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </section>
-
-                                                                    <!-- ========================================== -->
-                                                                    <!-- TAB 4: TÀI LIỆU ĐÃ LƯU                     -->
-                                                                    <!-- ========================================== -->
-                                                                    <section id="tab-materials" class="tab-pane <%= "tab-materials".equals(activeTab) ? "active-pane" : "" %>">
-                                                                        <!-- Bảng Header Tích hợp liền khối cho Tài liệu đã lưu -->
-                                                                        <div class="profile-tab-panel">
-                                                                            <div class="profile-tab-body">
-                                                                                <div class="section-data-card profile-tab-fill-card"
-                                                                                    style="box-shadow:none; border:none; padding:0; margin:0;">
-                                                                                    <div class="card-header-layout">
-                                                                                        <div class="card-header-title">
-                                                                                            <svg width="20" height="20"
-                                                                                                viewBox="0 0 24 24"
-                                                                                                fill="none"
-                                                                                                stroke="currentColor"
-                                                                                                stroke-width="2.5">
-                                                                                                <path
-                                                                                                    d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                                                                                            </svg>
-                                                                                            <span>Kho tài liệu yêu thích
-                                                                                                của học viên</span>
-                                                                                        </div>
-                                                                                        <a href="${pageContext.request.contextPath}/material-repository"
-                                                                                            style="display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; background:#059669; color:#ffffff; font-weight:800; font-size:0.85rem; padding:0.65rem 1.35rem; border-radius:9999px; border:none; box-shadow:0 4px 14px rgba(5, 150, 105, 0.25); cursor:pointer; transition:all 0.2s ease; text-decoration:none;"
-                                                                                            onmouseover="this.style.background='#047857'; this.style.transform='translateY(-1px)';"
-                                                                                            onmouseout="this.style.background='#059669'; this.style.transform='translateY(0)';">
-                                                                                            <span>Khám phá thêm</span>
-                                                                                            <svg width="15" height="15"
-                                                                                                viewBox="0 0 24 24"
-                                                                                                fill="none"
-                                                                                                stroke="currentColor"
-                                                                                                stroke-width="2.5">
-                                                                                                <path d="M12 20h9" />
-                                                                                                <path
-                                                                                                    d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                                                                                            </svg>
-                                                                                        </a>
-                                                                                    </div>
-                                                                                    <div class="empty-status-panel"
-                                                                                        style="flex:1; justify-content:center;">
-                                                                                        <svg width="64" height="64"
-                                                                                            viewBox="0 0 24 24"
-                                                                                            fill="none"
-                                                                                            stroke="currentColor"
-                                                                                            stroke-width="1.5">
-                                                                                            <path
-                                                                                                d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                                                                                            <path
-                                                                                                d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                                                                                        </svg>
-                                                                                        <span
-                                                                                            style="font-weight:700; color:var(--text-main);">Chưa
-                                                                                            có tài liệu nào được
-                                                                                            lưu</span>
-                                                                                        <p
-                                                                                            style="font-size:0.85rem; max-width:400px; margin:0;">
-                                                                                            Hãy nhấp vào biểu tượng lưu
-                                                                                            trữ trên các tài liệu bài
-                                                                                            giảng chất lượng để dễ dàng
-                                                                                            ôn tập lại tại đây.</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </section>
-
-                                                                    <!-- ========================================== -->
-                                                                    <!-- TAB 6: THÔNG BÁO HỆ THỐNG                  -->
-                                                                    <!-- ========================================== -->
-                                                                    <section id="tab-notifications" class="tab-pane <%= "tab-notifications".equals(activeTab) ? "active-pane" : "" %>">
-                                                                        <!-- Bảng nội dung Thông báo hệ thống -->
-                                                                        <div
-                                                                            style="height:100%; overflow:hidden; display:flex; flex-direction:column;">
-                                                                            <div
-                                                                                style="background:linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding:1.75rem; flex:1; min-height:0; overflow-y:auto;">
-                                                                                <div class="section-data-card"
-                                                                                    style="box-shadow:none; border:none; padding:0; margin:0;">
-                                                                                    <div class="card-header-layout">
-                                                                                        <div class="card-header-title">
-                                                                                            <svg width="20" height="20"
-                                                                                                viewBox="0 0 24 24"
-                                                                                                fill="none"
-                                                                                                stroke="currentColor"
-                                                                                                stroke-width="2.5">
-                                                                                                <path
-                                                                                                    d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                                                                                                <path
-                                                                                                    d="M13.73 21a2 2 0 0 1-3.46 0" />
-                                                                                            </svg>
-                                                                                            <span>Thông báo hệ thống
-                                                                                                dành cho học viên</span>
-                                                                                        </div>
-                                                                                        <span
-                                                                                            style="font-size:0.8rem; font-weight:700; color:var(--primary); background:var(--primary-light); padding:0.2rem 0.75rem; border-radius:1rem;">Mới
-                                                                                            nhất</span>
-                                                                                    </div>
-
-                                                                                    <div
-                                                                                        style="padding:1.5rem; display:flex; flex-direction:column; gap:1rem;">
-                                                                                        <% if (notifications !=null &&
-                                                                                            !notifications.isEmpty()) {
-                                                                                            SimpleDateFormat sdf=new
-                                                                                            SimpleDateFormat("dd/MM/yyyy");
-                                                                                            for (Notification n :
-                                                                                            notifications) { String
-                                                                                            typeColor="var(--primary)" ;
-                                                                                            String bgColor="#f0fdf4" ;
-                                                                                            String iconPath="M20 6 9 17l-5-5";
-                                                                                            if ("warning".equalsIgnoreCase(n.getType())) {
-                                                                                                typeColor="#f59e0b";
-                                                                                                bgColor="#fffbeb";
-                                                                                                iconPath="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z";
-                                                                                            } else if ("error".equalsIgnoreCase(n.getType())) {
-                                                                                                typeColor="#ef4444";
-                                                                                                bgColor="#fef2f2";
-                                                                                                iconPath="M12 8v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z";
-                                                                                            } else if ("info".equalsIgnoreCase(n.getType())) {
-                                                                                                typeColor="#0ea5e9";
-                                                                                                bgColor="#f0f9ff";
-                                                                                                iconPath="M12 16v-4m0-4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z";
-                                                                                            } %>
-                                                                                            <div
-                                                                                                style="padding:1rem 1.25rem; border-radius:0.75rem; background:<%= bgColor %>; border-left:4px solid <%= typeColor %>; display:flex; gap:1rem; align-items:flex-start;">
-                                                                                                <svg width="20"
-                                                                                                    height="20"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    fill="none"
-                                                                                                    stroke="<%= typeColor %>"
-                                                                                                    stroke-width="2.5"
-                                                                                                    style="flex-shrink:0; margin-top:0.15rem;">
-                                                                                                    <path
-                                                                                                        d="<%= iconPath %>" />
-                                                                                                </svg>
-                                                                                                <div>
-                                                                                                    <span
-                                                                                                        style="font-weight:700; font-size:0.95rem; color:var(--text-main); display:block;">
-                                                                                                        <%= n.getTitle()
-                                                                                                            %>
-                                                                                                    </span>
-                                                                                                    <p
-                                                                                                        style="font-size:0.85rem; color:var(--text-muted); margin:0.25rem 0 0 0;">
-                                                                                                        <%= n.getMessage()
-                                                                                                            %>
-                                                                                                    </p>
-                                                                                                    <span
-                                                                                                        style="font-size:0.75rem; color:#94a3b8; display:block; margin-top:0.35rem;">
-                                                                                                        <%= sdf.format(n.getCreatedAt())
-                                                                                                            %>
-                                                                                                    </span>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                            <% } } else { %>
-                                                                                                <div
-                                                                                                    class="empty-status-panel">
-                                                                                                    <svg width="48"
-                                                                                                        height="48"
-                                                                                                        viewBox="0 0 24 24"
-                                                                                                        fill="none"
-                                                                                                        stroke="currentColor"
-                                                                                                        stroke-width="1.5">
-                                                                                                        <path
-                                                                                                            d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                                                                                                        <path
-                                                                                                            d="M13.73 21a2 2 0 0 1-3.46 0" />
-                                                                                                    </svg>
-                                                                                                    <span
-                                                                                                        style="font-weight:700; color:var(--text-main);">Không
-                                                                                                        có thông báo
-                                                                                                        nào</span>
-                                                                                                    <p
-                                                                                                        style="font-size:0.85rem; max-width:400px; margin:0;">
-                                                                                                        Bạn sẽ nhận được
-                                                                                                        thông báo về các
-                                                                                                        cập nhật hệ
-                                                                                                        thống, kết quả
-                                                                                                        luyện tập và tin
-                                                                                                        nhắn từ ban quản
-                                                                                                        trị tại đây.</p>
-                                                                                                </div>
-                                                                                                <% } %>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </section>
-
-                                                                    <!-- ========================================== -->
-                                                                    <!-- TAB 7: HỖ TRỢ HỌC TẬP                      -->
-                                                                    <!-- ========================================== -->
-                                                                    <section id="tab-support" class="tab-pane <%= "tab-support".equals(activeTab) ? "active-pane" : "" %>">
-                                                                        <!-- Bảng Header Tích hợp liền khối cho Hỗ trợ học tập -->
-                                                                        <div class="profile-tab-panel">
-                                                                            <div class="profile-tab-body">
-                                                                                <div class="section-data-card profile-tab-fill-card"
-                                                                                    style="box-shadow:none; border:none; padding:0; margin:0;">
-                                                                                    <div class="card-header-layout">
-                                                                                        <div class="card-header-title">
-                                                                                            <svg width="20" height="20"
-                                                                                                viewBox="0 0 24 24"
-                                                                                                fill="none"
-                                                                                                stroke="currentColor"
-                                                                                                stroke-width="2.5">
-                                                                                                <circle cx="12" cy="12"
-                                                                                                    r="10" />
-                                                                                                <path
-                                                                                                    d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                                                                                                <line x1="12" y1="17"
-                                                                                                    x2="12.01"
-                                                                                                    y2="17" />
-                                                                                            </svg>
-                                                                                            <span>Trung tâm Hỗ trợ &
-                                                                                                Giải đáp thắc mắc</span>
-                                                                                        </div>
-                                                                                    </div>
-
-                                                                                    <div
-                                                                                        style="padding:1.75rem; display:grid; grid-template-columns:1fr 1fr; gap:1.75rem; flex:1; min-height:0;">
-                                                                                        <div
-                                                                                            style="display:flex; flex-direction:column; justify-content:flex-start;">
-                                                                                            <span
-                                                                                                style="font-weight:800; font-size:1.15rem; color:var(--text-main); display:block; margin-bottom:1rem;">Câu
-                                                                                                hỏi thường gặp</span>
-                                                                                            <div
-                                                                                                style="display:flex; flex-direction:column; gap:1rem;">
-                                                                                                <details
-                                                                                                    style="background:#f1f5f9; padding:1rem 1.1rem; border-radius:0.8rem; cursor:pointer;">
-                                                                                                    <summary
-                                                                                                        style="font-weight:700; font-size:0.85rem; color:var(--text-main);">
-                                                                                                        Làm thế nào để
-                                                                                                        tải xuống bài
-                                                                                                        giảng?</summary>
-                                                                                                    <p
-                                                                                                        style="font-size:0.8rem; color:var(--text-muted); margin:0.5rem 0 0 0;">
-                                                                                                        Học viên có thể
-                                                                                                        tải xuống các
-                                                                                                        file đính kèm
-                                                                                                        miễn phí khi tài
-                                                                                                        liệu đã được
-                                                                                                        duyệt và chuyển
-                                                                                                        sang chế độ hiển
-                                                                                                        thị công khai.
-                                                                                                    </p>
-                                                                                                </details>
-
-                                                                                                <details
-                                                                                                    style="background:#f1f5f9; padding:1rem 1.1rem; border-radius:0.8rem; cursor:pointer;">
-                                                                                                    <summary
-                                                                                                        style="font-weight:700; font-size:0.85rem; color:var(--text-main);">
-                                                                                                        AI tạo câu hỏi
-                                                                                                        ôn tập hoạt động
-                                                                                                        ra sao?
-                                                                                                    </summary>
-                                                                                                    <p
-                                                                                                        style="font-size:0.8rem; color:var(--text-muted); margin:0.5rem 0 0 0;">
-                                                                                                        Trợ lý AI phân
-                                                                                                        tích văn bản từ
-                                                                                                        tài liệu gốc do
-                                                                                                        Giảng viên cung
-                                                                                                        cấp để bóc tách
-                                                                                                        thành các bộ
-                                                                                                        Flashcard trực
-                                                                                                        quan cho học
-                                                                                                        viên luyện tập.
-                                                                                                    </p>
-                                                                                                </details>
-
-                                                                                            </div>
-                                                                                        </div>
-
-                                                                                        <div
-                                                                                            style="padding:1.5rem; border-radius:1.1rem; border:1px solid #e2e8f0; background:#ffffff; display:flex; flex-direction:column; justify-content:center;">
-                                                                                            <span
-                                                                                                style="font-weight:800; font-size:1.05rem; color:var(--text-main); display:block; margin-bottom:0.75rem;">Gửi
-                                                                                                yêu cầu hỗ trợ trực
-                                                                                                tiếp</span>
-                                                                                            <form id="supportForm"
-                                                                                                style="display:flex; flex-direction:column; gap:1rem;">
-                                                                                                <input type="text"
-                                                                                                    name="title"
-                                                                                                    required
-                                                                                                    placeholder="Tiêu đề cần hỗ trợ..."
-                                                                                                    style="padding:0.8rem 1rem; border-radius:0.7rem; border:1px solid var(--border-dark); font-size:0.9rem; outline:none;">
-                                                                                                <textarea name="content"
-                                                                                                    rows="5" required
-                                                                                                    placeholder="Mô tả chi tiết khó khăn bạn đang gặp phải..."
-                                                                                                    style="padding:0.8rem 1rem; border-radius:0.7rem; border:1px solid var(--border-dark); font-size:0.9rem; outline:none; resize:none;"></textarea>
-                                                                                                <button type="submit"
-                                                                                                    class="btn btn-primary"
-                                                                                                    style="padding:0.75rem; border-radius:0.7rem; font-size:0.9rem;">Gửi
-                                                                                                    tin nhắn</button>
-                                                                                            </form>
-                                                                                            <div style="border-top:1px solid #e2e8f0; margin-top:1.25rem; padding-top:1rem;">
-                                                                                                <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:0.75rem;">
-                                                                                                    <span style="font-weight:800; color:var(--text-main); font-size:0.9rem;">Lịch sử hỗ trợ</span>
-                                                                                                    <span style="font-size:0.72rem; font-weight:800; color:#059669; background:#dcfce7; border-radius:999px; padding:0.18rem 0.6rem;"><%= userSupportTickets != null ? userSupportTickets.size() : 0 %> yêu cầu</span>
-                                                                                                </div>
-                                                                                                <div style="display:flex; flex-direction:column; gap:0.65rem;">
-                                                                                                    <% if (userSupportTickets != null && !userSupportTickets.isEmpty()) {
-                                                                                                        for (SupportTicket ticket : userSupportTickets) {
-                                                                                                            String ticketTime = ticket.getLatestMessageAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(ticket.getLatestMessageAt()) : "";
-                                                                                                    %>
-                                                                                                    <a href="${pageContext.request.contextPath}/student-profile?tab=support&supportTicketId=<%= h(ticket.getId()) %>" style="display:block; text-decoration:none; border:1px solid #e2e8f0; border-radius:0.8rem; padding:0.85rem; background:#f8fafc;">
-                                                                                                        <span style="display:block; color:var(--text-main); font-weight:800; font-size:0.82rem;"><%= h(ticket.getTitle()) %></span>
-                                                                                                        <span style="display:block; color:#64748b; font-weight:650; font-size:0.72rem; margin-top:0.2rem;"><%= h(ticket.getStatus()) %> · <%= ticketTime %></span>
-                                                                                                        <span style="display:block; color:#475569; font-size:0.74rem; margin-top:0.4rem; line-height:1.45;"><%= h(ticket.getLatestMessage()) %></span>
-                                                                                                    </a>
-                                                                                                    <% } } else { %>
-                                                                                                    <div style="border:1px dashed #cbd5e1; border-radius:0.8rem; padding:0.9rem; text-align:center; color:#64748b; font-weight:700; font-size:0.8rem;">Bạn chưa gửi yêu cầu hỗ trợ nào.</div>
-                                                                                                    <% } %>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </section>
-
-                                                        </main>
-                                                        </div><!-- /dashboard-main-section -->
-
-                                                        </div><!-- /dashboard-body -->
-
-                                                    </div><!-- /app-dashboard-container -->
-
-                                                    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=block">
+</head>
+<body class="student-profile-page">
+
+    <%
+        User user = (User) request.getAttribute("user");
+        if (user == null) {
+            user = (User) session.getAttribute("loggedUser");
+        }
+        List<Role> roles = (user != null) ? user.getRoles() : null;
+
+        String joinDate = "Chưa cập nhật";
+        if (user != null && user.getCreatedAt() != null) {
+            joinDate = new SimpleDateFormat("dd/MM/yyyy").format(user.getCreatedAt());
+        }
+
+        String currentDateDisplay = new SimpleDateFormat("'Hôm nay,' dd/MM/yyyy").format(new Date());
+
+        String initials = "H";
+        if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
+            String[] parts = user.getDisplayName().trim().split("\\s+");
+            initials = parts[parts.length - 1].substring(0, 1).toUpperCase();
+        }
+
+        List<Notification> notifications = (List<Notification>) request.getAttribute("notifications");
+        List<SupportTicket> userSupportTickets = (List<SupportTicket>) request.getAttribute("userSupportTickets");
+        SupportTicket selectedSupportTicket = (SupportTicket) request.getAttribute("selectedSupportTicket");
+        List<SupportMessage> supportMessages = (List<SupportMessage>) request.getAttribute("supportMessages");
+
+        String initialTab = request.getParameter("tab");
+        if (initialTab == null || initialTab.trim().isEmpty()) {
+            initialTab = "tab-dashboard";
+        } else {
+            initialTab = initialTab.trim();
+            if (!initialTab.startsWith("tab-")) {
+                initialTab = "tab-" + initialTab;
+            }
+        }
+    %>
+
+    <%@ include file="/WEB-INF/fragments/profile-role-label.jspf" %>
+
+
+
+    <!-- ===== DÀN TRANG CHÍNH THEO BỐ CỤC PREMIUM ĐỒNG BỘ DONEZO ===== -->
+    <div class="app-dashboard-container">
+        
+        <!-- KÊNH SIDEBAR TRÁI (LEFT PANE) -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-brand-horizontal">
+                <a href="${pageContext.request.contextPath}/index" class="brand-avatar-box" title="Trang chủ">
+                    <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="Hipzi Logo">
+                </a>
+                <div class="brand-text-col">
+                    <span class="brand-title">Hipzi</span>
+                    <span class="brand-subtitle">Platform</span>
+                </div>
+                <button type="button" class="sidebar-toggle-btn" title="Thu gọn / Mở rộng" onclick="toggleSidebar()">
+                    <svg class="icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M16 15l-3-3 3-3"/></svg>
+                    <svg class="icon-expand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: none;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M13 9l3 3-3 3"/></svg>
+                </button>
+            </div>
+            
+            <div class="sidebar-section-label">Tổng quan</div>
+            <ul class="sidebar-menu">
+                <li>
+                    <a id="nav-tab-dashboard" class="<%= "tab-dashboard".equals(initialTab) ? "active" : "" %>" onclick="switchTab('tab-dashboard')" title="Tổng quan học tập">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                        <span>Tổng quan học tập</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-profile" class="<%= ("tab-profile".equals(initialTab) || "tab-edit".equals(initialTab)) ? "active" : "" %>" onclick="switchTab('tab-profile')" title="Hồ sơ cá nhân">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span>Hồ sơ cá nhân</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-support" class="<%= "tab-support".equals(initialTab) ? "active" : "" %>" onclick="switchTab('tab-support')" title="Hỗ trợ học tập">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <span>Hỗ trợ học tập</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-section-label">Học tập & Luyện thi</div>
+            <ul class="sidebar-menu">
+                <li>
+                    <a id="nav-tab-materials" class="<%= "tab-materials".equals(initialTab) ? "active" : "" %>" onclick="switchTab('tab-materials')" title="Tài liệu đã lưu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                        <span>Tài liệu đã lưu</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-history" class="<%= "tab-history".equals(initialTab) ? "active" : "" %>" onclick="switchTab('tab-history')" title="Lịch sử học tập">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>Lịch sử học tập</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- KÊNH PHẢI CHÍNH -->
+        <div class="dashboard-main-section">
+            
+            <!-- TOP BAR ĐỒNG BỘ DONEZO -->
+            <div class="dashboard-top-bar">
+                <div class="top-bar-search-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" placeholder="Tìm kiếm tác vụ...">
+
+                </div>
+
+                <div class="top-bar-right">
+                    <!-- Toggle giao diện Sáng / Tối -->
+                    <div class="nav-bell-trigger" title="Chuyển chế độ sáng/tối" onclick="alert('Chức năng chuyển đổi giao diện sáng/tối đang được phát triển.')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    </div>
+
+                    <!-- Notification dropdown fragment -->
+                    <%@ include file="/WEB-INF/fragments/notification-bell.jspf" %>
+
+                    <!-- Nút Đăng xuất -->
+                    <a href="${pageContext.request.contextPath}/logout" class="nav-bell-trigger" title="Đăng xuất" style="text-decoration: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    </a>
+
+                    <!-- User info card -->
+                    <div class="top-bar-user-card" onclick="switchTab('tab-profile')">
+                        <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+                            <img src="<%= user.getAvatarUrl() %>" class="top-bar-avatar" alt="Avatar">
+                        <% } else { %>
+                            <div class="top-bar-avatar-placeholder"><%= initials %></div>
+                        <% } %>
+                        <div class="top-bar-user-info">
+                            <span class="top-bar-user-name"><%= user != null ? user.getDisplayName() : "Học viên HIPZI" %></span>
+                            <span class="top-bar-user-email"><%= user != null ? user.getEmail() : "info@hipzi.vn" %></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHỨA WORKSPACE TAB PANES -->
+            <main class="dashboard-content-wrapper">
+
+            <!-- Banner dải màu trang trí phía trên cùng (Top Accent Strip) -->
+
+
+            <!-- Thông báo nhắc nhở Onboarding (Nếu đăng ký qua Google mà chưa chọn role) -->
+            <% if (user != null && !user.isOnboardingCompleted()) { %>
+            <div class="onboarding-banner" style="margin-top: -0.5rem;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <p>Hồ sơ của bạn đang chờ hoàn tất thiết lập vai trò học viên sử dụng nền tảng.</p>
+                <a href="${pageContext.request.contextPath}/onboarding">Hoàn tất ngay</a>
+            </div>
+            <% } %>
+
+            <!-- ========================================== -->
+            <!-- TAB 1: HỒ SƠ CÁ NHÂN TỔNG QUAN             -->
+            <!-- ========================================== -->
+            <section id="tab-dashboard" class="tab-pane <%= "tab-dashboard".equals(initialTab) ? "active-pane" : "" %>">
+">
+                <div class="tab-pane-header">
+                    <div class="tab-pane-header-left">
+                        <h1>Tổng quan học tập</h1>
+                        <p>Theo dõi nhanh tiến độ học tập, tài liệu đã lưu và lịch học của bạn trên HIPZI.</p>
+                    </div>
+                    <div class="tab-pane-header-right">
+                        <div class="date-badge">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span><%= currentDateDisplay %></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- METRICS ROW (Donezo style) -->
+                <div class="metrics-row">
+                    <!-- Metric 1: Active classrooms -->
+                    <div class="metric-card primary" onclick="switchTab('tab-materials')">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Tài liệu đã lưu</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-card-value">0</div>
+                            <span class="metric-card-sub">Tài liệu</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        </div>
+                    </div>
+
+                    <!-- Metric 2: Active courses -->
+                    <div class="metric-card secondary" onclick="switchTab('tab-history')">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Lớp đang học</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-card-value">0</div>
+                            <span class="metric-card-sub" style="background:#f5f3ff; color:#7c3aed;">Đang tham gia</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#7c3aed; background:#f5f3ff;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                        </div>
+                    </div>
+
+                    <!-- Metric 3: Uploaded materials -->
+                    <div class="metric-card secondary" onclick="switchTab('tab-history')">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Bài tập hoàn thành</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-card-value">0</div>
+                            <span class="metric-card-sub" style="background:#fff7ed; color:#ea580c;">Bài tập</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#ea580c; background:#fff7ed;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        </div>
+                    </div>
+
+                    <!-- Metric 4: Teaching schedule placeholder -->
+                    <div class="metric-card secondary" onclick="switchTab('tab-history')" style="cursor: pointer; border-top-color: #3b82f6;">
+                        <div class="metric-card-top">
+                            <span class="metric-card-title">Xem lịch học</span>
+                            <div class="metric-arrow-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-card-value" style="font-size: 1.45rem; margin-top: 1.25rem;">Xem lịch trình</div>
+                            <span class="metric-card-sub" style="background:#eff6ff; color:#2563eb;">Tuần này</span>
+                        </div>
+                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#2563eb; background:#eff6ff;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h4"/><path d="M8 18h8"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overview-analytics-grid">
+                    <div class="overview-chart-card">
+                        <div class="overview-chart-head">
+                            <div class="overview-chart-title-block">
+                                <h2 class="overview-chart-title">Th&#7901;i l&#432;&#7907;ng gi&#7843;ng d&#7841;y</h2>
+                                <div class="overview-chart-summary" aria-label="T&#7893;ng quan th&#7901;i l&#432;&#7907;ng gi&#7843;ng d&#7841;y">
+                                    <span class="overview-summary-pill taught">
+                                        <strong id="overviewTotalTaught">0</strong>
+                                        <span>gi&#7901; &#273;&#227; d&#7841;y</span>
+                                    </span>
+                                    <span class="overview-summary-pill trend">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: -0.2rem;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                                        <strong>12%</strong>
+                                        <span>so với tuần trước</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="overview-period-switch" id="overviewPeriodSwitch" data-active="week" aria-label="Chọn khoảng thời gian biểu đồ">
+                                <button type="button" class="overview-period-btn is-active" data-period="week" aria-pressed="true">Tuần</button>
+                                <button type="button" class="overview-period-btn" data-period="month" aria-pressed="false">Tháng</button>
+                            </div>
+                        </div>
+
+                        <div class="overview-line-wrap" id="overviewLineWrap">
+                            <svg class="overview-line-chart" viewBox="0 0 640 214" role="img" aria-label="Biểu đồ thời lượng giảng dạy">
+                                <defs>
+                                    <linearGradient id="overviewTaughtFill" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#059669" stop-opacity="0.18"/>
+                                        <stop offset="100%" stop-color="#059669" stop-opacity="0"/>
+                                    </linearGradient>
+                                </defs>
+                                <line x1="52" y1="24" x2="610" y2="24" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="52" y1="70" x2="610" y2="70" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="52" y1="116" x2="610" y2="116" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="52" y1="162" x2="610" y2="162" stroke="#e2e8f0" stroke-width="1"/>
+
+                                <text x="4" y="28">6 giờ</text>
+                                <text x="4" y="74">4 giờ</text>
+                                <text x="4" y="120">2 giờ</text>
+                                <text x="4" y="166">0 giờ</text>
+
+                                <path id="overviewTaughtArea" d="M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62 L610 162 L64 162 Z" fill="url(#overviewTaughtFill)"/>
+                                <path id="overviewTaughtLine" d="M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62" fill="none" stroke="#059669" stroke-width="3.2" stroke-linecap="round"/>
+
+                                <line id="overviewGuideLine" x1="250" y1="34" x2="250" y2="174" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 6"/>
+                                <circle id="overviewTaughtDot" cx="250" cy="64" r="5" fill="#059669" stroke="#ffffff" stroke-width="3"/>
+
+                                <text id="overviewTick1" x="58" y="202">01/05</text>
+                                <text id="overviewTick2" x="150" y="202">02/05</text>
+                                <text id="overviewTick3" x="240" y="202">03/05</text>
+                                <text id="overviewTick4" x="332" y="202">04/05</text>
+                                <text id="overviewTick5" x="424" y="202">05/05</text>
+                                <text id="overviewTick6" x="516" y="202">06/05</text>
+                                <text id="overviewTick7" x="586" y="202">07/05</text>
+                            </svg>
+
+                            <div class="overview-line-tooltip" id="overviewLineTooltip">
+                                <strong id="overviewTooltipDate">03/05/2026</strong>
+                                <div class="overview-tooltip-row">
+                                    <span class="overview-tooltip-label"><span class="overview-tooltip-dot" style="background:#059669;"></span>Đã học</span>
+                                    <span id="overviewTooltipTaught">4 giờ</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="overview-chart-legend">
+                            <span class="overview-legend-item"><span class="overview-legend-dot" style="background:#059669;"></span>Giờ đã học</span>
+                        </div>
+                    </div>
+
+                    <div class="overview-chart-card">
+                        <div class="overview-chart-head">
+                            <div>
+                                <h2 class="overview-chart-title">Phân bổ thời gian học</h2>
+                            </div>
+                            <span class="overview-chart-chip">Mẫu</span>
+                        </div>
+
+                        <div class="overview-donut-chart-container" aria-label="Biểu đồ tròn đánh giá học sinh">
+                            <div class="overview-donut-chart">
+                                <div class="overview-donut-hole">
+                                    <div class="overview-donut-score">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                        <span>4.2</span>
+                                    </div>
+                                    <span class="overview-donut-total">67 đánh giá</span>
+                                </div>
+                            </div>
+                            <div class="overview-donut-legend">
+                                <div class="overview-donut-legend-item">
+                                    <div class="overview-donut-legend-color" style="background: #059669;"></div>
+                                    <div class="overview-donut-legend-label">Bài thi</div>
+                                    <div class="overview-donut-legend-value">
+                                        68%
+                                        <div class="overview-donut-progress-bg">
+                                            <div class="overview-donut-progress-fill" style="width: 68%; background: #059669;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="overview-donut-legend-item">
+                                    <div class="overview-donut-legend-color" style="background: #f59e0b;"></div>
+                                    <div class="overview-donut-legend-label">Thực hành</div>
+                                    <div class="overview-donut-legend-value">
+                                        22%
+                                        <div class="overview-donut-progress-bg">
+                                            <div class="overview-donut-progress-fill" style="width: 22%; background: #f59e0b;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="overview-donut-legend-item">
+                                    <div class="overview-donut-legend-color" style="background: #ef4444;"></div>
+                                    <div class="overview-donut-legend-label">Lý thuyết</div>
+                                    <div class="overview-donut-legend-value">
+                                        10%
+                                        <div class="overview-donut-progress-bg">
+                                            <div class="overview-donut-progress-fill" style="width: 10%; background: #ef4444;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <section id="tab-materials" class="tab-pane <%= "tab-materials".equals(initialTab) ? "active-pane" : "" %>">
+                <div class="tab-pane-header">
+                    <div class="tab-pane-header-left">
+                        <h1>Tài liệu đã lưu</h1>
+                        <p>Danh sách các tài liệu học tập bạn đã lưu để ôn tập.</p>
+                    </div>
+                </div>
+                <div class="premium-card" style="margin-bottom: 1.5rem;">
+                    <div class="premium-card-header">
+                        <h3 class="premium-card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                            Tài liệu của tôi
+                        </h3>
+                    </div>
+                    <div class="dashboard-list" style="min-height: 200px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-weight: 600;">
+                        Chưa có tài liệu nào được lưu.
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-history" class="tab-pane <%= "tab-history".equals(initialTab) ? "active-pane" : "" %>">
+                <div class="tab-pane-header">
+                    <div class="tab-pane-header-left">
+                        <h1>Lịch sử học tập</h1>
+                        <p>Theo dõi quá trình học tập và kết quả luyện thi của bạn.</p>
+                    </div>
+                </div>
+                <div class="premium-card" style="margin-bottom: 1.5rem;">
+                    <div class="premium-card-header">
+                        <h3 class="premium-card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Hoạt động gần đây
+                        </h3>
+                    </div>
+                    <div class="dashboard-list" style="min-height: 200px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-weight: 600;">
+                        Chưa có hoạt động nào được ghi nhận.
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-profile" class="tab-pane <%= "tab-profile".equals(initialTab) ? "active-pane" : "" %>">
+                <div class="tab-pane-header">
+                    <div class="tab-pane-header-left">
+                        <h1>Hồ sơ cá nhân</h1>
+                        <p>Quản lý thông tin tài khoản, mật khẩu đăng nhập và xác thực hai lớp.</p>
+                    </div>
+                    <div class="tab-pane-header-right">
+                        <div class="date-badge">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span><%= currentDateDisplay %></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHI TIẾT TÀI KHOẢN -->
+                <div class="premium-card" style="margin-top: 0.5rem;">
+                    <div class="premium-card-header">
+                        <span class="premium-card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Chi tiết tài khoản
+                        </span>
+                        <div class="account-header-actions">
+                            <button type="button" id="accountEditTrigger" onclick="toggleAccountNameEdit(true)" class="btn-premium profile-edit-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                <span>Chỉnh sửa</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </button>
+                            <div id="accountEditActions" class="account-edit-actions" style="display: none;">
+                                <button type="button" class="btn-premium account-cancel-btn" onclick="toggleAccountNameEdit(false)" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">Hủy bỏ</button>
+                                <button type="submit" form="accountNameInlineForm" class="btn-premium account-save-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">Lưu</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="studentAvatarUploadForm" action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" style="display:none;">
+                        <input type="hidden" name="action" value="updateAvatar">
+                        <input type="file" id="studentAvatarFile" name="avatarFile" accept="image/*" onchange="document.getElementById('studentAvatarUploadForm').submit();">
+                    </form>
+
+                    <div class="account-summary-panel">
+                        <div class="account-summary-main">
+                            <div class="account-avatar-wrap">
+                                <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+                                    <img src="<%= user.getAvatarUrl() %>" class="account-avatar-img" alt="Avatar">
+                                <% } else { %>
+                                    <div class="account-avatar-placeholder"><%= initials %></div>
+                                <% } %>
+                                <button type="button" class="avatar-camera-btn" title="Cập nhật ảnh đại diện" onclick="document.getElementById('studentAvatarFile').click();">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                </button>
+                            </div>
+                            <div class="account-identity">
+                                <h3 class="account-name"><%= user != null ? user.getDisplayName() : "Học viên HIPZI" %></h3>
+                                <form id="accountNameInlineForm" class="account-name-edit-form" action="${pageContext.request.contextPath}/profile" method="POST" style="display: none;">
+                                    <input type="hidden" name="action" value="updateName">
+                                    <input id="accountDisplayNameInput" class="account-name-input" type="text" name="displayName" required value="<%= user != null ? user.getDisplayName() : "" %>" placeholder="Nhập họ và tên của bạn...">
+                                </form>
+                                <span class="account-email" title="<%= user != null ? user.getEmail() : "" %>"><%= user != null ? user.getEmail() : "info@hipzi.vn" %></span>
+                            </div>
+                        </div>
+                        <div class="account-side-meta">
+                            <div class="account-meta-pill">
+                                <span class="account-meta-label">Ngày tham gia</span>
+                                <span class="account-meta-value"><%= joinDate %></span>
+                            </div>
+                            <div class="account-meta-pill">
+                                <span class="account-meta-label">Vai trò</span>
+                                <span class="account-meta-value">
+                                    <span class="role-tag student">Học viên</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LƯỚI HAI KHUNG CON BÊN DƯỚI -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 0.5rem;">
+                    
+                    <!-- KHUNG TRÁI: MẬT KHẨU ĐĂNG NHẬP -->
+                    <div class="premium-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+                            <div>
+                                <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Mật khẩu đăng nhập</span>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; line-height: 1.5; margin: 0.35rem 0 0 0;">Cập nhật mật khẩu định kỳ để bảo mật tốt hơn.</p>
+                            </div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.1rem; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 0.4rem; color: #10b981; font-weight: 700; font-size: 0.85rem;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                <span>Mật khẩu mạnh</span>
+                            </div>
+                            <button type="button" onclick="document.getElementById('pwd-modal-overlay').style.display='flex';" class="btn-premium primary" style="background: #059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
+                                <span>Đổi mật khẩu</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- KHUNG PHẢI: BẢO MẬT 2 LỚP (OTP) -->
+                    <div class="premium-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Bảo mật 2 lớp (OTP)</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.1rem;">
+                            <div>
+                                <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); display: block;">Mã OTP qua Email</span>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; line-height: 1.5; margin: 0.35rem 0 0 0;">Tăng cường bảo vệ tài khoản khi đăng nhập ở thiết bị lạ.</p>
+                            </div>
+                            
+                            <!-- Form ngầm xử lý toggle 2FA -->
+                            <form id="toggle2faForm" action="${pageContext.request.contextPath}/profile" method="POST" style="display: none;">
+                                <input type="hidden" name="action" value="toggle2FA">
+                            </form>
+
+                            <!-- NÚT TOGGLE SWITCH THỰC TẾ -->
+                            <% boolean is2fa = (user != null && user.isTwoFactorEnabled()); %>
+                            <div id="otp-toggle-btn" onclick="document.getElementById('toggle2faForm').submit();" style="width: 44px; height: 24px; background: <%= is2fa ? "#10b981" : "#cbd5e1" %>; border-radius: 12px; padding: 2px; cursor: pointer; transition: background 0.3s ease; display: flex; align-items: center;">
+                                <div class="toggle-circle" style="width: 20px; height: 20px; background: #ffffff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); transform: translateX(<%= is2fa ? "20px" : "0" %>);"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ========================================== -->
+            <!-- TAB: ĐĂNG KHÓA HỌC                         -->
+            <!-- ========================================== -->
+            
+
+            <!-- ========================================== -->
+            <!-- TAB 4: ĐĂNG TẢI TÀI LIỆU                   -->
+            <!-- ========================================== -->
+            
+
+            <!-- ========================================== -->
+            <!-- TAB 7: HỐ TRỢ HỌC TẬP                      -->
+            <!-- ========================================== -->
+            <section id="tab-support" class="tab-pane <%= "tab-support".equals(initialTab) ? "active-pane" : "" %>">
+                <div class="tab-pane-header">
+                    <div class="tab-pane-header-left">
+                        <h1>Hỗ trợ học tập</h1>
+                        <p>Gửi yêu cầu hỗ trợ học tập và kỹ thuật tới ban quản trị HIPZI.</p>
+                    </div>
+                    <div class="tab-pane-header-right">
+                        <div class="date-badge">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span><%= currentDateDisplay %></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid-layout" style="align-items: start;">
+                    <!-- SUPPORT FORM -->
+                    <div class="premium-card">
+                        <div class="premium-card-header" style="border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                            <span class="premium-card-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                Yêu cầu hỗ trợ
+                            </span>
+                        </div>
+                        <form id="supportForm" style="display: flex; flex-direction: column; gap: 1.25rem;" class="form-edit-layout">
+                            <div class="form-group-premium">
+                                <label>Tiêu đề cần hỗ trợ <span style="color:#ef4444;">*</span></label>
+                                <input type="text" name="title" required placeholder="Nhập tiêu đề vắn tắt...">
+                            </div>
+                            <div class="form-group-premium">
+                                <label>Mô tả chi tiết <span style="color:#ef4444;">*</span></label>
+                                <textarea name="content" rows="4" required placeholder="Mô tả khó khăn bạn đang gặp phải..."></textarea>
+                            </div>
+                            <div class="support-submit-row" style="display: flex; justify-content: flex-end;">
+                                <button type="submit" class="btn-premium primary">Gửi tin nhắn</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- SUPPORT HISTORY -->
+                    <div class="premium-card">
+                        <div class="premium-card-header" style="border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem; margin-bottom: 1.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+                            <span class="premium-card-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Lịch sử hỗ trợ
+                            </span>
+                            <span style="font-size:0.72rem; font-weight:850; color:#059669; background:#dcfce7; border-radius:999px; padding:0.18rem 0.6rem;"><%= userSupportTickets != null ? userSupportTickets.size() : 0 %> yêu cầu</span>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                            <% if (userSupportTickets != null && !userSupportTickets.isEmpty()) {
+                                for (SupportTicket ticket : userSupportTickets) {
+                                    String ticketTime = ticket.getLatestMessageAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(ticket.getLatestMessageAt()) : "";
+                            %>
+                            <a href="${pageContext.request.contextPath}/student-profile?tab=support&supportTicketId=<%= h(ticket.getId()) %>" style="display:block; text-decoration:none; border:1px solid #e2e8f0; border-radius:0.9rem; padding:0.9rem; background:#f8fafc; transition: all 0.2s ease;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'">
+                                <span style="display:block; color:#0f172a; font-weight:850; font-size:0.88rem;"><%= h(ticket.getTitle()) %></span>
+                                <span style="display:block; color:#64748b; font-weight:650; font-size:0.76rem; margin-top:0.25rem;"><%= h(ticket.getStatus()) %> · <%= ticketTime %></span>
+                                <span style="display:block; color:#475569; font-size:0.78rem; margin-top:0.45rem; line-height:1.45;"><%= h(ticket.getLatestMessage()) %></span>
+                            </a>
+                            <% } } else { %>
+                            <div style="border:1px dashed #cbd5e1; border-radius:0.9rem; padding:1rem; text-align:center; color:#64748b; font-weight:750;">Bạn chưa gửi yêu cầu hỗ trợ nào.</div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- ========================================== -->
+            <!-- TAB: THỐNG KÊ SỐ DƯ (VÍ TIỀN)              -->
+            <!-- ========================================== -->
+            
+
+            <!-- ========================================== -->
+            <!-- TAB: LỊCH SỬ GIAO DỊCH (VÍ TIỀN)           -->
+            <!-- ========================================== -->
+            
+
+            <!-- ========================================== -->
+            <!-- MODAL OVERLAY: ĐỔI MẬT KHẨU HỆ THỐNG       -->
+            <!-- ========================================== -->
+            <!-- ========================================== -->
+            <div id="pwd-modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.6); backdrop-filter:blur(4px); z-index:9999; display:none; justify-content:center; align-items:center; padding:1rem;">
+                <div style="background:#ffffff; border-radius:1.5rem; width:100%; max-width:440px; padding:2rem; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); border:1px solid #e2e8f0; animation:modalScaleUp 0.25s ease-out;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                        <div style="display:flex; align-items:center; gap:0.65rem;">
+                            <div style="width:36px; height:36px; border-radius:50%; background:#fef3c7; color:#d97706; display:flex; justify-content:center; align-items:center;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            </div>
+                            <span style="font-size:1.25rem; font-weight:800; color:var(--text-main);">Đổi mật khẩu</span>
+                        </div>
+                        <button type="button" onclick="document.getElementById('pwd-modal-overlay').style.display='none';" style="background:none; border:none; font-size:1.25rem; color:var(--text-muted); cursor:pointer;">&times;</button>
+                    </div>
+
+                    <form action="${pageContext.request.contextPath}/profile" method="POST" class="form-edit-layout" style="display:flex; flex-direction:column; gap:1.25rem; padding: 0;">
+                        <input type="hidden" name="action" value="changePassword">
+                        
+                        <div class="form-group-premium">
+                            <label>Mật khẩu hiện tại <span style="color:#ef4444;">*</span></label>
+                            <input type="password" name="currentPassword" required placeholder="••••••••">
+                        </div>
+
+                        <div class="form-group-premium">
+                            <label>Mật khẩu mới <span style="color:#ef4444;">*</span></label>
+                            <input type="password" name="newPassword" required minlength="6" placeholder="Mật khẩu ít nhất 6 ký tự">
+                        </div>
+
+                        <div class="form-group-premium">
+                            <label>Xác nhận mật khẩu mới <span style="color:#ef4444;">*</span></label>
+                            <input type="password" name="confirmPassword" required minlength="6" placeholder="Nhập lại mật khẩu mới">
+                        </div>
+
+                        <div class="form-actions-row-premium">
+                            <button type="button" onclick="document.getElementById('pwd-modal-overlay').style.display='none';" class="btn-premium secondary">Hủy bỏ</button>
+                            <button type="submit" class="btn-premium primary" style="background:#059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">Cập nhật ngay</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            </main>
+        </div>
+    </div>
+
+    
     <!-- ===== JAVASCRIPT XỬ LÝ CHUYỂN TAB MƯỢT MÀ ===== -->
-                                                    <script>
-                                                        function showToast(message, type = 'success') {
-                                                            let container = document.getElementById('custom-toast-container');
-                                                            if (!container) {
-                                                                container = document.createElement('div');
-                                                                container.id = 'custom-toast-container';
-                                                                container.className = 'custom-toast-container';
-                                                                document.body.appendChild(container);
-                                                            }
+    <script>
+        function showToast(message, type = 'success') {
+            let container = document.getElementById('custom-toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'custom-toast-container';
+                container.className = 'custom-toast-container';
+                document.body.appendChild(container);
+            }
 
-                                                            const toast = document.createElement('div');
-                                                            toast.className = 'custom-toast-msg ' + (type === 'info' ? 'info' : '');
+            const toast = document.createElement('div');
+            toast.className = 'custom-toast-msg ' + (type === 'info' ? 'info' : '');
+            
+            const iconSvg = type === 'info' 
+                ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+                : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+            
+            toast.innerHTML = iconSvg + '<span>' + message + '</span>';
+            container.appendChild(toast);
 
-                                                            const iconSvg = type === 'info'
-                                                                ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
-                                                                : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
 
-                                                            toast.innerHTML = iconSvg + '<span>' + message + '</span>';
-                                                            container.appendChild(toast);
+        let teacherTabSwitchTimer;
+        let teacherFrameResizeObserver;
 
-                                                            setTimeout(() => {
-                                                                toast.remove();
-                                                            }, 3000);
-                                                        }
+        function syncTeacherDashboardFrameHeight() {
+            const dashboard = document.querySelector('.app-dashboard-container');
+            const contentWrapper = document.querySelector('.dashboard-content-wrapper');
+            const sidebar = document.querySelector('.dashboard-sidebar');
+            if (!dashboard || !contentWrapper) {
+                return;
+            }
 
-                                                        function copyStudentCode(code) {
-                                                            code = (code || '').trim();
-                                                            if (!code) return;
+            const dashboardTop = dashboard.getBoundingClientRect().top + window.scrollY;
+            const contentBottom = contentWrapper.getBoundingClientRect().bottom + window.scrollY;
+            const sidebarBottom = sidebar ? sidebar.getBoundingClientRect().bottom + window.scrollY : 0;
+            const layoutBottom = Math.max(contentBottom, sidebarBottom);
+            const frameHeight = Math.ceil(layoutBottom - dashboardTop + 20);
+            const pageBgHeight = Math.ceil(layoutBottom + 20);
+            dashboard.style.setProperty('--teacher-dashboard-frame-height', frameHeight + 'px');
+            document.body.style.setProperty('--teacher-page-bg-height', pageBgHeight + 'px');
+        }
 
-                                                            const notifyCopied = () => showToast('Đã sao chép mã học viên: ' + code, 'success');
-                                                            if (navigator.clipboard && window.isSecureContext) {
-                                                                navigator.clipboard.writeText(code).then(notifyCopied).catch(() => fallbackCopyStudentCode(code, notifyCopied));
-                                                                return;
-                                                            }
-                                                            fallbackCopyStudentCode(code, notifyCopied);
-                                                        }
+        function scheduleTeacherDashboardFrameSync() {
+            requestAnimationFrame(() => {
+                syncTeacherDashboardFrameHeight();
+                requestAnimationFrame(syncTeacherDashboardFrameHeight);
+            });
+        }
 
-                                                        function fallbackCopyStudentCode(code, onDone) {
-                                                            const input = document.createElement('textarea');
-                                                            input.value = code;
-                                                            input.setAttribute('readonly', '');
-                                                            input.style.position = 'fixed';
-                                                            input.style.opacity = '0';
-                                                            document.body.appendChild(input);
-                                                            input.select();
-                                                            document.execCommand('copy');
-                                                            input.remove();
-                                                            onDone();
-                                                        }
+        function observeTeacherDashboardFrame() {
+            const contentWrapper = document.querySelector('.dashboard-content-wrapper');
+            const sidebar = document.querySelector('.dashboard-sidebar');
+            if (!contentWrapper || typeof ResizeObserver === 'undefined') {
+                scheduleTeacherDashboardFrameSync();
+                return;
+            }
 
-                                                        function getProfileTabSlug(tabId) {
-                                                            return tabId.replace(/^tab-/, '');
-                                                        }
+            if (teacherFrameResizeObserver) {
+                teacherFrameResizeObserver.disconnect();
+            }
 
-                                                        function normalizeProfileTabId(tabValue) {
-                                                            if (!tabValue) return '';
-                                                            const normalized = tabValue.startsWith('tab-') ? tabValue : 'tab-' + tabValue;
-                                                            return normalized === 'tab-practice' ? 'tab-dashboard' : normalized;
-                                                        }
+            teacherFrameResizeObserver = new ResizeObserver(scheduleTeacherDashboardFrameSync);
+            teacherFrameResizeObserver.observe(contentWrapper);
+            if (sidebar) {
+                teacherFrameResizeObserver.observe(sidebar);
+            }
+            document.querySelectorAll('.tab-pane').forEach(pane => teacherFrameResizeObserver.observe(pane));
+            scheduleTeacherDashboardFrameSync();
+        }
 
-                                                        function updateProfileTabUrl(targetTabId, replace = false) {
-                                                            if (!window.history || !window.history.pushState) return;
-                                                            const url = new URL(window.location.href);
-                                                            url.searchParams.set('tab', getProfileTabSlug(targetTabId));
-                                                            const state = { profileTab: targetTabId };
-                                                            if (replace) {
-                                                                window.history.replaceState(state, '', url);
-                                                            } else {
-                                                                window.history.pushState(state, '', url);
-                                                            }
-                                                        }
+        function getTeacherTabSlug(tabId) {
+            return tabId.replace(/^tab-/, '');
+        }
 
-                                                        function settleProfileTabScroll() {
-                                                            const dashboard = document.querySelector('.app-dashboard-container');
-                                                            if (!dashboard) return;
-                                                            const dashboardTop = dashboard.getBoundingClientRect().top + window.scrollY;
-                                                            const headerOffset = window.innerWidth < 1024 ? 72 : 96;
-                                                            const targetTop = Math.max(dashboardTop - headerOffset, 0);
-                                                            const viewportBottom = window.scrollY + window.innerHeight;
-                                                            const dashboardBottom = dashboardTop + dashboard.offsetHeight;
-                                                            const isDeepInsideOldTab = window.scrollY > targetTop + 120;
-                                                            const isBelowNewContent = viewportBottom > dashboardBottom + 80;
-                                                            if (isDeepInsideOldTab || isBelowNewContent) {
-                                                                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                                                                window.scrollTo({ top: targetTop, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
-                                                            }
-                                                        }
+        function normalizeStudentTabId(tabValue) {
+            if (!tabValue) {
+                return '';
+            }
+            return tabValue.startsWith('tab-') ? tabValue : 'tab-' + tabValue;
+        }
 
-                                                        // Map tab IDs → Vietnamese titles for the unified header
-                                                        const TAB_TITLES = {
-                                                            'tab-dashboard':     'Tổng quan học tập',
-                                                            'tab-profile':       'Hồ sơ cá nhân',
-                                                            'tab-edit':          'Cập nhật thông tin học viên',
-                                                            'tab-security':      'Bảo mật và mật khẩu',
-                                                            'tab-materials':     'Tài liệu đã lưu',
-                                                            'tab-notifications': 'Thông báo hệ thống',
-                                                            'tab-support':       'Hỗ trợ học tập',
-                                                        };
+        function updateStudentTabUrl(targetTabId, replace = false) {
+            if (!window.history || !window.history.pushState) {
+                return;
+            }
 
-                                                        function updateUnifiedHeaderTitle(tabId) {
-                                                            const el = document.getElementById('unified-header-title');
-                                                            if (!el) return;
-                                                            const title = TAB_TITLES[tabId] || '';
-                                                            if (!title) return;
-                                                            // Smooth fade swap
-                                                            el.style.opacity = '0';
-                                                            setTimeout(() => {
-                                                                el.textContent = title;
-                                                                el.style.opacity = '1';
-                                                            }, 160);
-                                                        }
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', getTeacherTabSlug(targetTabId));
+            const state = { teacherTab: targetTabId };
+            if (replace) {
+                window.history.replaceState(state, '', url);
+            } else {
+                window.history.pushState(state, '', url);
+            }
+        }
 
-                                                        function toggleSidebar() {
-                                                            const container = document.querySelector('.app-dashboard-container');
-                                                            if (!container) return;
-                                                            container.classList.toggle('collapsed');
-                                                            localStorage.setItem('studentSidebarCollapsed', container.classList.contains('collapsed') ? 'true' : 'false');
-                                                        }
+        const TAB_TITLES = {
+            'tab-materials': 'Đăng kí giảng dạy',
+            'tab-history': 'Đăng kí lớp học',
+            'tab-dashboard': 'Tổng quan học tập',
+            'tab-edit': 'Cập nhật thông tin',
+            'tab-profile': 'Hồ sơ cá nhân',
+            'tab-upload-material': 'Đăng tải tài liệu',
+            'tab-support': 'Hỗ trợ học tập',
+            'tab-balance-stats': 'Thống kê số dư',
+            'tab-transaction-history': 'Lịch sử giao dịch',
+        };
 
-                                                        function switchTab(targetTabId, options = {}) {
-                                                            targetTabId = normalizeProfileTabId(targetTabId);
-                                                            const targetPane = document.getElementById(targetTabId);
-                                                            if (!targetPane || targetPane.classList.contains('active-pane')) {
-                                                                let activeNav = document.getElementById('nav-' + targetTabId);
-                                                                if (!activeNav && targetTabId === 'tab-edit') {
-                                                                    activeNav = document.getElementById('nav-tab-profile');
-                                                                }
-                                                                if (activeNav) activeNav.classList.add('active');
-                                                                const dashboard = document.querySelector('.app-dashboard-container');
-                                                                if (dashboard) dashboard.classList.toggle('is-notifications-tab', targetTabId === 'tab-notifications');
-                                                                if (targetPane && options.updateUrl) updateProfileTabUrl(targetTabId, options.replaceUrl);
-                                                                return;
-                                                            }
-                                                            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active-pane'));
-                                                            document.querySelectorAll('.sidebar-menu a').forEach(link => link.classList.remove('active'));
-                                                            targetPane.classList.add('active-pane');
-                                                            const dashboard = document.querySelector('.app-dashboard-container');
-                                                            if (dashboard) dashboard.classList.toggle('is-notifications-tab', targetTabId === 'tab-notifications');
-                                                            const activeNav = document.getElementById('nav-' + targetTabId);
-                                                            if (activeNav) activeNav.classList.add('active');
-                                                            // Update unified header title
-                                                            updateUnifiedHeaderTitle(targetTabId);
-                                                            if (options.updateUrl !== false) updateProfileTabUrl(targetTabId, options.replaceUrl);
-                                                            requestAnimationFrame(settleProfileTabScroll);
-                                                        }
+        function updateUnifiedHeaderTitle(tabId) {
+            const el = document.getElementById('unified-header-title');
+            const title = TAB_TITLES[tabId];
+            if (!el || !title) return;
+            el.style.opacity = '0';
+            setTimeout(() => {
+                el.textContent = title;
+                el.style.opacity = '1';
+            }, 160);
+        }
 
+        function steadyTeacherTabHeight(previousPane, targetPane) {
+            const contentWrapper = document.querySelector('.dashboard-content-wrapper');
+            if (!contentWrapper || !targetPane) {
+                return;
+            }
+
+            clearTimeout(teacherTabSwitchTimer);
+            const currentHeight = contentWrapper.offsetHeight;
+            const previousHeight = previousPane ? previousPane.offsetHeight : 0;
+            const nextHeight = targetPane.scrollHeight;
+            contentWrapper.classList.add('is-switching-tab');
+            contentWrapper.style.minHeight = Math.max(currentHeight, previousHeight, nextHeight) + 'px';
+
+            teacherTabSwitchTimer = window.setTimeout(() => {
+                contentWrapper.classList.remove('is-switching-tab');
+                contentWrapper.style.minHeight = '';
+                scheduleTeacherDashboardFrameSync();
+            }, 320);
+        }
+
+        function settleTeacherTabScroll() {
+            const dashboard = document.querySelector('.app-dashboard-container');
+            if (!dashboard) {
+                return;
+            }
+
+            const dashboardTop = dashboard.getBoundingClientRect().top + window.scrollY;
+            const headerOffset = window.innerWidth < 1024 ? 72 : 96;
+            const targetTop = Math.max(dashboardTop - headerOffset, 0);
+            const viewportBottom = window.scrollY + window.innerHeight;
+            const dashboardBottom = dashboardTop + dashboard.offsetHeight;
+            const isDeepInsideOldTab = window.scrollY > targetTop + 120;
+            const isBelowNewContent = viewportBottom > dashboardBottom + 80;
+
+            if (isDeepInsideOldTab || isBelowNewContent) {
+                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                window.scrollTo({
+                    top: targetTop,
+                    behavior: prefersReducedMotion ? 'auto' : 'smooth'
+                });
+            }
+        }
+
+        function toggleAccountNameEdit(isEditing) {
+            const nameView = document.querySelector('.account-identity .account-name');
+            const form = document.getElementById('accountNameInlineForm');
+            const editTrigger = document.getElementById('accountEditTrigger');
+            const editActions = document.getElementById('accountEditActions');
+            const input = document.getElementById('accountDisplayNameInput');
+
+            if (!nameView || !form || !editTrigger || !editActions) {
+                return;
+            }
+
+            nameView.style.display = isEditing ? 'none' : '';
+            form.style.display = isEditing ? 'block' : 'none';
+            editTrigger.style.display = isEditing ? 'none' : 'inline-flex';
+            editActions.style.display = isEditing ? 'flex' : 'none';
+
+            if (isEditing && input) {
+                input.focus();
+                input.select();
+            } else if (input) {
+                input.value = input.defaultValue;
+            }
+            scheduleTeacherDashboardFrameSync();
+        }
+
+        function toggleSidebar() {
+            const container = document.querySelector('.app-dashboard-container');
+            if (container) {
+                container.classList.toggle('collapsed');
+                const isCollapsed = container.classList.contains('collapsed');
+                localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true' : 'false');
+                scheduleTeacherDashboardFrameSync();
+            }
+        }
+
+        function switchTab(targetTabId, options = {}) {
+            targetTabId = normalizeStudentTabId(targetTabId);
+            const panes = document.querySelectorAll('.tab-pane');
+            const targetPane = document.getElementById(targetTabId);
+            if (!targetPane || targetPane.classList.contains('active-pane')) {
+                const navLinks = document.querySelectorAll('.sidebar-menu a');
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+                let activeNav = document.getElementById('nav-' + targetTabId);
+                if (!activeNav && targetTabId === 'tab-edit') {
+                    activeNav = document.getElementById('nav-tab-profile');
+                }
+                if (activeNav) {
+                    activeNav.classList.add('active');
+                }
+                if (targetPane) {
+                    updateUnifiedHeaderTitle(targetTabId);
+                }
+                if (options.updateUrl) {
+                    updateStudentTabUrl(targetTabId, options.replaceUrl);
+                }
+                scheduleTeacherDashboardFrameSync();
+                return;
+            }
+
+            const previousPane = document.querySelector('.tab-pane.active-pane');
+            steadyTeacherTabHeight(previousPane, targetPane);
+
+            panes.forEach(pane => {
+                pane.classList.remove('active-pane');
+            });
+
+            const navLinks = document.querySelectorAll('.sidebar-menu a');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            targetPane.classList.add('active-pane');
+
+            const activeNav = document.getElementById('nav-' + targetTabId);
+            if (activeNav) {
+                activeNav.classList.add('active');
+            } else if (targetTabId === 'tab-edit') {
+                const profileNav = document.getElementById('nav-tab-profile');
+                if (profileNav) {
+                    profileNav.classList.add('active');
+                }
+            }
+
+            updateUnifiedHeaderTitle(targetTabId);
+
+            if (options.updateUrl !== false) {
+                updateStudentTabUrl(targetTabId, options.replaceUrl);
+            }
+
+            requestAnimationFrame(() => {
+                scheduleTeacherDashboardFrameSync();
+                settleTeacherTabScroll();
+            });
+        }
+
+        const overviewChartPeriods = {
+            week: {
+                ticks: ['01/05', '02/05', '03/05', '04/05', '05/05', '06/05', '07/05'],
+                tooltipDate: '03/05/2026',
+                totalTaught: '18.5',
+                totalScheduled: '14',
+                taught: '4 gi\u1edd',
+                scheduled: '3 gi\u1edd',
+                guideX: '250',
+                taughtDot: { x: '250', y: '64' },
+                scheduledDot: { x: '250', y: '104' },
+                tooltipLeft: '46%',
+                taughtLine: 'M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62',
+                scheduledLine: 'M64 116 C104 84, 120 136, 160 128 C204 120, 214 92, 250 104 C290 118, 302 148, 344 136 C382 124, 400 92, 438 104 C476 116, 488 154, 526 146 C568 138, 574 96, 610 112'
+            },
+            month: {
+                ticks: ['01/05', '05/05', '10/05', '15/05', '20/05', '25/05', '30/05'],
+                tooltipDate: '15/05/2026',
+                totalTaught: '72.5',
+                totalScheduled: '86',
+                taught: '18.5 gi\u1edd',
+                scheduled: '22 gi\u1edd',
+                guideX: '344',
+                taughtDot: { x: '344', y: '82' },
+                scheduledDot: { x: '344', y: '60' },
+                tooltipLeft: '55%',
+                taughtLine: 'M64 132 C102 114, 120 96, 156 104 C196 112, 214 78, 250 84 C290 90, 306 96, 344 82 C384 68, 402 50, 436 58 C476 68, 488 116, 526 104 C566 92, 580 74, 610 82',
+                scheduledLine: 'M64 102 C104 70, 120 88, 160 76 C202 64, 214 118, 250 110 C292 102, 304 52, 344 60 C384 70, 398 94, 438 86 C478 78, 492 126, 528 118 C568 108, 578 70, 610 74'
+            }
+        };
+
+        function setOverviewChartPeriod(period) {
+            const switchEl = document.getElementById('overviewPeriodSwitch');
+            const lineWrap = document.getElementById('overviewLineWrap');
+            const data = overviewChartPeriods[period];
+            if (!switchEl || !data) {
+                return;
+            }
+
+            switchEl.dataset.active = period;
+            switchEl.querySelectorAll('.overview-period-btn').forEach(button => {
+                const isActive = button.dataset.period === period;
+                button.classList.toggle('is-active', isActive);
+                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+
+            if (lineWrap) {
+                lineWrap.classList.add('is-switching');
+            }
+
+            window.setTimeout(() => {
+                data.ticks.forEach((label, index) => {
+                    const tick = document.getElementById('overviewTick' + (index + 1));
+                    if (tick) {
+                        tick.textContent = label;
+                    }
+                });
+
+                const tooltipDate = document.getElementById('overviewTooltipDate');
+                const tooltipTaught = document.getElementById('overviewTooltipTaught');
+                const tooltipScheduled = document.getElementById('overviewTooltipScheduled');
+                const totalTaught = document.getElementById('overviewTotalTaught');
+                const totalScheduled = document.getElementById('overviewTotalScheduled');
+                if (tooltipDate) tooltipDate.textContent = data.tooltipDate;
+                if (tooltipTaught) tooltipTaught.textContent = data.taught;
+                if (tooltipScheduled) tooltipScheduled.textContent = data.scheduled;
+                if (totalTaught) totalTaught.textContent = data.totalTaught;
+                if (totalScheduled) totalScheduled.textContent = data.totalScheduled;
+
+                const taughtLine = document.getElementById('overviewTaughtLine');
+                const scheduledLine = document.getElementById('overviewScheduledLine');
+                const taughtArea = document.getElementById('overviewTaughtArea');
+                const scheduledArea = document.getElementById('overviewScheduledArea');
+                const guideLine = document.getElementById('overviewGuideLine');
+                const taughtDot = document.getElementById('overviewTaughtDot');
+                const scheduledDot = document.getElementById('overviewScheduledDot');
+                const tooltip = document.getElementById('overviewLineTooltip');
+
+                if (taughtLine) taughtLine.setAttribute('d', data.taughtLine);
+                if (scheduledLine) scheduledLine.setAttribute('d', data.scheduledLine);
+                if (taughtArea) taughtArea.setAttribute('d', data.taughtLine + ' L610 162 L64 162 Z');
+                if (scheduledArea) scheduledArea.setAttribute('d', data.scheduledLine + ' L610 162 L64 162 Z');
+                if (guideLine) {
+                    guideLine.setAttribute('x1', data.guideX);
+                    guideLine.setAttribute('x2', data.guideX);
+                }
+                if (taughtDot) {
+                    taughtDot.setAttribute('cx', data.taughtDot.x);
+                    taughtDot.setAttribute('cy', data.taughtDot.y);
+                }
+                if (scheduledDot) {
+                    scheduledDot.setAttribute('cx', data.scheduledDot.x);
+                    scheduledDot.setAttribute('cy', data.scheduledDot.y);
+                }
+                if (tooltip) {
+                    tooltip.style.left = data.tooltipLeft;
+                }
+
+                window.setTimeout(() => {
+                    if (lineWrap) {
+                        lineWrap.classList.remove('is-switching');
+                    }
+                }, 120);
+            }, 120);
+        }
+
+        function initOverviewPeriodSwitch() {
+            const switchEl = document.getElementById('overviewPeriodSwitch');
+            if (!switchEl) {
+                return;
+            }
+            switchEl.querySelectorAll('.overview-period-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    if (button.classList.contains('is-active')) {
+                        return;
+                    }
+                    setOverviewChartPeriod(button.dataset.period);
+                });
+            });
+        }
 
         <% if (session.getAttribute("toastMsg") != null) { 
             String msg = (String) session.getAttribute("toastMsg");
             String type = (String) session.getAttribute("toastType");
-                                                            session.removeAttribute("toastMsg");
-                                                            session.removeAttribute("toastType");
+            session.removeAttribute("toastMsg");
+            session.removeAttribute("toastType");
         %>
-                                                                window.addEventListener('DOMContentLoaded', () => {
-                                                                    showToast("<%= msg.replace("\"", "\\\"") %> ", " <%= type != null ? type : "success" %> ");
-                                                                });
+        window.addEventListener('DOMContentLoaded', () => {
+            showToast("<%= msg.replace("\"", "\\\"") %>", "<%= type != null ? type : "success" %>");
+        });
         <% } %>
+        window.addEventListener('DOMContentLoaded', () => {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                const container = document.querySelector('.app-dashboard-container');
+                if (container) {
+                    container.classList.add('collapsed');
+                }
+            }
+            observeTeacherDashboardFrame();
+            initOverviewPeriodSwitch();
+        });
 
-                                                            window.addEventListener('DOMContentLoaded', () => {
-                                                                const dashboardRoot = document.querySelector('.app-dashboard-container');
-                                                                if (dashboardRoot) {
-                                                                    dashboardRoot.style.display = 'flex';
-                                                                    dashboardRoot.style.visibility = 'visible';
-                                                                    dashboardRoot.style.opacity = '1';
-                                                                    dashboardRoot.style.position = 'relative';
-                                                                    dashboardRoot.style.zIndex = '1';
-                                                                    if (localStorage.getItem('studentSidebarCollapsed') === 'true') {
-                                                                        dashboardRoot.classList.add('collapsed');
-                                                                    }
-                                                                }
-                                                                const params = new URLSearchParams(window.location.search);
-                                                                const tabParam = params.get('tab');
-                                                                if (tabParam) {
-                                                                    switchTab(tabParam, { replaceUrl: true });
-                                                                } else {
-                                                                    const activePane = document.querySelector('.tab-pane.active-pane');
-                                                                    if (activePane) updateProfileTabUrl(activePane.id, true);
-                                                                }
-                                                            });
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam) {
+                switchTab(normalizeStudentTabId(tabParam), { replaceUrl: true });
+            } else {
+                const activePane = document.querySelector('.tab-pane.active-pane');
+                if (activePane) {
+                    updateStudentTabUrl(activePane.id, true);
+                }
+            }
+            scheduleTeacherDashboardFrameSync();
+        });
 
-                                                        window.addEventListener('popstate', (event) => {
-                                                            const stateTab = event.state && event.state.profileTab;
-                                                            const urlTab = new URLSearchParams(window.location.search).get('tab');
-                                                            switchTab(stateTab || urlTab || 'tab-dashboard', { updateUrl: false });
-                                                        });
+        window.addEventListener('load', scheduleTeacherDashboardFrameSync);
+        window.addEventListener('resize', scheduleTeacherDashboardFrameSync);
 
-                                                    </script>
+        document.querySelectorAll('.dashboard-content-wrapper details').forEach(detail => {
+            detail.addEventListener('toggle', scheduleTeacherDashboardFrameSync);
+        });
 
-                                                    <!-- ===== MODAL �?I M?T KH?U (PASSWORD UPDATE MODAL) ===== -->
-                                                    <div id="pwd-modal-overlay"
-                                                        style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.6); backdrop-filter:blur(4px); z-index:9999; display:none; justify-content:center; align-items:center; padding:1rem;">
-                                                        <div
-                                                            style="background:#ffffff; border-radius:1.5rem; width:100%; max-width:440px; padding:2rem; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); border:1px solid #e2e8f0; animation:modalScaleUp 0.25s ease-out;">
-                                                            <div
-                                                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                                                                <div
-                                                                    style="display:flex; align-items:center; gap:0.65rem;">
-                                                                    <div
-                                                                        style="width:36px; height:36px; border-radius:50%; background:#fef3c7; color:#d97706; display:flex; justify-content:center; align-items:center;">
-                                                                        <svg width="18" height="18" viewBox="0 0 24 24"
-                                                                            fill="none" stroke="currentColor"
-                                                                            stroke-width="2.5">
-                                                                            <rect x="3" y="11" width="18" height="11"
-                                                                                rx="2" />
-                                                                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                                                        </svg>
-                                                                    </div>
-                                                                    <span
-                                                                        style="font-size:1.25rem; font-weight:800; color:var(--text-main);">Đổi
-                                                                        mật khẩu</span>
-                                                                </div>
-                                                                <button type="button"
-                                                                    onclick="document.getElementById('pwd-modal-overlay').style.display='none';"
-                                                                    style="background:none; border:none; font-size:1.25rem; color:var(--text-muted); cursor:pointer;">&times;</button>
-                                                            </div>
+        window.addEventListener('popstate', (event) => {
+            const stateTab = event.state && event.state.teacherTab;
+            const urlTab = new URLSearchParams(window.location.search).get('tab');
+            const targetTabId = stateTab || (urlTab ? normalizeStudentTabId(urlTab) : 'tab-materials');
+            switchTab(targetTabId, { updateUrl: false });
+        });
 
-                                                            <form action="${pageContext.request.contextPath}/profile"
-                                                                method="POST"
-                                                                style="display:flex; flex-direction:column; gap:1.25rem;">
-                                                                <input type="hidden" name="action"
-                                                                    value="changePassword">
-
-                                                                <div
-                                                                    style="display:flex; flex-direction:column; gap:0.4rem;">
-                                                                    <label
-                                                                        style="font-size:0.85rem; font-weight:700; color:var(--text-main);">Mật
-                                                                        khẩu hiện tại <span
-                                                                            style="color:#ef4444;">*</span></label>
-                                                                    <input type="password" name="currentPassword"
-                                                                        required placeholder="••••••••"
-                                                                        style="padding:0.75rem 1rem; border-radius:0.75rem; border:1px solid var(--border-dark); font-size:0.95rem; outline:none; transition:border-color 0.2s ease;"
-                                                                        onfocus="this.style.borderColor='var(--primary)';"
-                                                                        onblur="this.style.borderColor='var(--border-dark)';">
-                                                                </div>
-
-                                                                <div
-                                                                    style="display:flex; flex-direction:column; gap:0.4rem;">
-                                                                    <label
-                                                                        style="font-size:0.85rem; font-weight:700; color:var(--text-main);">Mật
-                                                                        khẩu mới <span
-                                                                            style="color:#ef4444;">*</span></label>
-                                                                    <input type="password" name="newPassword" required
-                                                                        minlength="6"
-                                                                        placeholder="Mật khẩu ít nhất 6 ký tự"
-                                                                        style="padding:0.75rem 1rem; border-radius:0.75rem; border:1px solid var(--border-dark); font-size:0.95rem; outline:none; transition:border-color 0.2s ease;"
-                                                                        onfocus="this.style.borderColor='var(--primary)';"
-                                                                        onblur="this.style.borderColor='var(--border-dark)';">
-                                                                </div>
-
-                                                                <div
-                                                                    style="display:flex; flex-direction:column; gap:0.4rem;">
-                                                                    <label
-                                                                        style="font-size:0.85rem; font-weight:700; color:var(--text-main);">Xác
-                                                                        nhận mật khẩu mới <span
-                                                                            style="color:#ef4444;">*</span></label>
-                                                                    <input type="password" name="confirmPassword"
-                                                                        required minlength="6"
-                                                                        placeholder="Nhập lại mật khẩu mới"
-                                                                        style="padding:0.75rem 1rem; border-radius:0.75rem; border:1px solid var(--border-dark); font-size:0.95rem; outline:none; transition:border-color 0.2s ease;"
-                                                                        onfocus="this.style.borderColor='var(--primary)';"
-                                                                        onblur="this.style.borderColor='var(--border-dark)';">
-                                                                </div>
-
-                                                                <div
-                                                                    style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.5rem;">
-                                                                    <button type="button"
-                                                                        onclick="document.getElementById('pwd-modal-overlay').style.display='none';"
-                                                                        style="padding:0.65rem 1.25rem; border-radius:0.75rem; background:#f1f5f9; color:var(--text-muted); font-weight:700; border:none; cursor:pointer;">Hủy
-                                                                        bỏ</button>
-                                                                    <button type="submit"
-                                                                        style="display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; background:#059669; color:#ffffff; font-weight:800; font-size:0.85rem; padding:0.65rem 1.35rem; border-radius:9999px; border:none; box-shadow:0 4px 14px rgba(5, 150, 105, 0.25); cursor:pointer; transition:all 0.2s ease;"
-                                                                        onmouseover="this.style.background='#047857'; this.style.transform='translateY(-1px)';"
-                                                                        onmouseout="this.style.background='#059669'; this.style.transform='translateY(0)';">
-                                                                        <span>Cập nhật ngay</span>
-                                                                        <svg width="15" height="15" viewBox="0 0 24 24"
-                                                                            fill="none" stroke="currentColor"
-                                                                            stroke-width="2.5">
-                                                                            <path d="M12 20h9" />
-                                                                            <path
-                                                                                d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                                                                        </svg>
-                                                                    </button>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-
-                                                    <style>
-                                                        @keyframes modalScaleUp {
-                                                            from {
-                                                                opacity: 0;
-                                                                transform: scale(0.95);
-                                                            }
-
-                                                            to {
-                                                                opacity: 1;
-                                                                transform: scale(1);
-                                                            }
-                                                        }
-                                                    </style>
-
-                                                    <script>
-
-                                                        // X? l� g?i form h? tr? h?c t?p qua Servlet
-                                                        const supportForm = document.getElementById('supportForm');
-                                                        if (supportForm) {
-                                                            supportForm.addEventListener('submit', function (e) {
-                                                                e.preventDefault();
-                                                                const formData = new FormData(this);
-                                                                const submitBtn = this.querySelector('button[type="submit"]');
-                                                                const originalBtnText = submitBtn.innerText;
-
-                                                                // Tr?ng th�i dang x? l�
-                                                                submitBtn.disabled = true;
-                                                                submitBtn.innerText = 'Đang gửi...';
-
-                                                                fetch('${pageContext.request.contextPath}/support', {
-                                                                    method: 'POST',
-                                                                    body: new URLSearchParams(formData)
-                                                                })
-                                                                    .then(async response => {
-                                                                        if (response.ok) {
-                                                                            showToast('Đã gửi yêu cầu hỗ trợ. Phản hồi sẽ hiển thị trong tab hỗ trợ của bạn.');
-                                                                            this.reset();
-                                                                        } else {
-                                                                            const errorMsg = await response.text();
-                                                                            showToast(errorMsg || 'Có lỗi xảy ra khi gửi yêu cầu hỗ trợ.', 'error');
-                                                                        }
-                                                                    })
-                                                                    .catch(error => {
-                                                                        console.error('Support Error:', error);
-                                                                        showToast('Lỗi kết nối máy chủ. Vui lòng thử lại sau.', 'error');
-                                                                    })
-                                                                    .finally(() => {
-                                                                        // Tr? l?i tr?ng th�i n�t
-                                                                        submitBtn.disabled = false;
-                                                                        submitBtn.innerText = originalBtnText;
-                                                                    });
-                                                            });
-                                                        }
-                                                        // --- WebSocket Tr?ng th�i Tr?c tuy?n ---
-                                                        const initStatusWS = () => {
-                                                            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                                                            const wsUrl = wsProtocol + '//' + window.location.host + '${pageContext.request.contextPath}/status-ws';
-                                                            const statusWs = new WebSocket(wsUrl);
-
-                                                            statusWs.onopen = () => {
-                                                                console.log('Status WS Connected');
-                <% if (user != null) { %>
-                                                                    statusWs.send(JSON.stringify({ type: 'auth', userId: '<%= user.getId() %>' }));
-                <% } %>
+        // Xử lý gửi form hỗ trợ qua Servlet
+        function connectTeacherStatusSocket() {
+            <% if (user != null && user.getId() != null) { %>
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = protocol + '//' + window.location.host + '${pageContext.request.contextPath}/status-ws';
+            const statusWs = new WebSocket(wsUrl);
+            statusWs.onopen = () => {
+                statusWs.send(JSON.stringify({ type: 'auth', userId: '<%= user.getId() %>' }));
             };
+            <% } %>
+        }
 
-                                                            statusWs.onclose = () => {
-                                                                console.log('Status WS Disconnected. Retrying in 5s...');
-                                                                setTimeout(initStatusWS, 5000);
-                                                            };
-                                                        };
+        window.addEventListener('DOMContentLoaded', connectTeacherStatusSocket);
 
-                                                        window.addEventListener('load', initStatusWS);
-                                                    </script>
-                                                    <script
-                                                        src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
-                                </body>
+        const supportForm = document.getElementById('supportForm');
+        if (supportForm) {
+            supportForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerText;
+                
+                submitBtn.disabled = true;
+                submitBtn.innerText = 'Đang gửi...';
 
-                                </html>
+                fetch('${pageContext.request.contextPath}/support', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                })
+                .then(async response => {
+                    if (response.ok) {
+                        showToast('Đã gửi yêu cầu hỗ trợ. Phản hồi sẽ hiển thị trong tab hỗ trợ của bạn.');
+                        this.reset();
+                    } else {
+                        const errorMsg = await response.text();
+                        showToast(errorMsg || 'Có lỗi xảy ra khi gửi yêu cầu hỗ trợ.', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Support Error:', error);
+                    showToast('Lỗi kết nối máy chủ. Vui lòng thử lại sau.', 'error');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = originalBtnText;
+                });
+            });
+        }
+
+        function validateTeachingSubjects() {
+            const form = document.getElementById('teacher-profile-form');
+            if (form && form.dataset.updateLocked === 'true') {
+                showToast('Nhấn Cập nhật hồ sơ trước khi chỉnh sửa hoặc gửi lại thông tin.', 'info');
+                return false;
+            }
+
+            const checkboxes = document.querySelectorAll('input[name="teachingSubjects"]:checked');
+            if (checkboxes.length === 0) {
+                showToast('Vui lòng chọn ít nhất một môn có thể dạy.', 'error');
+                return false;
+            }
+            return true;
+        }
+
+        function syncTeachingSubjectLabelStates() {
+            document.querySelectorAll('input[name="teachingSubjects"]').forEach(input => {
+                const label = input.closest('label');
+                if (label) {
+                    label.classList.toggle('teacher-subject-selected', input.checked);
+                }
+            });
+        }
+
+        document.querySelectorAll('input[name="teachingSubjects"]').forEach(input => {
+            input.addEventListener('change', syncTeachingSubjectLabelStates);
+        });
+        syncTeachingSubjectLabelStates();
+
+        function setTeachingRegistrationLocked(isLocked) {
+            const form = document.getElementById('teacher-profile-form');
+            const fieldset = document.getElementById('registration-fieldset');
+            if (!form || !fieldset) return;
+
+            fieldset.classList.toggle('teacher-registration-readonly', isLocked);
+            fieldset.classList.toggle('teacher-registration-editing', !isLocked);
+
+            form.querySelectorAll('input, select, textarea').forEach(control => {
+                if (control.type === 'hidden') return;
+
+                const disableWhenLocked = control.matches('select, input[type="radio"], input[type="checkbox"], input[type="file"]');
+                if (disableWhenLocked) {
+                    control.disabled = isLocked;
+                    if (isLocked) {
+                        control.setAttribute('disabled', 'disabled');
+                    } else {
+                        control.removeAttribute('disabled');
+                    }
+                    return;
+                }
+
+                const supportsReadOnly = control.matches('input:not([type="radio"]):not([type="checkbox"]):not([type="file"]), textarea');
+                if (supportsReadOnly && isLocked) {
+                    control.readOnly = true;
+                    control.setAttribute('readonly', 'readonly');
+                    control.setAttribute('aria-readonly', 'true');
+                } else {
+                    control.readOnly = false;
+                    control.removeAttribute('readonly');
+                    control.setAttribute('aria-readonly', 'false');
+                }
+            });
+        }
+
+        const teacherProfileForm = document.getElementById('teacher-profile-form');
+        if (teacherProfileForm && teacherProfileForm.dataset.updateLocked === 'true') {
+            setTeachingRegistrationLocked(true);
+        }
+
+        const teacherEvidenceInput = document.getElementById('teacherEvidenceFiles');
+        const teacherEvidenceFileName = document.getElementById('teacherEvidenceFileName');
+        const teacherEvidenceDropzone = document.querySelector('.teacher-evidence-dropzone');
+
+        function updateTeacherEvidenceFileName(files) {
+            if (!teacherEvidenceFileName) return;
+            if (!files || files.length === 0) {
+                teacherEvidenceFileName.textContent = 'Chưa có tệp nào được chọn';
+                return;
+            }
+            if (files.length === 1) {
+                teacherEvidenceFileName.textContent = files[0].name;
+                return;
+            }
+            teacherEvidenceFileName.textContent = files.length + ' tệp đã được chọn';
+        }
+
+        if (teacherEvidenceInput && teacherEvidenceDropzone) {
+            teacherEvidenceInput.addEventListener('change', () => {
+                updateTeacherEvidenceFileName(teacherEvidenceInput.files);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                teacherEvidenceDropzone.addEventListener(eventName, event => {
+                    event.preventDefault();
+                    teacherEvidenceDropzone.classList.add('drag-over');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                teacherEvidenceDropzone.addEventListener(eventName, event => {
+                    event.preventDefault();
+                    teacherEvidenceDropzone.classList.remove('drag-over');
+                });
+            });
+
+            teacherEvidenceDropzone.addEventListener('drop', event => {
+                if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+                    teacherEvidenceInput.files = event.dataTransfer.files;
+                    updateTeacherEvidenceFileName(teacherEvidenceInput.files);
+                }
+            });
+        }
+
+        const materialFileInput = document.getElementById('materialFileUpload');
+        const materialFileNameDisplay = document.getElementById('materialFileNameDisplay');
+        const materialFileDropzone = document.querySelector('.material-file-dropzone');
+
+        function updateMaterialFileName(files) {
+            if (!materialFileNameDisplay) return;
+            if (!files || files.length === 0) {
+                materialFileNameDisplay.textContent = 'Không có tệp nào được chọn';
+                return;
+            }
+            if (files.length === 1) {
+                materialFileNameDisplay.textContent = files[0].name;
+                return;
+            }
+            materialFileNameDisplay.textContent = files.length + ' tệp đã được chọn';
+        }
+
+        if (materialFileInput && materialFileDropzone) {
+            materialFileInput.addEventListener('change', () => {
+                updateMaterialFileName(materialFileInput.files);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                materialFileDropzone.addEventListener(eventName, event => {
+                    event.preventDefault();
+                    materialFileDropzone.classList.add('drag-over');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                materialFileDropzone.addEventListener(eventName, event => {
+                    event.preventDefault();
+                    materialFileDropzone.classList.remove('drag-over');
+                });
+            });
+
+            materialFileDropzone.addEventListener('drop', event => {
+                event.preventDefault();
+                materialFileDropzone.classList.remove('drag-over');
+                if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+                    materialFileInput.files = event.dataTransfer.files;
+                    updateMaterialFileName(materialFileInput.files);
+                }
+            });
+        }
+
+        function formatClassTimeValue(rawValue) {
+            const digits = rawValue.replace(/\D/g, '').slice(0, 4);
+            if (digits.length <= 2) {
+                return digits;
+            }
+            var hour = digits.slice(0, 2);
+            var minute = digits.slice(2);
+
+            if (hour.length === 2 && Number(hour) > 24) {
+                hour = '24';
+            }
+            if (minute.length === 2 && Number(minute) > 59) {
+                minute = '59';
+            }
+            if (hour === '24' && minute.length > 0) {
+                minute = minute.length === 1 ? '0' : '00';
+            }
+
+            return hour + ':' + minute;
+        }
+
+        document.querySelectorAll('.class-time-input').forEach(input => {
+            input.addEventListener('input', () => {
+                input.value = formatClassTimeValue(input.value);
+            });
+
+            input.addEventListener('blur', () => {
+                if (input.value.length === 4 && input.value.indexOf(':') === -1) {
+                    input.value = formatClassTimeValue(input.value);
+                }
+            });
+        });
+    </script>
+    <!-- ===================================================== -->
+    <!-- GOOGLE PICKER INTEGRATION                              -->
+    <!-- ===================================================== -->
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #btn-open-picker:hover {
+            border-color: #059669 !important;
+            background: #f0fdf4 !important;
+            box-shadow: 0 4px 14px rgba(5,150,105,0.15) !important;
+            transform: translateY(-1px);
+        }
+    </style>
+    <script>
+        var pickerApiLoaded = false;
+        var pickerTokenPending = false;
+
+        function onGapiLoad() {
+            gapi.load('picker', function() { pickerApiLoaded = true; });
+        }
+
+        function openGoogleDrivePicker() {
+            var btn = document.getElementById('btn-open-picker');
+            var spin = document.getElementById('picker-loading-spin');
+            var label = document.getElementById('picker-btn-label');
+            if (pickerTokenPending) return;
+            pickerTokenPending = true;
+            label.textContent = 'Đang xác thực với Google...';
+            spin.style.display = 'block';
+            btn.disabled = true;
+
+            fetch('${pageContext.request.contextPath}/teacher-drive/token', { credentials: 'same-origin' })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.error) { showToast(data.error, 'error'); resetPickerBtn(); return; }
+                    if (!pickerApiLoaded) {
+                        var att = 0, t = setInterval(function() {
+                            att++;
+                            if (pickerApiLoaded) { clearInterval(t); buildAndShowPicker(data.accessToken, data.clientId); }
+                            else if (att > 30) { clearInterval(t); showToast('Google Picker chưa tải xong.', 'error'); resetPickerBtn(); }
+                        }, 200);
+                    } else { buildAndShowPicker(data.accessToken, data.clientId); }
+                })
+                .catch(function() { showToast('Không thể lấy token Drive.', 'error'); resetPickerBtn(); });
+        }
+
+        function buildAndShowPicker(accessToken, clientId) {
+            try {
+                var appId = clientId.split('-')[0];
+                var docsView = new google.picker.DocsView().setIncludeFolders(true).setSelectFolderEnabled(true);
+                var folderView = new google.picker.DocsView(google.picker.ViewId.FOLDERS).setSelectFolderEnabled(true);
+                var picker = new google.picker.PickerBuilder()
+                    .setAppId(appId)
+                    .enableFeature(google.picker.Feature.NAV_HIDDEN)
+                    .enableFeature(google.picker.Feature.MULTISELECT_DISABLED)
+                    .setOAuthToken(accessToken)
+                    .addView(docsView).addView(folderView)
+                    .setTitle('Chọn nội dung khóa học từ Google Drive')
+                    .setCallback(pickerCallback).build();
+                picker.setVisible(true);
+            } catch(e) { showToast('Không thể mở Google Picker: ' + e.message, 'error'); }
+            resetPickerBtn();
+        }
+
+        function pickerCallback(data) {
+            if (data.action !== google.picker.Action.PICKED) return;
+            var doc = data.docs[0]; if (!doc) return;
+            var id = doc.id || '', name = doc.name || id, url = doc.url || '', mime = doc.mimeType || '';
+            var isFolder = (mime === 'application/vnd.google-apps.folder');
+            if (!url) url = isFolder
+                ? 'https://drive.google.com/drive/folders/' + id
+                : 'https://drive.google.com/file/d/' + id + '/view?usp=sharing';
+
+            document.getElementById('courseGoogleDriveUrlHidden').value = url;
+            document.getElementById('courseGoogleDriveFileIdHidden').value = isFolder ? '' : id;
+            document.getElementById('courseGoogleDriveFolderIdHidden').value = isFolder ? id : '';
+
+            var vals = [url, isFolder ? '' : id, isFolder ? id : ''];
+            ['courseGoogleDriveUrlManual','courseGoogleDriveFileIdManual','courseGoogleDriveFolderIdManual']
+                .forEach(function(eid, i) { var el = document.getElementById(eid); if (el) el.value = vals[i]; });
+
+            document.getElementById('picker-selected-preview').style.display = 'flex';
+            document.getElementById('picker-resource-name').textContent = name;
+            document.getElementById('picker-resource-url').textContent = url;
+            var iconEl = document.getElementById('picker-resource-icon');
+            if (isFolder) {
+                iconEl.style.background = '#ede9fe';
+                iconEl.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+            } else {
+                iconEl.style.background = '#dcfce7';
+                iconEl.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+            }
+            document.getElementById('picker-btn-label').textContent = 'Thay đổi lựa chọn';
+            showToast('Đã chọn: ' + name, 'success');
+        }
+
+        function clearPickerSelection() {
+            ['courseGoogleDriveUrlHidden','courseGoogleDriveFileIdHidden','courseGoogleDriveFolderIdHidden',
+             'courseGoogleDriveUrlManual','courseGoogleDriveFileIdManual','courseGoogleDriveFolderIdManual']
+                .forEach(function(eid) { var el = document.getElementById(eid); if (el) el.value = ''; });
+            document.getElementById('picker-selected-preview').style.display = 'none';
+            document.getElementById('picker-btn-label').textContent = 'Chọn file / thư mục từ Google Drive';
+        }
+
+        function resetPickerBtn() {
+            pickerTokenPending = false;
+            var btn = document.getElementById('btn-open-picker');
+            var spin = document.getElementById('picker-loading-spin');
+            var lbl = document.getElementById('picker-btn-label');
+            if (btn) btn.disabled = false;
+            if (spin) spin.style.display = 'none';
+            if (lbl && lbl.textContent.includes('xác thực')) lbl.textContent = 'Chọn file / thư mục từ Google Drive';
+        }
+
+        (function() {
+            var ai = document.querySelector('input[name="action"][value="registerCourse"]');
+            if (!ai) return;
+            var form = ai.closest('form');
+            if (!form) return;
+            form.addEventListener('submit', function() {
+                var md = document.getElementById('manual-drive-inputs');
+                if (!md || md.style.display === 'none') return;
+                [['courseGoogleDriveUrlManual','courseGoogleDriveUrlHidden'],
+                 ['courseGoogleDriveFileIdManual','courseGoogleDriveFileIdHidden'],
+                 ['courseGoogleDriveFolderIdManual','courseGoogleDriveFolderIdHidden']]
+                    .forEach(function(pair) {
+                        var s = document.getElementById(pair[0]);
+                        var d = document.getElementById(pair[1]);
+                        if (s && d && s.value) d.value = s.value;
+                    });
+            });
+        })();
+
+        window.addEventListener('load', function() {
+            if (typeof gapi !== 'undefined') { onGapiLoad(); return; }
+            var a = 0, t = setInterval(function() {
+                a++;
+                if (typeof gapi !== 'undefined') { clearInterval(t); onGapiLoad(); }
+                else if (a > 50) clearInterval(t);
+            }, 200);
+        });
+        function unlockTeachingForm() {
+            var form = document.getElementById('teacher-profile-form');
+            if (form) form.dataset.updateLocked = 'false';
+            setTeachingRegistrationLocked(false);
+            var approvedActions = document.getElementById('approved-form-actions');
+            if (approvedActions) approvedActions.classList.remove('is-hidden');
+            var helperText = document.getElementById('teacher-type-helper-text');
+            if (helperText) {
+                helperText.textContent = 'Bạn có thể cập nhật nhóm giảng viên và thông tin xác minh bên dưới. Sau khi gửi, hồ sơ cập nhật sẽ được xét duyệt lại trước khi thay đổi có hiệu lực.';
+            }
+            var unlockBtn = document.getElementById('btn-unlock-teaching-form');
+            if (unlockBtn) {
+                unlockBtn.style.display = 'none';
+            }
+            var formTarget = document.getElementById('teaching-registration-form-scroll-target');
+            if (formTarget) setTimeout(function() { formTarget.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            if (typeof showToast === 'function') showToast('Hồ sơ đã được mở khóa. Chỉnh sửa và gửi lại để Staff xét duyệt.', 'info');
+        }
+        function cancelTeachingEdit() {
+            var form = document.getElementById('teacher-profile-form');
+            if (form) {
+                form.reset();
+                form.dataset.updateLocked = 'true';
+            }
+            setTeachingRegistrationLocked(true);
+            syncTeachingSubjectLabelStates();
+            var approvedActions = document.getElementById('approved-form-actions');
+            if (approvedActions) approvedActions.classList.add('is-hidden');
+            var helperText = document.getElementById('teacher-type-helper-text');
+            if (helperText) {
+                helperText.textContent = form && form.dataset.defaultHelperText
+                        ? form.dataset.defaultHelperText
+                        : 'Hồ sơ của bạn đang được xét duyệt. Nhấn Cập nhật hồ sơ nếu cần chỉnh sửa hoặc bổ sung minh chứng.';
+            }
+            var unlockBtn = document.getElementById('btn-unlock-teaching-form');
+            if (unlockBtn) {
+                unlockBtn.style.display = '';
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (typeof showToast === 'function') showToast('Đã hủy chỉnh sửa hồ sơ.', 'info');
+        }
+    </script>
+    <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
+    <!-- ========================================== -->
+    <!-- SCHEDULE MODAL (FAKE DATA)                 -->
+    <!-- ========================================== -->
+    <div class="schedule-modal-backdrop" id="scheduleModal" onclick="closeScheduleModal(event)">
+        <div class="schedule-modal-box" onclick="event.stopPropagation()">
+            <div class="schedule-header">
+                <h2>Tháng 6, 2026</h2>
+                <div class="schedule-btn-group">
+                    <button>Tháng</button>
+                    <button class="active">Tuần</button>
+                    <button>Ngày</button>
+                </div>
+                <div class="schedule-actions">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="schedule-close-btn" style="border-radius:0.5rem;">&lt;</button>
+                        <button class="schedule-close-btn" style="border-radius:0.5rem; width:auto; padding:0 1rem; font-weight:600; color:var(--text-main);">Hôm nay</button>
+                        <button class="schedule-close-btn" style="border-radius:0.5rem;">&gt;</button>
+                    </div>
+                    <button class="schedule-close-btn" onclick="closeScheduleModal()" style="margin-left: 1rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="schedule-body">
+                <div class="schedule-days-header">
+                    <div></div>
+                    <div class="schedule-day-col">
+                        <div class="schedule-day-name">Thứ 2</div>
+                        <div class="schedule-day-num">15</div>
+                    </div>
+                    <div class="schedule-day-col">
+                        <div class="schedule-day-name">Thứ 3</div>
+                        <div class="schedule-day-num">16</div>
+                    </div>
+                    <div class="schedule-day-col active">
+                        <div class="schedule-day-name">Thứ 4</div>
+                        <div class="schedule-day-num">17</div>
+                    </div>
+                    <div class="schedule-day-col">
+                        <div class="schedule-day-name">Thứ 5</div>
+                        <div class="schedule-day-num">18</div>
+                    </div>
+                    <div class="schedule-day-col">
+                        <div class="schedule-day-name">Thứ 6</div>
+                        <div class="schedule-day-num">19</div>
+                    </div>
+                    <div class="schedule-day-col">
+                        <div class="schedule-day-name">Thứ 7</div>
+                        <div class="schedule-day-num">20</div>
+                    </div>
+                    <div class="schedule-day-col">
+                        <div class="schedule-day-name">CN</div>
+                        <div class="schedule-day-num">21</div>
+                    </div>
+                </div>
+                <div class="schedule-grid">
+                    <div class="schedule-time-col">
+                        <div class="schedule-time-slot" style="margin-top: 0px;">7 am</div>
+                        <div class="schedule-time-slot">8 am</div>
+                        <div class="schedule-time-slot">9 am</div>
+                        <div class="schedule-time-slot">10 am</div>
+                        <div class="schedule-time-slot">11 am</div>
+                        <div class="schedule-time-slot">12 pm</div>
+                        <div class="schedule-time-slot">1 pm</div>
+                        <div class="schedule-time-slot">2 pm</div>
+                        <div class="schedule-time-slot">3 pm</div>
+                        <div class="schedule-time-slot">4 pm</div>
+                        <div class="schedule-time-slot">5 pm</div>
+                        <div class="schedule-time-slot">6 pm</div>
+                        <div class="schedule-time-slot">7 pm</div>
+                        <div class="schedule-time-slot">8 pm</div>
+                        <div class="schedule-time-slot">9 pm</div>
+                        <div class="schedule-time-slot">10 pm</div>
+                    </div>
+                    <div class="schedule-grid-cols">
+                        <div class="schedule-grid-col">
+                            <div class="schedule-event event-blue" style="top: 80px; height: 120px;">
+                                <div class="schedule-event-title">Toán 11A - Đại số</div>
+                                <div class="schedule-event-time">08:00 - 09:30</div>
+                            </div>
+                            <div class="schedule-event event-purple" style="top: 280px; height: 160px;">
+                                <div class="schedule-event-title">Luyện đề THPT Quốc Gia Toán</div>
+                                <div class="schedule-event-time">10:30 - 12:30</div>
+                            </div>
+                        </div>
+                        <div class="schedule-grid-col">
+                            <div class="schedule-event event-green" style="top: 40px; height: 160px;">
+                                <div class="schedule-event-title">Giải tích 12 căn bản</div>
+                                <div class="schedule-event-time">07:30 - 09:30</div>
+                            </div>
+                            <div class="schedule-event event-yellow" style="top: 360px; height: 120px;">
+                                <div class="schedule-event-title">Hình học không gian</div>
+                                <div class="schedule-event-time">11:30 - 13:00</div>
+                            </div>
+                            <div class="schedule-event event-pink" style="top: 600px; height: 160px;">
+                                <div class="schedule-event-title">Dạy kèm 1-1: Tuấn Minh</div>
+                                <div class="schedule-event-time">14:30 - 16:30</div>
+                            </div>
+                        </div>
+                        <div class="schedule-grid-col">
+                            <div class="schedule-event event-blue" style="top: 720px; height: 160px;">
+                                <div class="schedule-event-title">Toán 10 - Lớp Cơ Bản</div>
+                                <div class="schedule-event-time">16:00 - 18:00</div>
+                            </div>
+                        </div>
+                        <div class="schedule-grid-col">
+                            <div class="schedule-event event-purple" style="top: 160px; height: 120px;">
+                                <div class="schedule-event-title">Chữa đề thi thử Đại học</div>
+                                <div class="schedule-event-time">09:00 - 10:30</div>
+                            </div>
+                        </div>
+                        <div class="schedule-grid-col">
+                            <div class="schedule-event event-green" style="top: 240px; height: 160px;">
+                                <div class="schedule-event-title">Hình học phẳng 11</div>
+                                <div class="schedule-event-time">10:00 - 12:00</div>
+                            </div>
+                            <div class="schedule-event event-yellow" style="top: 640px; height: 200px;">
+                                <div class="schedule-event-title">Toán nâng cao 12</div>
+                                <div class="schedule-event-time">15:00 - 17:30</div>
+                            </div>
+                        </div>
+                        <div class="schedule-grid-col">
+                            <div class="schedule-event event-pink" style="top: 320px; height: 160px;">
+                                <div class="schedule-event-title">Lớp cấp tốc cuối tuần</div>
+                                <div class="schedule-event-time">11:00 - 13:00</div>
+                            </div>
+                        </div>
+                        <div class="schedule-grid-col">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openScheduleModal() {
+            var modal = document.getElementById('scheduleModal');
+            if (modal) {
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeScheduleModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            var modal = document.getElementById('scheduleModal');
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+    </script>
+</body>
+</html>
+
+
