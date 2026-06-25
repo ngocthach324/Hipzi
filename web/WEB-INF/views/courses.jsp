@@ -322,15 +322,15 @@
 
         /* ── COURSE CARD ──────────────────────────── */
         .course-card {
-            background: var(--c-surface);
-            border-radius: var(--r-card);
-            border: 1.5px solid var(--c-border);
+            background: rgba(255,255,255,.92);
+            border: 1.5px solid rgba(226,232,240,.95);
+            border-radius: 18px;
             box-shadow: var(--c-card-sh);
-            overflow: hidden;
             display: flex;
             flex-direction: column;
-            cursor: pointer;
-            transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+            padding: .9rem;
+            cursor: default;
+            transition: box-shadow var(--transition), transform var(--transition), opacity var(--transition);
             opacity: 0;
             transform: translateY(28px) scale(.97);
             text-decoration: none;
@@ -341,88 +341,67 @@
             transform: translateY(0) scale(1);
         }
         .course-card:hover {
-            transform: translateY(-6px) scale(1.01);
-            box-shadow: var(--c-card-sh-h);
-            border-color: var(--c-primary-l);
+            box-shadow: var(--c-card-sh);
         }
 
         /* Thumbnail */
         .card-thumb {
-            position: relative;
-            height: 188px;
+            width: 100%;
+            aspect-ratio: 1.45 / 1;
+            border-radius: 14px;
             overflow: hidden;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .card-thumb::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(115deg, transparent 0%, transparent 42%, rgba(255,255,255,.58) 50%, transparent 58%, transparent 100%);
+            transform: translateX(-130%);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1;
+        }
+        .course-card:hover .card-thumb::after {
+            animation: weeklyCoverShine .8s ease-out 1;
         }
         .card-thumb-bg {
             width: 100%;
             height: 100%;
-            transition: transform .5s ease;
+            transition: transform .55s cubic-bezier(.16,1,.3,1);
         }
-        .course-card:hover .card-thumb-bg { transform: scale(1.06); }
-
-        /* Badges on thumb */
-        .thumb-badges {
+        .course-card:hover .card-thumb-bg { transform: scale(1.055); }
+        .card-rating-badge {
             position: absolute;
-            top: .85rem;
-            left: .85rem;
-            display: flex;
-            gap: .4rem;
-        }
-        .badge {
+            top: .65rem;
+            left: .65rem;
             display: inline-flex;
             align-items: center;
-            gap: .28rem;
-            padding: .25rem .65rem;
+            gap: .25rem;
+            padding: .24rem .62rem;
             border-radius: var(--r-pill);
-            font-size: .75rem;
-            font-weight: 700;
+            background: rgba(15,23,42,.78);
+            color: #fff;
+            font-size: .72rem;
+            font-weight: 800;
             backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            z-index: 2;
         }
-        .badge-free {
-            background: rgba(22,163,74,.9);
-            color: #fff;
+        .card-rating-badge svg {
+            width: 12px;
+            height: 12px;
+            fill: #f59e0b;
+            stroke: #f59e0b;
         }
-        .badge-paid {
-            background: rgba(15,23,42,.82);
-            color: #fff;
-        }
-        .badge-hot {
-            background: rgba(239,68,68,.9);
-            color: #fff;
-        }
-        .badge-new {
-            background: rgba(124,58,237,.9);
-            color: #fff;
-        }
-
-        /* Wishlist btn */
-        .wishlist-btn {
-            position: absolute;
-            top: .85rem;
-            right: .85rem;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            background: rgba(255,255,255,.88);
-            backdrop-filter: blur(6px);
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--c-muted);
-            transition: all var(--transition);
-            box-shadow: 0 2px 8px rgba(0,0,0,.1);
-        }
-        .wishlist-btn:hover { background: #fff; color: #ef4444; transform: scale(1.1); }
-        .wishlist-btn.active { color: #ef4444; }
-
+        
         /* Card Body */
         .card-body {
-            padding: 1.25rem 1.25rem 1rem;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             flex: 1;
+            padding: 0 .1rem .1rem;
         }
 
         .card-subject {
@@ -444,145 +423,123 @@
         }
 
         .card-title {
-            font-size: 1.05rem;
-            font-weight: 700;
             color: var(--c-navy);
-            line-height: 1.45;
-            margin-bottom: .6rem;
+            font-size: 1.05rem;
+            font-weight: 800;
+            line-height: 1.38;
+            margin-bottom: .65rem;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        .card-author {
+        .card-teacher-row {
             display: flex;
             align-items: center;
-            gap: .5rem;
+            justify-content: space-between;
+            gap: .75rem;
             margin-bottom: 1rem;
         }
-        .author-avatar {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: .7rem;
-            font-weight: 800;
-            color: #fff;
-            flex-shrink: 0;
-        }
-        .author-name {
-            font-size: .86rem;
+        .card-teacher {
+            min-width: 0;
             color: var(--c-muted);
-            font-weight: 500;
+            font-size: .84rem;
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-
-        /* Meta row: ratings + students */
-        .card-meta {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            font-size: .82rem;
-            color: var(--c-muted);
-        }
-        .meta-rating {
+        .card-students {
             display: flex;
             align-items: center;
             gap: .28rem;
-        }
-        .meta-stars { color: #f59e0b; font-size: .85rem; }
-        .meta-rating-val { font-weight: 700; color: var(--c-text); }
-        .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--c-border); }
-
-        /* Progress bar (for enrolled) */
-        .card-progress {
-            margin-bottom: .9rem;
-        }
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: .78rem;
             color: var(--c-muted);
-            margin-bottom: .3rem;
+            font-size: .8rem;
+            font-weight: 700;
+            white-space: nowrap;
         }
-        .progress-label strong { color: var(--c-primary-d); }
-        .progress-track {
-            height: 5px;
-            background: #e2e8f0;
-            border-radius: var(--r-pill);
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--c-primary-l), var(--c-primary));
-            border-radius: var(--r-pill);
-            transition: width 1s ease;
-            width: 0;
-        }
-        .course-card.visible .progress-fill {
-            width: var(--progress, 0%);
+        .card-students svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2.2;
         }
 
-        /* Card Footer */
+
         .card-footer {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-top: .9rem;
-            border-top: 1px solid var(--c-border);
+            gap: .75rem;
             margin-top: auto;
+            padding-top: .35rem;
         }
-        .card-price-free {
-            font-size: 1.05rem;
-            font-weight: 800;
-            color: #16a34a;
-        }
-        .card-price-paid {
-            font-size: 1.05rem;
-            font-weight: 800;
+        .card-price {
             color: var(--c-navy);
+            font-size: .98rem;
+            font-weight: 800;
+            white-space: nowrap;
         }
-        .card-price-paid .price-original {
-            font-size: .82rem;
-            font-weight: 400;
-            color: #94a3b8;
-            text-decoration: line-through;
-            margin-left: .35rem;
-        }
-        .card-cta {
-            padding: .45rem 1.1rem;
-            border-radius: var(--r-pill);
-            font-family: var(--font);
-            font-size: .85rem;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all var(--transition);
-            border: 1.5px solid var(--c-primary);
-            color: var(--c-primary);
-            background: transparent;
-        }
-        .card-cta:hover {
-            background: var(--c-primary);
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(13,148,136,.28);
-        }
-        .card-cta.enrolled {
-            background: linear-gradient(135deg, var(--c-primary-l), var(--c-primary));
-            color: #fff;
-            border-color: transparent;
-        }
-        .card-cta.enrolled:hover { opacity: .88; }
+        .card-price.free { color: #16a34a; }
 
-        /* Lesson count chip */
-        .lessons-chip {
+        .card-cart-btn {
+            position: absolute;
+            top: .65rem;
+            right: .65rem;
+            width: 34px;
+            height: 34px;
+            flex: 0 0 34px;
             display: inline-flex;
             align-items: center;
-            gap: .28rem;
-            font-size: .8rem;
-            color: var(--c-muted);
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,.86);
+            border: 1px solid rgba(255,255,255,.85);
+            color: var(--c-navy);
+            box-shadow: 0 8px 18px rgba(15,23,42,.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: transform var(--transition), background var(--transition), color var(--transition), box-shadow var(--transition);
+            z-index: 2;
+            cursor: pointer;
+        }
+        .course-card:hover .card-cart-btn {
+            color: var(--c-primary-d);
+            background: rgba(255,255,255,.96);
+            box-shadow: 0 10px 22px rgba(15,23,42,.16);
+            transform: translateY(-1px);
+        }
+        .card-cart-btn svg {
+            width: 17px;
+            height: 17px;
+            stroke-width: 2.2;
+        }
+        .card-cart-btn.added {
+            color: #16a34a;
+            background: rgba(236,253,245,.96);
+        }
+
+        .card-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            padding: .48rem .9rem;
+            border-radius: var(--r-pill);
+            background: linear-gradient(135deg, #0d9488, #10b981);
+            color: #fff;
+            font-size: .82rem;
+            font-weight: 800;
+            white-space: nowrap;
+            border: 0;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(13,148,136,.18);
+            transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
+        }
+        .card-cta:hover {
+            box-shadow: 0 10px 22px rgba(13,148,136,.28);
+            transform: translateY(-1px);
         }
 
         /* ── SECTION HEADING ─────────────────────── */
@@ -615,7 +572,7 @@
         .weekly-featured-callout {
             position: absolute;
             top: calc(-7.6rem + 20px);
-            left: max(.25rem, calc(clamp(.75rem, 2vw, 2.25rem) - 40px));
+            left: max(.25rem, calc(clamp(.75rem, 2vw, 2.25rem) + 5px));
             width: 300px;
             height: 120px;
             pointer-events: none;
@@ -626,7 +583,7 @@
         .weekly-featured-stats {
             position: absolute;
             top: calc(-8.7rem + 18px);
-            right: calc(clamp(2rem, 7vw, 8rem) - 75px);
+            right: calc(clamp(2rem, 7vw, 8rem) - 30px);
             width: 250px;
             min-height: 96px;
             pointer-events: none;
@@ -642,12 +599,12 @@
         .weekly-featured-stats::after {
             width: 7px;
             height: 7px;
-            right: -.25rem;
-            top: -.35rem;
+            right: 2.6rem;
+            top: 0rem;
             background: #f59e0b;
             box-shadow:
-                .6rem 3.35rem 0 rgba(13,148,136,.55),
-                -8.35rem 5.65rem 0 rgba(124,58,237,.42);
+                0rem 3.4rem 0 rgba(13,148,136,.55),
+                -7.4rem 5.8rem 0 rgba(124,58,237,.42);
             animation: featuredStatsDots 3.8s ease-in-out infinite;
         }
         .weekly-stat-card {
@@ -975,7 +932,7 @@
             min-height: 36px;
             padding: .48rem .9rem;
             border-radius: var(--r-pill);
-            background: #22c55e;
+            background: linear-gradient(135deg, #0d9488, #10b981);
             color: #fff;
             font-size: .82rem;
             font-weight: 800;
@@ -983,13 +940,11 @@
             border: 0;
             text-decoration: none;
             cursor: pointer;
-            box-shadow: 0 8px 18px rgba(34,197,94,.18);
+            box-shadow: 0 8px 18px rgba(13,148,136,.18);
             transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
         }
         .weekly-cta:hover {
-            background: #16a34a;
-            color: #fff;
-            box-shadow: 0 10px 22px rgba(22,163,74,.24);
+            box-shadow: 0 10px 22px rgba(13,148,136,.28);
             transform: translateY(-1px);
         }
         @keyframes weeklyCoverShine {
@@ -1216,24 +1171,33 @@
             font-size: .75rem;
             font-weight: 800;
         }
-        .course-filter-panel .category-scroll,
-        .course-filter-panel .filter-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: .5rem;
+        .course-filter-panel .category-scroll {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: .6rem;
             margin: 0;
             padding: 0;
             overflow: visible;
         }
+        .course-filter-panel .filter-chips {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .4rem;
+            margin: 0;
+            padding: 0;
+        }
         .course-filter-panel .cat-pill,
         .course-filter-panel .chip {
             min-height: 34px;
+            width: 100%;
             padding: .42rem .72rem;
             border-radius: 10px;
             font-size: .82rem;
             background: rgba(255,255,255,.86);
             box-shadow: 0 6px 14px rgba(15,23,42,.035);
         }
+        .course-filter-panel .cat-pill { justify-content: flex-start; }
+        .course-filter-panel .chip { justify-content: center; }
         .course-filter-panel .cat-pill.active,
         .course-filter-panel .chip.active {
             background: linear-gradient(135deg, #0d9488, #10b981);
@@ -1254,10 +1218,12 @@
             transform: translateY(-65%) rotate(45deg);
             pointer-events: none;
         }
-        .course-filter-panel .sort-select {
+        .filter-sort-control .sort-select {
             width: 100%;
             min-height: 42px;
             appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
             border-radius: 12px;
             padding: .55rem 2.4rem .55rem .8rem;
             background: rgba(255,255,255,.92);
@@ -1266,6 +1232,8 @@
         }
         .course-results-panel { min-width: 0; }
         .course-results-toolbar {
+            position: relative;
+            z-index: 50;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -1500,7 +1468,7 @@
                     </div>
                     <div class="weekly-footer">
                         <span class="weekly-price <%= featuredCourse.isFree() ? "free" : "" %>"><%= h(featuredCourse.getPriceLabel()) %></span>
-                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();"><%= featuredCourse.isViewerEnrolled() ? "Tiếp tục học" : "Xem khóa học" %></a>
+                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
                     </div>
                 </div>
             </article>
@@ -1530,7 +1498,7 @@
                     </div>
                     <div class="weekly-footer">
                         <span class="weekly-price free">Miễn phí</span>
-                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem khóa học</a>
+                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
                     </div>
                 </div>
             </article>
@@ -1558,7 +1526,7 @@
                     </div>
                     <div class="weekly-footer">
                         <span class="weekly-price free">Miễn phí</span>
-                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Tiếp tục học</a>
+                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
                     </div>
                 </div>
             </article>
@@ -1586,7 +1554,7 @@
                     </div>
                     <div class="weekly-footer">
                         <span class="weekly-price">150.000 đ</span>
-                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem khóa học</a>
+                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
                     </div>
                 </div>
             </article>
@@ -1617,18 +1585,21 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
                         Danh mục
                     </span>
-                    <span class="filter-section-count">9 môn</span>
+                    <span class="filter-section-count">11 môn</span>
                 </div>
                 <div class="category-scroll" id="categoryScroll">
                     <button class="cat-pill active" data-cat="all" onclick="filterByCategory(this, 'all')"><span class="cat-pill-icon">🎯</span> Tất cả</button>
                     <button class="cat-pill" data-cat="math" onclick="filterByCategory(this, 'math')"><span class="cat-pill-icon">📐</span> Toán</button>
+                    <button class="cat-pill" data-cat="literature" onclick="filterByCategory(this, 'literature')"><span class="cat-pill-icon">📖</span> Ngữ văn</button>
                     <button class="cat-pill" data-cat="english" onclick="filterByCategory(this, 'english')"><span class="cat-pill-icon">🌍</span> Tiếng Anh</button>
                     <button class="cat-pill" data-cat="physics" onclick="filterByCategory(this, 'physics')"><span class="cat-pill-icon">⚛</span> Vật lý</button>
                     <button class="cat-pill" data-cat="chemistry" onclick="filterByCategory(this, 'chemistry')"><span class="cat-pill-icon">🧪</span> Hóa</button>
-                    <button class="cat-pill" data-cat="literature" onclick="filterByCategory(this, 'literature')"><span class="cat-pill-icon">📖</span> Ngữ văn</button>
                     <button class="cat-pill" data-cat="biology" onclick="filterByCategory(this, 'biology')"><span class="cat-pill-icon">🧬</span> Sinh</button>
                     <button class="cat-pill" data-cat="history" onclick="filterByCategory(this, 'history')"><span class="cat-pill-icon">🏛</span> Lịch sử</button>
+                    <button class="cat-pill" data-cat="geography" onclick="filterByCategory(this, 'geography')"><span class="cat-pill-icon">🗺</span> Địa lý</button>
+                    <button class="cat-pill" data-cat="civics" onclick="filterByCategory(this, 'civics')"><span class="cat-pill-icon">⚖</span> GDCD</button>
                     <button class="cat-pill" data-cat="it" onclick="filterByCategory(this, 'it')"><span class="cat-pill-icon">💻</span> Tin học</button>
+                    <button class="cat-pill" data-cat="technology" onclick="filterByCategory(this, 'technology')"><span class="cat-pill-icon">⚙</span> Công nghệ</button>
                 </div>
             </section>
 
@@ -1638,39 +1609,32 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
                         Trạng thái
                     </span>
-                    <span class="filter-section-count">4 lựa chọn</span>
+                    <span class="filter-section-count">3 lựa chọn</span>
                 </div>
                 <div class="filter-chips">
                     <button class="chip active" data-filter="all" id="filter-all" onclick="applyFilter(this, 'all')">Tất cả</button>
                     <button class="chip" data-filter="free" id="filter-free" onclick="applyFilter(this, 'free')">Miễn phí</button>
                     <button class="chip" data-filter="paid" id="filter-paid" onclick="applyFilter(this, 'paid')">Có phí</button>
-                    <button class="chip" data-filter="enrolled" id="filter-enrolled" onclick="applyFilter(this, 'enrolled')">Đang học</button>
                 </div>
             </section>
 
-            <section class="filter-section">
-                <div class="filter-section-title">
-                    <span class="filter-section-label">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
-                        Sắp xếp
-                    </span>
-                </div>
-                <div class="filter-sort-control">
-                    <select class="sort-select" id="sortSelect" onchange="applySorting()">
-                        <option value="popular">Phổ biến nhất</option>
-                        <option value="newest">Mới nhất</option>
-                        <option value="rating">Đánh giá cao</option>
-                        <option value="price-asc">Giá tăng dần</option>
-                        <option value="price-desc">Giá giảm dần</option>
-                    </select>
-                </div>
-            </section>
         </aside>
 
         <main class="course-results-panel">
             <div class="course-results-toolbar">
                 <div class="course-results-title">Tất cả khóa học</div>
-                <p class="result-count" id="resultCount">Hiển thị <strong id="visibleCount"><%= initialCourseCount %></strong> khóa học</p>
+                <div style="display: flex; align-items: center; gap: 1.25rem;">
+                    <p class="result-count" id="resultCount">Hiển thị <strong id="visibleCount"><%= initialCourseCount %></strong> khóa học</p>
+                    <div class="filter-sort-control" style="display: flex; align-items: center; gap: 0.6rem;">
+                        <select class="sort-select" id="sortSelect" onchange="applySorting()">
+                            <option value="popular">Phổ biến nhất</option>
+                            <option value="newest">Mới nhất</option>
+                            <option value="rating">Đánh giá cao</option>
+                            <option value="price-asc">Giá tăng dần</option>
+                            <option value="price-desc">Giá giảm dần</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
     <!-- COURSES GRID -->
@@ -1686,448 +1650,320 @@
                         : "background:" + h(course.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";
                 int progress = Math.max(0, Math.min(100, course.getViewerProgressPercent()));
         %>
-        <a href="#" class="course-card" data-cat="<%= h(course.getSubjectCode()) %>" data-price-type="<%= h(course.getPriceType()) %>" data-price="<%= h(priceValue) %>" data-rating="<%= h(ratingValue) %>" data-popular="<%= course.getStudentsCount() %>" data-new="<%= course.isNew() ? "1" : "0" %>">
+        <article class="course-card" data-cat="<%= h(course.getSubjectCode()) %>" data-price-type="<%= h(course.getPriceType()) %>" data-price="<%= h(priceValue) %>" data-rating="<%= h(ratingValue) %>" data-popular="<%= course.getStudentsCount() %>" data-new="<%= course.isNew() ? "1" : "0" %>">
             <div class="card-thumb">
                 <div class="card-thumb-bg" style="<%= thumbStyle %>">
                     <% if (thumbUrl == null || thumbUrl.trim().isEmpty()) { %>
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.25"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                     <% } %>
                 </div>
-                <div class="thumb-badges">
-                    <% if (course.isFree()) { %>
-                        <span class="badge badge-free">Miễn phí</span>
-                    <% } else { %>
-                        <span class="badge badge-paid">Có phí</span>
-                    <% } %>
-                    <% if (course.getBadgeText() != null && !course.getBadgeText().trim().isEmpty()) { %>
-                        <span class="badge badge-hot"><%= h(course.getBadgeText()) %></span>
-                    <% } else if (course.isFeatured()) { %>
-                        <span class="badge badge-hot">Hot</span>
-                    <% } %>
-                </div>
-                <button class="wishlist-btn" onclick="toggleWishlist(event, this)" aria-label="Yêu thích">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="card-rating-badge" aria-label="Đánh giá <%= h(course.getDisplayRating()) %> sao">
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <%= h(course.getDisplayRating()) %>
+                </span>
+                <% if (profileHasStudent && !course.isViewerEnrolled() && !course.isFree()) { %>
+                <button type="button" class="card-cart-btn" onclick="addToCart(event, this, '<%= h(course.getId()) %>')" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </button>
+                <% } %>
             </div>
             <div class="card-body">
                 <div class="card-subject"><span class="card-subject-dot"></span> <%= h(course.getSubjectName()) %></div>
                 <h3 class="card-title"><%= h(course.getTitle()) %></h3>
-                <div class="card-author">
-                    <div class="author-avatar" style="background:#0f766e"><%= h(initialsFrom(course.getTeacherName())) %></div>
-                    <span class="author-name"><%= h(course.getTeacherName()) %></span>
-                </div>
-                <div class="card-meta">
-                    <div class="meta-rating">
-                        <span class="meta-stars">★★★★★</span>
-                        <span class="meta-rating-val"><%= h(course.getDisplayRating()) %></span>
-                    </div>
-                    <span class="meta-dot"></span>
-                    <span><%= course.getStudentsCount() %> học viên</span>
-                    <span class="meta-dot"></span>
-                    <span class="lessons-chip">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        <%= course.getLessonsCount() %> bài học
+                <div class="card-teacher-row">
+                    <div class="card-teacher"><%= h(course.getTeacherName()) %></div>
+                    <span class="card-students" aria-label="<%= course.getStudentsCount() %> học viên">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <%= course.getStudentsCount() %>
                     </span>
                 </div>
-                <% if (course.isViewerEnrolled()) { %>
-                    <div class="card-progress">
-                        <div class="progress-label">
-                            <span>Tiến độ</span>
-                            <strong><%= progress %>%</strong>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-fill" style="--progress:<%= progress %>%"></div>
-                        </div>
-                    </div>
-                <% } %>
                 <div class="card-footer">
-                    <span class="<%= course.isFree() ? "card-price-free" : "card-price-paid" %>"><%= h(course.getPriceLabel()) %></span>
-                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <% if (profileHasStudent && !course.isViewerEnrolled() && !course.isFree()) { %>
-                            <button class="card-add-to-cart-btn" onclick="addToCart(event, this, '<%= h(course.getId()) %>')" title="Thêm vào giỏ">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                            </button>
-                        <% } %>
-                        <span class="card-cta <%= course.isViewerEnrolled() ? "enrolled" : "" %>"><%= course.isViewerEnrolled() ? "Tiếp tục học" : (course.isFree() ? "Học ngay" : "Xem chi tiết") %></span>
-                    </div>
+                    <span class="card-price <%= course.isFree() ? "free" : "" %>"><%= h(course.getPriceLabel()) %></span>
+                    <span class="card-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</span>
                 </div>
             </div>
-        </a>
+        </article>
         <%  }
            } else if (showSampleCourses) { %>
 
         <!-- Card 1 -->
-        <a href="#" class="course-card" data-cat="english" data-price-type="free" data-price="0" data-rating="4.9" data-popular="950" data-new="0">
+        <article class="course-card" data-cat="english" data-price-type="free" data-price="0" data-rating="4.9" data-popular="950" data-new="0">
             <div class="card-thumb">
                 <div class="card-thumb-bg" style="background:linear-gradient(135deg,#0f766e 0%,#14b8a6 50%,#7c3aed 100%); display:flex; align-items:center; justify-content:center;">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><path d="M3 5h18M3 10h12M3 15h9M3 20h6"/><circle cx="19" cy="17" r="3"/><path d="M22 20l-1.5-1.5"/></svg>
                 </div>
-                <div class="thumb-badges">
-                    <span class="badge badge-free">Miễn phí</span>
-                    <span class="badge badge-hot">🔥 Hot</span>
-                </div>
-                <button class="wishlist-btn" onclick="toggleWishlist(event, this)" aria-label="Yêu thích">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="card-rating-badge" aria-label="Đánh giá 4.9 sao">
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    4.9
+                </span>
+                <button type="button" class="card-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </button>
             </div>
             <div class="card-body">
                 <div class="card-subject"><span class="card-subject-dot"></span> Tiếng Anh</div>
                 <h3 class="card-title">Master IELTS Writing Task 2 từ con số 0 đến Band 7.5</h3>
-                <div class="card-author">
-                    <div class="author-avatar" style="background:#0f766e">TA</div>
-                    <span class="author-name">Trần Anh Khoa</span>
-                </div>
-                <div class="card-meta">
-                    <div class="meta-rating">
-                        <span class="meta-stars">★★★★★</span>
-                        <span class="meta-rating-val">4.9</span>
-                    </div>
-                    <span class="meta-dot"></span>
-                    <span>950 học viên</span>
-                    <span class="meta-dot"></span>
-                    <span class="lessons-chip">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        32 bài học
+                <div class="card-teacher-row">
+                    <div class="card-teacher">Trần Anh Khoa</div>
+                    <span class="card-students" aria-label="950 học viên">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        950
                     </span>
                 </div>
                 <div class="card-footer">
-                    <span class="card-price-free">Miễn phí</span>
-                    <span class="card-cta">Học ngay</span>
+                    <span class="card-price free">Miễn phí</span>
+                    <span class="card-cta">Xem chi tiết</span>
                 </div>
             </div>
-        </a>
+        </article>
 
         <!-- Card 2 -->
-        <a href="#" class="course-card" data-cat="math" data-price-type="free" data-price="0" data-rating="4.8" data-popular="820" data-new="0">
+        <article class="course-card" data-cat="math" data-price-type="free" data-price="0" data-rating="4.8" data-popular="820" data-new="0">
             <div class="card-thumb">
                 <div class="card-thumb-bg" style="background:linear-gradient(135deg,#3b82f6 0%,#6366f1 100%); display:flex; align-items:center; justify-content:center;">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                 </div>
-                <div class="thumb-badges">
-                    <span class="badge badge-free">Miễn phí</span>
-                </div>
-                <button class="wishlist-btn" onclick="toggleWishlist(event, this)" aria-label="Yêu thích">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="card-rating-badge" aria-label="Đánh giá 4.8 sao">
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    4.8
+                </span>
+                <button type="button" class="card-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </button>
             </div>
             <div class="card-body">
                 <div class="card-subject" style="color:#3b82f6"><span class="card-subject-dot"></span> Toán học</div>
                 <h3 class="card-title">Luyện thi ĐGNL ĐHQG TP.HCM — Toán tổng ôn siêu tốc</h3>
-                <div class="card-author">
-                    <div class="author-avatar" style="background:#3b82f6">VA</div>
-                    <span class="author-name">Nguyễn Văn An</span>
-                </div>
-                <div class="card-meta">
-                    <div class="meta-rating">
-                        <span class="meta-stars">★★★★★</span>
-                        <span class="meta-rating-val">4.8</span>
-                    </div>
-                    <span class="meta-dot"></span>
-                    <span>820 học viên</span>
-                    <span class="meta-dot"></span>
-                    <span class="lessons-chip">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        28 bài học
+                <div class="card-teacher-row">
+                    <div class="card-teacher">Nguyễn Văn An</div>
+                    <span class="card-students" aria-label="820 học viên">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        820
                     </span>
                 </div>
-                <div class="card-progress">
-                    <div class="progress-label">
-                        <span>Tiến độ</span>
-                        <strong>65%</strong>
-                    </div>
-                    <div class="progress-track">
-                        <div class="progress-fill" style="--progress:65%"></div>
-                    </div>
-                </div>
                 <div class="card-footer">
-                    <span class="card-price-free">Miễn phí</span>
-                    <span class="card-cta enrolled">Tiếp tục học</span>
+                    <span class="card-price free">Miễn phí</span>
+                    <span class="card-cta">Xem chi tiết</span>
                 </div>
             </div>
-        </a>
+        </article>
 
         <!-- Card 3 -->
-        <a href="#" class="course-card" data-cat="physics" data-price-type="paid" data-price="150000" data-rating="4.7" data-popular="610" data-new="0">
+        <article class="course-card" data-cat="physics" data-price-type="paid" data-price="150000" data-rating="4.7" data-popular="610" data-new="0">
             <div class="card-thumb">
                 <div class="card-thumb-bg" style="background:linear-gradient(135deg,#8b5cf6 0%,#a78bfa 100%); display:flex; align-items:center; justify-content:center;">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
                 </div>
-                <div class="thumb-badges">
-                    <span class="badge badge-paid">150.000 đ</span>
-                </div>
-                <button class="wishlist-btn" onclick="toggleWishlist(event, this)" aria-label="Yêu thích">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="card-rating-badge" aria-label="Đánh giá 4.7 sao">
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    4.7
+                </span>
+                <button type="button" class="card-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </button>
             </div>
             <div class="card-body">
                 <div class="card-subject" style="color:#8b5cf6"><span class="card-subject-dot" style="background:#8b5cf6"></span> Vật lý</div>
                 <h3 class="card-title">Chinh phục Điểm 9+ Vật Lý 12 bằng Sơ đồ tư duy</h3>
-                <div class="card-author">
-                    <div class="author-avatar" style="background:#8b5cf6">HG</div>
-                    <span class="author-name">Lê Hương Giang</span>
-                </div>
-                <div class="card-meta">
-                    <div class="meta-rating">
-                        <span class="meta-stars">★★★★★</span>
-                        <span class="meta-rating-val">4.7</span>
-                    </div>
-                    <span class="meta-dot"></span>
-                    <span>610 học viên</span>
-                    <span class="meta-dot"></span>
-                    <span class="lessons-chip">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        45 bài học
+                <div class="card-teacher-row">
+                    <div class="card-teacher">Lê Hương Giang</div>
+                    <span class="card-students" aria-label="610 học viên">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        610
                     </span>
                 </div>
                 <div class="card-footer">
-                    <span class="card-price-paid">150.000 đ <span class="price-original">299.000 đ</span></span>
+                    <span class="card-price">150.000 đ <span class="price-original">299.000 đ</span></span>
                     <span class="card-cta">Xem chi tiết</span>
                 </div>
             </div>
-        </a>
+        </article>
 
         <!-- Card 4 -->
-        <a href="#" class="course-card" data-cat="english" data-price-type="free" data-price="0" data-rating="4.6" data-popular="740" data-new="1">
+        <article class="course-card" data-cat="english" data-price-type="free" data-price="0" data-rating="4.6" data-popular="740" data-new="1">
             <div class="card-thumb">
                 <div class="card-thumb-bg" style="background:linear-gradient(135deg,#f59e0b 0%,#f97316 100%); display:flex; align-items:center; justify-content:center;">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                 </div>
-                <div class="thumb-badges">
-                    <span class="badge badge-free">Miễn phí</span>
-                    <span class="badge badge-new">✨ Mới</span>
-                </div>
-                <button class="wishlist-btn" onclick="toggleWishlist(event, this)" aria-label="Yêu thích">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="card-rating-badge" aria-label="Đánh giá 4.6 sao">
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    4.6
+                </span>
+                <button type="button" class="card-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </button>
             </div>
             <div class="card-body">
                 <div class="card-subject" style="color:#f59e0b"><span class="card-subject-dot" style="background:#f59e0b"></span> Tiếng Anh</div>
                 <h3 class="card-title">Ngữ Pháp Tiếng Anh Căn Bản — Từ Mất Gốc đến Tự Tin</h3>
-                <div class="card-author">
-                    <div class="author-avatar" style="background:#f59e0b">MD</div>
-                    <span class="author-name">Phạm Minh Đức</span>
-                </div>
-                <div class="card-meta">
-                    <div class="meta-rating">
-                        <span class="meta-stars">★★★★☆</span>
-                        <span class="meta-rating-val">4.6</span>
-                    </div>
-                    <span class="meta-dot"></span>
-                    <span>740 học viên</span>
-                    <span class="meta-dot"></span>
-                    <span class="lessons-chip">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        22 bài học
+                <div class="card-teacher-row">
+                    <div class="card-teacher">Phạm Minh Đức</div>
+                    <span class="card-students" aria-label="740 học viên">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        740
                     </span>
                 </div>
                 <div class="card-footer">
-                    <span class="card-price-free">Miễn phí</span>
-                    <span class="card-cta">Học ngay</span>
+                    <span class="card-price free">Miễn phí</span>
+                    <span class="card-cta">Xem chi tiết</span>
                 </div>
             </div>
-        </a>
+        </article>
 
         <!-- Card 5 -->
-        <a href="#" class="course-card" data-cat="chemistry" data-price-type="paid" data-price="299000" data-rating="4.9" data-popular="480" data-new="0">
+        <article class="course-card" data-cat="chemistry" data-price-type="paid" data-price="299000" data-rating="4.9" data-popular="480" data-new="0">
             <div class="card-thumb">
                 <div class="card-thumb-bg" style="background:linear-gradient(135deg,#059669 0%,#10b981 100%); display:flex; align-items:center; justify-content:center;">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><path d="M9 3h6l3 7-6 2-6-2 3-7z"/><path d="M9 3v4M15 3v4"/><path d="M6 10l-2 9h16l-2-9"/><circle cx="12" cy="16" r="2"/></svg>
                 </div>
-                <div class="thumb-badges">
-                    <span class="badge badge-paid">299.000 đ</span>
-                </div>
-                <button class="wishlist-btn" onclick="toggleWishlist(event, this)" aria-label="Yêu thích">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="card-rating-badge" aria-label="Đánh giá 4.9 sao">
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    4.9
+                </span>
+                <button type="button" class="card-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </button>
             </div>
             <div class="card-body">
                 <div class="card-subject" style="color:#059669"><span class="card-subject-dot" style="background:#059669"></span> Hóa học</div>
                 <h3 class="card-title">Hóa Hữu Cơ Nâng Cao — Bộ đề luyện THPTQG cực chất</h3>
-                <div class="card-author">
-                    <div class="author-avatar" style="background:#059669">KH</div>
-                    <span class="author-name">Vũ Khánh Hà</span>
-                </div>
-                <div class="card-meta">
-                    <div class="meta-rating">
-                        <span class="meta-stars">★★★★★</span>
-                        <span class="meta-rating-val">4.9</span>
-                    </div>
-                    <span class="meta-dot"></span>
-                    <span>480 học viên</span>
-                    <span class="meta-dot"></span>
-                    <span class="lessons-chip">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        60 bài học
+                <div class="card-teacher-row">
+                    <div class="card-teacher">Vũ Khánh Hà</div>
+                    <span class="card-students" aria-label="480 học viên">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        480
                     </span>
                 </div>
                 <div class="card-footer">
-                    <span class="card-price-paid">299.000 đ</span>
+                    <span class="card-price">299.000 đ</span>
                     <span class="card-cta">Xem chi tiết</span>
                 </div>
             </div>
-        </a>
+        </article>
 
         <!-- Card 6 -->
-        <a href="#" class="course-card" data-cat="it" data-price-type="free" data-price="0" data-rating="4.8" data-popular="560" data-new="1">
+        <article class="course-card" data-cat="it" data-price-type="free" data-price="0" data-rating="4.8" data-popular="560" data-new="1">
             <div class="card-thumb">
                 <div class="card-thumb-bg" style="background:linear-gradient(135deg,#1e293b 0%,#334155 50%,#0f766e 100%); display:flex; align-items:center; justify-content:center;">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 7l3 3-3 3M13 13h4"/></svg>
                 </div>
-                <div class="thumb-badges">
-                    <span class="badge badge-free">Miễn phí</span>
-                    <span class="badge badge-new">✨ Mới</span>
-                </div>
-                <button class="wishlist-btn" onclick="toggleWishlist(event, this)" aria-label="Yêu thích">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="card-rating-badge" aria-label="Đánh giá 4.8 sao">
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    4.8
+                </span>
+                <button type="button" class="card-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </button>
             </div>
             <div class="card-body">
                 <div class="card-subject" style="color:#0f766e"><span class="card-subject-dot"></span> Tin học</div>
                 <h3 class="card-title">Lập trình Python từ Zero — Xây dự án thực tế trong 30 ngày</h3>
-                <div class="card-author">
-                    <div class="author-avatar" style="background:#0f766e">BT</div>
-                    <span class="author-name">Đặng Bảo Trung</span>
-                </div>
-                <div class="card-meta">
-                    <div class="meta-rating">
-                        <span class="meta-stars">★★★★★</span>
-                        <span class="meta-rating-val">4.8</span>
-                    </div>
-                    <span class="meta-dot"></span>
-                    <span>560 học viên</span>
-                    <span class="meta-dot"></span>
-                    <span class="lessons-chip">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        55 bài học
+                <div class="card-teacher-row">
+                    <div class="card-teacher">Đặng Bảo Trung</div>
+                    <span class="card-students" aria-label="560 học viên">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        560
                     </span>
                 </div>
                 <div class="card-footer">
-                    <span class="card-price-free">Miễn phí</span>
-                    <span class="card-cta">Học ngay</span>
+                    <span class="card-price free">Miễn phí</span>
+                    <span class="card-cta">Xem chi tiết</span>
                 </div>
             </div>
-        </a>
+        </article>
 
         <!-- Card 7 -->
-        <a href="#" class="course-card" data-cat="literature" data-price-type="paid" data-price="120000" data-rating="4.5" data-popular="320" data-new="0">
+        <article class="course-card" data-cat="literature" data-price-type="paid" data-price="120000" data-rating="4.5" data-popular="320" data-new="0">
             <div class="card-thumb">
                 <div class="card-thumb-bg" style="background:linear-gradient(135deg,#e11d48 0%,#f43f5e 50%,#fb7185 100%); display:flex; align-items:center; justify-content:center;">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/><path d="M8 7h8M8 11h6"/></svg>
                 </div>
-                <div class="thumb-badges">
-                    <span class="badge badge-paid">120.000 đ</span>
-                </div>
-                <button class="wishlist-btn" onclick="toggleWishlist(event, this)" aria-label="Yêu thích">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="card-rating-badge" aria-label="Đánh giá 4.5 sao">
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    4.5
+                </span>
+                <button type="button" class="card-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </button>
             </div>
             <div class="card-body">
                 <div class="card-subject" style="color:#e11d48"><span class="card-subject-dot" style="background:#e11d48"></span> Ngữ văn</div>
                 <h3 class="card-title">Nghị luận văn học nâng cao — Bứt phá điểm 8+ kỳ thi THPT</h3>
-                <div class="card-author">
-                    <div class="author-avatar" style="background:#e11d48">TP</div>
-                    <span class="author-name">Bùi Thu Phương</span>
-                </div>
-                <div class="card-meta">
-                    <div class="meta-rating">
-                        <span class="meta-stars">★★★★☆</span>
-                        <span class="meta-rating-val">4.5</span>
-                    </div>
-                    <span class="meta-dot"></span>
-                    <span>320 học viên</span>
-                    <span class="meta-dot"></span>
-                    <span class="lessons-chip">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        18 bài học
+                <div class="card-teacher-row">
+                    <div class="card-teacher">Bùi Thu Phương</div>
+                    <span class="card-students" aria-label="320 học viên">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        320
                     </span>
                 </div>
                 <div class="card-footer">
-                    <span class="card-price-paid">120.000 đ <span class="price-original">199.000 đ</span></span>
+                    <span class="card-price">120.000 đ <span class="price-original">199.000 đ</span></span>
                     <span class="card-cta">Xem chi tiết</span>
                 </div>
             </div>
-        </a>
+        </article>
 
         <!-- Card 8 -->
-        <a href="#" class="course-card" data-cat="biology" data-price-type="free" data-price="0" data-rating="4.7" data-popular="290" data-new="0">
+        <article class="course-card" data-cat="biology" data-price-type="free" data-price="0" data-rating="4.7" data-popular="290" data-new="0">
             <div class="card-thumb">
                 <div class="card-thumb-bg" style="background:linear-gradient(135deg,#16a34a 0%,#22c55e 100%); display:flex; align-items:center; justify-content:center;">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 </div>
-                <div class="thumb-badges">
-                    <span class="badge badge-free">Miễn phí</span>
-                </div>
-                <button class="wishlist-btn" onclick="toggleWishlist(event, this)" aria-label="Yêu thích">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="card-rating-badge" aria-label="Đánh giá 4.7 sao">
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    4.7
+                </span>
+                <button type="button" class="card-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </button>
             </div>
             <div class="card-body">
                 <div class="card-subject" style="color:#16a34a"><span class="card-subject-dot" style="background:#16a34a"></span> Sinh học</div>
                 <h3 class="card-title">Di Truyền học — Chinh phục chuyên đề khó nhất Sinh 12</h3>
-                <div class="card-author">
-                    <div class="author-avatar" style="background:#16a34a">NQ</div>
-                    <span class="author-name">Trần Ngọc Quỳnh</span>
-                </div>
-                <div class="card-meta">
-                    <div class="meta-rating">
-                        <span class="meta-stars">★★★★★</span>
-                        <span class="meta-rating-val">4.7</span>
-                    </div>
-                    <span class="meta-dot"></span>
-                    <span>290 học viên</span>
-                    <span class="meta-dot"></span>
-                    <span class="lessons-chip">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        40 bài học
+                <div class="card-teacher-row">
+                    <div class="card-teacher">Trần Ngọc Quỳnh</div>
+                    <span class="card-students" aria-label="290 học viên">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        290
                     </span>
                 </div>
                 <div class="card-footer">
-                    <span class="card-price-free">Miễn phí</span>
-                    <span class="card-cta">Học ngay</span>
+                    <span class="card-price free">Miễn phí</span>
+                    <span class="card-cta">Xem chi tiết</span>
                 </div>
             </div>
-        </a>
+        </article>
 
         <!-- Card 9 -->
-        <a href="#" class="course-card" data-cat="history" data-price-type="paid" data-price="199000" data-rating="4.6" data-popular="210" data-new="1">
+        <article class="course-card" data-cat="history" data-price-type="paid" data-price="199000" data-rating="4.6" data-popular="210" data-new="1">
             <div class="card-thumb">
                 <div class="card-thumb-bg" style="background:linear-gradient(135deg,#78350f 0%,#b45309 50%,#d97706 100%); display:flex; align-items:center; justify-content:center;">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 3.9 2.4-7.4L2 9.4h7.6L12 2z"/></svg>
                 </div>
-                <div class="thumb-badges">
-                    <span class="badge badge-paid">199.000 đ</span>
-                    <span class="badge badge-new">✨ Mới</span>
-                </div>
-                <button class="wishlist-btn" onclick="toggleWishlist(event, this)" aria-label="Yêu thích">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="card-rating-badge" aria-label="Đánh giá 4.6 sao">
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    4.6
+                </span>
+                <button type="button" class="card-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </button>
             </div>
             <div class="card-body">
                 <div class="card-subject" style="color:#b45309"><span class="card-subject-dot" style="background:#b45309"></span> Lịch sử</div>
                 <h3 class="card-title">Lịch Sử Việt Nam 1945–1975 — Timeline & Phân tích chuyên sâu</h3>
-                <div class="card-author">
-                    <div class="author-avatar" style="background:#b45309">DL</div>
-                    <span class="author-name">Ngô Duy Long</span>
-                </div>
-                <div class="card-meta">
-                    <div class="meta-rating">
-                        <span class="meta-stars">★★★★☆</span>
-                        <span class="meta-rating-val">4.6</span>
-                    </div>
-                    <span class="meta-dot"></span>
-                    <span>210 học viên</span>
-                    <span class="meta-dot"></span>
-                    <span class="lessons-chip">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        25 bài học
+                <div class="card-teacher-row">
+                    <div class="card-teacher">Ngô Duy Long</div>
+                    <span class="card-students" aria-label="210 học viên">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        210
                     </span>
                 </div>
                 <div class="card-footer">
-                    <span class="card-price-paid">199.000 đ</span>
+                    <span class="card-price">199.000 đ</span>
                     <span class="card-cta">Xem chi tiết</span>
                 </div>
             </div>
-        </a>
+        </article>
 
         <% } %>
     </div><!-- /courses-grid -->
