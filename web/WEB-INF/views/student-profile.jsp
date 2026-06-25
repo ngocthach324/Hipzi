@@ -2557,7 +2557,7 @@
                                                             }
 
                                                             .schedule-day-col.active {
-                                                                background: #0f172a;
+                                                                background: var(--primary);
                                                                 border-radius: 0.5rem;
                                                                 margin: 0.5rem;
                                                                 padding: 0.5rem 0;

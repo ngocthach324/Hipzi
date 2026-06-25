@@ -36,16 +36,11 @@
             <div class="schedule-header">
                 <h2><%= scheduleMonthYear %></h2>
                 <div class="schedule-btn-group">
-                    <button disabled>Tháng</button>
+                    <button onclick="changeScheduleWeek(-1)">&lt;</button>
                     <button class="active">Tuần</button>
-                    <button disabled>Ngày</button>
+                    <button onclick="changeScheduleWeek(1)">&gt;</button>
                 </div>
                 <div class="schedule-actions">
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button class="schedule-close-btn" style="border-radius:0.5rem;" onclick="changeScheduleWeek(-1)">&lt;</button>
-                        <button class="schedule-close-btn" style="border-radius:0.5rem; width:auto; padding:0 1rem; font-weight:600; color:var(--text-main);" onclick="changeScheduleWeek(0, true)">Hôm nay</button>
-                        <button class="schedule-close-btn" style="border-radius:0.5rem;" onclick="changeScheduleWeek(1)">&gt;</button>
-                    </div>
                     <button class="schedule-close-btn" onclick="closeScheduleModal()" style="margin-left: 1rem;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>

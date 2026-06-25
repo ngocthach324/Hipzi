@@ -27,7 +27,8 @@
     User user = (User) session.getAttribute("loggedUser");
     List<Course> courses = (List<Course>) request.getAttribute("courses");
     boolean hasDynamicCourses = courses != null && !courses.isEmpty();
-    boolean showSampleCourses = false;
+    boolean showSampleCourses = true;
+    int initialCourseCount = hasDynamicCourses ? courses.size() : (showSampleCourses ? 9 : 0);
     String currentSearch = (String) request.getAttribute("currentSearch");
     if (currentSearch == null) currentSearch = "";
     String initials = "H";
@@ -95,11 +96,11 @@
         /* ── HERO ──────────────────────────────────── */
         .courses-hero {
             background: transparent;
-            min-height: calc(100vh - 200px);
-            padding: 2rem 1.5rem;
+            min-height: 28vh;
+            padding: 3.25rem 1.5rem .5rem;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             text-align: center;
             position: relative;
@@ -163,7 +164,7 @@
             color: #334155;
             font-weight: 500;
             font-size: 1.15rem;
-            max-width: 580px;
+            max-width: 760px;
             margin-bottom: 2.5rem;
             line-height: 1.7;
             animation: fadeSlideDown .7s .14s ease both;
@@ -230,9 +231,10 @@
 
         /* ── MAIN LAYOUT ──────────────────────────── */
         .courses-body {
-            max-width: 1280px;
+            width: min(1720px, calc(100vw - 3rem));
+            max-width: none;
             margin: 0 auto;
-            padding: 3rem 1.5rem 5rem;
+            padding: 0 0 5rem;
         }
 
         /* ── FILTER ROW ───────────────────────────── */
@@ -583,79 +585,6 @@
             color: var(--c-muted);
         }
 
-        /* ── FEATURED BANNER ──────────────────────── */
-        .featured-banner {
-            background: linear-gradient(135deg, #0f766e 0%, #7c3aed 100%);
-            border-radius: 20px;
-            padding: 2.5rem 2.5rem 2.5rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 2rem;
-            margin-bottom: 3rem;
-            position: relative;
-            overflow: hidden;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity .6s ease, transform .6s ease;
-        }
-        .featured-banner.visible { opacity: 1; transform: none; }
-        .featured-banner::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            pointer-events: none;
-        }
-        .banner-content { position: relative; }
-        .banner-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            background: rgba(255,255,255,.18);
-            border: 1px solid rgba(255,255,255,.25);
-            color: #fff;
-            font-size: .78rem;
-            font-weight: 700;
-            letter-spacing: .05em;
-            text-transform: uppercase;
-            padding: .28rem .8rem;
-            border-radius: var(--r-pill);
-            margin-bottom: .9rem;
-        }
-        .banner-title {
-            font-size: 1.65rem;
-            font-weight: 800;
-            color: #fff;
-            line-height: 1.25;
-            margin-bottom: .65rem;
-        }
-        .banner-desc {
-            color: rgba(255,255,255,.8);
-            font-size: .95rem;
-            max-width: 480px;
-            line-height: 1.6;
-        }
-        .banner-cta {
-            background: #fff;
-            color: var(--c-primary-d);
-            font-family: var(--font);
-            font-size: .95rem;
-            font-weight: 700;
-            padding: .75rem 1.8rem;
-            border-radius: var(--r-pill);
-            text-decoration: none;
-            white-space: nowrap;
-            transition: all var(--transition);
-            box-shadow: 0 6px 20px rgba(0,0,0,.15);
-            position: relative;
-            flex-shrink: 0;
-        }
-        .banner-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 28px rgba(0,0,0,.2);
-        }
-
         /* ── SECTION HEADING ─────────────────────── */
         .section-heading {
             display: flex;
@@ -678,6 +607,396 @@
         }
         .section-heading .see-all:hover { opacity: .75; }
 
+        /* ── WEEKLY FEATURED COURSES ─────────────── */
+        .weekly-featured {
+            position: relative;
+            margin-bottom: 2.75rem;
+        }
+        .weekly-featured-callout {
+            position: absolute;
+            top: calc(-7.6rem + 20px);
+            left: max(.25rem, calc(clamp(.75rem, 2vw, 2.25rem) - 40px));
+            width: 300px;
+            height: 120px;
+            pointer-events: none;
+            z-index: 4;
+            filter: drop-shadow(0 12px 18px rgba(15,23,42,.12));
+            animation: featuredCalloutFloat 4.8s ease-in-out infinite;
+        }
+        .weekly-featured-stats {
+            position: absolute;
+            top: calc(-8.7rem + 18px);
+            right: calc(clamp(2rem, 7vw, 8rem) - 75px);
+            width: 250px;
+            min-height: 96px;
+            pointer-events: none;
+            z-index: 4;
+            animation: featuredStatsFloat 5.4s ease-in-out infinite;
+        }
+        .weekly-featured-stats::after {
+            content: '';
+            position: absolute;
+            border-radius: 999px;
+            pointer-events: none;
+        }
+        .weekly-featured-stats::after {
+            width: 7px;
+            height: 7px;
+            right: -.25rem;
+            top: -.35rem;
+            background: #f59e0b;
+            box-shadow:
+                .6rem 3.35rem 0 rgba(13,148,136,.55),
+                -8.35rem 5.65rem 0 rgba(124,58,237,.42);
+            animation: featuredStatsDots 3.8s ease-in-out infinite;
+        }
+        .weekly-stat-card {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            padding: .62rem .78rem;
+            border-radius: 16px;
+            background: rgba(255,255,255,.72);
+            border: 1px solid rgba(255,255,255,.85);
+            box-shadow: 0 16px 36px rgba(15,23,42,.08), inset 0 1px 0 rgba(255,255,255,.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .weekly-stat-card:nth-child(1) {
+            top: .2rem;
+            right: 2.6rem;
+            transform: rotate(2deg);
+        }
+        .weekly-stat-card:nth-child(2) {
+            top: 3.35rem;
+            right: .2rem;
+            transform: rotate(-3deg);
+        }
+        .weekly-stat-icon {
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: #0f766e;
+            background: rgba(13,148,136,.12);
+            box-shadow: inset 0 0 0 1px rgba(13,148,136,.12);
+        }
+        .weekly-stat-icon svg {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2.2;
+        }
+        .weekly-stat-copy {
+            display: grid;
+            gap: .05rem;
+            white-space: nowrap;
+        }
+        .weekly-stat-value {
+            color: var(--c-navy);
+            font-size: .92rem;
+            font-weight: 900;
+            line-height: 1.1;
+        }
+        .weekly-stat-label {
+            color: var(--c-muted);
+            font-size: .68rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .featured-callout-text {
+            position: absolute;
+            top: .25rem;
+            left: .2rem;
+            color: #0f172a;
+            font-size: 1.38rem;
+            font-weight: 900;
+            letter-spacing: .01em;
+            text-shadow:
+                0 2px 0 rgba(255,255,255,.95),
+                0 8px 18px rgba(13,148,136,.18);
+            transform: rotate(-7deg);
+            animation: featuredTextWiggle 3.6s ease-in-out infinite;
+        }
+        .featured-callout-text span {
+            display: inline-block;
+            color: #0d9488;
+            transform: translateY(.18rem) rotate(4deg);
+        }
+        .featured-callout-arrow {
+            position: absolute;
+            inset: 2.55rem 0 0 4.1rem;
+            width: 90px;
+            height: 41px;
+            overflow: visible;
+            transform: rotate(10deg);
+            transform-origin: 18% 24%;
+        }
+        .featured-callout-arrow .arrow-main,
+        .featured-callout-arrow .arrow-shadow {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .featured-callout-arrow .arrow-shadow {
+            stroke: rgba(15,23,42,.12);
+            stroke-width: 6;
+            transform: translate(2px, 4px);
+        }
+        .featured-callout-arrow .arrow-main {
+            stroke: #0f172a;
+            stroke-width: 4.5;
+            stroke-dasharray: 430;
+            stroke-dashoffset: 430;
+            animation: featuredArrowDraw 1.2s .25s cubic-bezier(.16,1,.3,1) forwards;
+        }
+        .featured-callout-arrow .arrow-highlight {
+            fill: none;
+            stroke: rgba(13,148,136,.62);
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-dasharray: 7 12;
+            animation: featuredArrowDashes 2.8s linear infinite;
+        }
+        @keyframes featuredArrowDraw {
+            to { stroke-dashoffset: 0; }
+        }
+        @keyframes featuredArrowDashes {
+            to { stroke-dashoffset: -42; }
+        }
+        @keyframes featuredCalloutFloat {
+            0%, 100% { transform: translateY(0) rotate(-1deg); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+        @keyframes featuredTextWiggle {
+            0%, 100% { transform: rotate(-7deg) translateY(0); }
+            50% { transform: rotate(-4deg) translateY(-3px); }
+        }
+        @keyframes featuredStatsFloat {
+            0%, 100% { transform: translateY(0) rotate(.5deg); }
+            50% { transform: translateY(-7px) rotate(-.8deg); }
+        }
+        @keyframes featuredStatsDots {
+            0%, 100% { opacity: .65; transform: translateY(0) scale(1); }
+            50% { opacity: 1; transform: translateY(-5px) scale(1.08); }
+        }
+        .weekly-featured-viewport {
+            overflow: hidden;
+            width: min(1500px, calc(100vw - 4rem));
+            max-width: none;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            padding: .35rem 0 1rem;
+            -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+        }
+        .weekly-featured-grid {
+            display: flex;
+            gap: 1.25rem;
+            width: max-content;
+            will-change: transform;
+            transform: translateX(0);
+        }
+        .weekly-course-card {
+            display: flex;
+            flex-direction: column;
+            width: 320px;
+            min-height: 100%;
+            padding: .9rem;
+            background: rgba(255,255,255,.92);
+            border: 1.5px solid rgba(226,232,240,.95);
+            border-radius: 18px;
+            box-shadow: var(--c-card-sh);
+            color: inherit;
+            text-decoration: none;
+            transition: box-shadow var(--transition);
+            cursor: default;
+        }
+        .weekly-course-card:hover {
+            box-shadow: var(--c-card-sh);
+        }
+        .weekly-thumb {
+            width: 100%;
+            aspect-ratio: 1.45 / 1;
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .weekly-thumb::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(115deg, transparent 0%, transparent 42%, rgba(255,255,255,.58) 50%, transparent 58%, transparent 100%);
+            transform: translateX(-130%);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1;
+        }
+        .weekly-course-card:hover .weekly-thumb::after {
+            animation: weeklyCoverShine .8s ease-out 1;
+        }
+        .weekly-thumb-bg {
+            width: 100%;
+            height: 100%;
+            transition: transform .55s cubic-bezier(.16,1,.3,1);
+        }
+        .weekly-course-card:hover .weekly-thumb-bg {
+            transform: scale(1.055);
+        }
+        .weekly-rating-badge {
+            position: absolute;
+            top: .65rem;
+            left: .65rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+            padding: .24rem .62rem;
+            border-radius: var(--r-pill);
+            background: rgba(15,23,42,.78);
+            color: #fff;
+            font-size: .72rem;
+            font-weight: 800;
+            backdrop-filter: blur(8px);
+            z-index: 2;
+        }
+        .weekly-rating-badge svg {
+            width: 12px;
+            height: 12px;
+            fill: #f59e0b;
+            stroke: #f59e0b;
+        }
+        .weekly-info {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding: 0 .1rem .1rem;
+        }
+        .weekly-title {
+            color: var(--c-navy);
+            font-size: 1.05rem;
+            font-weight: 800;
+            line-height: 1.38;
+            margin-bottom: .65rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .weekly-teacher-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+            margin-bottom: 1rem;
+        }
+        .weekly-teacher {
+            min-width: 0;
+            color: var(--c-muted);
+            font-size: .84rem;
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .weekly-students {
+            display: flex;
+            align-items: center;
+            gap: .28rem;
+            color: var(--c-muted);
+            font-size: .8rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .weekly-students svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2.2;
+        }
+        .weekly-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+            margin-top: auto;
+            padding-top: .35rem;
+        }
+        .weekly-price {
+            color: var(--c-navy);
+            font-size: .98rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .weekly-price.free { color: #16a34a; }
+        .weekly-cart-btn {
+            position: absolute;
+            top: .65rem;
+            right: .65rem;
+            width: 34px;
+            height: 34px;
+            flex: 0 0 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,.86);
+            border: 1px solid rgba(255,255,255,.85);
+            color: var(--c-navy);
+            box-shadow: 0 8px 18px rgba(15,23,42,.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: transform var(--transition), background var(--transition), color var(--transition), box-shadow var(--transition);
+            z-index: 2;
+            cursor: pointer;
+        }
+        .weekly-course-card:hover .weekly-cart-btn {
+            color: var(--c-primary-d);
+            background: rgba(255,255,255,.96);
+            box-shadow: 0 10px 22px rgba(15,23,42,.16);
+            transform: translateY(-1px);
+        }
+        .weekly-cart-btn svg {
+            width: 17px;
+            height: 17px;
+            stroke-width: 2.2;
+        }
+        .weekly-cart-btn.added {
+            color: #16a34a;
+            background: rgba(236,253,245,.96);
+        }
+        .weekly-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            padding: .48rem .9rem;
+            border-radius: var(--r-pill);
+            background: #22c55e;
+            color: #fff;
+            font-size: .82rem;
+            font-weight: 800;
+            white-space: nowrap;
+            border: 0;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(34,197,94,.18);
+            transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
+        }
+        .weekly-cta:hover {
+            background: #16a34a;
+            color: #fff;
+            box-shadow: 0 10px 22px rgba(22,163,74,.24);
+            transform: translateY(-1px);
+        }
+        @keyframes weeklyCoverShine {
+            0% { transform: translateX(-130%); opacity: 0; }
+            12% { opacity: .95; }
+            100% { transform: translateX(130%); opacity: 0; }
+        }
         /* ── CATEGORY PILLS SCROLL ───────────────── */
         .category-scroll {
             display: flex;
@@ -782,6 +1101,191 @@
         }
 
         /* ── EMPTY STATE ──────────────────────────── */
+        /* Filter workspace inspired by compact CRM filter panels */
+        .course-browser-layout {
+            display: grid;
+            grid-template-columns: 292px minmax(0, 1fr);
+            gap: 1.5rem;
+            align-items: start;
+            margin-top: 2.5rem;
+        }
+        .course-filter-panel {
+            position: sticky;
+            top: 96px;
+            background: rgba(255,255,255,.78);
+            border: 1px solid rgba(226,232,240,.9);
+            border-radius: 18px;
+            box-shadow: 0 18px 42px rgba(15,23,42,.07);
+            overflow: hidden;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+        .filter-panel-header {
+            padding: 1.1rem 1rem .95rem;
+            border-bottom: 1px solid rgba(226,232,240,.75);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+        }
+        .filter-panel-title {
+            display: flex;
+            align-items: center;
+            gap: .58rem;
+            color: var(--c-navy);
+            font-size: 1.16rem;
+            font-weight: 900;
+        }
+        .filter-panel-title svg,
+        .filter-section-label svg {
+            color: var(--c-primary);
+            stroke-width: 2.3;
+        }
+        .filter-panel-title svg { width: 20px; height: 20px; }
+        .filter-reset-btn {
+            border: 0;
+            background: transparent;
+            color: var(--c-primary-d);
+            font: inherit;
+            font-size: .78rem;
+            font-weight: 800;
+            cursor: pointer;
+            padding: .28rem .4rem;
+            border-radius: 8px;
+            transition: background var(--transition), color var(--transition);
+        }
+        .filter-reset-btn:hover {
+            background: rgba(13,148,136,.08);
+            color: var(--c-primary);
+        }
+        .filter-search-box {
+            margin: .95rem 1rem 1rem;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+            padding: 0 .85rem;
+            border: 1.5px solid rgba(203,213,225,.95);
+            border-radius: 12px;
+            background: rgba(255,255,255,.9);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.86);
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+        .filter-search-box:focus-within {
+            border-color: var(--c-primary-l);
+            box-shadow: 0 0 0 4px rgba(13,148,136,.08);
+        }
+        .filter-search-box svg {
+            width: 18px;
+            height: 18px;
+            color: #64748b;
+            flex: 0 0 auto;
+        }
+        .filter-search-box input {
+            width: 100%;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: var(--c-text);
+            font-size: .9rem;
+            font-weight: 600;
+        }
+        .filter-search-box input::placeholder { color: #94a3b8; }
+        .filter-section {
+            border-top: 1px solid rgba(226,232,240,.72);
+            padding: 1rem;
+        }
+        .filter-section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+            margin-bottom: .8rem;
+        }
+        .filter-section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: .55rem;
+            color: var(--c-navy);
+            font-size: .9rem;
+            font-weight: 900;
+        }
+        .filter-section-label svg { width: 17px; height: 17px; }
+        .filter-section-count {
+            color: #94a3b8;
+            font-size: .75rem;
+            font-weight: 800;
+        }
+        .course-filter-panel .category-scroll,
+        .course-filter-panel .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            margin: 0;
+            padding: 0;
+            overflow: visible;
+        }
+        .course-filter-panel .cat-pill,
+        .course-filter-panel .chip {
+            min-height: 34px;
+            padding: .42rem .72rem;
+            border-radius: 10px;
+            font-size: .82rem;
+            background: rgba(255,255,255,.86);
+            box-shadow: 0 6px 14px rgba(15,23,42,.035);
+        }
+        .course-filter-panel .cat-pill.active,
+        .course-filter-panel .chip.active {
+            background: linear-gradient(135deg, #0d9488, #10b981);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 10px 22px rgba(13,148,136,.2);
+        }
+        .filter-sort-control { position: relative; }
+        .filter-sort-control::after {
+            content: '';
+            position: absolute;
+            right: .9rem;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            border-right: 2px solid var(--c-primary);
+            border-bottom: 2px solid var(--c-primary);
+            transform: translateY(-65%) rotate(45deg);
+            pointer-events: none;
+        }
+        .course-filter-panel .sort-select {
+            width: 100%;
+            min-height: 42px;
+            appearance: none;
+            border-radius: 12px;
+            padding: .55rem 2.4rem .55rem .8rem;
+            background: rgba(255,255,255,.92);
+            border-color: rgba(203,213,225,.95);
+            box-shadow: 0 8px 18px rgba(15,23,42,.04);
+        }
+        .course-results-panel { min-width: 0; }
+        .course-results-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            padding: .85rem 1rem;
+            border: 1px solid rgba(226,232,240,.8);
+            border-radius: 16px;
+            background: rgba(255,255,255,.62);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 14px 32px rgba(15,23,42,.045);
+        }
+        .course-results-title {
+            color: var(--c-navy);
+            font-size: 1.3rem;
+            font-weight: 900;
+        }
+        .course-results-panel .result-count { margin: 0; }
+
         .empty-state {
             text-align: center;
             padding: 5rem 1.5rem;
@@ -824,9 +1328,22 @@
 
         /* ── RESPONSIVE ───────────────────────────── */
         @media (max-width: 768px) {
-            .courses-hero { padding: 100px 1rem 60px; }
+            .courses-hero { min-height: auto; padding: 2.75rem 1rem .75rem; }
+            .hero-title, .hero-subtitle { max-width: 100%; }
+            .weekly-featured-callout,
+            .weekly-featured-stats { display: none; }
+            .course-browser-layout { grid-template-columns: 1fr; margin-top: 1.5rem; }
+            .course-filter-panel { position: relative; top: auto; }
+            .course-results-toolbar { align-items: flex-start; flex-direction: column; }
+            .weekly-featured-viewport {
+                width: calc(100vw - 2rem);
+                margin-left: 50%;
+                transform: translateX(-50%);
+                -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 10%, #000 90%, transparent 100%);
+                mask-image: linear-gradient(90deg, transparent 0, #000 10%, #000 90%, transparent 100%);
+            }
+            .weekly-course-card { width: 300px; }
             .stats-bar { gap: 1.5rem; flex-wrap: wrap; }
-            .featured-banner { flex-direction: column; padding: 1.75rem 1.25rem; }
             .sort-wrap { margin-left: 0; }
         }
         @media (max-width: 480px) {
@@ -907,109 +1424,254 @@
 
 <!-- HERO SECTION -->
 <section class="courses-hero">
-
-    <h1 class="hero-title">
-        Nâng cao kiến thức cùng <span data-shine="giảng viên uy tín">giảng viên uy tín</span>
-    </h1>
-    <p class="hero-subtitle">
-        Hàng trăm khóa học chất lượng cao, từ cơ bản đến nâng cao, học theo tốc độ của riêng bạn.
-    </p>
-
-    <!-- SEARCH BAR -->
-    <div class="search-wrap">
-        <div class="search-bar">
-            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input
-                type="text"
-                id="courseSearch"
-                class="search-input"
-                placeholder="Tìm kiếm khóa học, giảng viên, chủ đề..."
-                value="<%= h(currentSearch) %>"
-                autocomplete="off"
-            >
-            <button class="search-btn" onclick="applySearch()" id="searchBtn">
-                Tìm kiếm
-            </button>
-        </div>
-    </div>
 </section>
 
 <!-- MAIN CONTENT -->
 <div class="courses-body">
 
-    <!-- FEATURED BANNER -->
-    <div class="featured-banner" id="featuredBanner">
-        <div class="banner-content">
-            <div class="banner-tag">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2c.2 4.4 2.6 6.8 7 7-4.4.2-6.8 2.6-7 7-.2-4.4-2.6-6.8-7-7 4.4-.2 6.8-2.6 7-7z"/></svg>
-                Nổi bật tuần này
+    <% if (hasDynamicCourses || showSampleCourses) { %>
+    <!-- WEEKLY FEATURED COURSES -->
+    <section class="weekly-featured">
+        <div class="weekly-featured-callout" aria-hidden="true">
+            <div class="featured-callout-text">Khóa học <span>nổi bật</span></div>
+            <svg class="featured-callout-arrow" viewBox="0 0 180 82" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path class="arrow-shadow" d="M14 14 C16 35 42 40 50 22 C57 8 31 8 34 30 C38 61 102 63 145 58" />
+                <path class="arrow-main" d="M12 12 C15 35 41 40 48 22 C55 8 31 8 34 30 C38 61 101 63 145 58" />
+                <path class="arrow-main" d="M145 58 L125 46" />
+                <path class="arrow-main" d="M145 58 L127 73" />
+                <path class="arrow-highlight" d="M37 41 C54 60 103 61 135 58" />
+            </svg>
+        </div>
+        <div class="weekly-featured-stats" aria-hidden="true">
+            <div class="weekly-stat-card">
+                <span class="weekly-stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l2.8 6 6.2.8-4.6 4.4 1.2 6.2L12 16.2 6.4 19.4l1.2-6.2L3 8.8 9.2 8 12 2z"/></svg>
+                </span>
+                <span class="weekly-stat-copy">
+                    <span class="weekly-stat-value">4.8/5</span>
+                    <span class="weekly-stat-label">đánh giá trung bình</span>
+                </span>
             </div>
-            <h2 class="banner-title">Lộ trình chinh phục IELTS 7.0+<br>cùng AI luyện tập thông minh</h2>
-            <p class="banner-desc">Kết hợp phương pháp học có hệ thống với sức mạnh của HIPZI AI để đạt band điểm mục tiêu trong thời gian ngắn nhất.</p>
+            <div class="weekly-stat-card">
+                <span class="weekly-stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </span>
+                <span class="weekly-stat-copy">
+                    <span class="weekly-stat-value">3.2k+</span>
+                    <span class="weekly-stat-label">học viên đang học</span>
+                </span>
+            </div>
         </div>
-        <a href="${pageContext.request.contextPath}/login" class="banner-cta">
-            Đăng ký miễn phí →
-        </a>
-    </div>
-
-    <!-- CATEGORY PILLS -->
-    <div class="section-heading">
-        <h2>Danh mục khóa học</h2>
-    </div>
-    <div class="category-scroll" id="categoryScroll">
-        <button class="cat-pill active" data-cat="all" onclick="filterByCategory(this, 'all')">
-            <span class="cat-pill-icon">🎯</span> Tất cả
-        </button>
-        <button class="cat-pill" data-cat="math" onclick="filterByCategory(this, 'math')">
-            <span class="cat-pill-icon">📐</span> Toán học
-        </button>
-        <button class="cat-pill" data-cat="english" onclick="filterByCategory(this, 'english')">
-            <span class="cat-pill-icon">🌍</span> Tiếng Anh
-        </button>
-        <button class="cat-pill" data-cat="physics" onclick="filterByCategory(this, 'physics')">
-            <span class="cat-pill-icon">⚛️</span> Vật lý
-        </button>
-        <button class="cat-pill" data-cat="chemistry" onclick="filterByCategory(this, 'chemistry')">
-            <span class="cat-pill-icon">🧪</span> Hóa học
-        </button>
-        <button class="cat-pill" data-cat="literature" onclick="filterByCategory(this, 'literature')">
-            <span class="cat-pill-icon">📖</span> Ngữ văn
-        </button>
-        <button class="cat-pill" data-cat="biology" onclick="filterByCategory(this, 'biology')">
-            <span class="cat-pill-icon">🧬</span> Sinh học
-        </button>
-        <button class="cat-pill" data-cat="history" onclick="filterByCategory(this, 'history')">
-            <span class="cat-pill-icon">🏛️</span> Lịch sử
-        </button>
-        <button class="cat-pill" data-cat="it" onclick="filterByCategory(this, 'it')">
-            <span class="cat-pill-icon">💻</span> Tin học
-        </button>
-    </div>
-
-    <!-- FILTER ROW -->
-    <div class="filter-row">
-        <span class="filter-label">Lọc theo:</span>
-        <div class="filter-chips">
-            <button class="chip active" data-filter="all" id="filter-all" onclick="applyFilter(this, 'all')">Tất cả</button>
-            <button class="chip" data-filter="free" id="filter-free" onclick="applyFilter(this, 'free')">Miễn phí</button>
-            <button class="chip" data-filter="paid" id="filter-paid" onclick="applyFilter(this, 'paid')">Có phí</button>
-            <button class="chip" data-filter="enrolled" id="filter-enrolled" onclick="applyFilter(this, 'enrolled')">Đang học</button>
+        <div class="weekly-featured-viewport">
+        <div class="weekly-featured-grid" id="weeklyFeaturedTrack">
+            <% if (hasDynamicCourses) { %>
+            <%
+                int weeklyLimit = Math.min(3, courses.size());
+                for (int i = 0; i < weeklyLimit; i++) {
+                    Course featuredCourse = courses.get(i);
+                    String featuredThumbUrl = featuredCourse.getThumbnailUrl();
+                    String featuredThumbStyle = (featuredThumbUrl != null && !featuredThumbUrl.trim().isEmpty())
+                            ? "background-image:url('" + h(featuredThumbUrl) + "'); background-size:cover; background-position:center;"
+                            : "background:" + h(featuredCourse.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";
+            %>
+            <article class="weekly-course-card">
+                <div class="weekly-thumb">
+                    <div class="weekly-thumb-bg" style="<%= featuredThumbStyle %>">
+                        <% if (featuredThumbUrl == null || featuredThumbUrl.trim().isEmpty()) { %>
+                            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.25"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <% } %>
+                    </div>
+                    <span class="weekly-rating-badge" aria-label="Đánh giá <%= h(featuredCourse.getDisplayRating()) %> sao">
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <%= h(featuredCourse.getDisplayRating()) %>
+                    </span>
+                    <button type="button" class="weekly-cart-btn" onclick="handleWeeklyCart(event, this, '<%= h(featuredCourse.getId()) %>')" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    </button>
+                </div>
+                <div class="weekly-info">
+                    <h3 class="weekly-title"><%= h(featuredCourse.getTitle()) %></h3>
+                    <div class="weekly-teacher-row">
+                        <div class="weekly-teacher"><%= h(featuredCourse.getTeacherName()) %></div>
+                        <span class="weekly-students" aria-label="<%= featuredCourse.getStudentsCount() %> học viên">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <%= featuredCourse.getStudentsCount() %>
+                        </span>
+                    </div>
+                    <div class="weekly-footer">
+                        <span class="weekly-price <%= featuredCourse.isFree() ? "free" : "" %>"><%= h(featuredCourse.getPriceLabel()) %></span>
+                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();"><%= featuredCourse.isViewerEnrolled() ? "Tiếp tục học" : "Xem khóa học" %></a>
+                    </div>
+                </div>
+            </article>
+            <% } %>
+            <% } else { %>
+            <article class="weekly-course-card">
+                <div class="weekly-thumb">
+                    <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#0f766e 0%,#14b8a6 48%,#7c3aed 100%); display:flex; align-items:center; justify-content:center;">
+                        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><path d="M3 5h18M3 10h12M3 15h9M3 20h6"/><circle cx="19" cy="17" r="3"/><path d="M22 20l-1.5-1.5"/></svg>
+                    </div>
+                    <span class="weekly-rating-badge" aria-label="Đánh giá 4.9 sao">
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        4.9
+                    </span>
+                    <button type="button" class="weekly-cart-btn" onclick="handleWeeklyCart(event, this, '')" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    </button>
+                </div>
+                <div class="weekly-info">
+                    <h3 class="weekly-title">Master IELTS Writing Task 2 từ con số 0 đến Band 7.5</h3>
+                    <div class="weekly-teacher-row">
+                        <div class="weekly-teacher">Trần Anh Khoa</div>
+                        <span class="weekly-students" aria-label="950 học viên">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            950
+                        </span>
+                    </div>
+                    <div class="weekly-footer">
+                        <span class="weekly-price free">Miễn phí</span>
+                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem khóa học</a>
+                    </div>
+                </div>
+            </article>
+            <article class="weekly-course-card">
+                <div class="weekly-thumb">
+                    <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#2563eb 0%,#6366f1 100%); display:flex; align-items:center; justify-content:center;">
+                        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/><path d="M8 7h8M8 11h6"/></svg>
+                    </div>
+                    <span class="weekly-rating-badge" aria-label="Đánh giá 4.8 sao">
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        4.8
+                    </span>
+                    <button type="button" class="weekly-cart-btn" onclick="handleWeeklyCart(event, this, '')" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    </button>
+                </div>
+                <div class="weekly-info">
+                    <h3 class="weekly-title">Luyện thi ĐGNL ĐHQG TP.HCM - Toán tổng ôn siêu tốc</h3>
+                    <div class="weekly-teacher-row">
+                        <div class="weekly-teacher">Nguyễn Văn An</div>
+                        <span class="weekly-students" aria-label="820 học viên">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            820
+                        </span>
+                    </div>
+                    <div class="weekly-footer">
+                        <span class="weekly-price free">Miễn phí</span>
+                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Tiếp tục học</a>
+                    </div>
+                </div>
+            </article>
+            <article class="weekly-course-card">
+                <div class="weekly-thumb">
+                    <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#7c3aed 0%,#a78bfa 100%); display:flex; align-items:center; justify-content:center;">
+                        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                    </div>
+                    <span class="weekly-rating-badge" aria-label="Đánh giá 4.7 sao">
+                        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        4.7
+                    </span>
+                    <button type="button" class="weekly-cart-btn" onclick="handleWeeklyCart(event, this, '')" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    </button>
+                </div>
+                <div class="weekly-info">
+                    <h3 class="weekly-title">Chinh phục điểm 9+ Vật Lý 12 bằng sơ đồ tư duy</h3>
+                    <div class="weekly-teacher-row">
+                        <div class="weekly-teacher">Lê Hương Giang</div>
+                        <span class="weekly-students" aria-label="610 học viên">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            610
+                        </span>
+                    </div>
+                    <div class="weekly-footer">
+                        <span class="weekly-price">150.000 đ</span>
+                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem khóa học</a>
+                    </div>
+                </div>
+            </article>
+            <% } %>
         </div>
-
-        <div class="sort-wrap">
-            <label class="sort-label" for="sortSelect">Sắp xếp:</label>
-            <select class="sort-select" id="sortSelect" onchange="applySorting()">
-                <option value="popular">Phổ biến nhất</option>
-                <option value="newest">Mới nhất</option>
-                <option value="rating">Đánh giá cao</option>
-                <option value="price-asc">Giá tăng dần</option>
-                <option value="price-desc">Giá giảm dần</option>
-            </select>
         </div>
-    </div>
+    </section>
+    <% } %>
 
-    <!-- RESULT COUNT -->
-    <p class="result-count" id="resultCount">Hiển thị <strong id="visibleCount"><%= hasDynamicCourses ? courses.size() : 0 %></strong> khóa học</p>
+    <div class="course-browser-layout">
+        <aside class="course-filter-panel" aria-label="Bộ lọc khóa học">
+            <div class="filter-panel-header">
+                <div class="filter-panel-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+                    <span>Bộ lọc</span>
+                </div>
+                <button type="button" class="filter-reset-btn" onclick="resetCourseFilters()">Đặt lại</button>
+            </div>
+
+            <div class="filter-search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" id="courseSearch" placeholder="Tìm khóa học, giáo viên..." value="<%= h(currentSearch) %>" autocomplete="off">
+            </div>
+
+            <section class="filter-section">
+                <div class="filter-section-title">
+                    <span class="filter-section-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                        Danh mục
+                    </span>
+                    <span class="filter-section-count">9 môn</span>
+                </div>
+                <div class="category-scroll" id="categoryScroll">
+                    <button class="cat-pill active" data-cat="all" onclick="filterByCategory(this, 'all')"><span class="cat-pill-icon">🎯</span> Tất cả</button>
+                    <button class="cat-pill" data-cat="math" onclick="filterByCategory(this, 'math')"><span class="cat-pill-icon">📐</span> Toán</button>
+                    <button class="cat-pill" data-cat="english" onclick="filterByCategory(this, 'english')"><span class="cat-pill-icon">🌍</span> Tiếng Anh</button>
+                    <button class="cat-pill" data-cat="physics" onclick="filterByCategory(this, 'physics')"><span class="cat-pill-icon">⚛</span> Vật lý</button>
+                    <button class="cat-pill" data-cat="chemistry" onclick="filterByCategory(this, 'chemistry')"><span class="cat-pill-icon">🧪</span> Hóa</button>
+                    <button class="cat-pill" data-cat="literature" onclick="filterByCategory(this, 'literature')"><span class="cat-pill-icon">📖</span> Ngữ văn</button>
+                    <button class="cat-pill" data-cat="biology" onclick="filterByCategory(this, 'biology')"><span class="cat-pill-icon">🧬</span> Sinh</button>
+                    <button class="cat-pill" data-cat="history" onclick="filterByCategory(this, 'history')"><span class="cat-pill-icon">🏛</span> Lịch sử</button>
+                    <button class="cat-pill" data-cat="it" onclick="filterByCategory(this, 'it')"><span class="cat-pill-icon">💻</span> Tin học</button>
+                </div>
+            </section>
+
+            <section class="filter-section">
+                <div class="filter-section-title">
+                    <span class="filter-section-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+                        Trạng thái
+                    </span>
+                    <span class="filter-section-count">4 lựa chọn</span>
+                </div>
+                <div class="filter-chips">
+                    <button class="chip active" data-filter="all" id="filter-all" onclick="applyFilter(this, 'all')">Tất cả</button>
+                    <button class="chip" data-filter="free" id="filter-free" onclick="applyFilter(this, 'free')">Miễn phí</button>
+                    <button class="chip" data-filter="paid" id="filter-paid" onclick="applyFilter(this, 'paid')">Có phí</button>
+                    <button class="chip" data-filter="enrolled" id="filter-enrolled" onclick="applyFilter(this, 'enrolled')">Đang học</button>
+                </div>
+            </section>
+
+            <section class="filter-section">
+                <div class="filter-section-title">
+                    <span class="filter-section-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+                        Sắp xếp
+                    </span>
+                </div>
+                <div class="filter-sort-control">
+                    <select class="sort-select" id="sortSelect" onchange="applySorting()">
+                        <option value="popular">Phổ biến nhất</option>
+                        <option value="newest">Mới nhất</option>
+                        <option value="rating">Đánh giá cao</option>
+                        <option value="price-asc">Giá tăng dần</option>
+                        <option value="price-desc">Giá giảm dần</option>
+                    </select>
+                </div>
+            </section>
+        </aside>
+
+        <main class="course-results-panel">
+            <div class="course-results-toolbar">
+                <div class="course-results-title">Tất cả khóa học</div>
+                <p class="result-count" id="resultCount">Hiển thị <strong id="visibleCount"><%= initialCourseCount %></strong> khóa học</p>
+            </div>
 
     <!-- COURSES GRID -->
     <div class="courses-grid" id="coursesGrid">
@@ -1471,7 +2133,7 @@
     </div><!-- /courses-grid -->
 
     <!-- EMPTY STATE -->
-    <div class="empty-state <%= hasDynamicCourses ? "" : "visible" %>" id="emptyState">
+    <div class="empty-state <%= initialCourseCount > 0 ? "" : "visible" %>" id="emptyState">
         <div class="empty-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--c-primary)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
         </div>
@@ -1480,12 +2142,14 @@
     </div>
 
     <!-- LOAD MORE -->
-    <div class="load-more-wrap" id="loadMoreWrap" style="<%= hasDynamicCourses ? "" : "display:none;" %>">
+    <div class="load-more-wrap" id="loadMoreWrap" style="<%= initialCourseCount > 0 ? "" : "display:none;" %>">
         <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">
             <span class="spinner" id="loadSpinner"></span>
             <span id="loadMoreText">Xem thêm khóa học</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" id="loadMoreIcon"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
         </button>
+    </div>
+        </main>
     </div>
 
 </div><!-- /courses-body -->
@@ -1512,22 +2176,104 @@ const revealObserver = new IntersectionObserver((entries) => {
 
 allCards.forEach(c => revealObserver.observe(c));
 
-// Featured banner
-const bannerObs = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); bannerObs.unobserve(e.target); } });
-}, { threshold: 0.2 });
-const banner = document.getElementById('featuredBanner');
-if (banner) bannerObs.observe(banner);
+const weeklyFeaturedTrack = document.getElementById('weeklyFeaturedTrack');
+if (weeklyFeaturedTrack && !weeklyFeaturedTrack.dataset.marqueeReady) {
+    const originalCards = Array.from(weeklyFeaturedTrack.children);
+    const viewport = weeklyFeaturedTrack.closest('.weekly-featured-viewport');
+    weeklyFeaturedTrack.dataset.marqueeReady = 'true';
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!prefersReducedMotion && viewport && originalCards.length > 0) {
+        let offset = 0;
+        let lastTime = null;
+        let currentSpeed = 46;
+        let targetSpeed = 46;
+        let loopWidth = 0;
+
+        viewport.addEventListener('mouseenter', () => { targetSpeed = 16; });
+        viewport.addEventListener('mouseleave', () => { targetSpeed = 46; });
+
+        function cloneOriginalSet() {
+            originalCards.forEach(card => {
+                const clone = card.cloneNode(true);
+                clone.setAttribute('aria-hidden', 'true');
+                clone.tabIndex = -1;
+                clone.querySelectorAll('a, button').forEach(control => {
+                    control.tabIndex = -1;
+                });
+                weeklyFeaturedTrack.appendChild(clone);
+            });
+        }
+
+        function measureLoop() {
+            const styles = window.getComputedStyle(weeklyFeaturedTrack);
+            const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+            const cardsWidth = originalCards.reduce((sum, card) => sum + card.getBoundingClientRect().width, 0);
+            loopWidth = cardsWidth + gap * originalCards.length;
+
+            while (weeklyFeaturedTrack.scrollWidth < viewport.clientWidth + loopWidth + gap) {
+                cloneOriginalSet();
+            }
+        }
+
+        measureLoop();
+        window.addEventListener('resize', debounce(measureLoop, 150));
+
+        function tick(time) {
+            if (lastTime === null) lastTime = time;
+            const delta = Math.min((time - lastTime) / 1000, 0.05);
+            lastTime = time;
+
+            currentSpeed += (targetSpeed - currentSpeed) * Math.min(delta * 6, 1);
+            if (loopWidth > 0) {
+                offset = (offset + currentSpeed * delta) % loopWidth;
+                weeklyFeaturedTrack.style.transform = 'translateX(-' + offset + 'px)';
+            }
+
+            requestAnimationFrame(tick);
+        }
+
+        requestAnimationFrame(tick);
+    }
+}
+
+function handleWeeklyCart(e, btn, courseId) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    if (courseId && typeof window.addToCart === 'function') {
+        window.addToCart(e, btn, courseId);
+        return;
+    }
+    btn.classList.add('added');
+    window.setTimeout(() => btn.classList.remove('added'), 900);
+}
 
 // ─── SEARCH ───────────────────────────────────────────
 const searchInput = document.getElementById('courseSearch');
-searchInput.addEventListener('input', debounce(() => {
-    searchQuery = searchInput.value.trim().toLowerCase();
-    applyAll();
-}, 250));
+if (searchInput) {
+    searchInput.addEventListener('input', debounce(() => {
+        searchQuery = searchInput.value.trim().toLowerCase();
+        applyAll();
+    }, 250));
+}
 
 function applySearch() {
+    if (!searchInput) return;
     searchQuery = searchInput.value.trim().toLowerCase();
+    applyAll();
+}
+
+function resetCourseFilters() {
+    const allCategory = document.querySelector('.cat-pill[data-cat="all"]');
+    const allFilter = document.getElementById('filter-all');
+    const sortSelect = document.getElementById('sortSelect');
+    if (searchInput) searchInput.value = '';
+    searchQuery = '';
+    if (allCategory) filterByCategory(allCategory, 'all');
+    if (allFilter) applyFilter(allFilter, 'all');
+    if (sortSelect) sortSelect.value = 'popular';
     applyAll();
 }
 
