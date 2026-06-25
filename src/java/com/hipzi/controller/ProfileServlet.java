@@ -14,6 +14,7 @@ import com.hipzi.service.GoogleDriveOAuthService;
 import com.hipzi.service.OtpService;
 import com.hipzi.service.NotificationService;
 import com.hipzi.service.StudentProfileService;
+import com.hipzi.service.ClassSessionService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -27,6 +28,7 @@ import com.hipzi.dao.ParentStudentLinkDao;
 import com.hipzi.dao.AdminStatsDao;
 import com.hipzi.dao.AdminUserDao;
 import com.hipzi.dao.ClassroomDao;
+import com.hipzi.dao.TeachingScheduleDao;
 import com.hipzi.dao.CourseDao;
 import com.hipzi.dao.RepositoryMaterialDao;
 import com.hipzi.dao.SupportTicketDao;
@@ -55,8 +57,10 @@ public class ProfileServlet extends HttpServlet {
     private final AuthService authService = new AuthService();
     private final OtpService  otpService  = new OtpService();
     private final StudentProfileService studentProfileService = new StudentProfileService();
+    private final ClassSessionService classSessionService = new ClassSessionService();
     private final NotificationService notificationService = new NotificationService();
     private final ParentStudentLinkDao linkDao = new ParentStudentLinkDao();
+    private final TeachingScheduleDao teachingScheduleDao = new TeachingScheduleDao();
     private final AdminStatsDao adminStatsDao = new AdminStatsDao();
     private final AdminUserDao adminUserDao = new AdminUserDao();
     private final TeacherApplicationDao teacherApplicationDao = new TeacherApplicationDao();
@@ -92,6 +96,13 @@ public class ProfileServlet extends HttpServlet {
         }
 
         String preferredProfilePath = preferredProfilePath(user);
+
+        String action = request.getParameter("action");
+        if ("getScheduleGrid".equals(action) && hasRole(user, "teacher")) {
+            request.setAttribute("teacherSchedules", teachingScheduleDao.findByTeacherId(user.getId()));
+            request.getRequestDispatcher("/WEB-INF/views/partials/schedule-grid.jsp").forward(request, response);
+            return;
+        }
 
         if ("/teacher-wallet".equals(path) || "/teacher-management".equals(path)) {
             if (!hasRole(user, "teacher")) {
@@ -145,6 +156,7 @@ public class ProfileServlet extends HttpServlet {
         if ("/WEB-INF/views/student-profile.jsp".equals(targetJsp)) {
             StudentProfile studentProfile = studentProfileService.getProfileByUserId(user.getId());
             request.setAttribute("studentProfile", studentProfile);
+            request.setAttribute("studentSchedules", teachingScheduleDao.findByStudentId(user.getId()));
             loadUserSupportData(request, user);
         } else if ("/WEB-INF/views/parent-profile.jsp".equals(targetJsp)) {
             List<ParentStudentLink> trackedStudents = linkDao.findLinksByParentId(user.getId());
@@ -156,6 +168,7 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("approvedTeacherApplication", approvedTeacherApplication);
             request.setAttribute("hasApprovedApplication", approvedTeacherApplication != null);
             request.setAttribute("teacherClassrooms", classroomDao.findByTeacherId(user.getId()));
+            request.setAttribute("teacherSchedules", teachingScheduleDao.findByTeacherId(user.getId()));
             request.setAttribute("teacherCourses", courseDao.findByTeacherId(user.getId()));
             request.setAttribute("teacherMaterialCount", repositoryMaterialDao.countByUploaderId(user.getId()));
             request.setAttribute("teacherGoogleAccount", teacherGoogleAccountDao.findActiveByTeacherId(user.getId()));
@@ -360,6 +373,7 @@ public class ProfileServlet extends HttpServlet {
                     session.setAttribute("toastMsg", "Vui lòng điền đầy đủ tên lớp, môn học, thứ học và khung giờ học hợp lệ.");
                     session.setAttribute("toastType", "error");
                 } else if (classroomDao.create(classroom)) {
+                    classSessionService.generateSchedulesForClassroom(classroom);
                     session.setAttribute("toastMsg", "Đăng kí lớp học '" + classroom.getTitle() + "' thành công.");
                     session.setAttribute("toastType", "success");
                 } else {
@@ -383,12 +397,18 @@ public class ProfileServlet extends HttpServlet {
                 } else if (!isValidClassroom(classroom)) {
                     session.setAttribute("toastMsg", "Vui lòng điền đầy đủ thông tin lớp và khung giờ học hợp lệ.");
                     session.setAttribute("toastType", "error");
-                } else if (classroomDao.updateForTeacher(classroom)) {
-                    session.setAttribute("toastMsg", "Đã cập nhật lớp học '" + classroom.getTitle() + "'.");
-                    session.setAttribute("toastType", "success");
                 } else {
-                    session.setAttribute("toastMsg", "Không thể cập nhật lớp học này.");
-                    session.setAttribute("toastType", "error");
+                    Classroom oldClassroom = classroomDao.findById(classId);
+                    if (classroomDao.updateForTeacher(classroom)) {
+                        if (oldClassroom != null) {
+                            classSessionService.regenerateOnScheduleChange(oldClassroom, classroom);
+                        }
+                        session.setAttribute("toastMsg", "Đã cập nhật lớp học '" + classroom.getTitle() + "'.");
+                        session.setAttribute("toastType", "success");
+                    } else {
+                        session.setAttribute("toastMsg", "Không thể cập nhật lớp học này.");
+                        session.setAttribute("toastType", "error");
+                    }
                 }
             } else if ("deleteClass".equals(action)) {
                 String classId = cleanParam(request.getParameter("classId"));

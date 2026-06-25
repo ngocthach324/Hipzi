@@ -29,6 +29,9 @@
         }
     }
     String profileMenuLabel = "H\u1ed3 s\u01a1 " + profileRoleLabel;
+    if (profileHasStudent && !profileHasTeacher && !profileHasStaff && !profileHasAdmin) {
+        profileMenuLabel = "T\u1ed5ng quan h\u1ecdc t\u1eadp";
+    }
     String profileMenuHref = request.getContextPath() + "/profile";
     if (profileHasAdmin) {
         profileMenuHref = request.getContextPath() + "/admin-profile";

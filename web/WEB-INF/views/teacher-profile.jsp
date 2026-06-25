@@ -2,6 +2,7 @@
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Role"%>
 <%@page import="com.hipzi.model.Classroom"%>
+<%@page import="com.hipzi.model.TeachingSchedule"%>
 <%@page import="com.hipzi.model.TeacherApplication"%>
 <%@page import="com.hipzi.model.Notification"%>
 <%@page import="com.hipzi.model.SupportMessage"%>
@@ -2686,7 +2687,6 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3l8 4.5-8 4.5-8-4.5L12 3z"/><path d="M4 12l8 4.5 8-4.5"/><path d="M4 16.5l8 4.5 8-4.5"/></svg>
                         <span>Đăng kí giảng dạy</span>
                     </a>
-                </li>
                 <li>
                     <a id="nav-tab-class-registration" class="<%= "tab-class-registration".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-class-registration')" title="Đăng kí lớp học">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
@@ -5309,141 +5309,35 @@
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
     <!-- ========================================== -->
-    <!-- SCHEDULE MODAL (FAKE DATA)                 -->
+    <!-- SCHEDULE MODAL (REAL DATA)                 -->
     <!-- ========================================== -->
     <div class="schedule-modal-backdrop" id="scheduleModal" onclick="closeScheduleModal(event)">
-        <div class="schedule-modal-box" onclick="event.stopPropagation()">
-            <div class="schedule-header">
-                <h2>Tháng 6, 2026</h2>
-                <div class="schedule-btn-group">
-                    <button>Tháng</button>
-                    <button class="active">Tuần</button>
-                    <button>Ngày</button>
-                </div>
-                <div class="schedule-actions">
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button class="schedule-close-btn" style="border-radius:0.5rem;">&lt;</button>
-                        <button class="schedule-close-btn" style="border-radius:0.5rem; width:auto; padding:0 1rem; font-weight:600; color:var(--text-main);">Hôm nay</button>
-                        <button class="schedule-close-btn" style="border-radius:0.5rem;">&gt;</button>
-                    </div>
-                    <button class="schedule-close-btn" onclick="closeScheduleModal()" style="margin-left: 1rem;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                </div>
-            </div>
-            <div class="schedule-body">
-                <div class="schedule-days-header">
-                    <div></div>
-                    <div class="schedule-day-col">
-                        <div class="schedule-day-name">Thứ 2</div>
-                        <div class="schedule-day-num">15</div>
-                    </div>
-                    <div class="schedule-day-col">
-                        <div class="schedule-day-name">Thứ 3</div>
-                        <div class="schedule-day-num">16</div>
-                    </div>
-                    <div class="schedule-day-col active">
-                        <div class="schedule-day-name">Thứ 4</div>
-                        <div class="schedule-day-num">17</div>
-                    </div>
-                    <div class="schedule-day-col">
-                        <div class="schedule-day-name">Thứ 5</div>
-                        <div class="schedule-day-num">18</div>
-                    </div>
-                    <div class="schedule-day-col">
-                        <div class="schedule-day-name">Thứ 6</div>
-                        <div class="schedule-day-num">19</div>
-                    </div>
-                    <div class="schedule-day-col">
-                        <div class="schedule-day-name">Thứ 7</div>
-                        <div class="schedule-day-num">20</div>
-                    </div>
-                    <div class="schedule-day-col">
-                        <div class="schedule-day-name">CN</div>
-                        <div class="schedule-day-num">21</div>
-                    </div>
-                </div>
-                <div class="schedule-grid">
-                    <div class="schedule-time-col">
-                        <div class="schedule-time-slot" style="margin-top: 0px;">7 am</div>
-                        <div class="schedule-time-slot">8 am</div>
-                        <div class="schedule-time-slot">9 am</div>
-                        <div class="schedule-time-slot">10 am</div>
-                        <div class="schedule-time-slot">11 am</div>
-                        <div class="schedule-time-slot">12 pm</div>
-                        <div class="schedule-time-slot">1 pm</div>
-                        <div class="schedule-time-slot">2 pm</div>
-                        <div class="schedule-time-slot">3 pm</div>
-                        <div class="schedule-time-slot">4 pm</div>
-                        <div class="schedule-time-slot">5 pm</div>
-                        <div class="schedule-time-slot">6 pm</div>
-                        <div class="schedule-time-slot">7 pm</div>
-                        <div class="schedule-time-slot">8 pm</div>
-                        <div class="schedule-time-slot">9 pm</div>
-                        <div class="schedule-time-slot">10 pm</div>
-                    </div>
-                    <div class="schedule-grid-cols">
-                        <div class="schedule-grid-col">
-                            <div class="schedule-event event-blue" style="top: 80px; height: 120px;">
-                                <div class="schedule-event-title">Toán 11A - Đại số</div>
-                                <div class="schedule-event-time">08:00 - 09:30</div>
-                            </div>
-                            <div class="schedule-event event-purple" style="top: 280px; height: 160px;">
-                                <div class="schedule-event-title">Luyện đề THPT Quốc Gia Toán</div>
-                                <div class="schedule-event-time">10:30 - 12:30</div>
-                            </div>
-                        </div>
-                        <div class="schedule-grid-col">
-                            <div class="schedule-event event-green" style="top: 40px; height: 160px;">
-                                <div class="schedule-event-title">Giải tích 12 căn bản</div>
-                                <div class="schedule-event-time">07:30 - 09:30</div>
-                            </div>
-                            <div class="schedule-event event-yellow" style="top: 360px; height: 120px;">
-                                <div class="schedule-event-title">Hình học không gian</div>
-                                <div class="schedule-event-time">11:30 - 13:00</div>
-                            </div>
-                            <div class="schedule-event event-pink" style="top: 600px; height: 160px;">
-                                <div class="schedule-event-title">Dạy kèm 1-1: Tuấn Minh</div>
-                                <div class="schedule-event-time">14:30 - 16:30</div>
-                            </div>
-                        </div>
-                        <div class="schedule-grid-col">
-                            <div class="schedule-event event-blue" style="top: 720px; height: 160px;">
-                                <div class="schedule-event-title">Toán 10 - Lớp Cơ Bản</div>
-                                <div class="schedule-event-time">16:00 - 18:00</div>
-                            </div>
-                        </div>
-                        <div class="schedule-grid-col">
-                            <div class="schedule-event event-purple" style="top: 160px; height: 120px;">
-                                <div class="schedule-event-title">Chữa đề thi thử Đại học</div>
-                                <div class="schedule-event-time">09:00 - 10:30</div>
-                            </div>
-                        </div>
-                        <div class="schedule-grid-col">
-                            <div class="schedule-event event-green" style="top: 240px; height: 160px;">
-                                <div class="schedule-event-title">Hình học phẳng 11</div>
-                                <div class="schedule-event-time">10:00 - 12:00</div>
-                            </div>
-                            <div class="schedule-event event-yellow" style="top: 640px; height: 200px;">
-                                <div class="schedule-event-title">Toán nâng cao 12</div>
-                                <div class="schedule-event-time">15:00 - 17:30</div>
-                            </div>
-                        </div>
-                        <div class="schedule-grid-col">
-                            <div class="schedule-event event-pink" style="top: 320px; height: 160px;">
-                                <div class="schedule-event-title">Lớp cấp tốc cuối tuần</div>
-                                <div class="schedule-event-time">11:00 - 13:00</div>
-                            </div>
-                        </div>
-                        <div class="schedule-grid-col">
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="schedule-modal-box" id="scheduleModalBox" onclick="event.stopPropagation()">
+            <jsp:include page="/WEB-INF/views/partials/schedule-grid.jsp" />
         </div>
     </div>
 
     <script>
+        let currentScheduleWeekOffset = 0;
+
+        function changeScheduleWeek(delta, reset = false) {
+            if (reset) {
+                currentScheduleWeekOffset = 0;
+            } else {
+                currentScheduleWeekOffset += delta;
+            }
+            
+            fetch('${pageContext.request.contextPath}/profile?action=getScheduleGrid&weekOffset=' + currentScheduleWeekOffset)
+                .then(res => res.text())
+                .then(html => {
+                    var box = document.getElementById('scheduleModalBox');
+                    if (box) {
+                        box.innerHTML = html;
+                    }
+                })
+                .catch(err => console.error("Error fetching schedule:", err));
+        }
+
         function openScheduleModal() {
             var modal = document.getElementById('scheduleModal');
             if (modal) {

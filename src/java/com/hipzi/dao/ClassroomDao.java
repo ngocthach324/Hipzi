@@ -200,19 +200,23 @@ public class ClassroomDao {
     }
 
     public boolean create(Classroom classroom) {
+        if (classroom.getId() == null || classroom.getId().isEmpty()) {
+            classroom.setId(UUID.randomUUID().toString());
+        }
         if (classroom.getClassCode() == null || classroom.getClassCode().trim().isEmpty()) {
             classroom.setClassCode("HPZ-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(Locale.ROOT));
         }
         String sql = "INSERT INTO classrooms "
-                + "(teacher_id, class_code, title, subject, grade_level, description, schedule_days, start_time, end_time, status) "
-                + "VALUES (?::uuid, ?, ?, ?, ?, ?, ?, ?::time, ?::time, ?)";
+                + "(id, teacher_id, class_code, title, subject, grade_level, description, schedule_days, start_time, end_time, status) "
+                + "VALUES (?::uuid, ?::uuid, ?, ?, ?, ?, ?, ?, ?::time, ?::time, ?)";
 
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, classroom.getTeacherId());
-            ps.setString(2, classroom.getClassCode());
-            bindEditableFields(ps, classroom, 3, false);
+            ps.setString(1, classroom.getId());
+            ps.setString(2, classroom.getTeacherId());
+            ps.setString(3, classroom.getClassCode());
+            bindEditableFields(ps, classroom, 4, false);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error in ClassroomDao.create: " + e.getMessage());
