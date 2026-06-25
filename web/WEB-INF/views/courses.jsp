@@ -2,6 +2,8 @@
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Course"%>
 <%@page import="java.util.List"%>
+<%@page import="java.util.Set"%>
+<%@page import="java.util.HashSet"%>
 <%!
     private String h(String value) {
         if (value == null) return "";
@@ -26,11 +28,20 @@
 <%
     User user = (User) session.getAttribute("loggedUser");
     List<Course> courses = (List<Course>) request.getAttribute("courses");
+    List<Course> subjects = (List<Course>) request.getAttribute("subjects");
+    Set<String> cartCourseIds = (Set<String>) request.getAttribute("cartCourseIds");
+    if (cartCourseIds == null) cartCourseIds = new HashSet<>();
+
     boolean hasDynamicCourses = courses != null && !courses.isEmpty();
-    boolean showSampleCourses = true;
-    int initialCourseCount = hasDynamicCourses ? courses.size() : (showSampleCourses ? 9 : 0);
+    boolean showSampleCourses = false;
+    boolean showFeaturedSamples = !hasDynamicCourses;
+    int initialCourseCount = hasDynamicCourses ? courses.size() : 0;
     String currentSearch = (String) request.getAttribute("currentSearch");
     if (currentSearch == null) currentSearch = "";
+    
+    String currentSubject = (String) request.getAttribute("currentSubject");
+    if (currentSubject == null) currentSubject = "all";
+    
     String initials = "H";
     if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
         String[] parts = user.getDisplayName().trim().split("\\s+");
@@ -1397,7 +1408,7 @@
 <!-- MAIN CONTENT -->
 <div class="courses-body">
 
-    <% if (hasDynamicCourses || showSampleCourses) { %>
+    <% if (hasDynamicCourses || showFeaturedSamples) { %>
     <!-- WEEKLY FEATURED COURSES -->
     <section class="weekly-featured">
         <div class="weekly-featured-callout" aria-hidden="true">
@@ -1473,7 +1484,7 @@
                 </div>
             </article>
             <% } %>
-            <% } else { %>
+            <% } else if (showFeaturedSamples) { %>
             <article class="weekly-course-card">
                 <div class="weekly-thumb">
                     <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#0f766e 0%,#14b8a6 48%,#7c3aed 100%); display:flex; align-items:center; justify-content:center;">
@@ -1585,21 +1596,30 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
                         Danh mục
                     </span>
-                    <span class="filter-section-count">11 môn</span>
+                    <span class="filter-section-count"><%= subjects != null ? subjects.size() : 11 %> môn</span>
                 </div>
                 <div class="category-scroll" id="categoryScroll">
                     <button class="cat-pill active" data-cat="all" onclick="filterByCategory(this, 'all')"><span class="cat-pill-icon">🎯</span> Tất cả</button>
-                    <button class="cat-pill" data-cat="math" onclick="filterByCategory(this, 'math')"><span class="cat-pill-icon">📐</span> Toán</button>
-                    <button class="cat-pill" data-cat="literature" onclick="filterByCategory(this, 'literature')"><span class="cat-pill-icon">📖</span> Ngữ văn</button>
-                    <button class="cat-pill" data-cat="english" onclick="filterByCategory(this, 'english')"><span class="cat-pill-icon">🌍</span> Tiếng Anh</button>
-                    <button class="cat-pill" data-cat="physics" onclick="filterByCategory(this, 'physics')"><span class="cat-pill-icon">⚛</span> Vật lý</button>
-                    <button class="cat-pill" data-cat="chemistry" onclick="filterByCategory(this, 'chemistry')"><span class="cat-pill-icon">🧪</span> Hóa</button>
-                    <button class="cat-pill" data-cat="biology" onclick="filterByCategory(this, 'biology')"><span class="cat-pill-icon">🧬</span> Sinh</button>
-                    <button class="cat-pill" data-cat="history" onclick="filterByCategory(this, 'history')"><span class="cat-pill-icon">🏛</span> Lịch sử</button>
-                    <button class="cat-pill" data-cat="geography" onclick="filterByCategory(this, 'geography')"><span class="cat-pill-icon">🗺</span> Địa lý</button>
-                    <button class="cat-pill" data-cat="civics" onclick="filterByCategory(this, 'civics')"><span class="cat-pill-icon">⚖</span> GDCD</button>
-                    <button class="cat-pill" data-cat="it" onclick="filterByCategory(this, 'it')"><span class="cat-pill-icon">💻</span> Tin học</button>
-                    <button class="cat-pill" data-cat="technology" onclick="filterByCategory(this, 'technology')"><span class="cat-pill-icon">⚙</span> Công nghệ</button>
+                    <% if (subjects != null) { 
+                           for (Course s : subjects) { 
+                               String code = s.getSubjectCode();
+                               String name = s.getSubjectName();
+                               String icon = "📚"; // default icon
+                               if ("math".equals(code)) icon = "📐";
+                               else if ("literature".equals(code)) icon = "📖";
+                               else if ("english".equals(code)) icon = "🌍";
+                               else if ("physics".equals(code)) icon = "⚛";
+                               else if ("chemistry".equals(code)) icon = "🧪";
+                               else if ("biology".equals(code)) icon = "🧬";
+                               else if ("history".equals(code)) icon = "🏛";
+                               else if ("geography".equals(code)) icon = "🗺";
+                               else if ("civics".equals(code)) icon = "⚖";
+                               else if ("it".equals(code)) icon = "💻";
+                               else if ("technology".equals(code)) icon = "⚙";
+                               String activeCls = code.equals(currentSubject) ? " active" : "";
+                    %>
+                    <button class="cat-pill<%= activeCls %>" data-cat="<%= h(code) %>" onclick="filterByCategory(this, '<%= h(code) %>')"><span class="cat-pill-icon"><%= icon %></span> <%= h(name) %></button>
+                    <% } } %>
                 </div>
             </section>
 
@@ -1661,8 +1681,10 @@
                     <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                     <%= h(course.getDisplayRating()) %>
                 </span>
-                <% if (profileHasStudent && !course.isViewerEnrolled() && !course.isFree()) { %>
-                <button type="button" class="card-cart-btn" onclick="addToCart(event, this, '<%= h(course.getId()) %>')" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                <% if (profileHasStudent && !course.isViewerEnrolled() && !course.isFree()) { 
+                       boolean inCart = cartCourseIds.contains(course.getId());
+                %>
+                <button type="button" class="card-cart-btn<%= inCart ? " added" : "" %>" onclick="addToCart(event, this, '<%= h(course.getId()) %>')" title="<%= inCart ? "Đã thêm vào giỏ" : "Thêm vào giỏ" %>" aria-label="Thêm vào giỏ">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </button>
                 <% } %>
@@ -1679,7 +1701,7 @@
                 </div>
                 <div class="card-footer">
                     <span class="card-price <%= course.isFree() ? "free" : "" %>"><%= h(course.getPriceLabel()) %></span>
-                    <span class="card-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</span>
+                    <a href="${pageContext.request.contextPath}/course-detail?id=<%= h(course.getId()) %>" class="card-cta" style="text-decoration: none;">Xem chi tiết</a>
                 </div>
             </div>
         </article>
@@ -2207,6 +2229,52 @@ function loadMore() {
         btn.style.cursor = 'default';
     }, 1200);
 }
+
+// ─── ADD TO CART ──────────────────────────────────────
+window.addToCart = function(e, btn, courseId) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    if (btn.classList.contains('added')) {
+        window.location.href = '${pageContext.request.contextPath}/cart';
+        return;
+    }
+
+    const formData = new URLSearchParams();
+    formData.append('action', 'add');
+    formData.append('courseId', courseId);
+
+    fetch('${pageContext.request.contextPath}/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData.toString()
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            btn.classList.add('added');
+            btn.setAttribute('title', 'Đã thêm vào giỏ');
+            // Show toast or update cart count if we have a cart badge in header
+            const cartBadge = document.querySelector('.header-cart-badge');
+            if (cartBadge && data.count !== undefined) {
+                cartBadge.textContent = data.count;
+                cartBadge.style.display = 'flex';
+            }
+        } else {
+            if (data.message === 'Vui lòng đăng nhập để sử dụng giỏ hàng.') {
+                window.location.href = '${pageContext.request.contextPath}/login';
+            } else {
+                alert(data.message || 'Đã có lỗi xảy ra.');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error adding to cart:', error);
+        alert('Không thể kết nối đến máy chủ.');
+    });
+};
 
 // ─── UTILITY ──────────────────────────────────────────
 function debounce(fn, ms) {

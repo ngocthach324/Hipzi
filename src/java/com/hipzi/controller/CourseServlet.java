@@ -32,11 +32,24 @@ public class CourseServlet extends HttpServlet {
         User user = session != null ? (User) session.getAttribute("loggedUser") : null;
         String viewerId = user != null ? user.getId() : null;
         List<Course> courses = courseDao.listPublic(subject, price, search, sort, viewerId);
+        List<Course> subjects = courseDao.listSubjects();
+        
         request.setAttribute("courses", courses);
+        request.setAttribute("subjects", subjects);
         request.setAttribute("currentSubject", subject);
         request.setAttribute("currentPrice", price);
         request.setAttribute("currentSearch", search);
         request.setAttribute("currentSort", sort);
+
+        if (viewerId != null) {
+            com.hipzi.service.CartService cartService = new com.hipzi.service.CartService();
+            List<com.hipzi.model.CartItem> cartItems = cartService.getCartItems(viewerId);
+            java.util.Set<String> cartCourseIds = new java.util.HashSet<>();
+            for (com.hipzi.model.CartItem item : cartItems) {
+                cartCourseIds.add(item.getCourseId());
+            }
+            request.setAttribute("cartCourseIds", cartCourseIds);
+        }
 
         request.getRequestDispatcher("/WEB-INF/views/courses.jsp").forward(request, response);
     }

@@ -987,7 +987,10 @@ public class ProfileServlet extends HttpServlet {
         if (normalized.contains("van")) return "literature";
         if (normalized.contains("sinh")) return "biology";
         if (normalized.contains("lich")) return "history";
-        if (normalized.contains("tin") || normalized.contains("cong nghe")) return "it";
+        if (normalized.contains("dia")) return "geography";
+        if (normalized.contains("gdcd") || normalized.contains("giao duc cong dan") || normalized.contains("cong dan")) return "civics";
+        if (normalized.contains("tin")) return "it";
+        if (normalized.contains("cong nghe")) return "technology";
         return "other";
     }
 
@@ -999,7 +1002,10 @@ public class ProfileServlet extends HttpServlet {
         if ("literature".equals(subjectCode)) return "linear-gradient(135deg,#ec4899 0%,#f97316 100%)";
         if ("biology".equals(subjectCode)) return "linear-gradient(135deg,#16a34a 0%,#84cc16 100%)";
         if ("history".equals(subjectCode)) return "linear-gradient(135deg,#92400e 0%,#f59e0b 100%)";
+        if ("geography".equals(subjectCode)) return "linear-gradient(135deg,#0ea5e9 0%,#22c55e 100%)";
+        if ("civics".equals(subjectCode)) return "linear-gradient(135deg,#14b8a6 0%,#64748b 100%)";
         if ("it".equals(subjectCode)) return "linear-gradient(135deg,#111827 0%,#2563eb 100%)";
+        if ("technology".equals(subjectCode)) return "linear-gradient(135deg,#475569 0%,#06b6d4 100%)";
         return "linear-gradient(135deg,#475569 0%,#14b8a6 100%)";
     }
 

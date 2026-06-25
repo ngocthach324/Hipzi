@@ -11,8 +11,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 public class CourseDao {
@@ -193,22 +195,53 @@ public class CourseDao {
     }
 
     public List<Course> listSubjects() {
-        String sql = "SELECT DISTINCT subject_code, subject_name FROM courses WHERE deleted_at IS NULL ORDER BY subject_name";
-        List<Course> subjects = new ArrayList<>();
+        String sql = "SELECT DISTINCT subject_code, subject_name FROM courses WHERE deleted_at IS NULL AND status = 'approved' AND visibility = 'public' ORDER BY subject_name";
+        Map<String, Course> subjects = defaultSubjectMap();
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Course course = new Course();
-                course.setSubjectCode(rs.getString("subject_code"));
-                course.setSubjectName(rs.getString("subject_name"));
-                subjects.add(course);
+                String code = rs.getString("subject_code");
+                if (code == null || code.trim().isEmpty()) {
+                    continue;
+                }
+                if ("other".equalsIgnoreCase(code.trim())) {
+                    continue;
+                }
+                subjects.putIfAbsent(code, subjectOption(code, rs.getString("subject_name")));
             }
         } catch (SQLException e) {
             System.err.println("Error in CourseDao.listSubjects: " + e.getMessage());
         }
+        return new ArrayList<>(subjects.values());
+    }
+
+    private Map<String, Course> defaultSubjectMap() {
+        Map<String, Course> subjects = new LinkedHashMap<>();
+        addSubject(subjects, "math", "Toán học");
+        addSubject(subjects, "literature", "Ngữ văn");
+        addSubject(subjects, "english", "Tiếng Anh");
+        addSubject(subjects, "physics", "Vật lý");
+        addSubject(subjects, "chemistry", "Hóa học");
+        addSubject(subjects, "biology", "Sinh học");
+        addSubject(subjects, "history", "Lịch sử");
+        addSubject(subjects, "geography", "Địa lý");
+        addSubject(subjects, "civics", "GDCD");
+        addSubject(subjects, "it", "Tin học");
+        addSubject(subjects, "technology", "Công nghệ");
         return subjects;
+    }
+
+    private void addSubject(Map<String, Course> subjects, String code, String name) {
+        subjects.put(code, subjectOption(code, name));
+    }
+
+    private Course subjectOption(String code, String name) {
+        Course course = new Course();
+        course.setSubjectCode(code);
+        course.setSubjectName(name == null || name.trim().isEmpty() ? code : name);
+        return course;
     }
 
     public int countExistingCourses() {
