@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 import jakarta.servlet.http.HttpServletRequest;
 
 public class SePayPaymentService {
-    private static final Pattern ORDER_CODE_PATTERN = Pattern.compile("\\bHZ\\d{16}\\b", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ORDER_CODE_PATTERN = Pattern.compile("\\b(?:HIPZI\\d{6,8}|HZ\\d{16})\\b", Pattern.CASE_INSENSITIVE);
     private final CoursePaymentDao paymentDao;
 
     public SePayPaymentService() {

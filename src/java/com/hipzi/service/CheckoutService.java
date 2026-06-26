@@ -12,12 +12,9 @@ import com.hipzi.model.User;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 public class CheckoutService {
@@ -102,7 +99,7 @@ public class CheckoutService {
         for (int attempt = 0; attempt < 3; attempt++) {
             String orderCode = generateOrderCode();
             order.setOrderCode(orderCode);
-            order.setPaymentContent("HIPZI " + orderCode);
+            order.setPaymentContent(orderCode);
 
             CourseOrder created = courseOrderDao.createPendingOrder(order);
             if (created != null) {
@@ -152,9 +149,8 @@ public class CheckoutService {
     }
 
     private String generateOrderCode() {
-        String timePart = new SimpleDateFormat("yyMMddHHmmss", Locale.US).format(new Date());
-        int randomPart = 1000 + RANDOM.nextInt(9000);
-        return "HZ" + timePart + randomPart;
+        int randomPart = 10000000 + RANDOM.nextInt(90000000);
+        return "HIPZI" + randomPart;
     }
 
     private Set<String> normalizeSelectedCourseIds(List<String> selectedCourseIds) {
