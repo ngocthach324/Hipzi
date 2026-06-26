@@ -48,6 +48,9 @@ public class Course {
     private Timestamp deletedAt;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    
+    private String learningObjectives;
+    private String curriculumOutline;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -208,5 +211,41 @@ public class Course {
             return thumbnailGradient;
         }
         return "linear-gradient(135deg,#3b82f6 0%,#6366f1 100%)";
+    }
+
+    public String getLearningObjectives() { return learningObjectives; }
+    public void setLearningObjectives(String learningObjectives) { this.learningObjectives = learningObjectives; }
+
+    public String getCurriculumOutline() { return curriculumOutline; }
+    public void setCurriculumOutline(String curriculumOutline) { this.curriculumOutline = curriculumOutline; }
+
+    public java.util.List<String> getLearningObjectivesList() {
+        java.util.List<String> list = new java.util.ArrayList<>();
+        if (learningObjectives != null && !learningObjectives.trim().isEmpty()) {
+            String[] parts = learningObjectives.split("\\|\\|\\|");
+            for (String part : parts) {
+                if (!part.trim().isEmpty()) {
+                    list.add(part.trim());
+                }
+            }
+        }
+        return list;
+    }
+
+    public java.util.List<java.util.Map<String, String>> getCurriculumList() {
+        java.util.List<java.util.Map<String, String>> list = new java.util.ArrayList<>();
+        if (curriculumOutline != null && !curriculumOutline.trim().isEmpty()) {
+            String[] parts = curriculumOutline.split("\\|\\|\\|");
+            for (String part : parts) {
+                if (!part.trim().isEmpty()) {
+                    String[] kv = part.split(":::!:::");
+                    java.util.Map<String, String> map = new java.util.HashMap<>();
+                    map.put("title", kv.length > 0 ? kv[0].trim() : "");
+                    map.put("description", kv.length > 1 ? kv[1].trim() : "");
+                    list.add(map);
+                }
+            }
+        }
+        return list;
     }
 }

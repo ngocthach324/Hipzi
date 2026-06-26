@@ -4018,6 +4018,44 @@
                                                     <label>Mô tả ngắn</label>
                                                     <textarea name="courseDescription" rows="3" required><%= h(course.getShortDescription()) %></textarea>
                                                 </div>
+                                                
+                                                <div class="form-group-premium" style="margin: 0;">
+                                                    <label>Mục tiêu khóa học (Tối thiểu 4)</label>
+                                                    <div class="edit-obj-container-<%= course.getId() %>" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                                        <% java.util.List<String> objs = course.getLearningObjectivesList();
+                                                           int objCount = Math.max(4, objs.size());
+                                                           for(int i=0; i<objCount; i++) { 
+                                                               String val = (i < objs.size()) ? objs.get(i) : "";
+                                                        %>
+                                                        <div class="objective-row" style="display: flex; gap: 0.5rem; align-items: center;">
+                                                            <input type="text" name="courseObjective" value="<%= h(val) %>" placeholder="Ví dụ: Nắm vững ngữ pháp cơ bản" style="flex: 1;" required>
+                                                            <button type="button" class="btn-remove-obj" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.5rem;">×</button>
+                                                        </div>
+                                                        <% } %>
+                                                    </div>
+                                                    <button type="button" class="btn-add-edit-obj" data-target=".edit-obj-container-<%= course.getId() %>" style="margin-top: 0.5rem; background: #e0f2fe; color: #0284c7; border: 1px dashed #7dd3fc; padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">+ Thêm mục tiêu</button>
+                                                </div>
+
+                                                <div class="form-group-premium" style="margin: 0;">
+                                                    <label>Nội dung chương trình (Tối thiểu 4)</label>
+                                                    <div class="edit-curr-container-<%= course.getId() %>" style="display: flex; flex-direction: column; gap: 1rem;">
+                                                        <% java.util.List<java.util.Map<String,String>> currs = course.getCurriculumList();
+                                                           int currCount = Math.max(4, currs.size());
+                                                           for(int i=0; i<currCount; i++) { 
+                                                               String cTitle = (i < currs.size()) ? currs.get(i).get("title") : "";
+                                                               String cDesc = (i < currs.size()) ? currs.get(i).get("description") : "";
+                                                        %>
+                                                        <div class="curriculum-row" style="display: flex; gap: 1rem; align-items: flex-start; background: #f8fafc; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
+                                                            <div style="flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
+                                                                <input type="text" name="curriculumTitle" value="<%= h(cTitle) %>" placeholder="Tên phần" required>
+                                                                <input type="text" name="curriculumDesc" value="<%= h(cDesc) %>" placeholder="Mô tả" required>
+                                                            </div>
+                                                            <button type="button" class="btn-remove-curr" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.5rem;">×</button>
+                                                        </div>
+                                                        <% } %>
+                                                    </div>
+                                                    <button type="button" class="btn-add-edit-curr" data-target=".edit-curr-container-<%= course.getId() %>" style="margin-top: 0.5rem; background: #e0f2fe; color: #0284c7; border: 1px dashed #7dd3fc; padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">+ Thêm phần học</button>
+                                                </div>
                                             </div>
                                         </form>
                                     </div>
@@ -4099,6 +4137,47 @@
                         <div class="form-group-premium" style="grid-column: 1 / -1;">
                             <label>Mô tả ngắn khóa học <span style="color:#ef4444;">*</span></label>
                             <textarea name="courseDescription" rows="3" placeholder="Nhập mô tả về khóa học này..." required></textarea>
+                        </div>
+
+                        <!-- MỤC TIÊU KHÓA HỌC -->
+                        <div class="form-group-premium" style="grid-column: 1 / -1;">
+                            <label>Mục tiêu khóa học <span style="color:#ef4444;">*</span> (Tối thiểu 4 mục)</label>
+                            <div id="createObjectivesContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <div class="objective-row" style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="text" name="courseObjective" placeholder="Ví dụ: Nắm vững ngữ pháp cơ bản" style="flex: 1;" required>
+                                    <button type="button" class="btn-remove-obj" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.5rem;">×</button>
+                                </div>
+                                <div class="objective-row" style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="text" name="courseObjective" placeholder="Ví dụ: Giao tiếp tự tin" style="flex: 1;" required>
+                                    <button type="button" class="btn-remove-obj" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.5rem;">×</button>
+                                </div>
+                                <div class="objective-row" style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="text" name="courseObjective" placeholder="Ví dụ: Đạt điểm thi TOEIC 600+" style="flex: 1;" required>
+                                    <button type="button" class="btn-remove-obj" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.5rem;">×</button>
+                                </div>
+                                <div class="objective-row" style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="text" name="courseObjective" placeholder="Ví dụ: Luyện phản xạ nghe nói" style="flex: 1;" required>
+                                    <button type="button" class="btn-remove-obj" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.5rem;">×</button>
+                                </div>
+                            </div>
+                            <button type="button" id="btnAddCreateObjective" style="margin-top: 0.5rem; background: #e0f2fe; color: #0284c7; border: 1px dashed #7dd3fc; padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">+ Thêm mục tiêu</button>
+                        </div>
+
+                        <!-- NỘI DUNG CHƯƠNG TRÌNH -->
+                        <div class="form-group-premium" style="grid-column: 1 / -1;">
+                            <label>Nội dung chương trình <span style="color:#ef4444;">*</span> (Tối thiểu 4 phần)</label>
+                            <div id="createCurriculumContainer" style="display: flex; flex-direction: column; gap: 1rem;">
+                                <% for(int i=1; i<=4; i++) { %>
+                                <div class="curriculum-row" style="display: flex; gap: 1rem; align-items: flex-start; background: #f8fafc; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
+                                    <div style="flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
+                                        <input type="text" name="curriculumTitle" placeholder="Tên phần (VD: Phần <%= i %>: ...)" required>
+                                        <input type="text" name="curriculumDesc" placeholder="Mô tả ngắn nội dung phần này" required>
+                                    </div>
+                                    <button type="button" class="btn-remove-curr" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.5rem;">×</button>
+                                </div>
+                                <% } %>
+                            </div>
+                            <button type="button" id="btnAddCreateCurriculum" style="margin-top: 0.5rem; background: #e0f2fe; color: #0284c7; border: 1px dashed #7dd3fc; padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">+ Thêm phần học</button>
                         </div>
 
                         <!-- ===== GOOGLE PICKER SECTION ===== -->
@@ -5532,6 +5611,92 @@
                 document.body.style.overflow = '';
             }
         }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to handle add/remove logic
+            function setupDynamicList(containerId, addBtnId, isEdit) {
+                const addBtn = document.getElementById(addBtnId);
+                const container = document.getElementById(containerId);
+                if (!addBtn || !container) return;
+                
+                const isCurriculum = containerId.includes('Curriculum') || containerId.includes('curr-container');
+                const rowClass = isCurriculum ? '.curriculum-row' : '.objective-row';
+                const removeBtnClass = isCurriculum ? '.btn-remove-curr' : '.btn-remove-obj';
+
+                function updateRemoveButtons() {
+                    const rows = container.querySelectorAll(rowClass);
+                    const removeBtns = container.querySelectorAll(removeBtnClass);
+                    removeBtns.forEach(btn => {
+                        if (rows.length <= 4) {
+                            btn.style.opacity = '0.3';
+                            btn.style.cursor = 'not-allowed';
+                        } else {
+                            btn.style.opacity = '1';
+                            btn.style.cursor = 'pointer';
+                        }
+                    });
+                }
+
+                container.addEventListener('click', function(e) {
+                    if (e.target.closest(removeBtnClass)) {
+                        const rows = container.querySelectorAll(rowClass);
+                        if (rows.length > 4) {
+                            e.target.closest(rowClass).remove();
+                            updateRemoveButtons();
+                        } else {
+                            if (typeof showToast === 'function') {
+                                showToast('Phải có ít nhất 4 mục!', 'warning');
+                            } else {
+                                alert('Phải có ít nhất 4 mục!');
+                            }
+                        }
+                    }
+                });
+
+                addBtn.addEventListener('click', function() {
+                    const rows = container.querySelectorAll(rowClass);
+                    if (rows.length >= 20) {
+                        if (typeof showToast === 'function') showToast('Đã đạt số lượng tối đa!', 'warning');
+                        return;
+                    }
+                    const newRow = rows[0].cloneNode(true);
+                    newRow.querySelectorAll('input').forEach(inp => inp.value = '');
+                    if (isCurriculum) {
+                        const titleInp = newRow.querySelector('input[name="curriculumTitle"]');
+                        if (titleInp) titleInp.placeholder = 'Tên phần (VD: Phần ' + (rows.length + 1) + ': ...)';
+                    }
+                    container.appendChild(newRow);
+                    updateRemoveButtons();
+                });
+
+                updateRemoveButtons();
+            }
+
+            // Setup create form
+            setupDynamicList('createObjectivesContainer', 'btnAddCreateObjective', false);
+            setupDynamicList('createCurriculumContainer', 'btnAddCreateCurriculum', false);
+
+            // Setup edit forms
+            document.querySelectorAll('.btn-add-edit-obj').forEach(btn => {
+                const targetClass = btn.getAttribute('data-target');
+                const container = document.querySelector(targetClass);
+                if (container) {
+                    btn.id = 'add-obj-' + Math.random().toString(36).substr(2, 9);
+                    container.id = 'cont-obj-' + Math.random().toString(36).substr(2, 9);
+                    setupDynamicList(container.id, btn.id, true);
+                }
+            });
+            document.querySelectorAll('.btn-add-edit-curr').forEach(btn => {
+                const targetClass = btn.getAttribute('data-target');
+                const container = document.querySelector(targetClass);
+                if (container) {
+                    btn.id = 'add-curr-' + Math.random().toString(36).substr(2, 9);
+                    container.id = 'cont-curr-' + Math.random().toString(36).substr(2, 9);
+                    setupDynamicList(container.id, btn.id, true);
+                }
+            });
+        });
     </script>
 </body>
 </html>

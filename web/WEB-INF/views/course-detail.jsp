@@ -534,11 +534,6 @@
                 <%= h(errorMsg) %>
             </div>
         <% } %>
-        <% if (successMsg != null) { %>
-            <div style="grid-column: 1 / -1; padding: 1rem; background: #dcfce7; color: #16a34a; border-radius: 8px; margin-bottom: -1rem; font-weight: 500;">
-                <%= h(successMsg) %>
-            </div>
-        <% } %>
         <div class="main-content">
             <!-- Hero header inside card -->
             <div class="course-hero">
@@ -606,98 +601,97 @@
             <!-- 1. Sau khi học sẽ nhận được gì -->
             <h2 class="section-title">Mục tiêu khóa học</h2>
             <div class="benefit-list">
+                <% java.util.List<String> objectives = course.getLearningObjectivesList();
+                   if (objectives != null && !objectives.isEmpty()) {
+                       for (String obj : objectives) { %>
                 <div class="benefit-item">
                     <div class="benefit-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                     </div>
-                    <div class="benefit-text">Nắm được tư duy nền tảng về <strong>Agentic AI</strong>, hiểu rõ điểm khác biệt giữa AI chỉ phản hồi và AI có khả năng thực thi công việc.</div>
+                    <div class="benefit-text"><%= h(obj) %></div>
                 </div>
-                <div class="benefit-item">
-                    <div class="benefit-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    </div>
-                    <div class="benefit-text">Biết cách đăng ký, thiết lập và sử dụng <strong>Claude AI</strong> hiệu quả, từ viết prompt chuẩn đến xây dựng Claude Skills.</div>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    </div>
-                    <div class="benefit-text">Có thể cài đặt, cấu hình và vận hành <strong>AI Agent</strong> nhằm tự động hóa các tác vụ quản lý dữ liệu, tìm kiếm file.</div>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    </div>
-                    <div class="benefit-text">Biết cách kết nối <strong>Google Antigravity với Apify</strong> để tự động thu thập lead từ Facebook, phân tích kênh TikTok đối thủ.</div>
-                </div>
+                <%     }
+                   } else { %>
+                <div style="color: var(--text-muted); font-style: italic;">Chưa có thông tin mục tiêu khóa học.</div>
+                <% } %>
             </div>
 
             <!-- 2. Nội dung chính khóa học -->
             <h2 class="section-title">Nội dung chương trình</h2>
             <div class="curriculum-section">
+                <% java.util.List<java.util.Map<String,String>> curriculums = course.getCurriculumList();
+                   if (curriculums != null && !curriculums.isEmpty()) {
+                       for (int i = 0; i < curriculums.size(); i++) {
+                           java.util.Map<String,String> part = curriculums.get(i);
+                %>
                 <div class="curriculum-part">
                     <div class="curriculum-part-title">
-                        <span>Phần 1: Tổng Quan & Tư Duy Nền Tảng</span>
+                        <span><%= h(part.get("title")) %></span>
                         <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
                     <div class="curriculum-list">
                         <div class="curriculum-item">
                             <svg class="curriculum-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                            <div class="curriculum-text">Làm quen với tư duy AI thực chiến, hiểu mục tiêu học tập và cách ứng dụng AI đúng hướng.</div>
+                            <div class="curriculum-text"><%= h(part.get("description")) %></div>
                         </div>
                     </div>
                 </div>
-                <div class="curriculum-part">
-                    <div class="curriculum-part-title">
-                        <span>Phần 2: Claude AI - Thiết Lập & Ứng Dụng Trong Kinh Doanh</span>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </div>
-                    <div class="curriculum-list">
-                        <div class="curriculum-item">
-                            <svg class="curriculum-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                            <div class="curriculum-text">Cách dùng Claude để viết prompt, xử lý dữ liệu, hỗ trợ bán hàng, marketing và xây dựng Claude Skills.</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="curriculum-part">
-                    <div class="curriculum-part-title">
-                        <span>Phần 3: Google Antigravity - Thu Thập Dữ Liệu Khách Hàng</span>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </div>
-                    <div class="curriculum-list">
-                        <div class="curriculum-item">
-                            <svg class="curriculum-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                            <div class="curriculum-text">Thực hành cào data, tìm lead và khai thác thông tin khách hàng từ nhiều nền tảng khác nhau.</div>
-                        </div>
-                    </div>
-                </div>
+                <%     }
+                   } else { %>
+                <div style="color: var(--text-muted); font-style: italic;">Chưa có thông tin nội dung chương trình.</div>
+                <% } %>
             </div>
 
             <!-- 3. Đánh giá của học viên -->
-            <h2 class="section-title">Đánh giá từ học viên</h2>
+            <h2 class="section-title" id="reviews-section">Đánh giá từ học viên</h2>
             <div class="reviews-section">
                 <div class="review-overview">
                     <div class="review-score">
-                        <div class="review-score-num">5.0</div>
-                        <div class="review-score-stars">⭐⭐⭐⭐⭐</div>
-                        <div class="review-score-total">0 đánh giá</div>
+                        <div class="review-score-num"><%= String.format(java.util.Locale.US, "%.1f", course.getRatingAverage()) %></div>
+                        <div class="review-score-stars">
+                            <% int avgRating = Math.round(course.getRatingAverage().floatValue());
+                               for(int s=1; s<=5; s++) { %>
+                                <%= s <= avgRating ? "⭐" : "☆" %>
+                            <% } %>
+                        </div>
+                        <div class="review-score-total"><%= course.getRatingCount() %> đánh giá</div>
                     </div>
+                    
+                    <% if (request.getSession(false) != null && request.getSession(false).getAttribute("loggedUser") != null) {
+                        com.hipzi.model.CourseReview userReview = (com.hipzi.model.CourseReview) request.getAttribute("userReview");
+                        if (userReview != null) {
+                    %>
+                    <div class="review-form-container" style="flex-grow: 1; border-left: 2px dashed #e2e8f0; padding-left: 2.5rem; margin-left: 0.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; padding: 1.5rem 2rem; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.75rem; text-align: left; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.05);">
+                            <div style="background: #10b981; color: #fff; border-radius: 50%; padding: 8px; flex-shrink: 0;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="18" height="18"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.05rem; font-weight: 700;">Cảm ơn bạn đã đánh giá!</div>
+                                <div style="font-size: 0.85rem; font-weight: 500; color: #047857; margin-top: 4px;">Đánh giá của bạn giúp khóa học ngày càng hoàn thiện hơn.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <%  } else {
+                            int myRating = 5;
+                            String myText = "";
+                    %>
                     <div class="review-form-container" style="flex-grow: 1; border-left: 2px dashed #e2e8f0; padding-left: 2.5rem; margin-left: 0.5rem;">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
                             <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">Gửi Đánh Giá Của Bạn</h3>
-                            <div class="interactive-stars">
-                                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            <div class="interactive-stars" id="starRatingContainer">
+                                <% for(int i=1; i<=5; i++) { %>
+                                <svg data-val="<%= i %>" class="star-icon" width="26" height="26" viewBox="0 0 24 24" fill="<%= i <= myRating ? "currentColor" : "none" %>" stroke="currentColor" stroke-width="1" stroke-linejoin="round" style="cursor:pointer; color: #fbbf24;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                <% } %>
                             </div>
                         </div>
-                        <form class="review-form" action="#" method="POST">
+                        <form class="review-form" action="${pageContext.request.contextPath}/course/review" method="POST">
+                            <input type="hidden" name="courseId" value="<%= course.getId() %>">
+                            <input type="hidden" name="rating" id="reviewRatingInput" value="<%= myRating %>">
                             <div style="display: flex; gap: 1rem; align-items: flex-start;">
                                 <div class="review-avatar" style="flex-shrink: 0; background: linear-gradient(135deg, #0ea5e9, #6366f1); font-size: 0.8rem;">Bạn</div>
                                 <div style="flex-grow: 1; position: relative;">
-                                    <textarea placeholder="Khóa học này thế nào? Hãy chia sẻ trải nghiệm của bạn nhé..." style="width: 100%; padding: 1rem 1.25rem; background: #fff; border: 2px solid #e2e8f0; border-radius: 12px; resize: vertical; min-height: 100px; font-family: inherit; font-size: 0.95rem; color: #1e293b; outline: none; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onfocus="this.style.borderColor='#0d9488'; this.style.boxShadow='0 0 0 4px rgba(13,148,136,0.1)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';"></textarea>
+                                    <textarea name="reviewText" placeholder="Khóa học này thế nào? Hãy chia sẻ trải nghiệm của bạn nhé..." style="width: 100%; padding: 1rem 1.25rem; background: #fff; border: 2px solid #e2e8f0; border-radius: 12px; resize: vertical; min-height: 100px; font-family: inherit; font-size: 0.95rem; color: #1e293b; outline: none; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onfocus="this.style.borderColor='#0d9488'; this.style.boxShadow='0 0 0 4px rgba(13,148,136,0.1)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';"><%= h(myText) %></textarea>
                                     <div style="display: flex; justify-content: flex-end; margin-top: 0.75rem;">
                                         <button type="submit" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #0d9488, #10b981); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 50px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(13,148,136,0.25);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(13,148,136,0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(13,148,136,0.25)';">
                                             <span>Gửi đánh giá</span>
@@ -708,36 +702,41 @@
                             </div>
                         </form>
                     </div>
+                    <% } 
+                    } %>
                 </div>
                 
                 <div class="review-grid">
+                    <% java.util.List<com.hipzi.model.CourseReview> reviews = (java.util.List<com.hipzi.model.CourseReview>) request.getAttribute("reviews");
+                       if (reviews != null && !reviews.isEmpty()) {
+                           int colorIdx = 1;
+                           for (com.hipzi.model.CourseReview r : reviews) { 
+                               String firstChar = r.getStudentName() != null && r.getStudentName().length() > 0 ? r.getStudentName().substring(0, 1).toUpperCase() : "U";
+                               String colorClass = "color-" + (colorIdx++ % 5 + 1); // Cycle through color-1 to color-5
+                    %>
                     <div class="review-card">
                         <div class="review-header">
                             <div class="review-user-info">
-                                <div class="review-avatar color-1">N</div>
+                                <% if(r.getStudentAvatar() != null && !r.getStudentAvatar().isEmpty()) { %>
+                                    <div class="review-avatar" style="background-image:url('<%= h(r.getStudentAvatar()) %>'); background-size:cover;"></div>
+                                <% } else { %>
+                                    <div class="review-avatar <%= colorClass %>"><%= h(firstChar) %></div>
+                                <% } %>
                                 <div>
-                                    <div class="review-name">Nguyễn Văn A</div>
-                                    <div class="review-date">2 ngày trước</div>
+                                    <div class="review-name"><%= h(r.getStudentName()) %></div>
+                                    <div class="review-date"><%= r.getCreatedAt() != null ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(r.getCreatedAt()) : "" %></div>
                                 </div>
                             </div>
-                            <div class="review-rating">⭐⭐⭐⭐⭐</div>
-                        </div>
-                        <div class="review-text">Khóa học rất thực tế, giúp mình áp dụng AI vào công việc bán hàng ngay lập tức. Giảng viên giải thích cực kỳ dễ hiểu.</div>
-                    </div>
-                    
-                    <div class="review-card">
-                        <div class="review-header">
-                            <div class="review-user-info">
-                                <div class="review-avatar color-2">T</div>
-                                <div>
-                                    <div class="review-name">Trần Thị B</div>
-                                    <div class="review-date">1 tuần trước</div>
-                                </div>
+                            <div class="review-rating">
+                                <% for(int i=0; i<r.getRating(); i++){ %>⭐<% } %>
                             </div>
-                            <div class="review-rating">⭐⭐⭐⭐⭐</div>
                         </div>
-                        <div class="review-text">Trước đây mình thấy AI khá mơ hồ, nhưng học xong lộ trình này mình đã tự tạo được các Agent giúp tiết kiệm hàng giờ mỗi ngày.</div>
+                        <div class="review-text"><%= h(r.getReviewText()) %></div>
                     </div>
+                    <%     }
+                       } else { %>
+                    <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">Chưa có đánh giá nào cho khóa học này.</div>
+                    <% } %>
                 </div>
             </div>
         </div>
@@ -1117,7 +1116,62 @@
                 }
             }, true);
         })();
+
+        // Interactive Review Stars
+        const starContainer = document.getElementById('starRatingContainer');
+        const ratingInput = document.getElementById('reviewRatingInput');
+        if (starContainer && ratingInput) {
+            const stars = starContainer.querySelectorAll('svg');
+            let currentRating = parseInt(ratingInput.value) || 5;
+
+            function renderStars(rating) {
+                stars.forEach((s, idx) => {
+                    if (idx < rating) {
+                        s.setAttribute('fill', 'currentColor');
+                    } else {
+                        s.setAttribute('fill', 'none');
+                    }
+                });
+            }
+
+            stars.forEach((star, index) => {
+                const val = index + 1;
+                star.addEventListener('mouseenter', () => renderStars(val));
+                star.addEventListener('mouseleave', () => renderStars(currentRating));
+                star.addEventListener('click', () => {
+                    currentRating = val;
+                    ratingInput.value = val;
+                    renderStars(currentRating);
+                });
+            });
+        }
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
+    
+    <% if (successMsg != null) { %>
+    <div id="custom-toast-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 9999; animation: slideInUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
+        <div style="display: flex; align-items: center; gap: 12px; background: #059669; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 25px rgba(5,150,105,0.35); font-weight: 600; font-family: 'Be Vietnam Pro', sans-serif;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><%= h(successMsg) %></span>
+        </div>
+    </div>
+    <script>
+        setTimeout(() => {
+            const toast = document.getElementById('custom-toast-container');
+            if (toast) {
+                toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                setTimeout(() => toast.remove(), 400);
+            }
+        }, 3500);
+    </script>
+    <style>
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    <% } %>
 </body>
 </html>

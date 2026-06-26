@@ -452,7 +452,7 @@ public class ProfileServlet extends HttpServlet {
                     session.setAttribute("toastMsg", "Bạn chỉ được đăng khóa học cho môn đã được phê duyệt trong hồ sơ giảng dạy.");
                     session.setAttribute("toastType", "error");
                 } else if (!isValidCourse(course)) {
-                    session.setAttribute("toastMsg", "Vui lòng điền đầy đủ tên khóa học, môn học, số bài, giá hợp lệ và link Google Drive.");
+                    session.setAttribute("toastMsg", "Vui lòng điền đầy đủ thông tin, link Drive hợp lệ, và có ít nhất 4 mục tiêu/nội dung chương trình.");
                     session.setAttribute("toastType", "error");
                 } else {
                     course.setDriveOwnerEmail(googleAccount.getGoogleEmail());
@@ -490,7 +490,7 @@ public class ProfileServlet extends HttpServlet {
                     session.setAttribute("toastMsg", "Bạn chỉ được chỉnh sửa khóa học cho môn đã được phê duyệt trong hồ sơ giảng dạy.");
                     session.setAttribute("toastType", "error");
                 } else if (!isValidCourse(course)) {
-                    session.setAttribute("toastMsg", "Vui lòng điền đầy đủ tên khóa học, môn học, số bài, giá hợp lệ và link Google Drive.");
+                    session.setAttribute("toastMsg", "Vui lòng điền đầy đủ thông tin, link Drive hợp lệ, và có ít nhất 4 mục tiêu/nội dung chương trình.");
                     session.setAttribute("toastType", "error");
                 } else {
                     course.setDriveOwnerEmail(googleAccount.getGoogleEmail());
@@ -853,6 +853,37 @@ public class ProfileServlet extends HttpServlet {
         course.setGoogleDriveFolderId(folderId);
         course.setDriveOwnerEmail(user.getEmail());
         course.setAccessInstructions(cleanParam(request.getParameter("courseAccessInstructions")));
+
+        String[] objectiveValues = request.getParameterValues("courseObjective");
+        if (objectiveValues != null) {
+            StringBuilder objBuilder = new StringBuilder();
+            for (String obj : objectiveValues) {
+                if (obj != null && !obj.trim().isEmpty()) {
+                    if (objBuilder.length() > 0) objBuilder.append("|||");
+                    objBuilder.append(obj.trim().replace("|||", ""));
+                }
+            }
+            course.setLearningObjectives(objBuilder.toString());
+        }
+
+        String[] curriculumTitles = request.getParameterValues("curriculumTitle");
+        String[] curriculumDescs = request.getParameterValues("curriculumDesc");
+        if (curriculumTitles != null && curriculumDescs != null) {
+            StringBuilder currBuilder = new StringBuilder();
+            int len = Math.min(curriculumTitles.length, curriculumDescs.length);
+            for (int i = 0; i < len; i++) {
+                String title = curriculumTitles[i] != null ? curriculumTitles[i].trim() : "";
+                String desc = curriculumDescs[i] != null ? curriculumDescs[i].trim() : "";
+                if (!title.isEmpty() || !desc.isEmpty()) {
+                    if (currBuilder.length() > 0) currBuilder.append("|||");
+                    currBuilder.append(title.replace("|||", "").replace(":::!:::", ""))
+                               .append(":::!:::")
+                               .append(desc.replace("|||", "").replace(":::!:::", ""));
+                }
+            }
+            course.setCurriculumOutline(currBuilder.toString());
+        }
+
         return course;
     }
 
@@ -865,7 +896,9 @@ public class ProfileServlet extends HttpServlet {
                 && course.getPriceAmount() != null
                 && course.getPriceAmount().compareTo(BigDecimal.ZERO) >= 0
                 && isValidGoogleCourseUrl(course.getGoogleDriveUrl())
-                && !courseDriveResourceId(course).isEmpty();
+                && !courseDriveResourceId(course).isEmpty()
+                && course.getLearningObjectivesList().size() >= 4
+                && course.getCurriculumList().size() >= 4;
     }
 
     private String courseDriveResourceId(Course course) {

@@ -1,12 +1,15 @@
 package com.hipzi.controller;
 
 import com.hipzi.dao.CourseDao;
+import com.hipzi.dao.CourseReviewDao;
 import com.hipzi.model.Course;
+import com.hipzi.model.CourseReview;
 import com.hipzi.model.Role;
 import com.hipzi.model.User;
 import com.hipzi.service.CartService;
 
 import java.io.IOException;
+import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -19,6 +22,7 @@ public class CourseDetailServlet extends HttpServlet {
 
     private final CourseDao courseDao = new CourseDao();
     private final CartService cartService = new CartService();
+    private final CourseReviewDao reviewDao = new CourseReviewDao();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -56,9 +60,18 @@ public class CourseDetailServlet extends HttpServlet {
                                   .anyMatch(item -> item.getCourseId().equals(course.getId()));
         }
 
+        // Fetch course reviews
+        List<CourseReview> reviews = reviewDao.findByCourseId(course.getId());
+        CourseReview userReview = null;
+        if (viewerId != null) {
+            userReview = reviewDao.findByCourseAndStudent(course.getId(), viewerId);
+        }
+
         request.setAttribute("course", course);
         request.setAttribute("isInCart", isInCart);
         request.setAttribute("profileHasStudent", profileHasStudent);
+        request.setAttribute("reviews", reviews);
+        request.setAttribute("userReview", userReview);
 
         request.getRequestDispatcher("/WEB-INF/views/course-detail.jsp").forward(request, response);
     }

@@ -264,8 +264,8 @@ public class CourseDao {
                 + "(course_code, teacher_id, title, short_description, subject_code, subject_name, grade_level, level_name, "
                 + "price_type, price_amount, currency, thumbnail_url, thumbnail_gradient, badge_text, lessons_count, estimated_hours, "
                 + "google_drive_url, google_drive_file_id, google_drive_folder_id, drive_owner_email, access_instructions, "
-                + "status, visibility, submitted_at) "
-                + "VALUES (?, ?::uuid, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_review', 'private', NOW())";
+                + "status, visibility, submitted_at, learning_objectives, curriculum_outline) "
+                + "VALUES (?, ?::uuid, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_review', 'private', NOW(), ?, ?)";
 
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -291,6 +291,8 @@ public class CourseDao {
             ps.setString(19, course.getGoogleDriveFolderId());
             ps.setString(20, course.getDriveOwnerEmail());
             ps.setString(21, course.getAccessInstructions());
+            ps.setString(22, course.getLearningObjectives());
+            ps.setString(23, course.getCurriculumOutline());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error in CourseDao.createForTeacher: " + e.getMessage());
@@ -329,7 +331,7 @@ public class CourseDao {
                 + "grade_level = ?, level_name = ?, price_type = ?, price_amount = ?, currency = ?, "
                 + "thumbnail_url = ?, thumbnail_gradient = ?, badge_text = ?, lessons_count = ?, estimated_hours = ?, "
                 + "google_drive_url = ?, google_drive_file_id = ?, google_drive_folder_id = ?, drive_owner_email = ?, "
-                + "access_instructions = ?, updated_at = NOW() "
+                + "access_instructions = ?, learning_objectives = ?, curriculum_outline = ?, updated_at = NOW() "
                 + "WHERE id = ?::uuid AND teacher_id = ?::uuid AND deleted_at IS NULL";
 
         try (Connection conn = DBContext.getConnection();
@@ -354,8 +356,10 @@ public class CourseDao {
             ps.setString(17, course.getGoogleDriveFolderId());
             ps.setString(18, course.getDriveOwnerEmail());
             ps.setString(19, course.getAccessInstructions());
-            ps.setString(20, courseId);
-            ps.setString(21, teacherId);
+            ps.setString(20, course.getLearningObjectives());
+            ps.setString(21, course.getCurriculumOutline());
+            ps.setString(22, courseId);
+            ps.setString(23, teacherId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error in CourseDao.updateForTeacher: " + e.getMessage());
@@ -469,6 +473,8 @@ public class CourseDao {
         course.setDeletedAt(rs.getTimestamp("deleted_at"));
         course.setCreatedAt(rs.getTimestamp("created_at"));
         course.setUpdatedAt(rs.getTimestamp("updated_at"));
+        course.setLearningObjectives(readOptionalString(rs, "learning_objectives"));
+        course.setCurriculumOutline(readOptionalString(rs, "curriculum_outline"));
         return course;
     }
 
@@ -516,6 +522,7 @@ public class CourseDao {
                     + "status VARCHAR(24) NOT NULL DEFAULT 'pending_review', visibility VARCHAR(20) NOT NULL DEFAULT 'private', "
                     + "submitted_at TIMESTAMPTZ, reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL, reviewed_at TIMESTAMPTZ, review_note TEXT, "
                     + "deleted_at TIMESTAMPTZ, deleted_by UUID REFERENCES users(id) ON DELETE SET NULL, delete_reason TEXT, "
+                    + "learning_objectives TEXT, curriculum_outline TEXT, "
                     + "created_at TIMESTAMPTZ NOT NULL DEFAULT now(), updated_at TIMESTAMPTZ NOT NULL DEFAULT now())");
             st.execute("CREATE INDEX IF NOT EXISTS idx_courses_teacher_id ON courses(teacher_id, created_at DESC)");
             st.execute("CREATE INDEX IF NOT EXISTS idx_courses_public_listing ON courses(status, visibility, subject_code, created_at DESC) WHERE deleted_at IS NULL");
