@@ -27,6 +27,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hồ sơ giảng viên - HIPZI</title>
     <meta name="description" content="Quản lý thông tin tài khoản, kho tài liệu giảng dạy và học liệu AI của giảng viên trên nền tảng HIPZI.">
+    <script>
+        (function() {
+            if (localStorage.getItem('hipzi-teacher-theme') === 'dark') {
+                document.documentElement.classList.add('dark-profile');
+            }
+        })();
+    </script>
     <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=5">
     <style>
@@ -2255,6 +2262,200 @@
             color: currentColor;
         }
         
+        html.dark-profile {
+            --background: #0D1410;
+            --surface: #152219;
+            --text-main: #E2E8E4;
+            --text-muted: #9AA89E;
+            --border-dark: #24362A;
+            --border-light: #1A261E;
+            --primary: #5EC977;
+            --primary-hover: #4EB465;
+            --primary-light: rgba(94, 201, 119, 0.15);
+            --secondary: #F0B429;
+            --secondary-hover: #DCA01C;
+            --secondary-light: rgba(240, 180, 41, 0.15);
+            --danger: #EF4444;
+            --danger-light: rgba(239, 68, 68, 0.15);
+            --success: #10B981;
+            --success-light: rgba(16, 185, 129, 0.15);
+            --warning: #F59E0B;
+            --warning-light: rgba(245, 158, 11, 0.15);
+            --info: #3B82F6;
+            --info-light: rgba(59, 130, 246, 0.15);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Toggle animation CSS */
+        .dark-mode-toggle-btn {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dark-mode-toggle-btn svg {
+            position: absolute;
+            transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: center;
+        }
+        .dark-mode-toggle-btn svg.icon-hidden {
+            opacity: 0;
+            transform: rotate(90deg) scale(0.5);
+            pointer-events: none;
+        }
+        .dark-mode-toggle-btn svg.icon-visible {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
+        }
+
+        html.dark-profile body {
+            background: var(--background) !important;
+        }
+        html.dark-profile .dashboard-sidebar { background: var(--surface); }
+        html.dark-profile .dashboard-top-bar { background: var(--surface); }
+        html.dark-profile .dashboard-content-wrapper { background: var(--background) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .metric-card { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .metric-card.primary { background: var(--surface) !important; }
+        html.dark-profile .metric-card.secondary { background: var(--surface) !important; }
+        html.dark-profile .overview-chart-card { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .account-summary-panel { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .stat-card { background: var(--background) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .overview-summary-pill { background: var(--background) !important; border-color: var(--border-dark) !important; color: var(--text-muted); }
+        html.dark-profile .overview-chart-chip { background: var(--background) !important; border-color: var(--border-dark) !important; color: var(--text-muted); }
+        html.dark-profile .overview-period-switch { background: var(--background) !important; border-color: var(--border-dark) !important; box-shadow: none; }
+        html.dark-profile .overview-period-switch::before { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .top-bar-search-wrapper { background: var(--background) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .top-bar-search-wrapper:focus-within { background: var(--surface) !important; }
+        html.dark-profile .nav-bell-trigger { background: var(--background) !important; }
+        html.dark-profile .nav-bell-trigger:hover { background: var(--primary-light) !important; }
+        html.dark-profile .teacher-form-section-title { color: var(--text-main) !important; }
+        html.dark-profile .sidebar-brand-horizontal { color: var(--text-main) !important; }
+        html.dark-profile .date-badge { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .teacher-registration-select { background-color: var(--surface) !important; border-color: var(--border-dark) !important; color: var(--text-main) !important; }
+        html.dark-profile .sidebar-toggle-btn { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .modal-content { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .modal-header { border-color: var(--border-dark) !important; }
+        html.dark-profile .modal-footer { border-color: var(--border-dark) !important; }
+        html.dark-profile .table-wrapper { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile table th { background: var(--background) !important; border-color: var(--border-dark) !important; color: var(--text-main) !important; }
+        html.dark-profile table td { border-color: var(--border-dark) !important; }
+        html.dark-profile .empty-state-card { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .card-placeholder { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .course-item-card { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .file-upload-zone { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .activity-item { border-color: var(--border-dark) !important; }
+
+        /* Phase 2 Overrides */
+        html.dark-profile .premium-card { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .profile-info-item { background: var(--background) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .account-name-edit-form { background: var(--background) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .account-meta-pill { background: var(--background) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .account-cancel-btn { background: var(--background) !important; border-color: var(--border-dark) !important; color: var(--text-main) !important; }
+        
+        html.dark-profile #tab-support #supportForm textarea,
+        html.dark-profile .form-group-premium textarea,
+        html.dark-profile .form-group-premium select,
+        html.dark-profile .form-group-premium input { background: var(--background) !important; border-color: var(--border-dark) !important; color: var(--text-main) !important; }
+        html.dark-profile .form-group-premium textarea:focus,
+        html.dark-profile .form-group-premium select:focus,
+        html.dark-profile .form-group-premium input:focus { background: var(--surface) !important; border-color: var(--primary) !important; }
+        html.dark-profile .btn-premium.secondary { background: var(--background) !important; border-color: var(--border-dark) !important; color: var(--text-main) !important; }
+        html.dark-profile .btn-premium.secondary:hover { background: var(--border-dark) !important; }
+        
+        html.dark-profile .teacher-type-card-inner { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .teacher-registration-readonly input,
+        html.dark-profile .teacher-registration-readonly select,
+        html.dark-profile .teacher-registration-readonly textarea { background-color: var(--background) !important; border-color: var(--border-dark) !important; color: var(--text-muted) !important; }
+        html.dark-profile .teacher-registration-editing input,
+        html.dark-profile .teacher-registration-editing select,
+        html.dark-profile .teacher-registration-editing textarea { background-color: var(--background) !important; border-color: var(--border-dark) !important; color: var(--text-main) !important; }
+        html.dark-profile .checkbox-grid-premium { background: var(--background) !important; border-color: var(--border-dark) !important; }
+        
+        html.dark-profile .overview-donut-hole { background: var(--background) !important; }
+        html.dark-profile .schedule-modal-box { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .schedule-btn-group { background: var(--background) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .schedule-btn-group button.active { background: var(--surface) !important; color: var(--text-main) !important; box-shadow: none !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .schedule-close-btn { background: var(--background) !important; border-color: var(--border-dark) !important; color: var(--text-main) !important; }
+        html.dark-profile .schedule-days-header { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .class-day-option { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile input[name="scheduleDays"] { background: var(--background) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .teacher-evidence-dropzone { background: var(--background) !important; border-color: var(--border-dark) !important; }
+
+        /* Override Inline Styles */
+        html.dark-profile [style*="background: #ffffff"],
+        html.dark-profile [style*="background:#ffffff"],
+        html.dark-profile [style*="background: #fff;"],
+        html.dark-profile [style*="background:#fff;"],
+        html.dark-profile [style*="background-color: #ffffff"],
+        html.dark-profile [style*="background-color:#ffffff"] {
+            background: var(--surface) !important;
+            border-color: var(--border-dark) !important;
+            color: var(--text-main) !important;
+        }
+
+        html.dark-profile [style*="background: #f8fafc"],
+        html.dark-profile [style*="background:#f8fafc"],
+        html.dark-profile [style*="background: #f1f5f9"],
+        html.dark-profile [style*="background:#f1f5f9"],
+        html.dark-profile [style*="background: #f3f4f6"],
+        html.dark-profile [style*="background:#f3f4f6"],
+        html.dark-profile [style*="background: #f9fafb"],
+        html.dark-profile [style*="background:#f9fafb"] {
+            background: var(--background) !important;
+            border-color: var(--border-dark) !important;
+            color: var(--text-main) !important;
+        }
+        
+        html.dark-profile [style*="background: #e0f2fe"], html.dark-profile [style*="background:#e0f2fe"] {
+            background: rgba(2, 132, 199, 0.1) !important;
+            border-color: rgba(2, 132, 199, 0.2) !important;
+        }
+
+        /* Success/Warning/Error Cards Inline Styles */
+        html.dark-profile [style*="background: #f0fdf4"],
+        html.dark-profile [style*="background:#f0fdf4"] {
+            background: rgba(16, 185, 129, 0.1) !important;
+            border-color: rgba(16, 185, 129, 0.2) !important;
+        }
+        html.dark-profile [style*="color: #064e3b"], html.dark-profile [style*="color:#064e3b"] { color: #34d399 !important; }
+        html.dark-profile [style*="color: #047857"], html.dark-profile [style*="color:#047857"] { color: #10b981 !important; }
+        
+        html.dark-profile [style*="background: #fffbeb"], html.dark-profile [style*="background:#fffbeb"],
+        html.dark-profile [style*="background: #fff7ed"], html.dark-profile [style*="background:#fff7ed"],
+        html.dark-profile [style*="background: #fff9db"], html.dark-profile [style*="background:#fff9db"] {
+            background: rgba(245, 158, 11, 0.1) !important;
+            border-color: rgba(245, 158, 11, 0.2) !important;
+        }
+        
+        html.dark-profile [style*="background: #fef2f2"], html.dark-profile [style*="background:#fef2f2"],
+        html.dark-profile [style*="background: #fee2e2"], html.dark-profile [style*="background:#fee2e2"],
+        html.dark-profile [style*="background: #ffe3e3"], html.dark-profile [style*="background:#ffe3e3"] {
+            background: rgba(239, 68, 68, 0.1) !important;
+            border-color: rgba(239, 68, 68, 0.2) !important;
+        }
+
+        /* Additional structural cards */
+        html.dark-profile .section-data-card { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .classroom-card { background: var(--surface) !important; border-color: var(--border-dark) !important; }
+        html.dark-profile .curriculum-row { background: var(--background) !important; border-color: var(--border-dark) !important; }
+
+        html.dark-profile .toggle-circle[style] {
+            background: var(--text-main) !important;
+        }
+        
+        html.dark-profile [style*="border: 1px solid #e2e8f0"],
+        html.dark-profile [style*="border: 1px dashed var(--border-dark)"] {
+            border-color: var(--border-dark) !important;
+        }
+        
+        html.dark-profile [style*="background:#fff1f2"] {
+            background: rgba(225, 29, 72, 0.15) !important;
+            border-color: rgba(225, 29, 72, 0.3) !important;
+        }
+        
         @keyframes modalScaleUp {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
@@ -2737,10 +2938,52 @@
                 </div>
 
                 <div class="top-bar-right">
+                    <!-- Nút Streak (Chuỗi thắp lửa) -->
+                    <button class="nav-bell-trigger streak-toggle-btn" id="streakToggleBtn"
+                            onclick="handleStreakClick()"
+                            title="Thắp lửa chuỗi học tập"
+                            aria-label="Thắp lửa chuỗi học tập"
+                            style="perspective: 1000px; overflow: visible;">
+                        <div id="streakCoin" style="width: 20px; height: 20px; position: relative; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d;">
+                            <!-- Mặt trước: Ngọn lửa -->
+                            <div class="streak-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center;">
+                                <svg class="icon-flame" id="streakFlameIcon" width="20" height="20" viewBox="0 0 24 24" 
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                     style="transition: all 0.3s ease; color: #9ca3af;">
+                                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+                                </svg>
+                            </div>
+                            <!-- Mặt sau: Số chuỗi -->
+                            <div class="streak-back" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; transform: rotateY(180deg); display: flex; align-items: center; justify-content: center;">
+                                <span id="streakCountText" style="font-weight: 700; font-size: 0.95rem; color: #f97316;">0</span>
+                            </div>
+                        </div>
+                    </button>
+
                     <!-- Toggle giao diện Sáng / Tối -->
-                    <div class="nav-bell-trigger" title="Chuyển chế độ sáng/tối" onclick="alert('Chức năng chuyển đổi giao diện sáng/tối đang được phát triển.')">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                    </div>
+                    <button class="nav-bell-trigger dark-mode-toggle-btn" id="darkModeToggle"
+                            onclick="toggleDarkMode()"
+                            title="Chuyển chế độ sáng/tối"
+                            aria-label="Chuyển chế độ sáng/tối">
+                        <!-- Icon MẶT TRĂNG – hiển thị khi đang ở Light Mode -->
+                        <svg class="icon-moon icon-visible" width="20" height="20" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                        <!-- Icon MẶT TRỜI – hiển thị khi đang ở Dark Mode -->
+                        <svg class="icon-sun icon-hidden" width="20" height="20" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2.2">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                    </button>
 
                     <!-- Notification dropdown fragment -->
                     <%@ include file="/WEB-INF/fragments/notification-bell.jspf" %>
@@ -5697,7 +5940,225 @@
                 }
             });
         });
+
+        // Xử lý Dark Mode Toggle
+        function updateToggleIcon(isDark) {
+            const moon = document.querySelector('.icon-moon');
+            const sun = document.querySelector('.icon-sun');
+            if (moon && sun) {
+                if (isDark) {
+                    sun.classList.remove('icon-visible');
+                    sun.classList.add('icon-hidden');
+                    moon.classList.remove('icon-hidden');
+                    moon.classList.add('icon-visible');
+                } else {
+                    moon.classList.remove('icon-visible');
+                    moon.classList.add('icon-hidden');
+                    sun.classList.remove('icon-hidden');
+                    sun.classList.add('icon-visible');
+                }
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark-profile');
+            localStorage.setItem('hipzi-teacher-theme', isDark ? 'dark' : 'light');
+            updateToggleIcon(isDark);
+        }
+
+        // Initialize icon state on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = document.documentElement.classList.contains('dark-profile');
+            updateToggleIcon(isDark);
+            fetchStreakData();
+        });
+
+        // Xử lý chuỗi thắp lửa - key localStorage theo user ID
+        const STREAK_USER_ID = '<%= user != null ? user.getId() : "guest" %>';
+        const STREAK_KEY = 'hipzi-streak-' + STREAK_USER_ID;
+
+        function fetchStreakData() {
+            // Ưu tiên lấy từ server (nguồn chính xác nhất)
+            fetch('${pageContext.request.contextPath}/api/user/streak')
+                .then(res => { if (res.ok) return res.json(); throw new Error(); })
+                .then(data => {
+                    if (data && !data.error) {
+                        // Server trả về dữ liệu → dùng server làm nguồn gốc
+                        // Đồng bộ lại vào localStorage
+                        localStorage.setItem(STREAK_KEY, JSON.stringify({
+                            count: data.streakCount,
+                            lastDate: data.lastStreakDate || null,
+                            isClaimedToday: data.isClaimedToday
+                        }));
+                        updateStreakUI(data.streakCount, data.isClaimedToday);
+                    }
+                })
+                .catch(() => {
+                    // Server chưa sẵn sàng → fallback về localStorage
+                    const today = getTodayStr();
+                    const stored = getStreakStored();
+                    let streakCount = stored.count || 0;
+                    let isClaimedToday = false;
+
+                    if (stored.lastDate) {
+                        const diffDays = diffInDays(stored.lastDate, today);
+                        if (diffDays === 0) {
+                            isClaimedToday = stored.isClaimedToday || false;
+                        } else if (diffDays > 1) {
+                            streakCount = 0; // Đứt chuỗi
+                        }
+                    }
+                    updateStreakUI(streakCount, isClaimedToday);
+                });
+        }
+
+        function updateStreakUI(count, isClaimed) {
+            const icon = document.getElementById('streakFlameIcon');
+            const text = document.getElementById('streakCountText');
+            if (!icon) return;
+            const path = icon.querySelector('path');
+            if (text) text.innerText = count;
+
+            if (isClaimed) {
+                icon.setAttribute('stroke', '#f97316');
+                icon.style.color = '#f97316';
+                if (path) {
+                    path.setAttribute('fill', '#f97316');
+                    path.setAttribute('stroke', '#f97316');
+                }
+            } else {
+                icon.setAttribute('stroke', '#9ca3af');
+                icon.style.color = '#9ca3af';
+                if (path) {
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#9ca3af');
+                }
+            }
+        }
+
+        let isFlipping = false;
+
+        function handleStreakClick() {
+            if (isFlipping) return; // Prevent spam clicking during animation
+            
+            const today = getTodayStr();
+            const stored = getStreakStored();
+
+            // Đã thắp hôm nay rồi -> Click chỉ lật qua lật lại
+            if (stored.lastDate === today && stored.isClaimedToday) {
+                toggleCoinFlip();
+                return;
+            }
+
+            // Chưa thắp -> Thắp lửa + Lật tự động
+            claimStreak();
+        }
+
+        function toggleCoinFlip() {
+            const coin = document.getElementById('streakCoin');
+            if (!coin) return;
+            const currentRotation = coin.style.transform || 'rotateY(0deg)';
+            if (currentRotation.includes('180deg')) {
+                coin.style.transform = 'rotateY(0deg)';
+            } else {
+                coin.style.transform = 'rotateY(180deg)';
+            }
+        }
+
+        function claimStreak() {
+            const today = getTodayStr();
+            const stored = getStreakStored();
+
+            // Tính count mới ở client để UI phản hồi ngay
+            let newCount = 1;
+            if (stored.lastDate) {
+                const diff = diffInDays(stored.lastDate, today);
+                if (diff === 1) newCount = (stored.count || 0) + 1;
+            }
+
+            // Cập nhật localStorage tạm thời
+            localStorage.setItem(STREAK_KEY, JSON.stringify({ count: newCount, lastDate: today, isClaimedToday: true }));
+            updateStreakUI(newCount, true);
+            
+            // Bắn pháo hoa giấy chúc mừng
+            fireConfetti();
+
+            // Hiệu ứng lật 3D tự động (2s lật sang số, 2s lật về lửa)
+            isFlipping = true;
+            setTimeout(() => {
+                const coin = document.getElementById('streakCoin');
+                if (coin) coin.style.transform = 'rotateY(180deg)'; // Hiện số chuỗi
+                
+                setTimeout(() => {
+                    if (coin) coin.style.transform = 'rotateY(0deg)'; // Hiện lại lửa
+                    isFlipping = false;
+                }, 2000);
+            }, 2000);
+
+            // Đồng bộ lên server → server là nguồn thật
+            fetch('${pageContext.request.contextPath}/api/user/streak', { method: 'POST' })
+                .then(res => { if (res.ok) return res.json(); throw new Error(); })
+                .then(data => {
+                    if (data && data.success) {
+                        // Cập nhật lại từ server (giá trị chính xác)
+                        localStorage.setItem(STREAK_KEY, JSON.stringify({
+                            count: data.streakCount,
+                            lastDate: today,
+                            isClaimedToday: true
+                        }));
+                        updateStreakUI(data.streakCount, true);
+                    }
+                })
+                .catch(() => {}); // Giữ nguyên localStorage nếu server lỗi
+        }
+
+        function getTodayStr() {
+            const d = new Date();
+            return d.getFullYear() + '-'
+                + String(d.getMonth() + 1).padStart(2, '0') + '-'
+                + String(d.getDate()).padStart(2, '0');
+        }
+
+        function getStreakStored() {
+            try { return JSON.parse(localStorage.getItem(STREAK_KEY) || '{}'); }
+            catch(e) { return {}; }
+        }
+
+        function diffInDays(from, to) {
+            return Math.floor((new Date(to) - new Date(from)) / 86400000);
+
+        }
+
+        // Hàm hiệu ứng bắn giấy màu
+        function fireConfetti() {
+            if (typeof confetti === 'function') {
+                const duration = 2000;
+                const end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({
+                        particleCount: 5,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 },
+                        colors: ['#f97316', '#fbbf24', '#ef4444']
+                    });
+                    confetti({
+                        particleCount: 5,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 },
+                        colors: ['#f97316', '#fbbf24', '#ef4444']
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                }());
+            }
+        }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </body>
 </html>
 

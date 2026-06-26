@@ -1,6 +1,7 @@
 package com.hipzi.model;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,10 @@ public class User {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private Timestamp deletedAt;
+    
+    // Streak
+    private int streakCount;
+    private LocalDate lastStreakDate;
     
     // Non-DB field for convenience
     private List<Role> roles;
@@ -76,6 +81,12 @@ public class User {
 
     public Timestamp getDeletedAt() { return deletedAt; }
     public void setDeletedAt(Timestamp deletedAt) { this.deletedAt = deletedAt; }
+
+    public int getStreakCount() { return streakCount; }
+    public void setStreakCount(int streakCount) { this.streakCount = streakCount; }
+
+    public LocalDate getLastStreakDate() { return lastStreakDate; }
+    public void setLastStreakDate(LocalDate lastStreakDate) { this.lastStreakDate = lastStreakDate; }
 
     public double getWalletBalance() { return walletBalance; }
     public void setWalletBalance(double walletBalance) { this.walletBalance = walletBalance; }

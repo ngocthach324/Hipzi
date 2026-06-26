@@ -31,6 +31,12 @@ public class UserDao {
         user.setWalletBalance(rs.getDouble("wallet_balance"));
         user.setCreatedAt(rs.getTimestamp("created_at"));
         user.setUpdatedAt(rs.getTimestamp("updated_at"));
+        
+        user.setStreakCount(rs.getInt("streak_count"));
+        if (rs.getDate("last_streak_date") != null) {
+            user.setLastStreakDate(rs.getDate("last_streak_date").toLocalDate());
+        }
+        
         return user;
     }
 
@@ -288,5 +294,22 @@ public class UserDao {
         }
         String normalized = email.trim().toLowerCase(Locale.ROOT);
         return normalized.isEmpty() ? null : normalized;
+    }
+
+    // -------------------------------------------------------------------------
+    // Cập nhật chuỗi thắp lửa
+    // -------------------------------------------------------------------------
+    public boolean updateStreak(String userId, int newStreakCount, java.time.LocalDate newDate) {
+        String sql = "UPDATE users SET streak_count = ?, last_streak_date = ? WHERE id = ?::uuid";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, newStreakCount);
+            ps.setDate(2, java.sql.Date.valueOf(newDate));
+            ps.setString(3, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error in UserDao.updateStreak: " + e.getMessage());
+            return false;
+        }
     }
 }
