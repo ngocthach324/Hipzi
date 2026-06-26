@@ -86,7 +86,8 @@ public class RememberMeFilter implements Filter {
                 || path.equals("/verify-otp")
                 || path.equals("/send-register-otp")
                 || path.equals("/auth/google")
-                || path.equals("/auth/google/callback");
+                || path.equals("/auth/google/callback")
+                || path.equals("/payment/sepay/webhook");
     }
 
     private boolean isStaticAsset(HttpServletRequest request) {

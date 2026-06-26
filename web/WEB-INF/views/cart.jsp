@@ -144,7 +144,17 @@
     </header>
 
     <div class="checkout-container">
+        <%
+            String errorMsg = (String) session.getAttribute("errorMsg");
+            if (errorMsg != null) {
+                session.removeAttribute("errorMsg");
+        %>
+        <div style="margin-bottom:1rem; padding:1rem 1.25rem; border-radius:12px; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; font-weight:700;">
+            <%= h(errorMsg) %>
+        </div>
+        <% } %>
 
+        <form id="checkoutForm" action="${pageContext.request.contextPath}/checkout" method="POST" onsubmit="return checkoutSelected()">
         <div class="cart-grid">
             <!-- Left Column: Product List -->
             <div class="panel">
@@ -169,7 +179,7 @@
                                : "background:" + h(item.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";
                 %>
                 <div class="product-item" id="cart-item-<%= h(item.getCourseId()) %>">
-                    <div><input type="checkbox" class="item-checkbox" data-id="<%= h(item.getCourseId()) %>" data-price="<%= item.getPriceAmount() %>" checked></div>
+                    <div><input type="checkbox" class="item-checkbox" name="courseId" value="<%= h(item.getCourseId()) %>" data-id="<%= h(item.getCourseId()) %>" data-price="<%= item.getPriceAmount() %>" checked></div>
                     <div class="prod-info-group">
                         <% if (thumbUrl != null && !thumbUrl.trim().isEmpty()) { %>
                             <img src="<%= h(thumbUrl) %>" alt="Product" class="prod-img" style="object-fit: cover;">
@@ -232,10 +242,11 @@
                         <span id="summaryFinal">0 đ</span>
                     </div>
                     
-                    <button class="btn-checkout" onclick="checkoutSelected()">Thanh toán ngay</button>
+                    <button type="submit" class="btn-checkout">Thanh toán ngay</button>
                 </div>
             </div>
         </div>
+        </form>
     </div>
     
     <%@ include file="/WEB-INF/fragments/site-footer.jspf" %>
@@ -300,11 +311,10 @@
             
             if (selected.length === 0) {
                 alert('Vui lòng chọn ít nhất 1 khóa học để thanh toán.');
-                return;
+                return false;
             }
             
-            // For now, since checkout is not fully implemented in phase 1:
-            alert('Tính năng thanh toán sẽ ra mắt trong Phase tiếp theo!\n(Các khóa học đã chọn: ' + selected.length + ')');
+            return true;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
