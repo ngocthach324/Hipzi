@@ -1145,6 +1145,116 @@
                 });
             });
         }
+
+        function showToast(message, type = 'success') {
+            const oldToast = document.getElementById('custom-toast-container-js');
+            if (oldToast) oldToast.remove();
+            
+            const toast = document.createElement('div');
+            toast.id = 'custom-toast-container-js';
+            toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 9999; animation: slideInUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;';
+            
+            const bg = type === 'success' ? '#059669' : '#dc2626';
+            const icon = type === 'success' 
+                ? '<polyline points="20 6 9 17 4 12"/>' 
+                : '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+                
+            toast.innerHTML = 
+                '<div style="display: flex; align-items: center; gap: 12px; background: ' + bg + '; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); font-weight: 600; font-family: \'Be Vietnam Pro\', sans-serif;">' +
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">' + icon + '</svg>' +
+                    '<span>' + message + '</span>' +
+                '</div>';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+            
+            // Add keyframes if not exists
+            if (!document.getElementById('slideInUpFrames')) {
+                const style = document.createElement('style');
+                style.id = 'slideInUpFrames';
+                style.innerHTML = `@keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }`;
+                document.head.appendChild(style);
+            }
+        }
+
+        async function addToCart(courseId) {
+            try {
+                const formData = new URLSearchParams();
+                formData.append('action', 'add');
+                formData.append('courseId', courseId);
+                
+                const response = await fetch('${pageContext.request.contextPath}/cart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData.toString()
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message || 'Đã thêm khóa học vào giỏ hàng!');
+                    // Update header cart count
+                    if (window.updateCartCountUI) {
+                        window.updateCartCountUI(data.count);
+                    } else {
+                        // Fallback
+                        const cartBadge = document.querySelector('.navbar-cart .cart-badge');
+                        if (cartBadge) {
+                            cartBadge.innerText = data.count;
+                            cartBadge.style.display = data.count > 0 ? 'flex' : 'none';
+                        }
+                    }
+                    
+                    // Update buttons
+                    const addBtns = document.querySelectorAll('#btnAddToCart, #btnAddToCartFree');
+                    addBtns.forEach(btn => {
+                        btn.className = 'btn btn-added';
+                        btn.innerText = 'Đã có trong giỏ hàng';
+                        // Keep onclick in case they click again it will say 'Already in cart' from server
+                    });
+                    
+                    // Hide buyNow button
+                    const buyNowBtn = document.querySelector('.btn-secondary[onclick^="buyNow"]');
+                    if (buyNowBtn) {
+                        buyNowBtn.outerHTML = `<a href="${pageContext.request.contextPath}/cart" class="btn btn-secondary">Đến giỏ hàng</a>`;
+                    }
+
+                } else {
+                    showToast(data.message || 'Có lỗi xảy ra', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối. Vui lòng thử lại.', 'error');
+            }
+        }
+
+        async function buyNow(courseId) {
+            try {
+                const formData = new URLSearchParams();
+                formData.append('action', 'add');
+                formData.append('courseId', courseId);
+                
+                const response = await fetch('${pageContext.request.contextPath}/cart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData.toString()
+                });
+                
+                const data = await response.json();
+                if (data.success || data.message === 'Khóa học đã có trong giỏ hàng') {
+                    window.location.href = '${pageContext.request.contextPath}/cart';
+                } else {
+                    showToast(data.message || 'Có lỗi xảy ra', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi kết nối. Vui lòng thử lại.', 'error');
+            }
+        }
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
     

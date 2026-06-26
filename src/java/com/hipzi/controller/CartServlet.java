@@ -101,7 +101,10 @@ public class CartServlet extends HttpServlet {
                          .append("\"courseId\":\"").append(item.getCourseId()).append("\",")
                          .append("\"courseTitle\":\"").append(item.getCourseTitle().replace("\"", "\\\"")).append("\",")
                          .append("\"thumbnailUrl\":\"").append(item.getThumbnailUrl() != null ? item.getThumbnailUrl() : "").append("\",")
-                         .append("\"price\":").append(item.getPriceAmount()).append(",")
+                         .append("\"thumbnailGradient\":\"").append(item.getThumbnailGradient() != null ? item.getThumbnailGradient().replace("\"", "\\\"") : "").append("\",")
+                         .append("\"price\":").append(item.getPriceAmount() != null ? item.getPriceAmount() : BigDecimal.ZERO).append(",")
+                         .append("\"priceAmount\":").append(item.getPriceAmount() != null ? item.getPriceAmount() : BigDecimal.ZERO).append(",")
+                         .append("\"priceLabel\":\"").append(item.getPriceLabel().replace("\"", "\\\"")).append("\",")
                          .append("\"teacherName\":\"").append(item.getTeacherName().replace("\"", "\\\"")).append("\"")
                          .append("}");
                 if (i < items.size() - 1) {

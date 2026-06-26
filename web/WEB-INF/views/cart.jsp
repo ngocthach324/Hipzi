@@ -32,7 +32,7 @@
         body { font-family: "Inter", "Be Vietnam Pro", sans-serif; background: #f9f9f9; margin: 0; color: #111; }
         
 
-        .checkout-container { max-width: 96%; margin: 100px auto 50px; padding: 0 1.5rem; }
+        .checkout-container { max-width: 1380px; width: 96%; margin: 100px auto 50px; padding: 0 1rem; }
         
         /* Progress Bar */
         .progress-wrapper {
@@ -67,10 +67,10 @@
         .selected-count-tag { background: #eaf8f1; color: #00b167; padding: 0.35rem 0.85rem; border-radius: 99px; font-size: 0.85rem; font-weight: 600; }
 
         /* Left Column - Product List */
-        .cart-table-header { display: grid; grid-template-columns: 40px 3fr 1fr 1fr 40px; padding: 1rem 1rem 0.5rem 1rem; border-top: 1px solid #eee; margin-bottom: 0.5rem; color: #555; font-size: 0.9rem; font-weight: 500; align-items: center; }
+        .cart-table-header { display: grid; grid-template-columns: 40px minmax(50%, 3fr) 1fr 1fr 40px; padding: 1rem 1rem 0.5rem 1rem; border-top: 1px solid #eee; margin-bottom: 0.5rem; color: #555; font-size: 0.9rem; font-weight: 500; align-items: center; }
         .col-qty, .col-price { text-align: center; }
 
-        .product-item { display: grid; grid-template-columns: 40px 3fr 1fr 1fr 40px; align-items: center; padding: 1rem; border: 1px solid #eee; border-radius: 12px; margin-bottom: 1rem; }
+        .product-item { display: grid; grid-template-columns: 40px minmax(50%, 3fr) 1fr 1fr 40px; align-items: center; padding: 1rem; border: 1px solid #eee; border-radius: 12px; margin-bottom: 1rem; }
         
         .item-checkbox { cursor: pointer; transform: scale(1.2); accent-color: #00b167; }
 
@@ -152,89 +152,51 @@
                     <h2 class="panel-title">Giỏ hàng</h2>
                     <span class="selected-count-tag" id="selectedCount">Đã chọn: 0 khóa học</span>
                 </div>
+                
                 <div class="cart-table-header">
-                    <div><input type="checkbox" class="item-checkbox" id="selectAll" checked></div>
+                    <div><input type="checkbox" class="item-checkbox" id="selectAll" <%= (cartItems == null || cartItems.isEmpty()) ? "disabled" : "checked" %>></div>
                     <div>Khóa học</div>
                     <div class="col-qty">Số lượng</div>
                     <div class="col-price">Giá tiền</div>
                     <div></div>
                 </div>
 
-                <!-- Product 1 -->
-                <div class="product-item">
-                    <div><input type="checkbox" class="item-checkbox" checked></div>
+                <% if (cartItems != null && !cartItems.isEmpty()) {
+                       for (CartItem item : cartItems) {
+                           String thumbUrl = item.getThumbnailUrl();
+                           String thumbStyle = (thumbUrl != null && !thumbUrl.trim().isEmpty())
+                               ? "background-image:url('" + h(thumbUrl) + "'); background-size:cover; background-position:center;"
+                               : "background:" + h(item.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";
+                %>
+                <div class="product-item" id="cart-item-<%= h(item.getCourseId()) %>">
+                    <div><input type="checkbox" class="item-checkbox" data-id="<%= h(item.getCourseId()) %>" data-price="<%= item.getPriceAmount() %>" checked></div>
                     <div class="prod-info-group">
-                        <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=200" alt="Product" class="prod-img">
+                        <% if (thumbUrl != null && !thumbUrl.trim().isEmpty()) { %>
+                            <img src="<%= h(thumbUrl) %>" alt="Product" class="prod-img" style="object-fit: cover;">
+                        <% } else { %>
+                            <div class="prod-img" style="<%= thumbStyle %>">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/><path d="M8 7h8M8 11h6"/></svg>
+                            </div>
+                        <% } %>
                         <div class="prod-details">
-                            <span class="prod-name">Khóa học Lập trình Web Fullstack với Java Servlet & JSP</span>
-                            <span class="prod-variant">Giảng viên: Nguyễn Văn A</span>
+                            <span class="prod-name"><a href="${pageContext.request.contextPath}/course-detail?id=<%= h(item.getCourseId()) %>" style="text-decoration:none; color:inherit;"><%= h(item.getCourseTitle()) %></a></span>
+                            <span class="prod-variant">Giảng viên: <%= h(item.getTeacherName()) %></span>
                         </div>
                     </div>
                     <div class="qty-controls">
                         <span class="qty-val">1</span>
                     </div>
-                    <div class="prod-price">1,499,000 đ</div>
-                    <button class="btn-trash">
+                    <div class="prod-price"><%= h(item.getPriceLabel()) %></div>
+                    <button class="btn-trash" onclick="removeCartItem('<%= h(item.getCourseId()) %>')">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </button>
                 </div>
-
-                <!-- Product 2 -->
-                <div class="product-item">
-                    <div><input type="checkbox" class="item-checkbox" checked></div>
-                    <div class="prod-info-group">
-                        <img src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=200" alt="Product" class="prod-img">
-                        <div class="prod-details">
-                            <span class="prod-name">Khóa học Tiếng Anh Giao Tiếp Cho Người Đi Làm</span>
-                            <span class="prod-variant">Giảng viên: Trần Thị B</span>
-                        </div>
-                    </div>
-                    <div class="qty-controls">
-                        <span class="qty-val">1</span>
-                    </div>
-                    <div class="prod-price">899,000 đ</div>
-                    <button class="btn-trash">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </button>
-                </div>
-
-                <!-- Product 3 -->
-                <div class="product-item">
-                    <div><input type="checkbox" class="item-checkbox" checked></div>
-                    <div class="prod-info-group">
-                        <img src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=200" alt="Product" class="prod-img">
-                        <div class="prod-details">
-                            <span class="prod-name">Khóa học Master Thiết Kế UI/UX với Figma</span>
-                            <span class="prod-variant">Giảng viên: Lê Hoàng C</span>
-                        </div>
-                    </div>
-                    <div class="qty-controls">
-                        <span class="qty-val">1</span>
-                    </div>
-                    <div class="prod-price">1,250,000 đ</div>
-                    <button class="btn-trash">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </button>
-                </div>
-
-                <!-- Product 4 -->
-                <div class="product-item">
-                    <div><input type="checkbox" class="item-checkbox" checked></div>
-                    <div class="prod-info-group">
-                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=200" alt="Product" class="prod-img">
-                        <div class="prod-details">
-                            <span class="prod-name">Khóa học Kỹ Năng Mềm Thuyết Trình Ấn Tượng</span>
-                            <span class="prod-variant">Giảng viên: Phạm D</span>
-                        </div>
-                    </div>
-                    <div class="qty-controls">
-                        <span class="qty-val">1</span>
-                    </div>
-                    <div class="prod-price">599,000 đ</div>
-                    <button class="btn-trash">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </button>
-                </div>
+                <%     }
+                   } else { %>
+                   <div class="product-item" style="display: flex; justify-content: center; align-items: center; border: 1px dashed #e5e7eb; background: #fafafa; padding: 2rem 1rem;">
+                       <span style="color: #888; font-weight: 500;">Hiện tại không có khóa học nào trong giỏ hàng</span>
+                   </div>
+                <% } %>
 
                 <div class="cart-footer-actions">
                     <a href="${pageContext.request.contextPath}/courses" class="btn-outline-green" style="width: auto;">
@@ -258,59 +220,152 @@
                     <h2 class="panel-title">Tóm tắt đơn hàng</h2>
                     <div class="summary-row">
                         <span>Tổng tiền</span>
-                        <span>4,247,000 đ</span>
+                        <span id="summaryTotal">0 đ</span>
                     </div>
                     <div class="summary-row">
                         <span>Giảm giá</span>
-                        <span>- 247,000 đ</span>
+                        <span id="summaryDiscount">0 đ</span>
                     </div>
 
                     <div class="summary-row total">
                         <span>Thành tiền</span>
-                        <span>4,000,000 đ</span>
+                        <span id="summaryFinal">0 đ</span>
                     </div>
                     
-                    <button class="btn-checkout">Thanh toán ngay</button>
+                    <button class="btn-checkout" onclick="checkoutSelected()">Thanh toán ngay</button>
                 </div>
             </div>
         </div>
     </div>
     
+    <%@ include file="/WEB-INF/fragments/site-footer.jspf" %>
+    
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js"></script>
     <script>
+        // Format number to currency
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('vi-VN').format(num) + ' đ';
+        }
+
+        async function removeCartItem(courseId) {
+            if (!confirm('Bạn có chắc muốn bỏ khóa học này khỏi giỏ hàng?')) return;
+            try {
+                const formData = new URLSearchParams();
+                formData.append('action', 'remove');
+                formData.append('courseId', courseId);
+                
+                const response = await fetch('${pageContext.request.contextPath}/cart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData.toString()
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    // Update header cart count
+                    if (window.updateCartCountUI) {
+                        window.updateCartCountUI(data.count);
+                    } else {
+                        const cartBadge = document.querySelector('.navbar-cart .cart-badge');
+                        if (cartBadge) {
+                            cartBadge.innerText = data.count;
+                            cartBadge.style.display = data.count > 0 ? 'flex' : 'none';
+                        }
+                    }
+                    
+                    // Remove from DOM
+                    const itemEl = document.getElementById('cart-item-' + courseId);
+                    if (itemEl) itemEl.remove();
+                    
+                    // Trigger recalcs
+                    window.recalcCartTotals();
+                    
+                    // If no items left, reload to show empty state
+                    if (document.querySelectorAll('.product-item').length === 0) {
+                        window.location.reload();
+                    }
+                } else {
+                    alert(data.message || 'Không thể xóa khóa học khỏi giỏ hàng.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối. Vui lòng thử lại.');
+            }
+        }
+
+        function checkoutSelected() {
+            const selected = Array.from(document.querySelectorAll('.product-item .item-checkbox'))
+                                .filter(cb => cb.checked)
+                                .map(cb => cb.getAttribute('data-id'));
+            
+            if (selected.length === 0) {
+                alert('Vui lòng chọn ít nhất 1 khóa học để thanh toán.');
+                return;
+            }
+            
+            // For now, since checkout is not fully implemented in phase 1:
+            alert('Tính năng thanh toán sẽ ra mắt trong Phase tiếp theo!\n(Các khóa học đã chọn: ' + selected.length + ')');
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const selectAllCheckbox = document.getElementById('selectAll');
-            const itemCheckboxes = document.querySelectorAll('.product-item .item-checkbox');
-            const selectedCountEl = document.getElementById('selectedCount');
+            
+            window.recalcCartTotals = function() {
+                const itemCheckboxes = document.querySelectorAll('.product-item .item-checkbox');
+                const selectedCountEl = document.getElementById('selectedCount');
+                
+                let count = 0;
+                let total = 0;
+                let discount = 0; // Discount logic can be added later
 
-            function updateSelectedCount() {
+                itemCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        count++;
+                        total += parseFloat(cb.getAttribute('data-price')) || 0;
+                    }
+                });
+
                 if (selectedCountEl) {
-                    const count = Array.from(itemCheckboxes).filter(cb => cb.checked).length;
                     selectedCountEl.textContent = 'Đã chọn: ' + count + ' khóa học';
                 }
-            }
 
-            if (selectAllCheckbox && itemCheckboxes.length > 0) {
-                updateSelectedCount();
+                // Update summary
+                document.getElementById('summaryTotal').textContent = formatCurrency(total);
+                document.getElementById('summaryDiscount').textContent = discount > 0 ? '- ' + formatCurrency(discount) : '0 đ';
+                document.getElementById('summaryFinal').textContent = formatCurrency(total - discount);
+            };
+
+            const itemCheckboxes = document.querySelectorAll('.product-item .item-checkbox');
+
+            if (itemCheckboxes.length > 0) {
+                window.recalcCartTotals();
 
                 // When selectAll is clicked
-                selectAllCheckbox.addEventListener('change', function() {
-                    const isChecked = this.checked;
-                    itemCheckboxes.forEach(function(checkbox) {
-                        checkbox.checked = isChecked;
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.addEventListener('change', function() {
+                        const isChecked = this.checked;
+                        document.querySelectorAll('.product-item .item-checkbox').forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+                        window.recalcCartTotals();
                     });
-                    updateSelectedCount();
-                });
+                }
 
                 // When an individual item checkbox is clicked
-                itemCheckboxes.forEach(function(checkbox) {
-                    checkbox.addEventListener('change', function() {
-                        // Check if all items are checked
-                        const allChecked = Array.from(itemCheckboxes).every(cb => cb.checked);
-                        selectAllCheckbox.checked = allChecked;
-                        updateSelectedCount();
-                    });
+                document.querySelectorAll('.product-item').forEach(function(itemEl) {
+                    const cb = itemEl.querySelector('.item-checkbox');
+                    if (cb) {
+                        cb.addEventListener('change', function() {
+                            // Check if all items are checked
+                            const allCb = document.querySelectorAll('.product-item .item-checkbox');
+                            const allChecked = Array.from(allCb).every(c => c.checked);
+                            if (selectAllCheckbox) selectAllCheckbox.checked = allChecked;
+                            window.recalcCartTotals();
+                        });
+                    }
                 });
+            } else {
+                if (selectAllCheckbox) selectAllCheckbox.disabled = true;
             }
         });
     </script>

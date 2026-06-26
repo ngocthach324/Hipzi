@@ -28,13 +28,15 @@
 <%
     User user = (User) session.getAttribute("loggedUser");
     List<Course> courses = (List<Course>) request.getAttribute("courses");
+    List<Course> featuredCourses = (List<Course>) request.getAttribute("featuredCourses");
     List<Course> subjects = (List<Course>) request.getAttribute("subjects");
     Set<String> cartCourseIds = (Set<String>) request.getAttribute("cartCourseIds");
     if (cartCourseIds == null) cartCourseIds = new HashSet<>();
 
     boolean hasDynamicCourses = courses != null && !courses.isEmpty();
+    boolean hasFeaturedCourses = featuredCourses != null && !featuredCourses.isEmpty();
     boolean showSampleCourses = false;
-    boolean showFeaturedSamples = !hasDynamicCourses;
+    boolean showFeaturedSamples = !hasFeaturedCourses;
     int initialCourseCount = hasDynamicCourses ? courses.size() : 0;
     String currentSearch = (String) request.getAttribute("currentSearch");
     if (currentSearch == null) currentSearch = "";
@@ -339,17 +341,12 @@
             box-shadow: var(--c-card-sh);
             display: flex;
             flex-direction: column;
+            max-width: 420px;
             padding: .9rem;
             cursor: default;
-            transition: box-shadow var(--transition), transform var(--transition), opacity var(--transition);
-            opacity: 0;
-            transform: translateY(28px) scale(.97);
+            transition: box-shadow var(--transition), transform var(--transition);
             text-decoration: none;
             color: inherit;
-        }
-        .course-card.visible {
-            opacity: 1;
-            transform: translateY(0) scale(1);
         }
         .course-card:hover {
             box-shadow: var(--c-card-sh);
@@ -766,12 +763,20 @@
             gap: 1.25rem;
             width: max-content;
             will-change: transform;
-            transform: translateX(0);
+            animation: scrollMarquee 40s linear infinite;
+        }
+        .weekly-featured-grid:hover {
+            animation-play-state: paused;
+        }
+        @keyframes scrollMarquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-50% - 0.625rem)); }
         }
         .weekly-course-card {
             display: flex;
             flex-direction: column;
             width: 320px;
+            max-width: 420px;
             min-height: 100%;
             padding: .9rem;
             background: rgba(255,255,255,.92);
@@ -1443,11 +1448,12 @@
         </div>
         <div class="weekly-featured-viewport">
         <div class="weekly-featured-grid" id="weeklyFeaturedTrack">
-            <% if (hasDynamicCourses) { %>
+            <% if (hasFeaturedCourses) { %>
             <%
-                int weeklyLimit = Math.min(3, courses.size());
+                int weeklyLimit = Math.min(10, featuredCourses.size());
+                for (int loop = 0; loop < 2; loop++) {
                 for (int i = 0; i < weeklyLimit; i++) {
-                    Course featuredCourse = courses.get(i);
+                    Course featuredCourse = featuredCourses.get(i);
                     String featuredThumbUrl = featuredCourse.getThumbnailUrl();
                     String featuredThumbStyle = (featuredThumbUrl != null && !featuredThumbUrl.trim().isEmpty())
                             ? "background-image:url('" + h(featuredThumbUrl) + "'); background-size:cover; background-position:center;"
@@ -1483,7 +1489,7 @@
                     </div>
                 </div>
             </article>
-            <% } %>
+            <% } } %>
             <% } else if (showFeaturedSamples) { %>
             <article class="weekly-course-card">
                 <div class="weekly-thumb">
@@ -1685,7 +1691,11 @@
                        boolean inCart = cartCourseIds.contains(course.getId());
                 %>
                 <button type="button" class="card-cart-btn<%= inCart ? " added" : "" %>" onclick="addToCart(event, this, '<%= h(course.getId()) %>')" title="<%= inCart ? "Đã thêm vào giỏ" : "Thêm vào giỏ" %>" aria-label="Thêm vào giỏ">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    <% if (inCart) { %>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <% } else { %>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    <% } %>
                 </button>
                 <% } %>
             </div>
@@ -2231,19 +2241,40 @@ function loadMore() {
 }
 
 // ─── ADD TO CART ──────────────────────────────────────
+const cartBagIconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>';
+const cartCheckIconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+function getCourseCartButtons(courseId) {
+    if (!courseId) return [];
+    return Array.from(document.querySelectorAll('.card-cart-btn[onclick*="' + courseId + '"], .weekly-cart-btn[onclick*="' + courseId + '"]'));
+}
+
+function setCourseCartState(courseId, added) {
+    getCourseCartButtons(courseId).forEach(btn => {
+        btn.classList.toggle('added', added);
+        btn.disabled = false;
+        btn.setAttribute('title', added ? 'Đã thêm vào giỏ' : 'Thêm vào giỏ');
+        btn.setAttribute('aria-label', added ? 'Đã thêm vào giỏ' : 'Thêm vào giỏ');
+        btn.innerHTML = added ? cartCheckIconSvg : cartBagIconSvg;
+        btn.style.transform = '';
+        btn.style.opacity = '';
+    });
+}
+
 window.addToCart = function(e, btn, courseId) {
     if (e) {
         e.preventDefault();
         e.stopPropagation();
     }
     
-    if (btn.classList.contains('added')) {
-        window.location.href = '${pageContext.request.contextPath}/cart';
-        return;
-    }
+    if (btn.disabled) return;
+    btn.disabled = true;
+
+    const isAdded = btn.classList.contains('added');
+    const action = isAdded ? 'remove' : 'add';
 
     const formData = new URLSearchParams();
-    formData.append('action', 'add');
+    formData.append('action', action);
     formData.append('courseId', courseId);
 
     fetch('${pageContext.request.contextPath}/cart', {
@@ -2254,33 +2285,89 @@ window.addToCart = function(e, btn, courseId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            btn.classList.add('added');
-            btn.setAttribute('title', 'Đã thêm vào giỏ');
-            // Show toast or update cart count if we have a cart badge in header
-            const cartBadge = document.querySelector('.header-cart-badge');
-            if (cartBadge && data.count !== undefined) {
-                cartBadge.textContent = data.count;
-                cartBadge.style.display = 'flex';
+            btn.style.transform = 'scale(0.7)';
+            btn.style.opacity = '0.5';
+            
+            setTimeout(() => {
+                const added = action === 'add';
+                setCourseCartState(courseId, added);
+                showToast(added ? 'Đã thêm vào giỏ hàng' : 'Đã xóa khỏi giỏ hàng', 'success');
+                if (!added) {
+                    window.dispatchEvent(new CustomEvent('cartItemRemoved', { detail: courseId }));
+                }
+            }, 150);
+
+            if (data.count !== undefined) {
+                const badge = document.getElementById('cart-item-count');
+                if (badge) {
+                    if (data.count > 0) {
+                        badge.textContent = data.count > 9 ? '9+' : String(data.count);
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+                const countLabel = document.getElementById('cart-count-label');
+                if (countLabel) countLabel.textContent = data.count;
             }
         } else {
             if (data.message === 'Vui lòng đăng nhập để sử dụng giỏ hàng.') {
                 window.location.href = '${pageContext.request.contextPath}/login';
             } else {
-                alert(data.message || 'Đã có lỗi xảy ra.');
+                showToast(data.message || 'Đã có lỗi xảy ra.', 'error');
             }
         }
     })
     .catch(error => {
-        console.error('Error adding to cart:', error);
-        alert('Không thể kết nối đến máy chủ.');
+        console.error('Error modifying cart:', error);
+        showToast('Không thể kết nối đến máy chủ.', 'error');
+    })
+    .finally(() => {
+        setTimeout(() => btn.disabled = false, 300);
     });
 };
+
+function showToast(message, type = 'success') {
+    const oldToast = document.getElementById('custom-toast-container-js');
+    if (oldToast) oldToast.remove();
+    const toast = document.createElement('div');
+    toast.id = 'custom-toast-container-js';
+    toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 9999; animation: slideInUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;';
+    const bg = type === 'success' ? '#059669' : '#dc2626';
+    const icon = type === 'success' 
+        ? '<polyline points="20 6 9 17 4 12"/>' 
+        : '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+    toast.innerHTML = 
+        '<div style="display: flex; align-items: center; gap: 12px; background: ' + bg + '; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); font-weight: 600; font-family: \'Be Vietnam Pro\', sans-serif;">' +
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">' + icon + '</svg>' +
+            '<span>' + message + '</span>' +
+        '</div>';
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => toast.remove(), 400);
+    }, 3500);
+    if (!document.getElementById('slideInUpFrames')) {
+        const style = document.createElement('style');
+        style.id = 'slideInUpFrames';
+        style.innerHTML = `@keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }`;
+        document.head.appendChild(style);
+    }
+}
 
 // ─── UTILITY ──────────────────────────────────────────
 function debounce(fn, ms) {
     let t;
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
+
+window.addEventListener('cartItemRemoved', function(e) {
+    const courseId = e.detail;
+    if (!courseId) return;
+    setCourseCartState(courseId, false);
+});
 </script>
 
 </body>

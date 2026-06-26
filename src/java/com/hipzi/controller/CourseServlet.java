@@ -32,9 +32,14 @@ public class CourseServlet extends HttpServlet {
         User user = session != null ? (User) session.getAttribute("loggedUser") : null;
         String viewerId = user != null ? user.getId() : null;
         List<Course> courses = courseDao.listPublic(subject, price, search, sort, viewerId);
+        List<Course> featuredCourses = courseDao.listPublic("all", "all", "", "rating", viewerId);
+        if (featuredCourses.size() > 10) {
+            featuredCourses = featuredCourses.subList(0, 10);
+        }
         List<Course> subjects = courseDao.listSubjects();
         
         request.setAttribute("courses", courses);
+        request.setAttribute("featuredCourses", featuredCourses);
         request.setAttribute("subjects", subjects);
         request.setAttribute("currentSubject", subject);
         request.setAttribute("currentPrice", price);
