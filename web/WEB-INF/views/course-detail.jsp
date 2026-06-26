@@ -12,9 +12,8 @@
     Course course = (Course) request.getAttribute("course");
     Boolean isInCartObj = (Boolean) request.getAttribute("isInCart");
     boolean isInCart = isInCartObj != null ? isInCartObj : false;
-    Boolean profileHasStudentObj = (Boolean) request.getAttribute("profileHasStudent");
-    boolean profileHasStudent = profileHasStudentObj != null ? profileHasStudentObj : false;
     
+
     if (course == null) {
         response.sendRedirect(request.getContextPath() + "/courses");
         return;
@@ -37,25 +36,112 @@
     <style>
         body { font-family: "Inter", "Be Vietnam Pro", sans-serif; background: #f9f9f9; margin: 0; color: #111; }
         
-        .detail-container { max-width: 1200px; margin: 100px auto 50px; padding: 0 1.5rem; display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: start; }
+        .detail-container { max-width: 1600px; width: 96%; margin: 2rem auto 50px; padding: 0 1.5rem; display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: start; }
         @media (max-width: 900px) {
             .detail-container { grid-template-columns: 1fr; }
         }
 
+        /* ── HERO HEADER ── */
+        .course-hero {
+            background: linear-gradient(135deg, #0a1628 0%, #0f2744 40%, #0d3d2e 100%);
+            position: relative; overflow: hidden;
+            padding: 80px 0 48px;
+            margin-top: 72px; /* navbar height */
+        }
+        .course-hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 60% 80% at 10% 50%, rgba(0,177,103,.18) 0%, transparent 70%),
+                        radial-gradient(ellipse 40% 60% at 90% 20%, rgba(99,102,241,.15) 0%, transparent 60%);
+        }
+        .course-hero::after {
+            content: '';
+            position: absolute; bottom: -1px; left: 0; right: 0; height: 48px;
+            background: #f9f9f9;
+            clip-path: ellipse(55% 100% at 50% 100%);
+        }
+        .hero-inner {
+            max-width: 1600px; width: 96%;
+            margin: 0 auto; padding: 0 1.5rem;
+            position: relative; z-index: 1;
+        }
+        .hero-breadcrumb {
+            font-size: 0.85rem; color: rgba(255,255,255,.55); margin-bottom: 1.25rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .hero-breadcrumb a { color: #4ade80; text-decoration: none; font-weight: 500; }
+        .hero-breadcrumb a:hover { color: #86efac; }
+        .hero-breadcrumb .sep { color: rgba(255,255,255,.3); }
+        .hero-subject-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: rgba(0,177,103,.18); border: 1px solid rgba(0,177,103,.35);
+            color: #4ade80; font-size: 0.8rem; font-weight: 600;
+            padding: 0.3rem 0.9rem; border-radius: 999px; margin-bottom: 1.25rem;
+            letter-spacing: .5px; text-transform: uppercase;
+        }
+        .hero-title {
+            font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+            font-weight: 900; color: #fff;
+            line-height: 1.25; margin: 0 0 1.25rem;
+            max-width: 100%;
+            text-shadow: 0 2px 20px rgba(0,0,0,.4);
+        }
+        .hero-meta {
+            display: flex; flex-wrap: wrap; gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .hero-meta-item {
+            display: flex; align-items: center; gap: 0.45rem;
+            color: rgba(255,255,255,.75); font-size: 0.9rem;
+        }
+        .hero-meta-item svg { width: 16px; height: 16px; color: #4ade80; flex-shrink: 0; }
+        .hero-meta-item strong { color: #fff; }
+        .hero-teacher-card {
+            display: inline-flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;
+            margin-bottom: -0.8rem;
+        }
+        .hero-teacher-avatar-wrap {
+            position: relative;
+            display: inline-block;
+            border-radius: 50%;
+            animation: avatarFloat 4s ease-in-out infinite;
+        }
+        .hero-teacher-avatar-wrap::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ade80 0%, #3b82f6 100%);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            filter: blur(8px);
+        }
+        .hero-teacher-card:hover .hero-teacher-avatar-wrap::after {
+            opacity: 0.8;
+            animation: pulseGlow 2s infinite;
+        }
+        .hero-teacher-avatar {
+            width: 140px; height: 140px; border-radius: 50%;
+            border: 4px solid rgba(255,255,255,.9);
+            object-fit: cover;
+            background: linear-gradient(135deg,#059669,#6366f1);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: #fff; font-size: 3rem; flex-shrink: 0;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            z-index: 1;
+        }
+        .hero-teacher-card:hover .hero-teacher-avatar {
+            transform: scale(1.08) rotate(3deg);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            border-color: #fff;
+        }
+
+        /* ── REST ── */
         .main-content { background: #fff; border-radius: 16px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
-        .breadcrumb { font-size: 0.9rem; color: #666; margin-bottom: 1.5rem; }
-        .breadcrumb a { color: #00b167; text-decoration: none; font-weight: 500; }
-        
-        .course-title { font-size: 2rem; font-weight: 800; color: #111; margin-bottom: 1rem; line-height: 1.3; }
-        .course-meta { display: flex; align-items: center; gap: 1.5rem; color: #666; font-size: 0.95rem; margin-bottom: 2rem; flex-wrap: wrap; }
-        .meta-item { display: flex; align-items: center; gap: 0.5rem; }
-        .meta-item svg { width: 18px; height: 18px; color: #00b167; }
-        
-        .teacher-info { display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background: #f0fdf4; border-radius: 12px; margin-bottom: 2rem; }
         .teacher-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #c6f6d5; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #00b167; }
-        .teacher-details { display: flex; flex-direction: column; }
-        .teacher-name { font-weight: 600; color: #111; }
-        .teacher-school { font-size: 0.85rem; color: #555; }
 
         .section-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #111; }
         .course-desc { color: #444; line-height: 1.7; margin-bottom: 2rem; white-space: pre-wrap; }
@@ -79,6 +165,321 @@
         .features-list svg { width: 18px; height: 18px; color: #00b167; flex-shrink: 0; }
 
         .btn-added { background: #e2e8f0; color: #475569; pointer-events: none; }
+
+        /* ── HERO HEADER (inside card) ── */
+        .course-hero {
+            background: linear-gradient(135deg, #115e59, #059669);
+            border-radius: 14px;
+            position: relative; overflow: hidden;
+            padding: 2rem 2.5rem 6rem;
+            margin: -2rem -2rem 2rem -2rem; /* bleed to card edges */
+            display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem;
+        }
+        .course-hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 70% 90% at 5% 50%, rgba(0,177,103,.2) 0%, transparent 65%),
+                        radial-gradient(ellipse 50% 70% at 95% 10%, rgba(99,102,241,.18) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .hero-breadcrumb {
+            font-size: 0.82rem; color: rgba(255,255,255,.5); margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 0.5rem; position: relative; z-index: 1;
+        }
+        .hero-breadcrumb a { color: #4ade80; text-decoration: none; font-weight: 500; }
+        .hero-breadcrumb a:hover { color: #86efac; }
+        .hero-breadcrumb .sep { color: rgba(255,255,255,.25); }
+        .hero-subject-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: rgba(0,177,103,.18); border: 1px solid rgba(0,177,103,.4);
+            color: #4ade80; font-size: 0.75rem; font-weight: 700;
+            padding: 0.25rem 0.8rem; border-radius: 999px; margin-bottom: 1rem;
+            letter-spacing: .6px; text-transform: uppercase;
+            position: relative; z-index: 1;
+        }
+        .hero-title {
+            font-size: clamp(1.4rem, 2.5vw, 2rem);
+            font-weight: 900; color: #fff;
+            line-height: 1.3; margin: 0 0 1.25rem;
+            text-shadow: 0 2px 16px rgba(0,0,0,.4);
+            position: relative; z-index: 1;
+            max-width: 100%;
+        }
+        .hero-meta {
+            display: flex; flex-wrap: wrap; gap: 1rem;
+            margin-bottom: 0;
+            position: relative; z-index: 1;
+        }
+        .hero-meta-item {
+            display: flex; align-items: center; gap: 0.4rem;
+            color: rgba(255,255,255,.75); font-size: 0.88rem;
+        }
+        .hero-meta-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+        .hero-meta-item strong { color: #fff; }
+        
+        .benefit-list { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 3rem; }
+        @media (max-width: 768px) { .benefit-list { grid-template-columns: 1fr; } }
+        .benefit-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-start; transition: box-shadow 0.2s, border-color 0.2s; }
+        .benefit-item:hover { box-shadow: 0 4px 12px rgba(13,148,136,0.08); border-color: #0d9488; }
+        .benefit-icon { line-height: 1; padding: 0.75rem; background: #f0fdf4; border-radius: 10px; color: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .benefit-text { color: #334155; line-height: 1.6; font-size: 0.95rem; }
+        
+        .curriculum-section { margin-bottom: 3rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+        .curriculum-part { border-bottom: 1px solid #e2e8f0; }
+        .curriculum-part:last-child { border-bottom: none; }
+        .curriculum-part-title { font-weight: 700; color: #1e293b; font-size: 1rem; padding: 1.25rem 1.5rem; background: #f8fafc; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+        .curriculum-part-title:hover { background: #f1f5f9; }
+        .curriculum-list { padding: 0.5rem 1.5rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .curriculum-item { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.75rem; border-radius: 8px; transition: background 0.2s; cursor: pointer; }
+        .curriculum-item:hover { background: #f8fafc; }
+        .curriculum-icon { color: #0d9488; flex-shrink: 0; margin-top: 2px; }
+        .curriculum-text { color: #475569; line-height: 1.5; font-size: 0.95rem; flex-grow: 1; }
+
+        .reviews-section { margin-bottom: 3rem; }
+        .review-overview { display: flex; gap: 2rem; align-items: center; margin-bottom: 2rem; background: #f8fafc; padding: 1.5rem; border-radius: 12px; }
+        .review-score { text-align: center; }
+        .review-score-num { font-size: 3rem; font-weight: 900; color: #1e293b; line-height: 1; }
+        .review-score-stars { color: #f59e0b; margin: 0.5rem 0; font-size: 1.2rem; }
+        .review-score-total { color: #64748b; font-size: 0.85rem; }
+        .review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+        .review-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .review-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
+        .review-user-info { display: flex; align-items: center; gap: 0.75rem; }
+        .review-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; }
+        .review-avatar.color-1 { background: #3b82f6; }
+        .review-avatar.color-2 { background: #10b981; }
+        .review-avatar.color-3 { background: #f59e0b; }
+        .review-name { font-weight: 600; color: #1e293b; font-size: 0.95rem; }
+        .review-date { color: #94a3b8; font-size: 0.8rem; margin-top: 2px; }
+        .review-rating { color: #f59e0b; font-size: 0.85rem; }
+        .review-text { color: #475569; font-size: 0.95rem; line-height: 1.6; }
+        
+        /* Interactive Star Rating Trick */
+        .interactive-stars { display: flex; gap: 4px; color: #cbd5e1; cursor: pointer; }
+        .interactive-stars svg { transition: color 0.2s, transform 0.2s; }
+        .interactive-stars:hover svg { color: #facc15; }
+        .interactive-stars svg:hover ~ svg { color: #cbd5e1; }
+        .interactive-stars svg:hover { transform: scale(1.15); }
+
+        .related-courses-section { border-top: 1px solid #e2e8f0; padding-top: 3rem; margin-top: 2rem; }
+        
+        /* Related Courses - Sync with Featured Courses */
+        .weekly-featured-viewport {
+            overflow: hidden;
+            width: min(1500px, calc(100vw - 4rem));
+            max-width: none;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            padding: .35rem 0 1rem;
+            -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+        }
+        .weekly-featured-grid {
+            display: flex;
+            gap: 1.25rem;
+            width: max-content;
+            will-change: transform;
+            transform: translateX(0);
+        }
+        .weekly-course-card {
+            display: flex;
+            flex-direction: column;
+            width: 320px;
+            min-height: 100%;
+            padding: .9rem;
+            background: rgba(255,255,255,.92);
+            border: 1.5px solid rgba(226,232,240,.95);
+            border-radius: 18px;
+            box-shadow: 0 16px 36px rgba(15,23,42,.08), inset 0 1px 0 rgba(255,255,255,.8);
+            color: inherit;
+            text-decoration: none;
+            transition: box-shadow .2s ease;
+            cursor: default;
+        }
+        .weekly-course-card:hover {
+            box-shadow: 0 16px 36px rgba(15,23,42,.08), inset 0 1px 0 rgba(255,255,255,.8);
+        }
+        .weekly-thumb {
+            width: 100%;
+            aspect-ratio: 1.45 / 1;
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .weekly-thumb::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(115deg, transparent 0%, transparent 42%, rgba(255,255,255,.58) 50%, transparent 58%, transparent 100%);
+            transform: translateX(-130%);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1;
+        }
+        .weekly-course-card:hover .weekly-thumb::after {
+            animation: weeklyCoverShine .8s ease-out 1;
+        }
+        .weekly-thumb-bg {
+            width: 100%;
+            height: 100%;
+            transition: transform .55s cubic-bezier(.16,1,.3,1);
+        }
+        .weekly-course-card:hover .weekly-thumb-bg {
+            transform: scale(1.055);
+        }
+        .weekly-rating-badge {
+            position: absolute;
+            top: .65rem;
+            left: .65rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+            padding: .24rem .62rem;
+            border-radius: 9999px;
+            background: rgba(15,23,42,.78);
+            color: #fff;
+            font-size: .72rem;
+            font-weight: 800;
+            backdrop-filter: blur(8px);
+            z-index: 2;
+        }
+        .weekly-rating-badge svg {
+            width: 12px;
+            height: 12px;
+            fill: #f59e0b;
+            stroke: #f59e0b;
+        }
+        .weekly-info {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding: 0 .1rem .1rem;
+        }
+        .weekly-title {
+            color: #0f172a;
+            font-size: 1.05rem;
+            font-weight: 800;
+            line-height: 1.38;
+            margin-bottom: .65rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .weekly-teacher-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+            margin-bottom: 1rem;
+        }
+        .weekly-teacher {
+            min-width: 0;
+            color: #64748b;
+            font-size: .84rem;
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .weekly-students {
+            display: flex;
+            align-items: center;
+            gap: .28rem;
+            color: #64748b;
+            font-size: .8rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .weekly-students svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2.2;
+        }
+        .weekly-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+            margin-top: auto;
+            padding-top: .35rem;
+        }
+        .weekly-price {
+            color: #0f172a;
+            font-size: .98rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .weekly-price.free { color: #16a34a; }
+        .weekly-cart-btn {
+            position: absolute;
+            top: .65rem;
+            right: .65rem;
+            width: 34px;
+            height: 34px;
+            flex: 0 0 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,.86);
+            border: 1px solid rgba(255,255,255,.85);
+            color: #0f172a;
+            box-shadow: 0 8px 18px rgba(15,23,42,.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: transform .2s ease, background .2s ease, color .2s ease, box-shadow .2s ease;
+            z-index: 2;
+            cursor: pointer;
+        }
+        .weekly-course-card:hover .weekly-cart-btn {
+            color: #0d9488;
+            background: rgba(255,255,255,.96);
+            box-shadow: 0 10px 22px rgba(15,23,42,.16);
+            transform: translateY(-1px);
+        }
+        .weekly-cart-btn svg {
+            width: 17px;
+            height: 17px;
+            stroke-width: 2.2;
+        }
+        .weekly-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            padding: .48rem .9rem;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #0d9488, #10b981);
+            color: #fff;
+            font-size: .82rem;
+            font-weight: 800;
+            white-space: nowrap;
+            border: 0;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(13,148,136,.18);
+            transition: background .2s ease, box-shadow .2s ease, transform .2s ease;
+        }
+        .weekly-cta:hover {
+            box-shadow: 0 10px 22px rgba(13,148,136,.28);
+            transform: translateY(-1px);
+        }
+        @keyframes weeklyCoverShine {
+            0% { transform: translateX(-130%); opacity: 0; }
+            12% { opacity: .95; }
+            100% { transform: translateX(130%); opacity: 0; }
+        }
+        @keyframes avatarFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { filter: blur(8px); transform: scale(1); opacity: 0.7; }
+            50% { filter: blur(12px); transform: scale(1.05); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -95,6 +496,7 @@
                 <li><a href="${pageContext.request.contextPath}/classes">Lớp học</a></li>
                 <li><a href="${pageContext.request.contextPath}/exam-room">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/courses" class="active">Khóa học</a></li>
+                <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
             </ul>
             <div class="navbar-user-controls">
                 <%@ include file="/WEB-INF/fragments/cart-icon.jspf" %>
@@ -125,6 +527,7 @@
         if (successMsg != null) { session.removeAttribute("successMsg"); }
     %>
 
+
     <div class="detail-container" style="margin-top: 100px;">
         <% if (errorMsg != null) { %>
             <div style="grid-column: 1 / -1; padding: 1rem; background: #fee2e2; color: #dc2626; border-radius: 8px; margin-bottom: -1rem; font-weight: 500;">
@@ -136,43 +539,51 @@
                 <%= h(successMsg) %>
             </div>
         <% } %>
-        <div class="main-content" style="margin-top: 2rem;">
-            <div class="breadcrumb">
-                <a href="${pageContext.request.contextPath}/courses">Khóa học</a> &nbsp;>&nbsp; <%= h(course.getSubjectName()) %>
-            </div>
-            
-            <h1 class="course-title"><%= h(course.getTitle()) %></h1>
-            
-            <div class="course-meta">
-                <div class="meta-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                    <%= h(course.getDisplayRating()) %> sao (<%= course.getRatingCount() %> đánh giá)
+        <div class="main-content">
+            <!-- Hero header inside card -->
+            <div class="course-hero">
+                <div class="hero-left-content" style="flex: 1; max-width: 50%;">
+                    <nav class="hero-breadcrumb">
+                        <a href="${pageContext.request.contextPath}/courses">Khóa học</a>
+                        <span class="sep">›</span>
+                        <span class="hero-subject-badge" style="margin-bottom: 0;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                            <%= h(course.getSubjectName()) %>
+                        </span>
+                    </nav>
+                    <h1 class="hero-title"><%= h(course.getTitle()) %></h1>
+                    <div class="hero-meta">
+                        <div class="hero-meta-item">
+                            <svg viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            <strong><%= h(course.getDisplayRating()) %></strong>&nbsp;sao (<%= course.getRatingCount() %> đánh giá)
+                        </div>
+                        <div class="hero-meta-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <strong><%= course.getStudentsCount() %></strong>&nbsp;học viên
+                        </div>
+                        <div class="hero-meta-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="14 2 18 6 7 17 3 17 3 13 14 2"/><line x1="3" y1="22" x2="21" y2="22"/></svg>
+                            Cấp độ:&nbsp;<strong><%= h(course.getLevelName()) %></strong>
+                        </div>
+                    </div>
                 </div>
-                <div class="meta-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    <%= course.getStudentsCount() %> học viên
-                </div>
-                <div class="meta-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="14 2 18 6 7 17 3 17 3 13 14 2"></polygon><line x1="3" y1="22" x2="21" y2="22"></line></svg>
-                    Cấp độ: <%= h(course.getLevelName()) %>
-                </div>
-            </div>
-            
-            <div class="teacher-info">
-                <% if (course.getTeacherAvatarUrl() != null && !course.getTeacherAvatarUrl().isEmpty()) { %>
-                    <img src="<%= h(course.getTeacherAvatarUrl()) %>" class="teacher-avatar" alt="Giáo viên">
-                <% } else { 
-                    String tInits = "GV";
-                    if (course.getTeacherName() != null && !course.getTeacherName().isEmpty()) {
-                        String[] parts = course.getTeacherName().trim().split("\\s+");
-                        tInits = parts[parts.length - 1].substring(0, 1).toUpperCase();
-                    }
-                %>
-                    <div class="teacher-avatar"><%= h(tInits) %></div>
-                <% } %>
-                <div class="teacher-details">
-                    <div class="teacher-name">Giảng viên: <%= h(course.getTeacherName()) %></div>
-                    <div class="teacher-school"><%= h(course.getTeacherSchool()) %></div>
+                
+                <div class="hero-right-content" style="flex-shrink: 0; margin-right: 2rem;">
+                    <div class="hero-teacher-card">
+                        <div class="hero-teacher-avatar-wrap" title="Giảng viên: <%= h(course.getTeacherName()) %>">
+                            <% if (course.getTeacherAvatarUrl() != null && !course.getTeacherAvatarUrl().isEmpty()) { %>
+                                <img src="<%= h(course.getTeacherAvatarUrl()) %>" class="hero-teacher-avatar" alt="Giáo viên">
+                            <% } else {
+                                String tInits = "GV";
+                                if (course.getTeacherName() != null && !course.getTeacherName().isEmpty()) {
+                                    String[] tParts = course.getTeacherName().trim().split("\\s+");
+                                    tInits = tParts[tParts.length - 1].substring(0, 1).toUpperCase();
+                                }
+                            %>
+                                <div class="hero-teacher-avatar"><%= h(tInits) %></div>
+                            <% } %>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -183,7 +594,7 @@
             
             <% if (course.isViewerEnrolled()) { %>
             <h2 class="section-title">Hướng dẫn truy cập</h2>
-            <div class="course-desc" style="background:#e0e7ff; padding: 1.5rem; border-radius:12px; color:#3730a3;">
+            <div class="course-desc" style="background:#e0e7ff; border-left-color:#6366f1; color:#3730a3;">
                 <% if (course.getAccessInstructions() != null && !course.getAccessInstructions().isEmpty()) { %>
                     <%= h(course.getAccessInstructions()) %>
                 <% } else { %>
@@ -191,6 +602,144 @@
                 <% } %>
             </div>
             <% } %>
+
+            <!-- 1. Sau khi học sẽ nhận được gì -->
+            <h2 class="section-title">Mục tiêu khóa học</h2>
+            <div class="benefit-list">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <div class="benefit-text">Nắm được tư duy nền tảng về <strong>Agentic AI</strong>, hiểu rõ điểm khác biệt giữa AI chỉ phản hồi và AI có khả năng thực thi công việc.</div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <div class="benefit-text">Biết cách đăng ký, thiết lập và sử dụng <strong>Claude AI</strong> hiệu quả, từ viết prompt chuẩn đến xây dựng Claude Skills.</div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <div class="benefit-text">Có thể cài đặt, cấu hình và vận hành <strong>AI Agent</strong> nhằm tự động hóa các tác vụ quản lý dữ liệu, tìm kiếm file.</div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <div class="benefit-text">Biết cách kết nối <strong>Google Antigravity với Apify</strong> để tự động thu thập lead từ Facebook, phân tích kênh TikTok đối thủ.</div>
+                </div>
+            </div>
+
+            <!-- 2. Nội dung chính khóa học -->
+            <h2 class="section-title">Nội dung chương trình</h2>
+            <div class="curriculum-section">
+                <div class="curriculum-part">
+                    <div class="curriculum-part-title">
+                        <span>Phần 1: Tổng Quan & Tư Duy Nền Tảng</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="curriculum-list">
+                        <div class="curriculum-item">
+                            <svg class="curriculum-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            <div class="curriculum-text">Làm quen với tư duy AI thực chiến, hiểu mục tiêu học tập và cách ứng dụng AI đúng hướng.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="curriculum-part">
+                    <div class="curriculum-part-title">
+                        <span>Phần 2: Claude AI - Thiết Lập & Ứng Dụng Trong Kinh Doanh</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="curriculum-list">
+                        <div class="curriculum-item">
+                            <svg class="curriculum-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            <div class="curriculum-text">Cách dùng Claude để viết prompt, xử lý dữ liệu, hỗ trợ bán hàng, marketing và xây dựng Claude Skills.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="curriculum-part">
+                    <div class="curriculum-part-title">
+                        <span>Phần 3: Google Antigravity - Thu Thập Dữ Liệu Khách Hàng</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="curriculum-list">
+                        <div class="curriculum-item">
+                            <svg class="curriculum-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            <div class="curriculum-text">Thực hành cào data, tìm lead và khai thác thông tin khách hàng từ nhiều nền tảng khác nhau.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Đánh giá của học viên -->
+            <h2 class="section-title">Đánh giá từ học viên</h2>
+            <div class="reviews-section">
+                <div class="review-overview">
+                    <div class="review-score">
+                        <div class="review-score-num">5.0</div>
+                        <div class="review-score-stars">⭐⭐⭐⭐⭐</div>
+                        <div class="review-score-total">0 đánh giá</div>
+                    </div>
+                    <div class="review-form-container" style="flex-grow: 1; border-left: 2px dashed #e2e8f0; padding-left: 2.5rem; margin-left: 0.5rem;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+                            <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">Gửi Đánh Giá Của Bạn</h3>
+                            <div class="interactive-stars">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            </div>
+                        </div>
+                        <form class="review-form" action="#" method="POST">
+                            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                                <div class="review-avatar" style="flex-shrink: 0; background: linear-gradient(135deg, #0ea5e9, #6366f1); font-size: 0.8rem;">Bạn</div>
+                                <div style="flex-grow: 1; position: relative;">
+                                    <textarea placeholder="Khóa học này thế nào? Hãy chia sẻ trải nghiệm của bạn nhé..." style="width: 100%; padding: 1rem 1.25rem; background: #fff; border: 2px solid #e2e8f0; border-radius: 12px; resize: vertical; min-height: 100px; font-family: inherit; font-size: 0.95rem; color: #1e293b; outline: none; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onfocus="this.style.borderColor='#0d9488'; this.style.boxShadow='0 0 0 4px rgba(13,148,136,0.1)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';"></textarea>
+                                    <div style="display: flex; justify-content: flex-end; margin-top: 0.75rem;">
+                                        <button type="submit" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #0d9488, #10b981); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 50px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(13,148,136,0.25);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(13,148,136,0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(13,148,136,0.25)';">
+                                            <span>Gửi đánh giá</span>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="review-grid">
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-user-info">
+                                <div class="review-avatar color-1">N</div>
+                                <div>
+                                    <div class="review-name">Nguyễn Văn A</div>
+                                    <div class="review-date">2 ngày trước</div>
+                                </div>
+                            </div>
+                            <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                        </div>
+                        <div class="review-text">Khóa học rất thực tế, giúp mình áp dụng AI vào công việc bán hàng ngay lập tức. Giảng viên giải thích cực kỳ dễ hiểu.</div>
+                    </div>
+                    
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-user-info">
+                                <div class="review-avatar color-2">T</div>
+                                <div>
+                                    <div class="review-name">Trần Thị B</div>
+                                    <div class="review-date">1 tuần trước</div>
+                                </div>
+                            </div>
+                            <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                        </div>
+                        <div class="review-text">Trước đây mình thấy AI khá mơ hồ, nhưng học xong lộ trình này mình đã tự tạo được các Agent giúp tiết kiệm hàng giờ mỗi ngày.</div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="checkout-card">
@@ -209,10 +758,15 @@
                     <p style="text-align:center; font-size:0.85rem; color:#666; margin-top:0.5rem;">Bạn đã đăng ký khóa học này</p>
                 <% } else if (course.isFree()) { %>
                     <% if (profileHasStudent) { %>
-                        <form action="${pageContext.request.contextPath}/enroll" method="POST" style="margin:0;">
-                            <input type="hidden" name="courseId" value="<%= h(course.getId()) %>">
-                            <button type="submit" class="btn btn-primary">Đăng ký học ngay</button>
-                        </form>
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <form action="${pageContext.request.contextPath}/enroll" method="POST" style="margin:0;">
+                                <input type="hidden" name="courseId" value="<%= h(course.getId()) %>">
+                                <button type="submit" class="btn btn-primary" style="width:100%;">Đăng ký học ngay</button>
+                            </form>
+                            <button type="button" class="btn <%= isInCart ? "btn-added" : "btn-secondary" %>" id="btnAddToCartFree" onclick="addToCart('<%= h(course.getId()) %>')" style="width:100%;">
+                                <%= isInCart ? "Đã có trong giỏ hàng" : "Thêm vào giỏ hàng" %>
+                            </button>
+                        </div>
                     <% } else { %>
                         <a href="${pageContext.request.contextPath}/login" class="btn btn-primary">Đăng nhập để đăng ký</a>
                     <% } %>
@@ -237,6 +791,165 @@
                     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Cập nhật tài nguyên miễn phí</li>
                 </ul>
             </div>
+        </div>
+    </div>
+
+    <!-- 4. Khóa học liên quan -->
+    <div style="max-width: 1600px; width: 96%; margin: 0 auto 50px; padding: 0 1.5rem;">
+        <div class="related-courses-section">
+            <h2 class="section-title">Các Khóa Học Liên Quan</h2>
+            <div class="weekly-featured-viewport" id="relatedCoursesViewport">
+                <div class="weekly-featured-grid" id="relatedCoursesTrack">
+                    <!-- Card 1 -->
+                    <article class="weekly-course-card">
+                        <div class="weekly-thumb">
+                            <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#0f766e 0%,#14b8a6 48%,#7c3aed 100%); display:flex; align-items:center; justify-content:center;">
+                                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><path d="M3 5h18M3 10h12M3 15h9M3 20h6"/><circle cx="19" cy="17" r="3"/><path d="M22 20l-1.5-1.5"/></svg>
+                            </div>
+                            <span class="weekly-rating-badge" aria-label="Đánh giá 4.9 sao">
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                4.9
+                            </span>
+                            <button type="button" class="weekly-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                            </button>
+                        </div>
+                        <div class="weekly-info">
+                            <h3 class="weekly-title">Master IELTS Writing Task 2 từ con số 0 đến Band 7.5</h3>
+                            <div class="weekly-teacher-row">
+                                <div class="weekly-teacher">Trần Anh Khoa</div>
+                                <span class="weekly-students" aria-label="950 học viên">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    950
+                                </span>
+                            </div>
+                            <div class="weekly-footer">
+                                <span class="weekly-price free">Miễn phí</span>
+                                <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Card 2 -->
+                    <article class="weekly-course-card">
+                        <div class="weekly-thumb">
+                            <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#2563eb 0%,#6366f1 100%); display:flex; align-items:center; justify-content:center;">
+                                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/><path d="M8 7h8M8 11h6"/></svg>
+                            </div>
+                            <span class="weekly-rating-badge" aria-label="Đánh giá 4.8 sao">
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                4.8
+                            </span>
+                            <button type="button" class="weekly-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                            </button>
+                        </div>
+                        <div class="weekly-info">
+                            <h3 class="weekly-title">Luyện thi ĐGNL ĐHQG TP.HCM - Toán tổng ôn siêu tốc</h3>
+                            <div class="weekly-teacher-row">
+                                <div class="weekly-teacher">Nguyễn Văn An</div>
+                                <span class="weekly-students" aria-label="820 học viên">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    820
+                                </span>
+                            </div>
+                            <div class="weekly-footer">
+                                <span class="weekly-price free">Miễn phí</span>
+                                <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Card 3 -->
+                    <article class="weekly-course-card">
+                        <div class="weekly-thumb">
+                            <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#7c3aed 0%,#a78bfa 100%); display:flex; align-items:center; justify-content:center;">
+                                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                            </div>
+                            <span class="weekly-rating-badge" aria-label="Đánh giá 4.7 sao">
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                4.7
+                            </span>
+                            <button type="button" class="weekly-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                            </button>
+                        </div>
+                        <div class="weekly-info">
+                            <h3 class="weekly-title">Chinh phục điểm 9+ Vật Lý 12 bằng sơ đồ tư duy</h3>
+                            <div class="weekly-teacher-row">
+                                <div class="weekly-teacher">Lê Hương Giang</div>
+                                <span class="weekly-students" aria-label="610 học viên">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    610
+                                </span>
+                            </div>
+                            <div class="weekly-footer">
+                                <span class="weekly-price">150.000 đ</span>
+                                <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Card 4 -->
+                    <article class="weekly-course-card">
+                        <div class="weekly-thumb">
+                            <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#059669 0%,#34d399 100%); display:flex; align-items:center; justify-content:center;">
+                                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            </div>
+                            <span class="weekly-rating-badge" aria-label="Đánh giá 4.6 sao">
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                4.6
+                            </span>
+                            <button type="button" class="weekly-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                            </button>
+                        </div>
+                        <div class="weekly-info">
+                            <h3 class="weekly-title">Kế toán thực hành thực tế cho người mới bắt đầu</h3>
+                            <div class="weekly-teacher-row">
+                                <div class="weekly-teacher">Phạm Thị Cẩm</div>
+                                <span class="weekly-students" aria-label="450 học viên">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    450
+                                </span>
+                            </div>
+                            <div class="weekly-footer">
+                                <span class="weekly-price">499.000 đ</span>
+                                <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Card 5 -->
+                    <article class="weekly-course-card">
+                        <div class="weekly-thumb">
+                            <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#e11d48 0%,#fb7185 100%); display:flex; align-items:center; justify-content:center;">
+                                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                            </div>
+                            <span class="weekly-rating-badge" aria-label="Đánh giá 5.0 sao">
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                5.0
+                            </span>
+                            <button type="button" class="weekly-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                            </button>
+                        </div>
+                        <div class="weekly-info">
+                            <h3 class="weekly-title">Tiếng Anh giao tiếp cho người đi làm: Tự tin thuyết trình</h3>
+                            <div class="weekly-teacher-row">
+                                <div class="weekly-teacher">Helen Trần</div>
+                                <span class="weekly-students" aria-label="1.2k học viên">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    1.2k
+                                </span>
+                            </div>
+                            <div class="weekly-footer">
+                                <span class="weekly-price free">Miễn phí</span>
+                                <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
         </div>
     </div>
     
@@ -308,6 +1021,103 @@
                 alert('Không thể kết nối đến máy chủ.');
             });
         }
+        
+        // Infinite auto-scroll with drag support for Related Courses
+        (function() {
+            const track = document.getElementById('relatedCoursesTrack');
+            if (!track) return;
+            
+            // 1. Wrap original content for seamless looping
+            const originalContent = track.innerHTML;
+            track.innerHTML = '';
+            
+            const wrapper1 = document.createElement('div');
+            wrapper1.style.display = 'flex';
+            wrapper1.style.gap = '1.25rem';
+            wrapper1.innerHTML = originalContent;
+            
+            const wrapper2 = document.createElement('div');
+            wrapper2.style.display = 'flex';
+            wrapper2.style.gap = '1.25rem';
+            wrapper2.innerHTML = originalContent;
+            
+            track.appendChild(wrapper1);
+            track.appendChild(wrapper2);
+            
+            let isDown = false;
+            let startX;
+            let scrollLeft = 0;
+            let speed = 0.8; // Normal speed
+            let targetSpeed = 0.8;
+            
+            function animate() {
+                speed += (targetSpeed - speed) * 0.05; // Smooth speed transition
+                
+                if (!isDown) {
+                    scrollLeft -= speed;
+                    // width of one wrapper + the gap of the track
+                    const trackGap = parseFloat(window.getComputedStyle(track).gap) || 20;
+                    const singleWidth = wrapper1.offsetWidth + trackGap; 
+                    
+                    if (scrollLeft <= -singleWidth) {
+                        scrollLeft += singleWidth;
+                    }
+                    track.style.transform = `translateX(${scrollLeft}px)`;
+                }
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+
+            // 2. Slow down on hover
+            const viewport = document.getElementById('relatedCoursesViewport');
+            if (viewport) {
+                viewport.addEventListener('mouseenter', () => { targetSpeed = 0.25; });
+                viewport.addEventListener('mouseleave', () => { targetSpeed = 0.8; });
+            }
+            
+            // 3. Keep drag functionality
+            track.addEventListener('mousedown', (e) => {
+                isDown = true;
+                track.style.cursor = 'grabbing';
+                startX = e.pageX;
+                track.style.transition = 'none';
+            });
+            window.addEventListener('mouseup', () => {
+                if (isDown) {
+                    isDown = false;
+                    track.style.cursor = '';
+                }
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX;
+                const walk = (x - startX) * 1.5;
+                scrollLeft += walk;
+                startX = x;
+                
+                const trackGap = parseFloat(window.getComputedStyle(track).gap) || 20;
+                const singleWidth = wrapper1.offsetWidth + trackGap; 
+                
+                if (scrollLeft > 0) scrollLeft -= singleWidth;
+                if (scrollLeft <= -singleWidth) scrollLeft += singleWidth;
+                
+                track.style.transform = `translateX(${scrollLeft}px)`;
+            });
+            
+            // Prevent link clicking when dragging
+            let isDragging = false;
+            track.addEventListener('mousemove', (e) => { if (isDown) isDragging = true; });
+            track.addEventListener('mousedown', () => { isDragging = false; });
+            track.addEventListener('click', (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
+        })();
     </script>
+    <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
 </html>

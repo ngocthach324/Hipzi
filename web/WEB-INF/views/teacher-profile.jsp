@@ -2593,7 +2593,7 @@
         TeacherApplication teacherApplication = (TeacherApplication) request.getAttribute("teacherApplication");
         TeacherApplication approvedTeacherApplication = (TeacherApplication) request.getAttribute("approvedTeacherApplication");
         List<Classroom> teacherClassrooms = (List<Classroom>) request.getAttribute("teacherClassrooms");
-        List<?> teacherCourses = (List<?>) request.getAttribute("teacherCourses");
+        List<com.hipzi.model.Course> teacherCourses = (List<com.hipzi.model.Course>) request.getAttribute("teacherCourses");
         Object teacherMaterialCountObj = request.getAttribute("teacherMaterialCount");
         int teacherMaterialCount = teacherMaterialCountObj instanceof Number ? ((Number) teacherMaterialCountObj).intValue() : 0;
         boolean teachingRegistrationSubmitted = teacherApplication != null || Boolean.TRUE.equals(session.getAttribute("teacherRegistrationSubmitted"));
@@ -2668,7 +2668,7 @@
                 </li>
                 <li>
                     <a id="nav-tab-profile" class="<%= ("tab-profile".equals(initialTeacherTab) || "tab-edit".equals(initialTeacherTab)) ? "active" : "" %>" onclick="switchTab('tab-profile')" title="Hồ sơ cá nhân">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         <span>Hồ sơ cá nhân</span>
                     </a>
                 </li>
@@ -3168,10 +3168,10 @@
                         <p>Quản lý danh sách lớp học và đăng ký mở lớp mới cho học viên.</p>
                     </div>
                     <div class="tab-pane-header-right">
-                        <div class="date-badge">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span><%= currentDateDisplay %></span>
-                        </div>
+                        <a href="${pageContext.request.contextPath}/classes" class="btn-premium secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            <span>Đến danh sách lớp học</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                        </a>
                     </div>
                 </div>
 
@@ -3182,10 +3182,52 @@
                     }
                 %>
 
+                <div class="dashboard-grid-layout" style="margin-bottom: 1.5rem; margin-top: 1.5rem;">
+                    <!-- Thẻ trái -->
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="width: 48px; height: 48px; border-radius: 0.75rem; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0 0 0.5rem 0; color: var(--text-main); font-size: 1.15rem; font-weight: 800;">Quy trình mở lớp học</h3>
+                            <p style="margin: 0; color: var(--text-muted); line-height: 1.6; font-size: 0.88rem;">Quản lý và mở các lớp học mới để bắt đầu quá trình giảng dạy trên HIPZI. Các lớp học cần được xếp lịch phù hợp.</p>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 0.5rem;">
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
+                                <strong style="display: block; color: var(--primary); font-size: 1.25rem;">01</strong>
+                                <span style="display: block; color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Đăng kí lớp</span>
+                            </div>
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
+                                <strong style="display: block; color: var(--primary); font-size: 1.25rem;">02</strong>
+                                <span style="display: block; color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Xếp lịch</span>
+                            </div>
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
+                                <strong style="display: block; color: var(--primary); font-size: 1.25rem;">03</strong>
+                                <span style="display: block; color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Giảng dạy</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thẻ phải -->
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #064e3b; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1.25rem;">
+                        <div>
+                            <div style="min-height: 48px; display: flex; align-items: flex-start;">
+                                <div style="display: inline-flex; align-items: center; gap: 0.45rem; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.72rem; font-weight: 800; color: #064e3b;">SẴN SÀNG</div>
+                            </div>
+                            <h3 style="margin: 0.75rem 0 0.5rem 0; font-size: 1.25rem; line-height: 1.3; font-weight: 800; color: #064e3b;">Đăng kí lớp học mới</h3>
+                            <p style="margin: 0; color: #047857; line-height: 1.6; font-size: 0.85rem;">Tạo lớp học mới, chọn môn học và thiết lập lịch giảng dạy cho học viên của bạn. Hệ thống sẽ tự động cập nhật danh sách lớp học.</p>
+                        </div>
+                        <button type="button" onclick="document.getElementById('create-class-form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });" class="btn-premium secondary" style="width: 100%; border: none; background: #059669; color: #ffffff; font-weight: 800; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
+                            <span>Tạo lớp học ngay</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="premium-card">
                     <div class="premium-card-header">
                         <span class="premium-card-title">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                             Danh sách lớp học đã đăng kí
                         </span>
                     </div>
@@ -3201,7 +3243,7 @@
                                         <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
                                             <span class="subject-badge" style="background: var(--primary-light); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700;"><%= cls.getSubject() %></span>
                                             <% if (cls.getGrade() != null && !cls.getGrade().isEmpty()) { %>
-                                                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);"><%= cls.getGrade() %></span>
+                                                <span style="font-size: 0.75rem; font-weight: 800; color: #334155;"><%= cls.getGrade() %></span>
                                             <% } %>
                                         </div>
                                         <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.75rem 0; line-height: 1.4;"><%= cls.getTitle() %></h3>
@@ -3228,16 +3270,16 @@
                                     </div>
 
                                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: auto;">
-                                        <button type="button" class="btn-premium secondary" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;" onclick="document.getElementById('edit-class-<%= cls.getId() %>').style.display = 'flex'" title="Chỉnh sửa lớp học">
+                                        <button type="button" class="btn-premium secondary" style="padding: 0.5rem 0.85rem; font-size: 0.82rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; line-height: 1; background: #f1f5f9; border-color: #e2e8f0; color: #334155;" onclick="document.getElementById('edit-class-<%= cls.getId() %>').style.display = 'flex'" title="Chỉnh sửa lớp học">
                                             <span>Chỉnh sửa</span>
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                                         </button>
                                         <form action="${pageContext.request.contextPath}/teacher-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa lớp học này?');" style="margin: 0; display: inline;">
                                             <input type="hidden" name="action" value="deleteClass">
                                             <input type="hidden" name="classId" value="<%= cls.getId() %>">
-                                            <button type="submit" class="btn-premium danger" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem; background: #fee2e2; border-color: #fca5a5; color: #dc2626;" title="Xóa lớp học">
+                                            <button type="submit" class="btn-premium danger" style="padding: 0.5rem 0.85rem; font-size: 0.82rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; line-height: 1; background: #fee2e2; border-color: #fca5a5; color: #dc2626;" title="Xóa lớp học">
                                                 <span>Xóa</span>
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
                                             </button>
                                         </form>
                                     </div>
@@ -3329,7 +3371,7 @@
                     <% } %>
                 </div>
 
-                <div class="premium-card" style="margin-top: 1.5rem;">
+                <div id="create-class-form-section" class="premium-card" style="margin-top: 1.5rem;">
                     <div class="premium-card-header" style="border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem; margin-bottom: 1.5rem;">
                         <span class="premium-card-title">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
@@ -3816,14 +3858,184 @@
                         <p>Tạo và liên kết nội dung bài giảng, khóa học từ Google Drive lên HIPZI.</p>
                     </div>
                     <div class="tab-pane-header-right">
-                        <div class="date-badge">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span><%= currentDateDisplay %></span>
-                        </div>
+                        <a href="${pageContext.request.contextPath}/courses" class="btn-premium secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            <span>Đến danh sách khóa học</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                        </a>
                     </div>
                 </div>
 
-                <div class="premium-card">
+                <div class="dashboard-grid-layout" style="margin-bottom: 1.5rem; margin-top: 1.5rem;">
+                    <!-- Thẻ trái -->
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="width: 48px; height: 48px; border-radius: 0.75rem; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0 0 0.5rem 0; color: var(--text-main); font-size: 1.15rem; font-weight: 800;">Quy trình tạo khóa học</h3>
+                            <p style="margin: 0; color: var(--text-muted); line-height: 1.6; font-size: 0.88rem;">Quản lý và tạo các khóa học mới để bắt đầu quá trình giảng dạy trên HIPZI. Các khóa học cần được liên kết nội dung.</p>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 0.5rem;">
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
+                                <strong style="display: block; color: var(--primary); font-size: 1.25rem;">01</strong>
+                                <span style="display: block; color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Tạo khóa học</span>
+                            </div>
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
+                                <strong style="display: block; color: var(--primary); font-size: 1.25rem;">02</strong>
+                                <span style="display: block; color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Liên kết Drive</span>
+                            </div>
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; text-align: center;">
+                                <strong style="display: block; color: var(--primary); font-size: 1.25rem;">03</strong>
+                                <span style="display: block; color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">Đăng tải</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thẻ phải -->
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #064e3b; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1.25rem;">
+                        <div>
+                            <div style="min-height: 48px; display: flex; align-items: flex-start;">
+                                <div style="display: inline-flex; align-items: center; gap: 0.45rem; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.72rem; font-weight: 800; color: #064e3b;">SẴN SÀNG</div>
+                            </div>
+                            <h3 style="margin: 0.75rem 0 0.5rem 0; font-size: 1.25rem; line-height: 1.3; font-weight: 800; color: #064e3b;">Đăng khóa học mới</h3>
+                            <p style="margin: 0; color: #047857; line-height: 1.6; font-size: 0.85rem;">Tạo khóa học mới, liên kết nội dung bài giảng từ Google Drive để học viên có thể đăng kí học. Hệ thống sẽ tự động cập nhật danh sách khóa học.</p>
+                        </div>
+                        <button type="button" onclick="document.getElementById('create-course-form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });" class="btn-premium secondary" style="width: 100%; border: none; background: #059669; color: #ffffff; font-weight: 800; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
+                            <span>Tạo khóa học ngay</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="premium-card" style="margin-bottom: 1.5rem;">
+                    <div class="premium-card-header" style="border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <span class="premium-card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                            Danh sách khóa học đã đăng kí
+                        </span>
+                    </div>
+
+                    <% if (teacherCourses != null && !teacherCourses.isEmpty()) { %>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.25rem;">
+                            <% for (com.hipzi.model.Course course : teacherCourses) { %>
+                                <div style="border: 1.5px solid rgba(226,232,240,.95); border-radius: 18px; background: rgba(255,255,255,.92); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.2s ease;">
+                                    <div style="position: relative; height: 180px; background: <%= course.getThumbnailGradient() != null ? course.getThumbnailGradient() : "linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #38bdf8 100%)" %>; display: flex; align-items: center; justify-content: center;">
+                                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                        <span style="position: absolute; top: 0.65rem; left: 0.65rem; background: rgba(255,255,255,0.9); padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; color: #1e293b; display: inline-flex; align-items: center; gap: 0.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+                                            <svg viewBox="0 0 24 24" width="12" height="12"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#f59e0b"/></svg>
+                                            <%= course.getRatingAverage() != null ? course.getRatingAverage() : "0.0" %>
+                                        </span>
+                                    </div>
+                                    <div style="padding: 1.25rem; display: flex; flex-direction: column; flex: 1;">
+                                        <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.6rem; font-size: 0.75rem; font-weight: 700; color: #0284c7;">
+                                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #0284c7;"></span> <%= course.getSubjectName() != null ? course.getSubjectName() : "Khác" %>
+                                        </div>
+                                        <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.85rem 0; line-height: 1.4;"><%= course.getTitle() %></h3>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; font-size: 0.85rem; color: #64748b;">
+                                            <div style="font-weight: 600; color: #475569;"><%= course.getTeacherName() != null ? course.getTeacherName() : "Giảng viên" %></div>
+                                            <span style="display: flex; align-items: center; gap: 0.35rem;" aria-label="<%= course.getStudentsCount() %> học viên">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                                <%= course.getStudentsCount() %>
+                                            </span>
+                                        </div>
+                                        <div style="margin-top: auto; display: flex; align-items: center; justify-content: space-between; border-top: 1px dashed #e2e8f0; padding-top: 1.1rem;">
+                                            <span style="font-weight: 800; font-size: 1.1rem; color: <%= "paid".equals(course.getPriceType()) ? "var(--text-main)" : "#10b981" %>;">
+                                                <%= "paid".equals(course.getPriceType()) && course.getPriceAmount() != null ? String.format("%,.0f đ", course.getPriceAmount()) : "Miễn phí" %>
+                                            </span>
+                                            
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <button type="button" class="btn-premium secondary" style="padding: 0.5rem 0.85rem; font-size: 0.82rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; line-height: 1; background: #f1f5f9; border-color: #e2e8f0; color: #334155; border-radius: 0.75rem;" onclick="document.getElementById('edit-course-<%= course.getId() %>').style.display='flex'" title="Chỉnh sửa khóa học">
+                                                    <span>Sửa</span>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                                </button>
+                                                <form action="${pageContext.request.contextPath}/profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa khóa học này?');" style="margin: 0; display: inline;">
+                                                    <input type="hidden" name="action" value="deleteTeacherCourse">
+                                                    <input type="hidden" name="courseId" value="<%= course.getId() %>">
+                                                    <button type="submit" class="btn-premium danger" style="padding: 0.5rem 0.85rem; font-size: 0.82rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; line-height: 1; background: #fee2e2; border-color: #fca5a5; color: #dc2626; border-radius: 0.75rem;" title="Xóa khóa học">
+                                                        <span>Xóa</span>
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- MODAL CHỈNH SỬA KHÓA HỌC -->
+                                <div id="edit-course-<%= course.getId() %>" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                                    <div style="background: var(--surface); width: 90%; max-width: 600px; border-radius: 1.5rem; padding: 2rem; box-shadow: var(--shadow-lg); position: relative; max-height: 90vh; overflow-y: auto;">
+                                        <form action="${pageContext.request.contextPath}/profile" method="POST" class="form-edit-layout" style="padding: 0; margin: 0;">
+                                            <input type="hidden" name="action" value="updateTeacherCourse">
+                                            <input type="hidden" name="courseId" value="<%= course.getId() %>">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-dark); padding-bottom: 0.75rem;">
+                                                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-main);">Chỉnh sửa khóa học</h3>
+                                                <div style="display: flex; gap: 0.5rem;">
+                                                    <button type="button" onclick="document.getElementById('edit-course-<%= course.getId() %>').style.display='none'" class="btn-premium secondary" style="padding: 0.5rem 1rem;">Hủy</button>
+                                                    <button type="submit" class="btn-premium primary" style="padding: 0.5rem 1rem;">Lưu thay đổi</button>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                                <div class="form-group-premium" style="margin: 0;">
+                                                    <label>Tên khóa học</label>
+                                                    <input type="text" name="courseTitle" value="<%= h(course.getTitle()) %>" required>
+                                                </div>
+                                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                                    <div class="form-group-premium" style="margin: 0;">
+                                                        <label>Môn học</label>
+                                                        <select name="courseSubject" required>
+                                                            <% for (String subject : registeredSubjects) { %>
+                                                                <option value="<%= subject %>" <%= subject.equalsIgnoreCase(course.getSubjectName()) ? "selected" : "" %>><%= subject %></option>
+                                                            <% } %>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group-premium" style="margin: 0;">
+                                                        <label>Khối lớp</label>
+                                                        <input type="text" name="courseGrade" value="<%= h(course.getGradeLevel()) %>" required>
+                                                    </div>
+                                                </div>
+                                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                                    <div class="form-group-premium" style="margin: 0;">
+                                                        <label>Trạng thái</label>
+                                                        <input type="text" value="<%= course.getStatusLabel() %>" disabled style="background-color: #f8fafc; color: #64748b; cursor: not-allowed; opacity: 0.8;">
+                                                        <input type="hidden" name="courseStatus" value="<%= course.getStatus() != null ? course.getStatus() : "draft" %>">
+                                                    </div>
+                                                    <div class="form-group-premium" style="margin: 0;">
+                                                        <label>Giá tiền (VNĐ)</label>
+                                                        <input type="number" name="coursePriceAmount" value="<%= course.getPriceAmount() != null ? course.getPriceAmount().intValue() : 0 %>" min="0" step="1000" required>
+                                                    </div>
+                                                </div>
+                                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                                    <div class="form-group-premium" style="margin: 0;">
+                                                        <label>Số bài giảng</label>
+                                                        <input type="number" name="courseLessonsCount" value="<%= course.getLessonsCount() %>" min="1" required>
+                                                    </div>
+                                                    <div class="form-group-premium" style="margin: 0;">
+                                                        <label>Thời lượng (Giờ)</label>
+                                                        <input type="number" name="courseEstimatedHours" value="<%= course.getEstimatedHours() != null ? course.getEstimatedHours().doubleValue() : 0.0 %>" min="0" step="0.5">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group-premium" style="margin: 0;">
+                                                    <label>Mô tả ngắn</label>
+                                                    <textarea name="courseDescription" rows="3" required><%= h(course.getShortDescription()) %></textarea>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                    <% } else { %>
+                        <div style="text-align: center; padding: 3rem 1rem; background: #f8fafc; border-radius: 1rem; border: 1px dashed var(--border-dark);">
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background: #e2e8f0; color: var(--text-muted); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                            </div>
+                            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Chưa có khóa học nào</h3>
+                            <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Bạn chưa tạo khóa học nào. Hãy đăng khóa học mới để bắt đầu.</p>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div id="create-course-form-section" class="premium-card">
                     <div class="premium-card-header" style="border-bottom: 1px solid var(--border-dark); padding-bottom: 1rem; margin-bottom: 1.5rem;">
                         <span class="premium-card-title">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -3947,31 +4159,7 @@
                                     style="width:30px; height:30px; border-radius:50%; border:none; background:#fee2e2; color:#dc2626; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;">&times;</button>
                             </div>
 
-                            <button type="button" id="btn-show-manual-input"
-                                onclick="document.getElementById('manual-drive-inputs').style.display='grid'; this.style.display='none';"
-                                style="display:inline-flex; align-items:center; gap:0.4rem; background:none; border:none;
-                                       color:#64748b; font-size:0.8rem; font-weight:600; cursor:pointer; margin-top:0.4rem;
-                                       padding:0; text-decoration:underline; text-underline-offset:2px; font-family:inherit;">
-                                Nhập thủ công URL hoặc ID nếu Picker không hoạt động
-                            </button>
 
-                            <div id="manual-drive-inputs" style="display:none; grid-template-columns:1fr 1fr; gap:0.75rem; margin-top:0.75rem;">
-                                <div style="grid-column:1/-1; display:flex; flex-direction:column; gap:0.35rem;">
-                                    <label style="font-size:0.8rem; font-weight:600; color:#64748b;">URL Google Drive</label>
-                                    <input type="url" id="courseGoogleDriveUrlManual" name="courseGoogleDriveUrl" placeholder="https://drive.google.com/..."
-                                        style="padding:0.7rem 1rem; border-radius:0.75rem; border:1px solid #cbd5e1; font-size:0.9rem; outline:none; font-family:inherit;">
-                                </div>
-                                <div style="display:flex; flex-direction:column; gap:0.35rem;">
-                                    <label style="font-size:0.8rem; font-weight:600; color:#64748b;">File ID (nếu là file đơn lẻ)</label>
-                                    <input type="text" id="courseGoogleDriveFileIdManual" name="courseGoogleDriveFileId" placeholder="1aBcDeFgHiJkLm..."
-                                        style="padding:0.7rem 1rem; border-radius:0.75rem; border:1px solid #cbd5e1; font-size:0.9rem; outline:none; font-family:inherit;">
-                                </div>
-                                <div style="display:flex; flex-direction:column; gap:0.35rem;">
-                                    <label style="font-size:0.8rem; font-weight:600; color:#64748b;">Folder ID (nếu là thư mục)</label>
-                                    <input type="text" id="courseGoogleDriveFolderIdManual" name="courseGoogleDriveFolderId" placeholder="1aBcDeFgHiJkLm..."
-                                        style="padding:0.7rem 1rem; border-radius:0.75rem; border:1px solid #cbd5e1; font-size:0.9rem; outline:none; font-family:inherit;">
-                                </div>
-                            </div>
 
                             <input type="hidden" id="courseGoogleDriveUrlHidden" name="courseGoogleDriveUrl">
                             <input type="hidden" id="courseGoogleDriveFileIdHidden" name="courseGoogleDriveFileId">
@@ -3979,8 +4167,8 @@
                         </div>
                         <!-- ===== END GOOGLE PICKER SECTION ===== -->
 
-                        <div class="form-actions-row-premium full-span" style="grid-column: 1 / -1; margin-top: 1rem;">
-                            <button type="submit" class="btn-premium primary" style="width: 100%;">Đăng khóa học</button>
+                        <div class="form-actions-row-premium full-span" style="grid-column: 1 / -1; margin-top: 1rem; display: flex; justify-content: flex-end;">
+                            <button type="submit" class="btn-premium primary" style="padding: 0.75rem 2.5rem;">Đăng khóa học</button>
                         </div>
                     </form>
                     <% } else { %>
@@ -4016,10 +4204,6 @@
                         </span>
                     </div>
 
-                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
-                        Lưu ý: Bạn chỉ được phép đăng tải tài liệu cho các môn học đã được hệ thống phê duyệt trong hồ sơ năng lực của mình.
-                    </p>
-
                     <% if (registeredSubjects != null && registeredSubjects.length > 0) { %>
                     <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.5rem;">
                         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
@@ -4046,13 +4230,15 @@
                             </div>
                         </div>
 
-                        <div style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%); color: #ffffff; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1.25rem; box-shadow: 0 14px 28px rgba(4, 120, 87, 0.12);">
+                        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #064e3b; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1.25rem;">
                             <div>
-                                <div style="display: inline-flex; align-items: center; gap: 0.45rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.72rem; font-weight: 800;">ƯU TIÊN GỢI Ý</div>
-                                <h3 style="margin: 0.75rem 0 0.5rem 0; font-size: 1.25rem; line-height: 1.3; font-weight: 800;">Giảng viên tích cực sẽ có lợi thế hiển thị</h3>
-                                <p style="margin: 0; color: #d1fae5; line-height: 1.6; font-size: 0.85rem;">Những giảng viên thường xuyên chia sẻ tài liệu chất lượng, có nhiều lượt xem và nhận đánh giá tốt sẽ được hệ thống xem là tín hiệu uy tín để ưu tiên gợi ý trong các luồng tìm kiếm và đăng ký giảng dạy.</p>
+                                <div style="min-height: 48px; display: flex; align-items: flex-start;">
+                                    <div style="display: inline-flex; align-items: center; gap: 0.45rem; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.72rem; font-weight: 800; color: #064e3b;">ƯU TIÊN GỢI Ý</div>
+                                </div>
+                                <h3 style="margin: 0.75rem 0 0.5rem 0; font-size: 1.25rem; line-height: 1.3; font-weight: 800; color: #064e3b;">Giảng viên tích cực sẽ có lợi thế hiển thị</h3>
+                                <p style="margin: 0; color: #047857; line-height: 1.6; font-size: 0.85rem;">Những giảng viên thường xuyên chia sẻ tài liệu chất lượng, có nhiều lượt xem và nhận đánh giá tốt sẽ được hệ thống xem là tín hiệu uy tín để ưu tiên gợi ý trong các luồng tìm kiếm và đăng ký giảng dạy.</p>
                             </div>
-                            <button type="button" onclick="document.getElementById('repository-upload-form-panel').style.display='block'; document.getElementById('repository-upload-form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });" class="btn-premium secondary" style="width: 100%; border: none; background: #ffffff; color: var(--primary); font-weight: 800;">
+                            <button type="button" onclick="document.getElementById('repository-upload-form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });" class="btn-premium secondary" style="width: 100%; border: none; background: #059669; color: #ffffff; font-weight: 800; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
                                 <span>Bắt đầu đăng tải</span>
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
                             </button>
@@ -4066,13 +4252,12 @@
                 </div>
 
                 <% if (registeredSubjects != null && registeredSubjects.length > 0) { %>
-                <div id="repository-upload-form-panel" style="display: none; margin-top: 1.5rem; background: #f8fafc; border: none; border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow);">
+                <div id="repository-upload-form-panel" class="premium-card" style="margin-top: 1.5rem;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.75rem;">
                             <div>
                                 <h3 style="margin: 0; color: var(--text-main); font-size: 1.15rem; font-weight: 800;">Thông tin tài liệu đăng tải</h3>
                                 <p style="margin: 0.25rem 0 0 0; color: var(--text-muted); font-size: 0.85rem;">Tài liệu sẽ được hiển thị công khai trong kho học liệu sau khi hệ thống ghi nhận thành công.</p>
                             </div>
-                            <button type="button" onclick="document.getElementById('repository-upload-form-panel').style.display='none';" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--border-light); color: var(--text-muted); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
                         </div>
 
                         <form class="repository-upload-form form-edit-layout" action="${pageContext.request.contextPath}/material-repository" method="POST" enctype="multipart/form-data" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; padding: 0;">
@@ -4086,17 +4271,10 @@
                             <div class="form-group-premium">
                                 <label>Môn học <span style="color:#ef4444;">*</span></label>
                                 <select name="materialSubject" required>
-                                    <option value="">Chọn môn học</option>
-                                    <option value="Toán">Toán học</option>
-                                    <option value="Văn">Ngữ Văn</option>
-                                    <option value="Anh">Tiếng Anh</option>
-                                    <option value="Lý">Vật Lý</option>
-                                    <option value="Hóa">Hóa Học</option>
-                                    <option value="Sinh Học">Sinh Học</option>
-                                    <option value="Lịch Sử">Lịch Sử</option>
-                                    <option value="Địa Lý">Địa Lý</option>
-                                    <option value="Công Nghệ">Công Nghệ</option>
-                                    <option value="Tin Học">Tin Học</option>
+                                    <option value="" disabled selected>-- Chọn môn học --</option>
+                                    <% for (String subject : registeredSubjects) { %>
+                                        <option value="<%= subject %>"><%= subject %></option>
+                                    <% } %>
                                 </select>
                             </div>
 
