@@ -33,6 +33,7 @@ import com.hipzi.dao.TeachingScheduleDao;
 import com.hipzi.dao.CourseDao;
 import com.hipzi.dao.CourseOrderDao;
 import com.hipzi.dao.RepositoryMaterialDao;
+import com.hipzi.dao.StaffUserGrowthStatsDao;
 import com.hipzi.dao.StudentStudyProgressDao;
 import com.hipzi.dao.SupportTicketDao;
 import com.hipzi.dao.TeacherApplicationDao;
@@ -71,6 +72,7 @@ public class ProfileServlet extends HttpServlet {
     private final ParentStudentLinkDao linkDao = new ParentStudentLinkDao();
     private final TeachingScheduleDao teachingScheduleDao = new TeachingScheduleDao();
     private final AdminStatsDao adminStatsDao = new AdminStatsDao();
+    private final StaffUserGrowthStatsDao staffUserGrowthStatsDao = new StaffUserGrowthStatsDao();
     private final AdminUserDao adminUserDao = new AdminUserDao();
     private final TeacherApplicationDao teacherApplicationDao = new TeacherApplicationDao();
     private final TeacherGoogleAccountDao teacherGoogleAccountDao = new TeacherGoogleAccountDao();
@@ -205,6 +207,7 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("staffActiveClassCount", classroomDao.countActiveClassrooms());
             request.setAttribute("staffCourseCount", courseDao.countExistingCourses());
             request.setAttribute("staffMaterialCount", repositoryMaterialDao.countVisibleApprovedMaterials());
+            request.setAttribute("staffUserGrowthStats", staffUserGrowthStatsDao.getStats());
             loadStaffSupportData(request);
             request.setAttribute("teacherApplications", teacherApplicationDao.listForStaffReview());
             

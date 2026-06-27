@@ -31,22 +31,7 @@
         }
     }
 
-    String activeTab = request.getParameter("tab");
-    if (activeTab == null || activeTab.trim().isEmpty()) {
-        activeTab = "tab-tracking";
-    } else {
-        activeTab = activeTab.trim();
-        if (!activeTab.startsWith("tab-")) {
-            activeTab = "tab-" + activeTab;
-        }
-        if (!activeTab.equals("tab-tracking") &&
-            !activeTab.equals("tab-profile") &&
-            !activeTab.equals("tab-security") &&
-            !activeTab.equals("tab-notifications") &&
-            !activeTab.equals("tab-support")) {
-            activeTab = "tab-tracking";
-        }
-    }
+    String activeTab = "tab-tracking";
 %>
 <%!
     private String escAttr(String value) {
@@ -114,6 +99,7 @@
 
         /* Updated Navbar Styles from index.jsp */
         .navbar {
+            display: none !important;
             position: sticky;
             top: 0;
             width: 100%;
@@ -121,7 +107,7 @@
             background: transparent;
             border-bottom: 1px solid transparent;
             z-index: 1000;
-            display: flex;
+            display: none !important;
             justify-content: center;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -350,35 +336,26 @@
         .noti-popup-footer { padding: 0.85rem; text-align: center; border-top: 1px solid #f1f5f9; background: #f8fafc; }
         .noti-popup-footer a { color: var(--primary); font-size: 0.85rem; font-weight: 700; text-decoration: none; cursor: pointer; transition: color 0.2s ease; display: block; }
 
-        /* Dashboard Layout - synced with student-profile */
+        /* Dashboard Layout - synced with teacher/student profile */
         .app-dashboard-container {
-            max-width: 1320px;
-            width: calc(100% - 3rem);
-            height: calc(100vh - 12rem - 10px);
-            min-height: 560px;
-            margin: calc(1rem + 10px) auto 1.5rem auto;
+            max-width: none;
+            width: calc(100% - 2rem);
+            min-height: calc(100vh - 120px);
+            margin: 1rem auto 2rem auto;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            background: #ffffff;
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            border-radius: 1.5rem;
-            box-shadow: 0 16px 38px rgba(5, 150, 105, 0.08);
-            overflow: hidden;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: auto minmax(0, 1fr);
+            gap: 1.25rem;
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: visible;
         }
 
         .dashboard-unified-header {
-            background: linear-gradient(135deg, var(--primary) 0%, #047857 100%);
-            padding: 0 1.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            position: relative;
-            gap: 1rem;
-            flex-shrink: 0;
-            height: 64px;
-            min-height: 64px;
-            border-radius: 1.5rem 1.5rem 0 0;
+            display: none;
         }
 
         .unified-header-tab-title {
@@ -411,28 +388,28 @@
         }
 
         .dashboard-body {
-            display: flex;
-            flex-direction: row;
-            flex: 1;
-            min-height: 0;
-            overflow: hidden;
+            display: contents;
         }
 
         /* Sidebar */
         .dashboard-sidebar {
-            background: transparent;
-            border-right: 1px solid rgba(226, 232, 240, 0.9);
-            padding: 1rem 1rem;
+            display: none !important;
+            background: #ffffff;
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: 1.5rem;
+            padding: 1.35rem 1.25rem;
             display: flex;
             flex-direction: column;
             gap: 1rem;
             width: 270px;
             flex-shrink: 0;
-            height: 100%;
-            min-height: 0;
-            overflow-y: auto;
+            min-height: calc(100vh - 2rem);
+            overflow-y: visible;
             overflow-x: hidden;
             justify-content: space-between;
+            box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
+            grid-column: 1;
+            grid-row: 1 / span 2;
         }
 
         .sidebar-top-group {
@@ -440,6 +417,57 @@
             flex-direction: column;
             gap: 1rem;
             min-height: 0;
+        }
+
+        .parent-sidebar-brand {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .parent-sidebar-brand-main {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+
+        .parent-sidebar-brand-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 0.75rem;
+            border: 1px solid #bbf7d0;
+            background: #ecfdf5;
+            object-fit: cover;
+        }
+
+        .parent-sidebar-brand-title {
+            display: block;
+            color: var(--text-main);
+            font-size: 1.28rem;
+            font-weight: 900;
+            line-height: 1.1;
+        }
+
+        .parent-sidebar-brand-subtitle {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 0.15rem;
+        }
+
+        .parent-sidebar-section-label {
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin: 0 0 0.65rem 0.35rem;
         }
 
         .sidebar-menu {
@@ -478,6 +506,18 @@
             background: var(--primary-light);
             font-weight: 700;
             box-shadow: none;
+            position: relative;
+        }
+
+        .sidebar-menu a.active::before {
+            content: "";
+            position: absolute;
+            left: -1.25rem;
+            top: 0.55rem;
+            bottom: 0.55rem;
+            width: 6px;
+            border-radius: 999px;
+            background: var(--primary);
         }
 
         .sidebar-menu a.active svg { stroke: var(--primary); }
@@ -529,12 +569,18 @@
         .dashboard-content-wrapper {
             display: flex;
             flex-direction: column;
-            gap: 0;
+            gap: 1.35rem;
             flex: 1;
             min-width: 0;
             padding: 0;
             min-height: 0;
-            overflow-y: auto;
+            overflow: visible;
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            grid-column: 1;
+            grid-row: 1 / span 2;
         }
         .dashboard-content-wrapper.is-switching-tab { overflow-anchor: none; transition: min-height 0.25s ease; }
         .tab-pane {
@@ -551,6 +597,11 @@
             opacity: 1;
             transform: none;
             animation: none;
+            background: #ffffff;
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: 1.5rem;
+            box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
+            padding: 1.8rem;
         }
         @media (prefers-reduced-motion: reduce) {
             .dashboard-content-wrapper.is-switching-tab,
@@ -560,28 +611,46 @@
 
         /* Cards */
         .premium-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            background: transparent;
             border-radius: 0;
             border: none;
             box-shadow: none;
-            overflow-y: auto;
+            overflow: visible;
             margin-bottom: 0;
             flex: 1;
             min-height: 0;
         }
         .card-header-gradient {
             background: transparent;
-            padding: 1.75rem 2rem 0.75rem 2rem;
+            padding: 0 0 1.15rem 0;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             color: var(--text-main);
             gap: 1rem;
             flex-wrap: wrap;
+            border-bottom: 1px solid var(--border-dark);
+            margin-bottom: 1.8rem;
         }
-        .card-header-gradient h2 { font-size: 1.35rem; font-weight: 800; letter-spacing: 0; }
-        .card-header-gradient > span,
-        .card-header-gradient > div {
+        .card-header-gradient h2 {
+            font-size: 1.9rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin: 0;
+            line-height: 1.2;
+        }
+        .card-header-gradient .tab-subtitle {
+            display: block;
+            color: #475569;
+            background: transparent !important;
+            border: 0;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            font-size: 0.98rem;
+            font-weight: 700;
+            margin-top: 0.35rem;
+        }
+        .card-header-gradient > .date-chip {
             color: var(--primary);
             background: var(--primary-light) !important;
             border: 1px solid #bbf7d0;
@@ -591,7 +660,131 @@
             font-weight: 700;
         }
 
-        .card-body-premium { padding: 2rem; }
+        .card-body-premium { padding: 0; }
+
+        .parent-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0;
+            background: #ffffff;
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: 1.5rem;
+            box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
+            padding: 1.2rem 1.45rem;
+        }
+
+        .parent-topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .parent-topbar-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .parent-topbar-brand img {
+            width: 42px;
+            height: 42px;
+            border-radius: 0.75rem;
+            border: 1px solid #bbf7d0;
+            background: #ecfdf5;
+            object-fit: cover;
+        }
+
+        .parent-topbar-brand span {
+            color: var(--primary);
+            font-size: 1.45rem;
+            font-weight: 900;
+            letter-spacing: 0;
+            line-height: 1;
+        }
+
+        .parent-search {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            min-width: min(360px, 100%);
+            height: 44px;
+            padding: 0 1rem;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            font-weight: 700;
+            flex-shrink: 1;
+        }
+
+        .parent-topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .parent-topbar-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            border: 0;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .parent-topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-left: 0.9rem;
+            border-left: 1px solid var(--border-dark);
+        }
+
+        .parent-topbar-avatar,
+        .parent-topbar-initials {
+            width: 46px;
+            height: 46px;
+            border-radius: 999px;
+            border: 2px solid var(--primary);
+            background: #ffffff;
+        }
+
+        .parent-topbar-avatar {
+            padding: 2px;
+            object-fit: cover;
+        }
+
+        .parent-topbar-initials {
+            color: var(--primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+        }
+
+        .parent-topbar-name {
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-weight: 900;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .parent-topbar-email {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
 
         /* Connection Block */
         .connection-grid {
@@ -599,6 +792,11 @@
             grid-template-columns: 1fr 1fr;
             gap: 3rem;
             align-items: center;
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04);
         }
         .connection-intro h3 { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 1rem; }
         .connection-intro p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
@@ -624,6 +822,195 @@
             transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
         }
         .btn-connect:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(5, 150, 105, 0.4); }
+
+        .parent-profile-account-card {
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
+        }
+
+        .parent-profile-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding-bottom: 1.15rem;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 1.35rem;
+        }
+
+        .parent-profile-card-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--text-main);
+            font-size: 1.08rem;
+            font-weight: 900;
+        }
+
+        .parent-account-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.2rem;
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 1.2rem;
+            padding: 1.25rem;
+        }
+
+        .parent-account-main {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+        }
+
+        .parent-account-avatar,
+        .parent-account-initials {
+            width: 76px;
+            height: 76px;
+            border-radius: 1rem;
+            border: 1px solid #bbf7d0;
+            background: #ecfdf5;
+            box-shadow: 0 12px 24px rgba(5, 150, 105, 0.12);
+        }
+
+        .parent-account-avatar {
+            object-fit: cover;
+        }
+
+        .parent-account-initials {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.55rem;
+            font-weight: 950;
+        }
+
+        .parent-account-name {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.45rem;
+            font-weight: 900;
+            line-height: 1.2;
+        }
+
+        .parent-account-email {
+            color: #475569;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-top: 0.15rem;
+        }
+
+        .parent-account-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .parent-meta-pill {
+            min-width: 142px;
+            border-radius: 1rem;
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            padding: 0.8rem 1rem;
+        }
+
+        .parent-meta-pill span {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .parent-meta-pill strong {
+            display: block;
+            color: var(--text-main);
+            font-size: 0.92rem;
+            font-weight: 900;
+            margin-top: 0.2rem;
+        }
+
+        .parent-security-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.25rem;
+            margin-top: 1.35rem;
+        }
+
+        .parent-security-card {
+            min-height: 220px;
+            background: #ffffff;
+            border: 1px solid var(--border-dark);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+
+        .parent-security-card h3 {
+            margin: 0 0 0.35rem 0;
+            color: var(--text-main);
+            font-size: 1.05rem;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .parent-security-card p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .parent-primary-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            width: fit-content;
+            min-height: 44px;
+            border: 0;
+            border-radius: 0.9rem;
+            background: var(--primary);
+            color: #ffffff;
+            padding: 0 1.25rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 12px 28px rgba(5, 150, 105, 0.18);
+        }
+
+        .parent-otp-switch {
+            width: 54px;
+            height: 30px;
+            border-radius: 999px;
+            background: #cbd5e1;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .parent-otp-switch::after {
+            content: "";
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            top: 3px;
+            left: 3px;
+            border-radius: 999px;
+            background: #ffffff;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+        }
 
         /* Student Grid */
         .student-grid {
@@ -694,6 +1081,95 @@
             .report-stats-grid { grid-template-columns: 1fr; }
         }
 
+        .parent-password-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 10002;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.58);
+            backdrop-filter: blur(4px);
+        }
+        .parent-password-modal-backdrop.active { display: flex; }
+        .parent-password-modal {
+            width: min(440px, 100%);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
+            animation: parentModalScaleUp 0.25s ease-out;
+        }
+        .parent-password-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.6rem;
+        }
+        .parent-password-modal-title {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--text-main);
+            font-size: 1.25rem;
+            font-weight: 900;
+        }
+        .parent-password-modal-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .parent-password-modal-close {
+            border: 0;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+            padding: 0.25rem;
+        }
+        .parent-password-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        .parent-password-form label {
+            display: block;
+            color: var(--text-main);
+            font-size: 0.88rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .parent-password-form .required { color: #ef4444; }
+        .parent-password-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 0.8rem;
+            margin-top: 0.35rem;
+        }
+        .parent-modal-secondary-btn {
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: var(--text-main);
+            border-radius: 0.9rem;
+            padding: 0.85rem 1.35rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        @keyframes parentModalScaleUp {
+            from { opacity: 0; transform: translateY(10px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
         /* Toast Styles (Premium Look) */
         #toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10001; display: flex; flex-direction: column-reverse; gap: 1rem; }
         .toast {
@@ -726,8 +1202,7 @@
 
         @media (max-width: 1024px) {
             .app-dashboard-container {
-                height: auto;
-                min-height: 100vh;
+                grid-template-columns: 1fr;
             }
 
             .dashboard-body {
@@ -736,9 +1211,8 @@
 
             .dashboard-sidebar {
                 width: 100%;
-                height: auto;
+                min-height: 0;
                 border-right: none;
-                border-bottom: 1px solid rgba(226, 232, 240, 0.9);
             }
 
             .sidebar-mascot-box {
@@ -746,8 +1220,20 @@
             }
 
             .connection-grid,
+            .parent-security-grid,
             .card-body-premium > div[style*="grid-template-columns: 1fr 1fr"] {
                 grid-template-columns: 1fr !important;
+            }
+
+            .parent-topbar,
+            .parent-account-summary {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .parent-topbar-actions,
+            .parent-account-meta {
+                justify-content: flex-start;
             }
         }
 
@@ -759,12 +1245,7 @@
             }
 
             .dashboard-unified-header {
-                height: auto;
-                min-height: 64px;
-                padding: 0.85rem 1rem;
-                justify-content: center;
-                flex-direction: column;
-                border-radius: 1rem 1rem 0 0;
+                display: none;
             }
 
             .unified-header-tab-title {
@@ -848,7 +1329,6 @@
         <div class="dashboard-unified-header">
             <span class="unified-header-tab-title" id="unified-header-title">
                 <%= "tab-profile".equals(activeTab) ? "Hồ sơ cá nhân" :
-                    "tab-security".equals(activeTab) ? "Bảo mật tài khoản" :
                     "tab-notifications".equals(activeTab) ? "Thông báo hệ thống" :
                     "tab-support".equals(activeTab) ? "Hỗ trợ hệ thống" :
                     "Theo dõi học sinh" %>
@@ -860,72 +1340,44 @@
         </div>
 
         <div class="dashboard-body">
-            <aside class="dashboard-sidebar">
-                <div class="sidebar-top-group">
-                    <ul class="sidebar-menu">
-                        <li>
-                            <a id="nav-tab-tracking" class="<%= "tab-tracking".equals(activeTab) ? "active" : "" %>" onclick="switchTab('tab-tracking')">
-                                <div class="menu-label-group">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                    <span>Theo dõi học sinh</span>
-                                </div>
-                                <span class="menu-indicator">&rarr;</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a id="nav-tab-profile" class="<%= "tab-profile".equals(activeTab) ? "active" : "" %>" onclick="switchTab('tab-profile')">
-                                <div class="menu-label-group">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                    <span><%= profileMenuLabel %></span>
-                                </div>
-                                <span class="menu-indicator">&rarr;</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a id="nav-tab-security" class="<%= "tab-security".equals(activeTab) ? "active" : "" %>" onclick="switchTab('tab-security')">
-                                <div class="menu-label-group">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                    <span>Bảo mật tài khoản</span>
-                                </div>
-                                <span class="menu-indicator">&rarr;</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a id="nav-tab-notifications" class="<%= "tab-notifications".equals(activeTab) ? "active" : "" %>" onclick="switchTab('tab-notifications')">
-                                <div class="menu-label-group">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                                    <span>Thông báo hệ thống</span>
-                                </div>
-                                <span class="menu-indicator">&rarr;</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a id="nav-tab-support" class="<%= "tab-support".equals(activeTab) ? "active" : "" %>" onclick="switchTab('tab-support')">
-                                <div class="menu-label-group">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                    <span>Hỗ trợ hệ thống</span>
-                                </div>
-                                <span class="menu-indicator">&rarr;</span>
-                            </a>
-                        </li>
-                    </ul>
-                    <div class="sidebar-mascot-box" aria-label="HIPZI mascot">
-                        <img class="sidebar-cute-mascot"
-                             src="${pageContext.request.contextPath}/assets/images/capybara-mascot-transparent.png"
-                             alt="HIPZI mascot">
-                    </div>
-                </div>
-            </aside>
 
             <main class="dashboard-content-wrapper">
+                <div class="parent-topbar">
+                    <div class="parent-search">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <span>Tìm kiếm tác vụ...</span>
+                    </div>
+                    <div class="parent-topbar-actions">
+                        <button type="button" class="parent-topbar-icon" title="Thông báo" onclick="switchTab('tab-notifications')">
+                            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        </button>
+                        <a class="parent-topbar-icon" href="${pageContext.request.contextPath}/logout" title="Đăng xuất">
+                            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        </a>
+                        <div class="parent-topbar-user">
+                            <% if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+                                <img class="parent-topbar-avatar" src="<%= user.getAvatarUrl() %>" alt="Avatar">
+                            <% } else { %>
+                                <span class="parent-topbar-initials"><%= initials %></span>
+                            <% } %>
+                            <div>
+                                <div class="parent-topbar-name"><%= user.getDisplayName() != null ? user.getDisplayName() : "Phụ huynh" %></div>
+                                <div class="parent-topbar-email"><%= user.getEmail() %></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             <!-- TAB: TRACKING (Theo dõi học sinh) -->
             <section id="tab-tracking" class="tab-pane <%= "tab-tracking".equals(activeTab) ? "active-pane" : "" %>">
                 <div class="premium-card">
                     <div class="card-header-gradient">
-                        <h2>Trung tâm Kết nối & Theo dõi</h2>
-                        <div style="background: rgba(255,255,255,0.15); padding: 0.4rem 0.8rem; border-radius: 1rem; font-size: 0.85rem; font-weight: 600;">
-                            <%= currentDateDisplay %>
+                        <div>
+                            <h2>Theo dõi học sinh</h2>
+                            <span class="tab-subtitle">Kết nối tài khoản học sinh để theo dõi tiến độ học tập và trạng thái học online.</span>
+                        </div>
+                        <div class="date-chip">
+                            Hôm nay, <%= currentDateDisplay %>
                         </div>
                     </div>
                     <div class="card-body-premium">
@@ -1011,74 +1463,94 @@
             <section id="tab-profile" class="tab-pane <%= "tab-profile".equals(activeTab) ? "active-pane" : "" %>">
                 <div class="premium-card">
                     <div class="card-header-gradient">
-                        <h2>Hồ sơ cá nhân</h2>
-                        <span>Phụ huynh HIPZI</span>
+                        <div>
+                            <h2>Hồ sơ cá nhân</h2>
+                            <span class="tab-subtitle">Quản lý thông tin tài khoản, mật khẩu đăng nhập và xác thực hai lớp.</span>
+                        </div>
+                        <div class="date-chip">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:0.4rem;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            Hôm nay, <%= currentDateDisplay %>
+                        </div>
                     </div>
                     <div class="card-body-premium">
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-                                <div>
-                                    <span class="info-label">Họ và tên</span>
-                                    <span class="info-value"><%= user.getDisplayName() %></span>
+                        <div class="parent-profile-account-card">
+                            <div class="parent-profile-card-header">
+                                <div class="parent-profile-card-title">
+                                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.4"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    <span>Chi tiết tài khoản</span>
+                                </div>
+                                <button type="button" class="parent-primary-btn" onclick="switchTab('tab-profile')">
+                                    Chỉnh sửa
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                </button>
+                            </div>
+                            <div class="parent-account-summary">
+                                <div class="parent-account-main">
+                                    <% if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+                                        <img class="parent-account-avatar" src="<%= user.getAvatarUrl() %>" alt="Avatar">
+                                    <% } else { %>
+                                        <span class="parent-account-initials"><%= initials %></span>
+                                    <% } %>
+                                    <div>
+                                        <h3 class="parent-account-name"><%= user.getDisplayName() != null ? user.getDisplayName() : "Phụ huynh HIPZI" %></h3>
+                                        <div class="parent-account-email"><%= user.getEmail() %></div>
+                                    </div>
+                                </div>
+                                <div class="parent-account-meta">
+                                    <div class="parent-meta-pill">
+                                        <span>Ngày tham gia</span>
+                                        <strong><%= joinDate %></strong>
+                                    </div>
+                                    <div class="parent-meta-pill">
+                                        <span>Vai trò</span>
+                                        <strong>Phụ huynh</strong>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="info-item">
-                                <div class="info-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                        </div>
+
+                        <div class="parent-security-grid">
+                            <div class="parent-security-card">
                                 <div>
-                                    <span class="info-label">Ngày tham gia</span>
-                                    <span class="info-value"><%= joinDate %></span>
+                                    <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start;">
+                                        <div>
+                                            <h3>Mật khẩu đăng nhập</h3>
+                                            <p>Cập nhật mật khẩu định kỳ để bảo mật tốt hơn.</p>
+                                        </div>
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.3"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    </div>
+                                </div>
+                                <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+                                    <span class="acc-status-tag active">Mật khẩu mạnh</span>
+                                    <button type="button" class="parent-primary-btn" onclick="openParentPasswordModal()">
+                                        Đổi mật khẩu
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                    </button>
                                 </div>
                             </div>
-                            <div class="info-item" style="grid-column: 1 / -1;">
-                                <div class="info-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+
+                            <div class="parent-security-card">
                                 <div>
-                                    <span class="info-label">Email tài khoản</span>
-                                    <span class="info-value"><%= user.getEmail() %></span>
+                                    <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start;">
+                                        <div>
+                                            <h3>Bảo mật 2 lớp (OTP)</h3>
+                                            <p>Tăng cường bảo vệ tài khoản khi đăng nhập ở thiết bị lạ.</p>
+                                        </div>
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.3"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-                                <div>
-                                    <span class="info-label">Trạng thái</span>
-                                    <span class="acc-status-tag active">Đang hoạt động</span>
+                                <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+                                    <div>
+                                        <strong style="display:block; color:var(--text-main); font-weight:900;">Mã OTP qua Email</strong>
+                                        <span style="color:var(--text-muted); font-size:0.86rem; font-weight:700;">Đang tắt</span>
+                                    </div>
+                                    <span class="parent-otp-switch" aria-hidden="true"></span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-
-            <!-- TAB: SECURITY (Bảo mật) -->
-            <section id="tab-security" class="tab-pane <%= "tab-security".equals(activeTab) ? "active-pane" : "" %>">
-                <div class="premium-card">
-                    <div class="card-header-gradient">
-                        <h2>Bảo mật tài khoản</h2>
-                        <span>Quản lý mật khẩu</span>
-                    </div>
-                    <div class="card-body-premium">
-                        <div style="max-width: 500px;">
-                            <form action="${pageContext.request.contextPath}/profile" method="POST" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                                <input type="hidden" name="action" value="changePassword">
-                                <div class="form-group-custom">
-                                    <label>Mật khẩu hiện tại</label>
-                                    <input type="password" name="currentPassword" class="input-premium" style="font-size: 1rem; color: var(--text-main);" required>
-                                </div>
-                                <div class="form-group-custom">
-                                    <label>Mật khẩu mới</label>
-                                    <input type="password" name="newPassword" class="input-premium" style="font-size: 1rem; color: var(--text-main);" required>
-                                </div>
-                                <div class="form-group-custom">
-                                    <label>Xác nhận mật khẩu mới</label>
-                                    <input type="password" name="confirmPassword" class="input-premium" style="font-size: 1rem; color: var(--text-main);" required>
-                                </div>
-                                <button type="submit" class="btn-connect">CẬP NHẬT MẬT KHẨU</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             <!-- TAB: NOTIFICATIONS (Thông báo hệ thống) -->
             <section id="tab-notifications" class="tab-pane <%= "tab-notifications".equals(activeTab) ? "active-pane" : "" %>">
                 <div class="premium-card">
@@ -1284,7 +1756,38 @@
             </div>
         </div>
     </div>
-
+    <div id="parent-password-modal" class="parent-password-modal-backdrop" onclick="closeParentPasswordModal(event)">
+        <div class="parent-password-modal" onclick="event.stopPropagation()">
+            <div class="parent-password-modal-header">
+                <div class="parent-password-modal-title">
+                    <span class="parent-password-modal-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </span>
+                    <span>Đổi mật khẩu</span>
+                </div>
+                <button type="button" class="parent-password-modal-close" onclick="closeParentPasswordModal()" aria-label="Đóng">&times;</button>
+            </div>
+            <form action="${pageContext.request.contextPath}/profile" method="POST" class="parent-password-form">
+                <input type="hidden" name="action" value="changePassword">
+                <div>
+                    <label>Mật khẩu hiện tại <span class="required">*</span></label>
+                    <input type="password" name="currentPassword" class="input-premium" placeholder="••••••••" required>
+                </div>
+                <div>
+                    <label>Mật khẩu mới <span class="required">*</span></label>
+                    <input type="password" name="newPassword" class="input-premium" placeholder="Mật khẩu ít nhất 6 ký tự" required>
+                </div>
+                <div>
+                    <label>Xác nhận mật khẩu mới <span class="required">*</span></label>
+                    <input type="password" name="confirmPassword" class="input-premium" placeholder="Nhập lại mật khẩu mới" required>
+                </div>
+                <div class="parent-password-actions">
+                    <button type="button" class="parent-modal-secondary-btn" onclick="closeParentPasswordModal()">Hủy bỏ</button>
+                    <button type="submit" class="parent-primary-btn">Cập nhật ngay</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <div id="toast-container"></div>
 
     <script>
@@ -1295,8 +1798,7 @@
         }
 
         function normalizeProfileTabId(tabValue) {
-            if (!tabValue) return '';
-            return tabValue.startsWith('tab-') ? tabValue : 'tab-' + tabValue;
+            return 'tab-tracking';
         }
 
         function updateProfileTabUrl(targetTabId, replace = false) {
@@ -1314,7 +1816,6 @@
         const TAB_TITLES = {
             'tab-tracking': 'Theo dõi học sinh',
             'tab-profile': 'Hồ sơ cá nhân',
-            'tab-security': 'Bảo mật tài khoản',
             'tab-notifications': 'Thông báo hệ thống',
             'tab-support': 'Hỗ trợ hệ thống',
         };
@@ -1324,6 +1825,17 @@
             const title = TAB_TITLES[tabId];
             if (!el || !title) return;
             el.textContent = title;
+        }
+
+        function openParentPasswordModal() {
+            const modal = document.getElementById('parent-password-modal');
+            if (modal) modal.classList.add('active');
+        }
+
+        function closeParentPasswordModal(event) {
+            if (event && event.target && event.currentTarget && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('parent-password-modal');
+            if (modal) modal.classList.remove('active');
         }
 
         function steadyProfileTabHeight(previousPane, targetPane) {
@@ -1616,3 +2128,5 @@
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
 </html>
+
+

@@ -9,6 +9,7 @@
 <%@page import="com.hipzi.model.SupportMessage"%>
 <%@page import="com.hipzi.model.SupportTicket"%>
 <%@page import="com.hipzi.model.StaffCourseTransaction"%>
+<%@page import="com.hipzi.model.StaffUserGrowthStats"%>
 <%@page import="com.hipzi.model.WithdrawalRequest"%>
 <%@page import="com.hipzi.service.NotificationService"%>
 <%@page import="com.hipzi.util.UserStatusWebSocket"%>
@@ -77,6 +78,35 @@
         if ("failed".equalsIgnoreCase(status) || "cancelled".equalsIgnoreCase(status) || "expired".equalsIgnoreCase(status)) return "background:#fef2f2; color:#dc2626;";
         return "background:#fff7ed; color:#c2410c;";
     }
+
+    private String staffUserGrowthJson(List<StaffUserGrowthStats.Point> points) {
+        StringBuilder json = new StringBuilder("[");
+        if (points != null) {
+            for (int i = 0; i < points.size(); i++) {
+                StaffUserGrowthStats.Point point = points.get(i);
+                if (i > 0) json.append(",");
+                json.append("{\"label\":\"")
+                        .append(jsEscape(point.getLabel()))
+                        .append("\",\"fullLabel\":\"")
+                        .append(jsEscape(point.getFullLabel()))
+                        .append("\",\"count\":")
+                        .append(point.getCount())
+                        .append(",\"countLabel\":\"")
+                        .append(jsEscape(point.getCountLabel()))
+                        .append("\"}");
+            }
+        }
+        json.append("]");
+        return json.toString();
+    }
+
+    private String jsEscape(String value) {
+        if (value == null) return "";
+        return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "");
+    }
 %>
 <html lang="vi">
 <head>
@@ -86,6 +116,7 @@
     <meta name="description" content="Khu vực làm việc và quản lý hàng đợi kiểm duyệt tài liệu, hồ sơ đăng ký giảng viên dành cho nhân viên HIPZI.">
     <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=5">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/staff-user-growth-chart.css?v=1">
     <style>
         /* ===== OVERRIDE NỀN TẢNG & GIAO DIỆN PREMIUM TƯƠNG TỰ BẢN THIẾT KẾ ===== */
         body {
@@ -535,8 +566,8 @@
             animation: none;
         }
 
-        body.staff-profile-page #tab-profile,
-        body.staff-profile-page #tab-security {
+        body.staff-profile-page #tab-overview,
+        body.staff-profile-page #tab-profile {
             gap: 2rem;
         }
 
@@ -1439,12 +1470,12 @@
             }
         }
 
-        body.staff-profile-page #tab-profile .metrics-row,
-        body.staff-profile-page #tab-profile .dashboard-grid-layout {
+        body.staff-profile-page #tab-overview .metrics-row,
+        body.staff-profile-page #tab-overview .dashboard-grid-layout {
             margin: 0;
         }
 
-        body.staff-profile-page #tab-security .premium-card {
+        body.staff-profile-page #tab-profile .premium-card {
             background: #ffffff;
             padding: 1.5rem;
             display: flex;
@@ -1453,22 +1484,22 @@
             box-sizing: border-box;
         }
 
-        body.staff-profile-page #tab-profile .premium-card {
+        body.staff-profile-page #tab-overview .premium-card {
             padding: 1.5rem;
         }
 
-        body.staff-profile-page #tab-security .security-password-card {
+        body.staff-profile-page #tab-profile .security-password-card {
             min-height: 188px;
             justify-content: space-between;
         }
 
-        body.staff-profile-page #tab-security .security-card-grid {
+        body.staff-profile-page #tab-profile .security-card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
         }
 
-        body.staff-profile-page #tab-security .security-card-grid .premium-card {
+        body.staff-profile-page #tab-profile .security-card-grid .premium-card {
             min-height: 188px;
             justify-content: space-between;
         }
@@ -2027,12 +2058,6 @@
             display: grid;
             grid-template-columns: 1.1fr 0.9fr;
             gap: 1.5rem;
-        }
-
-        @media (max-width: 900px) {
-            .dashboard-grid-layout {
-                grid-template-columns: 1fr;
-            }
         }
 
         .premium-card-header {
@@ -4102,6 +4127,12 @@
         int staffCourseCount = staffCourseCountObj instanceof Number ? ((Number) staffCourseCountObj).intValue() : 0;
         Object staffMaterialCountObj = request.getAttribute("staffMaterialCount");
         int staffMaterialCount = staffMaterialCountObj instanceof Number ? ((Number) staffMaterialCountObj).intValue() : 0;
+        StaffUserGrowthStats staffUserGrowthStats = (StaffUserGrowthStats) request.getAttribute("staffUserGrowthStats");
+        if (staffUserGrowthStats == null) {
+            staffUserGrowthStats = new StaffUserGrowthStats();
+        }
+        String staffWeeklyUserGrowthJson = staffUserGrowthJson(staffUserGrowthStats.getWeeklyPoints());
+        String staffMonthlyUserGrowthJson = staffUserGrowthJson(staffUserGrowthStats.getMonthlyPoints());
         String activeStaffTab = request.getParameter("tab");
         if (activeStaffTab == null || activeStaffTab.trim().isEmpty()) {
             activeStaffTab = "tab-teacher-approval";
@@ -4110,14 +4141,17 @@
             if (!activeStaffTab.startsWith("tab-")) {
                 activeStaffTab = "tab-" + activeStaffTab;
             }
+            if ("tab-security".equals(activeStaffTab)) {
+                activeStaffTab = "tab-profile";
+            }
             if (!activeStaffTab.equals("tab-teacher-approval") &&
                 !activeStaffTab.equals("tab-manage-teachers") &&
                 !activeStaffTab.equals("tab-manage-classes") &&
                 !activeStaffTab.equals("tab-manage-courses") &&
                 !activeStaffTab.equals("tab-transaction-management") &&
+                !activeStaffTab.equals("tab-overview") &&
                 !activeStaffTab.equals("tab-profile") &&
                 !activeStaffTab.equals("tab-edit") &&
-                !activeStaffTab.equals("tab-security") &&
                 !activeStaffTab.equals("tab-materials") &&
                 !activeStaffTab.equals("tab-practice") &&
                 !activeStaffTab.equals("tab-notifications") &&
@@ -4197,15 +4231,15 @@
             <div class="sidebar-section-label">Tổng quan</div>
             <ul class="sidebar-menu">
                 <li>
-                    <a id="nav-tab-profile" class="<%= ("tab-profile".equals(activeStaffTab) || "tab-edit".equals(activeStaffTab)) ? "active" : "" %>" onclick="switchTab('tab-profile')">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <span>Hồ sơ cá nhân</span>
+                    <a id="nav-tab-overview" class="<%= "tab-overview".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-overview')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                        <span>Tổng quan</span>
                     </a>
                 </li>
                 <li>
-                    <a id="nav-tab-security" class="<%= "tab-security".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-security')">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        <span>Bảo mật</span>
+                    <a id="nav-tab-profile" class="<%= ("tab-profile".equals(activeStaffTab) || "tab-edit".equals(activeStaffTab)) ? "active" : "" %>" onclick="switchTab('tab-profile')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span>Hồ sơ cá nhân</span>
                     </a>
                 </li>
                 <li>
@@ -5117,11 +5151,11 @@
                 </div>
             </section>
 
-            <section id="tab-profile" class="tab-pane <%= "tab-profile".equals(activeStaffTab) ? "active-pane" : "" %>">
+            <section id="tab-overview" class="tab-pane <%= "tab-overview".equals(activeStaffTab) ? "active-pane" : "" %>">
                 <div class="tab-pane-header">
                     <div class="tab-pane-header-left">
-                        <h1>Hồ sơ cá nhân</h1>
-                        <p>Xem và quản lý thông tin tài khoản nhân viên của bạn trên HIPZI.</p>
+                        <h1>Tổng quan</h1>
+                        <p>Theo dõi nhanh các chỉ số vận hành chính của hệ thống HIPZI.</p>
                     </div>
                     <div class="tab-pane-header-right">
                         <div class="date-badge">
@@ -5197,8 +5231,79 @@
                     </div>
                 </div>
 
-                <div class="dashboard-grid-layout">
-                    <div class="premium-card" style="grid-column: 1 / -1;">
+                <div class="overview-chart-card" style="margin-top: 1.5rem;">
+                    <div class="overview-chart-head">
+                        <div class="overview-chart-title-block">
+                            <h2 class="overview-chart-title">Tăng trưởng người dùng</h2>
+                            <div class="overview-chart-summary" aria-label="Tổng quan tăng trưởng người dùng">
+                                <span class="overview-summary-pill taught">
+                                    <strong id="staffUserGrowthTotal"><%= staffUserGrowthStats.getWeeklyTotal() %></strong>
+                                    <span>người dùng mới</span>
+                                </span>
+                                <span class="overview-summary-pill trend">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: -0.2rem;">
+                                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                        <polyline points="17 6 23 6 23 12"></polyline>
+                                    </svg>
+                                    <strong id="staffUserGrowthTrend"><%= staffUserGrowthStats.getTrendPercentLabel() %></strong>
+                                    <span>so với tuần trước</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="overview-period-switch" id="staffUserGrowthPeriodSwitch" data-active="week" aria-label="Chọn khoảng thời gian biểu đồ người dùng">
+                            <button type="button" class="overview-period-btn is-active" data-period="week" aria-pressed="true">Tuần</button>
+                            <button type="button" class="overview-period-btn" data-period="month" aria-pressed="false">Tháng</button>
+                        </div>
+                    </div>
+
+                    <div class="overview-line-wrap" id="staffUserGrowthLineWrap">
+                        <svg id="staffUserGrowthChart" class="overview-line-chart" viewBox="0 0 640 214" role="img" aria-label="Biểu đồ tăng trưởng người dùng">
+                            <defs>
+                                <linearGradient id="staffUserGrowthFill" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#059669" stop-opacity="0.18" />
+                                    <stop offset="100%" stop-color="#059669" stop-opacity="0" />
+                                </linearGradient>
+                            </defs>
+                            <line x1="52" y1="24" x2="610" y2="24" stroke="#e2e8f0" stroke-width="1" />
+                            <line x1="52" y1="70" x2="610" y2="70" stroke="#e2e8f0" stroke-width="1" />
+                            <line x1="52" y1="116" x2="610" y2="116" stroke="#e2e8f0" stroke-width="1" />
+                            <line x1="52" y1="162" x2="610" y2="162" stroke="#e2e8f0" stroke-width="1" />
+
+                            <text id="staffUserGrowthY4" x="4" y="28">3</text>
+                            <text id="staffUserGrowthY3" x="4" y="74">2</text>
+                            <text id="staffUserGrowthY2" x="4" y="120">1</text>
+                            <text id="staffUserGrowthY1" x="4" y="166">0</text>
+
+                            <path id="staffUserGrowthArea" d="M64 162 L610 162 L610 162 L64 162 Z" fill="url(#staffUserGrowthFill)" />
+                            <path id="staffUserGrowthLine" d="M64 162 L610 162" fill="none" stroke="#059669" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+                            <line id="staffUserGrowthGuideLine" x1="610" y1="34" x2="610" y2="174" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 6" />
+                            <circle id="staffUserGrowthDot" cx="610" cy="162" r="5" fill="#059669" stroke="#ffffff" stroke-width="3" />
+
+                            <text id="staffUserGrowthTick1" x="58" y="202"></text>
+                            <text id="staffUserGrowthTick2" x="150" y="202"></text>
+                            <text id="staffUserGrowthTick3" x="240" y="202"></text>
+                            <text id="staffUserGrowthTick4" x="332" y="202"></text>
+                            <text id="staffUserGrowthTick5" x="424" y="202"></text>
+                            <text id="staffUserGrowthTick6" x="516" y="202"></text>
+                            <text id="staffUserGrowthTick7" x="586" y="202"></text>
+                        </svg>
+
+                        <div class="overview-line-tooltip" id="staffUserGrowthTooltip">
+                            <strong id="staffUserGrowthTooltipDate"></strong>
+                            <div class="overview-tooltip-row">
+                                <span class="overview-tooltip-label"><span class="overview-tooltip-dot" style="background:#059669;"></span>Đăng ký mới</span>
+                                <span id="staffUserGrowthTooltipValue">0 tài khoản</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overview-chart-legend">
+                        <span class="overview-legend-item"><span class="overview-legend-dot" style="background:#059669;"></span>Người dùng mới</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid-layout" style="display:none;">
+                    <div class="premium-card" style="grid-column: 1 / -1; display:none;">
                         <div class="premium-card-header">
                             <span class="premium-card-title">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -5296,11 +5401,11 @@
             <!-- ========================================== -->
             <!-- TAB 3: BẢO MẬT VÀ MẬT KHẨU                 -->
             <!-- ========================================== -->
-            <section id="tab-security" class="tab-pane <%= "tab-security".equals(activeStaffTab) ? "active-pane" : "" %>">
+            <section id="tab-profile" class="tab-pane <%= "tab-profile".equals(activeStaffTab) ? "active-pane" : "" %>">
                 <div class="tab-pane-header">
                     <div class="tab-pane-header-left">
-                        <h1>Bảo mật tài khoản</h1>
-                        <p>Quản lý mật khẩu đăng nhập, bảo mật hai lớp và phiên đăng nhập.</p>
+                        <h1>Hồ sơ cá nhân</h1>
+                        <p>Quản lý thông tin tài khoản, mật khẩu đăng nhập và xác thực hai lớp.</p>
                     </div>
                     <div class="tab-pane-header-right">
                         <div class="date-badge">
@@ -5310,36 +5415,73 @@
                     </div>
                 </div>
 
-                <div class="premium-card security-password-card">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem;">
-                        <div>
-                            <span style="font-weight: 800; font-size: 1.15rem; color: var(--text-main); letter-spacing: 0.5px; text-transform: uppercase; display: block;">Mật khẩu đăng nhập</span>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.35rem 0 0 0;">Cập nhật mật khẩu định kỳ để bảo mật tốt hơn.</p>
+                <div class="premium-card" style="grid-column: 1 / -1;">
+                    <div class="premium-card-header">
+                        <span class="premium-card-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Chi tiết tài khoản
+                        </span>
+                        <div class="account-header-actions">
+                            <button type="button" onclick="switchTab('tab-edit')" class="btn-premium profile-edit-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                <span>Chỉnh sửa</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </button>
                         </div>
-                        <button type="button" onclick="document.getElementById('pwd-modal-overlay').style.display='flex';" class="btn-premium primary" style="background: #059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
-                            <span>Đổi mật khẩu</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                        </button>
                     </div>
 
-                    <div style="padding: 1rem 0 0 0; border-top: 1px solid var(--border-light); display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-                        <div style="display: flex; align-items: center; gap: 0.4rem; color: #10b981; font-weight: 700; font-size: 0.85rem;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            <span>Mật khẩu mạnh</span>
+                    <div class="account-summary-panel">
+                        <div class="account-summary-main">
+                            <div class="account-avatar-wrap">
+                                <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
+                                    <img src="<%= user.getAvatarUrl() %>" class="account-avatar-img" alt="Avatar">
+                                <% } else { %>
+                                    <div class="account-avatar-placeholder"><%= initials %></div>
+                                <% } %>
+                                <button type="button" class="avatar-camera-btn" title="Cập nhật ảnh đại diện" onclick="document.getElementById('staffAvatarFile').click();">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                </button>
+                            </div>
+                            <div class="account-identity">
+                                <h3 class="account-name"><%= user != null ? user.getDisplayName() : "Nhân viên HIPZI" %></h3>
+                                <span class="account-email" title="<%= user != null ? user.getEmail() : "" %>"><%= user != null ? user.getEmail() : "staff@hipzi.vn" %></span>
+                            </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 0.4rem; color: <%= (user != null && user.isTwoFactorEnabled()) ? "#10b981" : "var(--text-muted)" %>; font-weight: 700; font-size: 0.85rem;">
-                            <% if (user != null && user.isTwoFactorEnabled()) { %>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                                <span>Xác thực 2 lớp: Đang bật</span>
-                            <% } else { %>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                <span>Xác thực 2 lớp: Tắt</span>
-                            <% } %>
+                        <div class="account-side-meta">
+                            <div class="account-meta-pill">
+                                <span class="account-meta-label">Ngày tham gia</span>
+                                <span class="account-meta-value"><%= joinDate %></span>
+                            </div>
+                            <div class="account-meta-pill">
+                                <span class="account-meta-label">Vai trò</span>
+                                <span class="account-meta-value">
+                                    <span class="role-tag staff">Nhân viên</span>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="security-card-grid">
+                    <div class="premium-card security-password-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem;">
+                            <div>
+                                <span style="font-weight: 800; font-size: 1.15rem; color: var(--text-main); letter-spacing: 0.5px; text-transform: uppercase; display: block;">Mật khẩu đăng nhập</span>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.35rem 0 0 0;">Cập nhật mật khẩu định kỳ để bảo mật tốt hơn.</p>
+                            </div>
+                        </div>
+
+                        <div style="padding: 1rem 0 0 0; border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 0.4rem; color: #10b981; font-weight: 700; font-size: 0.85rem;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                <span>Mật khẩu mạnh</span>
+                            </div>
+                            <button type="button" onclick="document.getElementById('pwd-modal-overlay').style.display='flex';" class="btn-premium primary" style="background: #059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
+                                <span>Đổi mật khẩu</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="premium-card">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Bảo mật 2 lớp (OTP)</span>
@@ -5359,17 +5501,6 @@
                             <div id="otp-toggle-btn" onclick="document.getElementById('toggle2faForm').submit();" style="width: 44px; height: 24px; background: <%= is2fa ? "#10b981" : "#cbd5e1" %>; border-radius: 12px; padding: 2px; cursor: pointer; transition: background 0.3s ease; display: flex; align-items: center;">
                                 <div class="toggle-circle" style="width: 20px; height: 20px; background: #ffffff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); transform: translateX(<%= is2fa ? "20px" : "0" %>);"></div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="premium-card">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Thiết bị hiện tại</span>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                        </div>
-                        <div>
-                            <span style="font-weight: 800; font-size: 1.1rem; color: var(--text-main); display: block;">Windows - Chrome (Vietnam)</span>
-                            <span style="font-size: 0.75rem; color: #10b981; font-weight: 600; display: inline-block; margin-top: 0.25rem; background: #ecfdf5; padding: 0.15rem 0.5rem; border-radius: 0.25rem;">Phiên truy cập an toàn</span>
                         </div>
                     </div>
                 </div>
@@ -5860,6 +5991,13 @@
     
     <!-- ===== JAVASCRIPT XỬ LÝ CHUYỂN TAB MƯỢT MÀ ===== -->
     <script>
+        window.HipziStaffUserGrowthData = {
+            week: <%= staffWeeklyUserGrowthJson %>,
+            month: <%= staffMonthlyUserGrowthJson %>
+        };
+    </script>
+    <script src="${pageContext.request.contextPath}/assets/js/staff-user-growth-chart.js?v=1"></script>
+    <script>
         function showToast(message, type = 'success') {
             let container = document.getElementById('custom-toast-container');
             if (!container) {
@@ -5924,7 +6062,8 @@
 
         function normalizeProfileTabId(tabValue) {
             if (!tabValue) return '';
-            return tabValue.startsWith('tab-') ? tabValue : 'tab-' + tabValue;
+            const normalized = tabValue.startsWith('tab-') ? tabValue : 'tab-' + tabValue;
+            return normalized === 'tab-security' ? 'tab-profile' : normalized;
         }
 
         function updateProfileTabUrl(targetTabId, replace = false) {
@@ -5950,9 +6089,9 @@
             'tab-manage-classes': 'Quản lý lớp học',
             'tab-manage-courses': 'Quản lý khóa học',
             'tab-transaction-management': 'Quản lý giao dịch',
+            'tab-overview': 'Tổng quan',
             'tab-profile': 'Hồ sơ cá nhân',
             'tab-edit': 'Cập nhật thông tin',
-            'tab-security': 'Bảo mật',
             'tab-materials': 'Hàng đợi duyệt tài liệu',
             'tab-practice': 'Đăng ký giảng viên',
             'tab-notifications': 'Thông báo hệ thống',
@@ -6117,6 +6256,7 @@
             setupManagementFilterDropdowns();
             setupTeacherApprovalFilters();
             setupSupportTicketFilters();
+            initStaffUserGrowthChart();
             const urlParams = new URLSearchParams(window.location.search);
             const tabParam = urlParams.get('tab');
             if (tabParam) {
