@@ -117,6 +117,40 @@ public class GoogleDriveOAuthService {
         }
     }
 
+    public String createReaderPermission(String accessToken, String driveId, String emailAddress)
+            throws IOException, InterruptedException {
+        if (isBlank(accessToken) || isBlank(driveId) || isBlank(emailAddress)) {
+            throw new IllegalArgumentException("Thieu thong tin cap quyen Google Drive.");
+        }
+
+        String url = DRIVE_FILE_URL + encodePath(driveId)
+                + "/permissions?sendNotificationEmail=true&fields=id";
+        String body = "{"
+                + "\"type\":\"user\","
+                + "\"role\":\"reader\","
+                + "\"emailAddress\":" + jsonString(emailAddress)
+                + "}";
+
+        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                .timeout(Duration.ofSeconds(25))
+                .header("Authorization", "Bearer " + accessToken)
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new IllegalStateException("Khong cap duoc quyen Google Drive. HTTP "
+                    + response.statusCode() + " - " + response.body());
+        }
+
+        Map<String, Object> json = SimpleJson.asObject(SimpleJson.parse(response.body()));
+        String permissionId = SimpleJson.asString(json, "id");
+        if (isBlank(permissionId)) {
+            throw new IllegalStateException("Google Drive khong tra ve permission id.");
+        }
+        return permissionId;
+    }
+
     public boolean revokeTeacher(String teacherId) {
         return accountDao.revoke(teacherId);
     }
@@ -173,6 +207,19 @@ public class GoogleDriveOAuthService {
 
     private String encodePath(String value) {
         return encode(value).replace("+", "%20");
+    }
+
+    private String jsonString(String value) {
+        if (value == null) {
+            return "null";
+        }
+        return "\"" + value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t")
+                + "\"";
     }
 
     private long asLong(Object value, long fallback) {

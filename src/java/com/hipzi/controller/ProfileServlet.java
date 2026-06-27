@@ -34,6 +34,7 @@ import com.hipzi.dao.RepositoryMaterialDao;
 import com.hipzi.dao.SupportTicketDao;
 import com.hipzi.dao.TeacherApplicationDao;
 import com.hipzi.dao.TeacherGoogleAccountDao;
+import com.hipzi.dao.TeacherTransactionDao;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -65,6 +66,7 @@ public class ProfileServlet extends HttpServlet {
     private final AdminUserDao adminUserDao = new AdminUserDao();
     private final TeacherApplicationDao teacherApplicationDao = new TeacherApplicationDao();
     private final TeacherGoogleAccountDao teacherGoogleAccountDao = new TeacherGoogleAccountDao();
+    private final TeacherTransactionDao teacherTransactionDao = new TeacherTransactionDao();
     private final ClassroomDao classroomDao = new ClassroomDao();
     private final CourseDao courseDao = new CourseDao();
     private final RepositoryMaterialDao repositoryMaterialDao = new RepositoryMaterialDao();
@@ -172,6 +174,7 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("teacherCourses", courseDao.findByTeacherId(user.getId()));
             request.setAttribute("teacherMaterialCount", repositoryMaterialDao.countByUploaderId(user.getId()));
             request.setAttribute("teacherGoogleAccount", teacherGoogleAccountDao.findActiveByTeacherId(user.getId()));
+            request.setAttribute("teacherTransactions", teacherTransactionDao.findByTeacherId(user.getId()));
             loadUserSupportData(request, user);
         } else if ("/WEB-INF/views/staff-profile.jsp".equals(targetJsp)) {
             request.setAttribute("staffTotalUsers", adminStatsDao.getSystemOverview().getTotalUsers());

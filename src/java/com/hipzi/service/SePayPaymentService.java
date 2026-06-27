@@ -11,9 +11,11 @@ import jakarta.servlet.http.HttpServletRequest;
 public class SePayPaymentService {
     private static final Pattern ORDER_CODE_PATTERN = Pattern.compile("\\b(?:HIPZI\\d{6,8}|HZ\\d{16})\\b", Pattern.CASE_INSENSITIVE);
     private final CoursePaymentDao paymentDao;
+    private final CourseAccessGrantService accessGrantService;
 
     public SePayPaymentService() {
         this.paymentDao = new CoursePaymentDao();
+        this.accessGrantService = new CourseAccessGrantService();
     }
 
     public PaymentProcessResult handleWebhook(String rawPayload, HttpServletRequest request) {
@@ -35,7 +37,11 @@ public class SePayPaymentService {
             orderCode = extractOrderCode(rawPayload);
         }
 
-        return paymentDao.processSePayPayment(orderCode, amount, reference, content, providerEventId, rawPayload);
+        PaymentProcessResult result = paymentDao.processSePayPayment(orderCode, amount, reference, content, providerEventId, rawPayload);
+        if (result.isSuccess() && "paid".equalsIgnoreCase(result.getStatus())) {
+            accessGrantService.processOrderAccessGrants(result.getOrderCode(), request.getServletContext());
+        }
+        return result;
     }
 
     private boolean isAuthorized(HttpServletRequest request) {

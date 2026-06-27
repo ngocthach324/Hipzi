@@ -2,6 +2,7 @@
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.CourseOrder"%>
 <%@page import="com.hipzi.model.CourseOrderItem"%>
+<%@page import="com.hipzi.model.CourseAccessSummary"%>
 <%@page import="java.text.SimpleDateFormat"%>
 <%!
     private String h(String value) {
@@ -25,8 +26,26 @@
     String bankLabel = (String) request.getAttribute("bankLabel");
     String bankAccountName = (String) request.getAttribute("bankAccountName");
     String bankAccountNo = (String) request.getAttribute("bankAccountNo");
+    CourseAccessSummary accessSummary = (CourseAccessSummary) request.getAttribute("accessSummary");
     SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm dd/MM/yyyy");
     String expiresLabel = order.getExpiresAt() != null ? dateFormat.format(order.getExpiresAt()) : "";
+    String accessNoticeClass = "pending";
+    String accessNoticeMessage = "Sau khi chuyển khoản đúng số tiền và nội dung, SePay sẽ gửi webhook về HIPZI để kích hoạt khóa học.";
+    if (order.isPaid()) {
+        if (accessSummary != null && accessSummary.isAllGranted()) {
+            accessNoticeClass = "success";
+            String email = accessSummary.getStudentEmail() != null && !accessSummary.getStudentEmail().isEmpty()
+                    ? accessSummary.getStudentEmail()
+                    : "của bạn";
+            accessNoticeMessage = "Khóa học đã được gửi qua email " + email + ". Vui lòng kiểm tra Google Drive hoặc hộp thư của bạn.";
+        } else if (accessSummary != null && accessSummary.hasFailure()) {
+            accessNoticeClass = "failed";
+            accessNoticeMessage = "Thanh toán đã được ghi nhận, nhưng HIPZI chưa thể tự động cấp quyền Google Drive. Bộ phận hỗ trợ hoặc giáo viên sẽ xử lý lại cho bạn.";
+        } else {
+            accessNoticeClass = "success";
+            accessNoticeMessage = "Thanh toán thành công. HIPZI đang cấp quyền truy cập khóa học qua email của bạn, vui lòng kiểm tra lại sau ít phút.";
+        }
+    }
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -241,6 +260,21 @@
             font-weight: 650;
             line-height: 1.55;
         }
+        .access-note.success {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+            color: #065f46;
+        }
+        .access-note.failed {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+        .access-note.pending {
+            background: #fff7ed;
+            border-color: #fed7aa;
+            color: #9a3412;
+        }
         .actions {
             display: grid;
             gap: .75rem;
@@ -350,8 +384,8 @@
                                 <div class="pay-label">Tài khoản nhận</div>
                                 <div class="pay-value"><%= h(bankLabel) %> - <%= h(bankAccountName) %></div>
                             </div>
-                            <div class="helper-note">
-                                Sau khi chuyển khoản đúng số tiền và nội dung, SePay sẽ gửi webhook về HIPZI để kích hoạt khóa học. Nếu cần chuyển thủ công, hãy dùng STK <%= h(bankAccountNo) %> và giữ nguyên nội dung đơn.
+                            <div class="helper-note access-note <%= h(accessNoticeClass) %>" id="accessNotice">
+                                <%= h(accessNoticeMessage) %>
                             </div>
                         </div>
                     </div>
@@ -419,15 +453,33 @@
                 if (data.paid) {
                     status.textContent = 'Đã thanh toán';
                     status.classList.add('paid');
+                    updateAccessNotice(data.accessStatus, data.accessMessage);
                     showCheckoutToast('Thanh toán đã được ghi nhận');
                 } else {
                     status.textContent = 'Chờ thanh toán';
                     status.classList.remove('paid');
+                    updateAccessNotice('waiting_payment', data.accessMessage);
                     showCheckoutToast('Đơn hàng vẫn đang chờ thanh toán');
                 }
             } catch (err) {
                 console.error(err);
                 showCheckoutToast('Lỗi kiểm tra trạng thái', true);
+            }
+        }
+
+        function updateAccessNotice(accessStatus, message) {
+            const notice = document.getElementById('accessNotice');
+            if (!notice) return;
+            notice.classList.remove('success', 'failed', 'pending');
+            if (accessStatus === 'granted' || accessStatus === 'pending_access') {
+                notice.classList.add('success');
+            } else if (accessStatus === 'failed') {
+                notice.classList.add('failed');
+            } else {
+                notice.classList.add('pending');
+            }
+            if (message) {
+                notice.textContent = message;
             }
         }
 

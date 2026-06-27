@@ -7,6 +7,7 @@
 <%@page import="com.hipzi.model.Notification"%>
 <%@page import="com.hipzi.model.SupportMessage"%>
 <%@page import="com.hipzi.model.SupportTicket"%>
+<%@page import="com.hipzi.model.TeacherTransaction"%>
 <%@page import="com.hipzi.service.NotificationService"%>
 <%@page import="java.util.List"%>
 <%@page import="java.text.SimpleDateFormat"%>
@@ -4847,6 +4848,42 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <%
+                                    List<TeacherTransaction> teacherTransactions = (List<TeacherTransaction>) request.getAttribute("teacherTransactions");
+                                    SimpleDateFormat transactionDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                                    if (teacherTransactions == null || teacherTransactions.isEmpty()) {
+                                %>
+                                <tr>
+                                    <td colspan="5" style="padding: 2rem 1.5rem; text-align: center; color: var(--text-muted); font-weight: 700;">
+                                        Chưa có giao dịch phát sinh từ khóa học.
+                                    </td>
+                                </tr>
+                                <%
+                                    } else {
+                                        for (int i = 0; i < teacherTransactions.size(); i++) {
+                                            TeacherTransaction tx = teacherTransactions.get(i);
+                                            boolean lastRow = i == teacherTransactions.size() - 1;
+                                            boolean failedStatus = tx.isFailedStatus();
+                                            boolean successStatus = tx.isSuccessStatus();
+                                            String amountColor = tx.isCredit() ? "#059669" : "#ef4444";
+                                            String statusBg = failedStatus ? "#fef2f2" : (successStatus ? "#ecfdf5" : "#fff7ed");
+                                            String statusColor = failedStatus ? "#ef4444" : (successStatus ? "#059669" : "#c2410c");
+                                            String dateLabel = tx.getTransactionAt() != null ? transactionDateFormat.format(tx.getTransactionAt()) : "Chưa cập nhật";
+                                %>
+                                <tr style="border-bottom: <%= lastRow ? "none" : "1px solid var(--border-light)" %>;">
+                                    <td style="padding: 1.15rem 1.5rem; font-weight: 700; color: var(--text-main);"><%= h(tx.getTransactionCode()) %></td>
+                                    <td style="padding: 1.15rem 1.5rem; color: var(--text-muted);"><%= h(dateLabel) %></td>
+                                    <td style="padding: 1.15rem 1.5rem; color: var(--text-main); font-weight: 500;"><%= h(tx.getDescription()) %></td>
+                                    <td style="padding: 1.15rem 1.5rem; text-align: right; font-weight: 800; color: <%= amountColor %>;"><%= h(tx.getAmountLabel()) %></td>
+                                    <td style="padding: 1.15rem 1.5rem; text-align: center;">
+                                        <span style="display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; min-width: 86px; background: <%= statusBg %>; color: <%= statusColor %>; font-weight: 700; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 1rem;"><%= h(tx.getStatusLabel()) %></span>
+                                    </td>
+                                </tr>
+                                <%
+                                        }
+                                    }
+                                %>
+                                <% if (false) { %>
                                 <tr style="border-bottom: 1px solid var(--border-light);">
                                     <td style="padding: 1.15rem 1.5rem; font-weight: 700; color: var(--text-main);">TXN0892</td>
                                     <td style="padding: 1.15rem 1.5rem; color: var(--text-muted);">15/06/2026 14:30</td>
@@ -4892,6 +4929,7 @@
                                         <span style="display: inline-block; background: #fef2f2; color: #ef4444; font-weight: 700; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 1rem; cursor: help;" title="Số tài khoản ngân hàng thụ hưởng không hợp lệ hoặc bị từ chối bởi ngân hàng liên kết.">Thất bại</span>
                                     </td>
                                 </tr>
+                                <% } %>
                             </tbody>
                         </table>
                     </div>
