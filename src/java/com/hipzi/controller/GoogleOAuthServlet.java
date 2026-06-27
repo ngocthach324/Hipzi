@@ -185,12 +185,17 @@ public class GoogleOAuthServlet extends HttpServlet {
 
     private String callbackUri(HttpServletRequest request) {
         String configured = config("GOOGLE_REDIRECT_URI");
-        if (!isBlank(configured)) {
+        if (shouldUseConfiguredCallback(request, configured)) {
             return configured;
         }
 
         String scheme = firstNonBlank(request.getHeader("X-Forwarded-Proto"), request.getScheme());
-        String host = firstNonBlank(request.getHeader("X-Forwarded-Host"), request.getServerName());
+        String forwardedHost = request.getHeader("X-Forwarded-Host");
+        if (!isBlank(forwardedHost)) {
+            return scheme + "://" + forwardedHost + request.getContextPath() + "/auth/google/callback";
+        }
+
+        String host = request.getServerName();
         if (host.contains(":")) {
             return scheme + "://" + host + request.getContextPath() + "/auth/google/callback";
         }
@@ -200,6 +205,32 @@ public class GoogleOAuthServlet extends HttpServlet {
                 || ("https".equalsIgnoreCase(scheme) && port == 443);
         String portPart = defaultPort ? "" : ":" + port;
         return scheme + "://" + host + portPart + request.getContextPath() + "/auth/google/callback";
+    }
+
+    private boolean shouldUseConfiguredCallback(HttpServletRequest request, String configured) {
+        if (isBlank(configured)) {
+            return false;
+        }
+        try {
+            URI configuredUri = URI.create(configured);
+            String configuredHost = configuredUri.getHost();
+            String requestHost = firstNonBlank(request.getHeader("X-Forwarded-Host"), request.getServerName());
+            if (requestHost != null && requestHost.contains(":")) {
+                requestHost = requestHost.substring(0, requestHost.indexOf(':'));
+            }
+            if (isLocalHost(configuredHost) && !isLocalHost(requestHost)) {
+                return false;
+            }
+        } catch (Exception ignored) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isLocalHost(String host) {
+        return "localhost".equalsIgnoreCase(host)
+                || "127.0.0.1".equals(host)
+                || "::1".equals(host);
     }
 
     private String config(String name) {
