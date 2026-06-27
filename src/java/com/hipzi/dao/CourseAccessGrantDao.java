@@ -20,11 +20,13 @@ public class CourseAccessGrantDao {
         }
 
         String sql = "SELECT g.id AS grant_id, g.enrollment_id, g.course_id, g.student_id, g.student_email, "
-                + "c.title AS course_title, c.teacher_id, c.google_drive_file_id, c.google_drive_folder_id, c.require_drive_grant "
+                + "c.title AS course_title, c.teacher_id, c.google_drive_file_id, c.google_drive_folder_id, c.require_drive_grant, "
+                + "tga.scope AS teacher_google_scope "
                 + "FROM course_access_grants g "
                 + "JOIN course_order_items oi ON oi.course_id = g.course_id "
                 + "JOIN course_orders o ON o.id = oi.order_id AND o.student_id = g.student_id "
                 + "JOIN courses c ON c.id = g.course_id "
+                + "LEFT JOIN teacher_google_accounts tga ON tga.teacher_id = c.teacher_id AND tga.revoked_at IS NULL "
                 + "WHERE o.order_code = ? "
                 + "AND o.status = 'paid' "
                 + "AND g.status IN ('pending', 'failed') "
@@ -45,6 +47,7 @@ public class CourseAccessGrantDao {
                     job.setTeacherId(rs.getString("teacher_id"));
                     job.setGoogleDriveFileId(rs.getString("google_drive_file_id"));
                     job.setGoogleDriveFolderId(rs.getString("google_drive_folder_id"));
+                    job.setTeacherGoogleScope(rs.getString("teacher_google_scope"));
                     job.setRequireDriveGrant(rs.getBoolean("require_drive_grant"));
                     jobs.add(job);
                 }

@@ -18,7 +18,7 @@ import java.time.Instant;
 import java.util.Map;
 
 public class GoogleDriveOAuthService {
-    public static final String DRIVE_SCOPE = "openid email profile https://www.googleapis.com/auth/drive.file";
+    public static final String DRIVE_SCOPE = "openid email profile https://www.googleapis.com/auth/drive";
 
     private static final String GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
     private static final String GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";

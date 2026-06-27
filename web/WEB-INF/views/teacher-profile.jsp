@@ -8,6 +8,7 @@
 <%@page import="com.hipzi.model.SupportMessage"%>
 <%@page import="com.hipzi.model.SupportTicket"%>
 <%@page import="com.hipzi.model.TeacherTransaction"%>
+<%@page import="com.hipzi.model.TeacherGoogleAccount"%>
 <%@page import="com.hipzi.service.NotificationService"%>
 <%@page import="java.util.List"%>
 <%@page import="java.text.SimpleDateFormat"%>
@@ -4428,7 +4429,7 @@
                         <div class="form-group-premium" id="picker-section" style="grid-column: 1 / -1;">
                             <label>Nội dung khóa học trên Google Drive <span style="color:#ef4444;">*</span></label>
                             
-                            <% Object teacherGoogleAccount = request.getAttribute("teacherGoogleAccount");
+                            <% TeacherGoogleAccount teacherGoogleAccount = (TeacherGoogleAccount) request.getAttribute("teacherGoogleAccount");
                                if (teacherGoogleAccount == null) { %>
                                 <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:0.85rem; padding:1.25rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
                                     <div style="display:flex; align-items:center; gap:1rem;">
@@ -4445,7 +4446,32 @@
                                         <span>Kết nối Drive</span>
                                     </a>
                                 </div>
-                            <% } else { %>
+                            <% } else {
+                                   boolean hasFullDriveScope = teacherGoogleAccount.getScope() != null && teacherGoogleAccount.getScope().contains("https://www.googleapis.com/auth/drive");
+                            %>
+                                <div style="background:<%= hasFullDriveScope ? "#ecfdf5" : "#fff7ed" %>; border:1px solid <%= hasFullDriveScope ? "#bbf7d0" : "#fed7aa" %>; border-radius:0.85rem; padding:1rem 1.15rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:0.85rem;">
+                                    <div style="display:flex; align-items:center; gap:0.85rem; min-width:260px;">
+                                        <div style="width:38px; height:38px; border-radius:50%; background:#ffffff; color:<%= hasFullDriveScope ? "#047857" : "#c2410c" %>; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>
+                                        </div>
+                                        <div>
+                                            <strong style="display:block; color:<%= hasFullDriveScope ? "#065f46" : "#9a3412" %>; font-size:0.95rem; margin-bottom:0.2rem;">Google Drive: <%= h(teacherGoogleAccount.getGoogleEmail()) %></strong>
+                                            <span style="color:<%= hasFullDriveScope ? "#047857" : "#c2410c" %>; font-size:0.84rem;">
+                                                <%= hasFullDriveScope ? "Đã sẵn sàng cấp quyền thư mục khóa học cho học viên." : "Cần kết nối lại để cấp quyền Google Drive đầy đủ cho thư mục khóa học." %>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                                        <a href="${pageContext.request.contextPath}/teacher-drive/connect" class="btn-premium primary" style="min-height:40px; padding:0.65rem 0.95rem; text-decoration:none; box-shadow:none;">
+                                            <span><%= hasFullDriveScope ? "Kết nối lại" : "Cấp quyền lại" %></span>
+                                        </a>
+                                        <form action="${pageContext.request.contextPath}/teacher-drive/disconnect" method="POST" style="margin:0;" onsubmit="return confirm('Bạn chắc chắn muốn ngắt kết nối Google Drive?');">
+                                            <button type="submit" class="btn-premium" style="min-height:40px; padding:0.65rem 0.95rem; border:1px solid #fecaca; background:#fff; color:#dc2626; box-shadow:none;">
+                                                Ngắt kết nối
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                                 <button type="button" id="btn-open-picker"
                                     onclick="openGoogleDrivePicker()"
                                     style="display:inline-flex; align-items:center; gap:0.6rem;

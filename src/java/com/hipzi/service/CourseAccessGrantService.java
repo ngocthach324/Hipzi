@@ -41,6 +41,9 @@ public class CourseAccessGrantService {
             if (isBlank(clientId) || isBlank(clientSecret) || isBlank(encryptionKey)) {
                 throw new IllegalStateException("Google Drive OAuth chua duoc cau hinh tren server.");
             }
+            if (isBlank(job.getTeacherGoogleScope()) || !job.getTeacherGoogleScope().contains("https://www.googleapis.com/auth/drive")) {
+                throw new IllegalStateException("Giang vien can ket noi lai Google Drive de cap quyen full Drive cho khoa hoc.");
+            }
 
             String accessToken = driveOAuthService.accessTokenForTeacher(
                     job.getTeacherId(),

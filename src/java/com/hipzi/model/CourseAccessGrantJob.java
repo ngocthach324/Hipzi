@@ -10,6 +10,7 @@ public class CourseAccessGrantJob {
     private String studentEmail;
     private String googleDriveFileId;
     private String googleDriveFolderId;
+    private String teacherGoogleScope;
     private boolean requireDriveGrant;
 
     public String getGrantId() { return grantId; }
@@ -38,6 +39,9 @@ public class CourseAccessGrantJob {
 
     public String getGoogleDriveFolderId() { return googleDriveFolderId; }
     public void setGoogleDriveFolderId(String googleDriveFolderId) { this.googleDriveFolderId = googleDriveFolderId; }
+
+    public String getTeacherGoogleScope() { return teacherGoogleScope; }
+    public void setTeacherGoogleScope(String teacherGoogleScope) { this.teacherGoogleScope = teacherGoogleScope; }
 
     public boolean isRequireDriveGrant() { return requireDriveGrant; }
     public void setRequireDriveGrant(boolean requireDriveGrant) { this.requireDriveGrant = requireDriveGrant; }
