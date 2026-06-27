@@ -189,12 +189,12 @@ public class GoogleOAuthServlet extends HttpServlet {
     }
 
     private String config(String name) {
-        String value = getServletContext().getInitParameter(name);
+        String value = System.getenv(name);
         if (isBlank(value)) {
-            value = getServletContext().getInitParameter(name.toLowerCase().replace('_', '.'));
+            value = getServletContext().getInitParameter(name);
         }
         if (isBlank(value)) {
-            value = System.getenv(name);
+            value = getServletContext().getInitParameter(name.toLowerCase().replace('_', '.'));
         }
         return value;
     }
