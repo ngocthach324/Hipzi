@@ -4465,11 +4465,6 @@
                                         <a href="${pageContext.request.contextPath}/teacher-drive/connect" class="btn-premium primary" style="min-height:40px; padding:0.65rem 0.95rem; text-decoration:none; box-shadow:none;">
                                             <span><%= hasFullDriveScope ? "Kết nối lại" : "Cấp quyền lại" %></span>
                                         </a>
-                                        <form action="${pageContext.request.contextPath}/teacher-drive/disconnect" method="POST" style="margin:0;" onsubmit="return confirm('Bạn chắc chắn muốn ngắt kết nối Google Drive?');">
-                                            <button type="submit" class="btn-premium" style="min-height:40px; padding:0.65rem 0.95rem; border:1px solid #fecaca; background:#fff; color:#dc2626; box-shadow:none;">
-                                                Ngắt kết nối
-                                            </button>
-                                        </form>
                                     </div>
                                 </div>
                                 <button type="button" id="btn-open-picker"

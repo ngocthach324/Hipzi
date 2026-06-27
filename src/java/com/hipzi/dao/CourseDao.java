@@ -527,6 +527,47 @@ public class CourseDao {
             st.execute("CREATE INDEX IF NOT EXISTS idx_courses_teacher_id ON courses(teacher_id, created_at DESC)");
             st.execute("CREATE INDEX IF NOT EXISTS idx_courses_public_listing ON courses(status, visibility, subject_code, created_at DESC) WHERE deleted_at IS NULL");
             st.execute("CREATE INDEX IF NOT EXISTS idx_courses_review_queue ON courses(status, submitted_at ASC) WHERE deleted_at IS NULL");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS course_code VARCHAR(24)");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS short_description TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS subject_code VARCHAR(40)");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS subject_name TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS grade_level TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS level_name TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS price_type VARCHAR(20) NOT NULL DEFAULT 'free'");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS price_amount NUMERIC(12,2) NOT NULL DEFAULT 0");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS currency VARCHAR(10) NOT NULL DEFAULT 'VND'");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS thumbnail_url TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS thumbnail_gradient TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS badge_text TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS lessons_count INTEGER NOT NULL DEFAULT 0");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS estimated_hours NUMERIC(6,2) NOT NULL DEFAULT 0");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS students_count INTEGER NOT NULL DEFAULT 0");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS rating_average NUMERIC(3,2) NOT NULL DEFAULT 0");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS rating_count INTEGER NOT NULL DEFAULT 0");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS is_featured BOOLEAN NOT NULL DEFAULT false");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS is_new BOOLEAN NOT NULL DEFAULT true");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS google_drive_url TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS google_drive_file_id TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS google_drive_folder_id TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS drive_owner_email TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS access_instructions TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS require_drive_grant BOOLEAN NOT NULL DEFAULT true");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS status VARCHAR(24) NOT NULL DEFAULT 'pending_review'");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS visibility VARCHAR(20) NOT NULL DEFAULT 'private'");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS review_note TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS deleted_by UUID REFERENCES users(id) ON DELETE SET NULL");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS delete_reason TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS learning_objectives TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS curriculum_outline TEXT");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now()");
+            st.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now()");
+            st.execute("UPDATE courses SET course_code = 'CRS-' || upper(substr(replace(id::text, '-', ''), 1, 6)) WHERE course_code IS NULL OR btrim(course_code) = ''");
+            st.execute("ALTER TABLE courses ALTER COLUMN course_code SET NOT NULL");
+            st.execute("CREATE UNIQUE INDEX IF NOT EXISTS uq_courses_course_code ON courses(course_code)");
 
             st.execute("CREATE TABLE IF NOT EXISTS course_modules ("
                     + "id UUID PRIMARY KEY DEFAULT gen_random_uuid(), course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE, "

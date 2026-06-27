@@ -467,10 +467,10 @@ public class ProfileServlet extends HttpServlet {
                     );
                     googleDriveOAuthService.verifyShareableResource(accessToken, courseDriveResourceId(course));
                     if (courseDao.createForTeacher(course)) {
-                        session.setAttribute("toastMsg", "Đã gửi khóa học '" + course.getTitle() + "' vào hàng đợi duyệt của nhân viên.");
+                        session.setAttribute("toastMsg", "Đã đăng tải khóa học thành công. Vui lòng đợi nhân viên kiểm duyệt.");
                         session.setAttribute("toastType", "success");
                     } else {
-                        session.setAttribute("toastMsg", "Chưa lưu được khóa học. Vui lòng kiểm tra migration courses.");
+                        session.setAttribute("toastMsg", "Chưa lưu được khóa học. Vui lòng thử lại sau.");
                         session.setAttribute("toastType", "error");
                     }
                 }
