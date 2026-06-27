@@ -7,6 +7,7 @@
                     <%@page import="com.hipzi.model.Notification" %>
                         <%@page import="com.hipzi.model.SupportMessage" %>
                             <%@page import="com.hipzi.model.SupportTicket" %>
+                                <%@page import="com.hipzi.model.StudentStudyProgressStats" %>
                                 <%@page import="com.hipzi.service.NotificationService" %>
                                     <%@page import="java.util.List" %>
                                         <%@page import="java.text.SimpleDateFormat" %>
@@ -15,6 +16,33 @@
                                                     value.replace("&", "&amp;" ) .replace("<", "&lt;" ) .replace(">",
                                                     "&gt;")
                                                     .replace("\"", "&quot;");
+                                                    }
+                                                    private String studyProgressJson(List<StudentStudyProgressStats.Point> points) {
+                                                        StringBuilder json = new StringBuilder("[");
+                                                        if (points != null) {
+                                                            for (int i = 0; i < points.size(); i++) {
+                                                                StudentStudyProgressStats.Point point = points.get(i);
+                                                                if (i > 0) json.append(",");
+                                                                json.append("{\"label\":\"")
+                                                                        .append(jsEscape(point.getLabel()))
+                                                                        .append("\",\"fullLabel\":\"")
+                                                                        .append(jsEscape(point.getFullLabel()))
+                                                                        .append("\",\"hours\":")
+                                                                        .append(String.format(java.util.Locale.US, "%.2f", point.getHours()))
+                                                                        .append(",\"hoursLabel\":\"")
+                                                                        .append(jsEscape(point.getHoursLabel()))
+                                                                        .append("\"}");
+                                                            }
+                                                        }
+                                                        json.append("]");
+                                                        return json.toString();
+                                                    }
+                                                    private String jsEscape(String value) {
+                                                        if (value == null) return "";
+                                                        return value.replace("\\", "\\\\")
+                                                                .replace("\"", "\\\"")
+                                                                .replace("\n", "\\n")
+                                                                .replace("\r", "");
                                                     }
                                                     %>
                                                     <!DOCTYPE html>
@@ -2910,6 +2938,13 @@
                                                                                     initialTab = "tab-" + initialTab;
                                                                                     }
                                                                                     }
+                                                                                    StudentStudyProgressStats studyProgressStats =
+                                                                                            (StudentStudyProgressStats) request.getAttribute("studentStudyProgressStats");
+                                                                                    if (studyProgressStats == null) {
+                                                                                        studyProgressStats = new StudentStudyProgressStats();
+                                                                                    }
+                                                                                    String weeklyStudyJson = studyProgressJson(studyProgressStats.getWeeklyPoints());
+                                                                                    String monthlyStudyJson = studyProgressJson(studyProgressStats.getMonthlyPoints());
                                                                                     %>
 
                                                                                     <%@ include
@@ -3705,7 +3740,7 @@
                                                                                                                                     <span
                                                                                                                                         class="overview-summary-pill taught">
                                                                                                                                         <strong
-                                                                                                                                            id="overviewTotalTaught">0</strong>
+                                                                                                                                            id="overviewTotalTaught"><%= studyProgressStats.getWeeklyTotalHoursLabel() %></strong>
                                                                                                                                         <span>giờ
                                                                                                                                             đã
                                                                                                                                             học</span>
@@ -3728,7 +3763,7 @@
                                                                                                                                                 points="17 6 23 6 23 12">
                                                                                                                                             </polyline>
                                                                                                                                         </svg>
-                                                                                                                                        <strong>12%</strong>
+                                                                                                                                        <strong id="overviewTrendPercent"><%= studyProgressStats.getTrendPercentLabel() %></strong>
                                                                                                                                         <span>so
                                                                                                                                             với
                                                                                                                                             tuần
@@ -5463,36 +5498,93 @@
                                                                                                 });
                                                                                             }
 
-                                                                                            const overviewChartPeriods = {
-                                                                                                week: {
-                                                                                                    ticks: ['01/05', '02/05', '03/05', '04/05', '05/05', '06/05', '07/05'],
-                                                                                                    tooltipDate: '03/05/2026',
-                                                                                                    totalTaught: '18.5',
-                                                                                                    totalScheduled: '14',
-                                                                                                    taught: '4 gi\u1edd',
-                                                                                                    scheduled: '3 gi\u1edd',
-                                                                                                    guideX: '250',
-                                                                                                    taughtDot: { x: '250', y: '64' },
-                                                                                                    scheduledDot: { x: '250', y: '104' },
-                                                                                                    tooltipLeft: '46%',
-                                                                                                    taughtLine: 'M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62',
-                                                                                                    scheduledLine: 'M64 116 C104 84, 120 136, 160 128 C204 120, 214 92, 250 104 C290 118, 302 148, 344 136 C382 124, 400 92, 438 104 C476 116, 488 154, 526 146 C568 138, 574 96, 610 112'
-                                                                                                },
-                                                                                                month: {
-                                                                                                    ticks: ['01/05', '05/05', '10/05', '15/05', '20/05', '25/05', '30/05'],
-                                                                                                    tooltipDate: '15/05/2026',
-                                                                                                    totalTaught: '72.5',
-                                                                                                    totalScheduled: '86',
-                                                                                                    taught: '18.5 gi\u1edd',
-                                                                                                    scheduled: '22 gi\u1edd',
-                                                                                                    guideX: '344',
-                                                                                                    taughtDot: { x: '344', y: '82' },
-                                                                                                    scheduledDot: { x: '344', y: '60' },
-                                                                                                    tooltipLeft: '55%',
-                                                                                                    taughtLine: 'M64 132 C102 114, 120 96, 156 104 C196 112, 214 78, 250 84 C290 90, 306 96, 344 82 C384 68, 402 50, 436 58 C476 68, 488 116, 526 104 C566 92, 580 74, 610 82',
-                                                                                                    scheduledLine: 'M64 102 C104 70, 120 88, 160 76 C202 64, 214 118, 250 110 C292 102, 304 52, 344 60 C384 70, 398 94, 438 86 C478 78, 492 126, 528 118 C568 108, 578 70, 610 74'
-                                                                                                }
+                                                                                            const overviewStudyRawData = {
+                                                                                                week: <%= weeklyStudyJson %>,
+                                                                                                month: <%= monthlyStudyJson %>
                                                                                             };
+
+                                                                                            function formatOverviewTotalHours(points) {
+                                                                                                const total = (points || []).reduce((sum, point) => sum + (Number(point.hours) || 0), 0);
+                                                                                                if (total <= 0) return '0';
+                                                                                                if (total >= 10 || Math.abs(total - Math.round(total)) < 0.05) return String(Math.round(total));
+                                                                                                return total.toFixed(1);
+                                                                                            }
+
+                                                                                            function buildOverviewChartPeriod(points) {
+                                                                                                const safePoints = (points && points.length ? points : [{ label: '', fullLabel: '', hours: 0, hoursLabel: '0 giờ' }]).slice(0, 7);
+                                                                                                while (safePoints.length < 7) {
+                                                                                                    safePoints.push({ label: '', fullLabel: '', hours: 0, hoursLabel: '0 giờ' });
+                                                                                                }
+                                                                                                const maxHours = Math.max(1, ...safePoints.map(point => Number(point.hours) || 0));
+                                                                                                const chartLeft = 64;
+                                                                                                const chartRight = 610;
+                                                                                                const chartBottom = 162;
+                                                                                                const chartTop = 24;
+                                                                                                const chartWidth = chartRight - chartLeft;
+                                                                                                const chartHeight = chartBottom - chartTop;
+                                                                                                const coords = safePoints.map((point, index) => {
+                                                                                                    const value = Number(point.hours) || 0;
+                                                                                                    const x = chartLeft + (chartWidth / 6) * index;
+                                                                                                    const y = chartBottom - Math.min(1, value / maxHours) * chartHeight;
+                                                                                                    return { x, y, point };
+                                                                                                });
+                                                                                                const selected = coords.reduce((best, current) => {
+                                                                                                    const currentHours = Number(current.point.hours) || 0;
+                                                                                                    const bestHours = Number(best.point.hours) || 0;
+                                                                                                    return currentHours >= bestHours ? current : best;
+                                                                                                }, coords[0]);
+                                                                                                const line = coords.map((coord, index) => (index === 0 ? 'M' : 'L') + coord.x.toFixed(1) + ' ' + coord.y.toFixed(1)).join(' ');
+                                                                                                return {
+                                                                                                    ticks: safePoints.map(point => point.label || ''),
+                                                                                                    points: coords.map(coord => ({
+                                                                                                        x: coord.x,
+                                                                                                        y: coord.y,
+                                                                                                        label: coord.point.label || '',
+                                                                                                        fullLabel: coord.point.fullLabel || coord.point.label || '',
+                                                                                                        hoursLabel: coord.point.hoursLabel || '0 giờ'
+                                                                                                    })),
+                                                                                                    tooltipDate: selected.point.fullLabel || selected.point.label || '',
+                                                                                                    totalTaught: formatOverviewTotalHours(safePoints),
+                                                                                                    taught: selected.point.hoursLabel || '0 giờ',
+                                                                                                    guideX: selected.x.toFixed(1),
+                                                                                                    taughtDot: { x: selected.x.toFixed(1), y: selected.y.toFixed(1) },
+                                                                                                    tooltipLeft: Math.max(18, Math.min(82, (selected.x / 640) * 100)).toFixed(1) + '%',
+                                                                                                    taughtLine: line
+                                                                                                };
+                                                                                            }
+
+                                                                                            const overviewChartPeriods = {
+                                                                                                week: buildOverviewChartPeriod(overviewStudyRawData.week),
+                                                                                                month: buildOverviewChartPeriod(overviewStudyRawData.month)
+                                                                                            };
+
+                                                                                            let currentOverviewChartPeriod = 'week';
+
+                                                                                            function updateOverviewTooltipPoint(data, index) {
+                                                                                                if (!data || !data.points || !data.points.length) {
+                                                                                                    return;
+                                                                                                }
+                                                                                                const safeIndex = Math.max(0, Math.min(data.points.length - 1, index));
+                                                                                                const point = data.points[safeIndex];
+                                                                                                const tooltipDate = document.getElementById('overviewTooltipDate');
+                                                                                                const tooltipTaught = document.getElementById('overviewTooltipTaught');
+                                                                                                const guideLine = document.getElementById('overviewGuideLine');
+                                                                                                const taughtDot = document.getElementById('overviewTaughtDot');
+                                                                                                const tooltip = document.getElementById('overviewLineTooltip');
+                                                                                                if (tooltipDate) tooltipDate.textContent = point.fullLabel || point.label || '';
+                                                                                                if (tooltipTaught) tooltipTaught.textContent = point.hoursLabel || '0 giờ';
+                                                                                                if (guideLine) {
+                                                                                                    guideLine.setAttribute('x1', point.x.toFixed(1));
+                                                                                                    guideLine.setAttribute('x2', point.x.toFixed(1));
+                                                                                                }
+                                                                                                if (taughtDot) {
+                                                                                                    taughtDot.setAttribute('cx', point.x.toFixed(1));
+                                                                                                    taughtDot.setAttribute('cy', point.y.toFixed(1));
+                                                                                                }
+                                                                                                if (tooltip) {
+                                                                                                    tooltip.style.left = Math.max(18, Math.min(82, (point.x / 640) * 100)).toFixed(1) + '%';
+                                                                                                }
+                                                                                            }
 
                                                                                             function setOverviewChartPeriod(period) {
                                                                                                 const switchEl = document.getElementById('overviewPeriodSwitch');
@@ -5502,6 +5594,7 @@
                                                                                                     return;
                                                                                                 }
 
+                                                                                                currentOverviewChartPeriod = period;
                                                                                                 switchEl.dataset.active = period;
                                                                                                 switchEl.querySelectorAll('.overview-period-btn').forEach(button => {
                                                                                                     const isActive = button.dataset.period === period;
@@ -5560,6 +5653,7 @@
                                                                                                     if (tooltip) {
                                                                                                         tooltip.style.left = data.tooltipLeft;
                                                                                                     }
+                                                                                                    updateOverviewTooltipPoint(data, data.points ? data.points.length - 1 : 0);
 
                                                                                                     window.setTimeout(() => {
                                                                                                         if (lineWrap) {
@@ -5574,6 +5668,32 @@
                                                                                                 if (!switchEl) {
                                                                                                     return;
                                                                                                 }
+                                                                                                const chartSvg = document.querySelector('#overviewLineWrap .overview-line-chart');
+                                                                                                if (chartSvg && chartSvg.dataset.hoverBound !== 'true') {
+                                                                                                    chartSvg.dataset.hoverBound = 'true';
+                                                                                                    chartSvg.addEventListener('mousemove', event => {
+                                                                                                        const data = overviewChartPeriods[currentOverviewChartPeriod] || overviewChartPeriods.week;
+                                                                                                        if (!data || !data.points || !data.points.length) {
+                                                                                                            return;
+                                                                                                        }
+                                                                                                        const rect = chartSvg.getBoundingClientRect();
+                                                                                                        const mouseX = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 640;
+                                                                                                        let closestIndex = 0;
+                                                                                                        let closestDistance = Number.POSITIVE_INFINITY;
+                                                                                                        data.points.forEach((point, index) => {
+                                                                                                            const distance = Math.abs(point.x - mouseX);
+                                                                                                            if (distance < closestDistance) {
+                                                                                                                closestDistance = distance;
+                                                                                                                closestIndex = index;
+                                                                                                            }
+                                                                                                        });
+                                                                                                        updateOverviewTooltipPoint(data, closestIndex);
+                                                                                                    });
+                                                                                                    chartSvg.addEventListener('mouseleave', () => {
+                                                                                                        const data = overviewChartPeriods[currentOverviewChartPeriod] || overviewChartPeriods.week;
+                                                                                                        updateOverviewTooltipPoint(data, data && data.points ? data.points.length - 1 : 0);
+                                                                                                    });
+                                                                                                }
                                                                                                 switchEl.querySelectorAll('.overview-period-btn').forEach(button => {
                                                                                                     button.addEventListener('click', () => {
                                                                                                         if (button.classList.contains('is-active')) {
@@ -5582,6 +5702,57 @@
                                                                                                         setOverviewChartPeriod(button.dataset.period);
                                                                                                     });
                                                                                                 });
+                                                                                                setOverviewChartPeriod(switchEl.dataset.active || 'week');
+                                                                                            }
+
+                                                                                            function initStudentStudyTracking() {
+                                                                                                const endpoint = '${pageContext.request.contextPath}/student-study-session';
+                                                                                                let activeStartedAt = Date.now();
+                                                                                                let isVisible = document.visibilityState !== 'hidden';
+
+                                                                                                function flushStudySeconds(useBeacon) {
+                                                                                                    if (!isVisible && !useBeacon) {
+                                                                                                        return;
+                                                                                                    }
+                                                                                                    const now = Date.now();
+                                                                                                    const seconds = Math.floor((now - activeStartedAt) / 1000);
+                                                                                                    if (seconds <= 0) {
+                                                                                                        return;
+                                                                                                    }
+                                                                                                    activeStartedAt = now;
+                                                                                                    const params = new URLSearchParams();
+                                                                                                    params.set('seconds', String(seconds));
+                                                                                                    if (useBeacon && navigator.sendBeacon) {
+                                                                                                        navigator.sendBeacon(endpoint, params);
+                                                                                                        return;
+                                                                                                    }
+                                                                                                    fetch(endpoint, {
+                                                                                                        method: 'POST',
+                                                                                                        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                                                                                                        body: params.toString(),
+                                                                                                        credentials: 'same-origin',
+                                                                                                        keepalive: true
+                                                                                                    }).catch(() => {});
+                                                                                                }
+
+                                                                                                window.setInterval(() => {
+                                                                                                    if (document.visibilityState !== 'hidden') {
+                                                                                                        flushStudySeconds(false);
+                                                                                                    }
+                                                                                                }, 30000);
+
+                                                                                                document.addEventListener('visibilitychange', () => {
+                                                                                                    if (document.visibilityState === 'hidden') {
+                                                                                                        flushStudySeconds(true);
+                                                                                                        isVisible = false;
+                                                                                                    } else {
+                                                                                                        activeStartedAt = Date.now();
+                                                                                                        isVisible = true;
+                                                                                                    }
+                                                                                                });
+
+                                                                                                window.addEventListener('pagehide', () => flushStudySeconds(true));
+                                                                                                window.addEventListener('beforeunload', () => flushStudySeconds(true));
                                                                                             }
 
         <% if (session.getAttribute("toastMsg") != null) { 
@@ -5604,6 +5775,7 @@
                                                                                                     }
                                                                                                     observeTeacherDashboardFrame();
                                                                                                     initOverviewPeriodSwitch();
+                                                                                                    initStudentStudyTracking();
                                                                                                 });
 
                                                                                             window.addEventListener('DOMContentLoaded', () => {

@@ -33,6 +33,7 @@ import com.hipzi.dao.TeachingScheduleDao;
 import com.hipzi.dao.CourseDao;
 import com.hipzi.dao.CourseOrderDao;
 import com.hipzi.dao.RepositoryMaterialDao;
+import com.hipzi.dao.StudentStudyProgressDao;
 import com.hipzi.dao.SupportTicketDao;
 import com.hipzi.dao.TeacherApplicationDao;
 import com.hipzi.dao.TeacherGoogleAccountDao;
@@ -64,6 +65,7 @@ public class ProfileServlet extends HttpServlet {
     private final AuthService authService = new AuthService();
     private final OtpService  otpService  = new OtpService();
     private final StudentProfileService studentProfileService = new StudentProfileService();
+    private final StudentStudyProgressDao studentStudyProgressDao = new StudentStudyProgressDao();
     private final ClassSessionService classSessionService = new ClassSessionService();
     private final NotificationService notificationService = new NotificationService();
     private final ParentStudentLinkDao linkDao = new ParentStudentLinkDao();
@@ -170,6 +172,7 @@ public class ProfileServlet extends HttpServlet {
         if ("/WEB-INF/views/student-profile.jsp".equals(targetJsp)) {
             StudentProfile studentProfile = studentProfileService.getProfileByUserId(user.getId());
             request.setAttribute("studentProfile", studentProfile);
+            request.setAttribute("studentStudyProgressStats", studentStudyProgressDao.getStats(user.getId()));
             request.setAttribute("studentSchedules", teachingScheduleDao.findByStudentId(user.getId()));
             loadUserSupportData(request, user);
         } else if ("/WEB-INF/views/parent-profile.jsp".equals(targetJsp)) {
