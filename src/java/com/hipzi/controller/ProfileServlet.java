@@ -35,6 +35,7 @@ import com.hipzi.dao.SupportTicketDao;
 import com.hipzi.dao.TeacherApplicationDao;
 import com.hipzi.dao.TeacherGoogleAccountDao;
 import com.hipzi.dao.TeacherTransactionDao;
+import com.hipzi.dao.UserDao;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -72,6 +73,7 @@ public class ProfileServlet extends HttpServlet {
     private final RepositoryMaterialDao repositoryMaterialDao = new RepositoryMaterialDao();
     private final SupportTicketDao supportTicketDao = new SupportTicketDao();
     private final GoogleDriveOAuthService googleDriveOAuthService = new GoogleDriveOAuthService();
+    private final UserDao userDao = new UserDao();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -164,6 +166,13 @@ public class ProfileServlet extends HttpServlet {
             List<ParentStudentLink> trackedStudents = linkDao.findLinksByParentId(user.getId());
             request.setAttribute("trackedStudents", trackedStudents);
         } else if (isTeacherPage(targetJsp)) {
+            // Làm mới thông tin user từ DB để lấy wallet_balance chính xác nhất
+            User freshUser = userDao.findById(user.getId());
+            if (freshUser != null) {
+                freshUser.setRoles(user.getRoles()); // giữ lại roles đã load trong session
+                user = freshUser;
+                request.setAttribute("user", user);
+            }
             TeacherApplication teacherApplication = teacherApplicationDao.findLatestByUserId(user.getId());
             TeacherApplication approvedTeacherApplication = teacherApplicationDao.findLatestApprovedByUserId(user.getId());
             request.setAttribute("teacherApplication", teacherApplication);

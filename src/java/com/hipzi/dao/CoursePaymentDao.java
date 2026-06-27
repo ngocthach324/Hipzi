@@ -64,6 +64,7 @@ public class CoursePaymentDao {
 
                 String walletTransactionId = insertWalletTransaction(conn, order);
                 int enrolledCount = createEnrollments(conn, order, walletTransactionId);
+                creditTeacherWallets(conn, order);
                 updateOrderPaid(conn, order.id, paymentReference);
                 updatePaymentEventStatus(conn, eventId, "processed", null);
                 clearPaidCartItems(conn, order);
@@ -264,6 +265,49 @@ public class CoursePaymentDao {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, order.id);
             ps.setString(2, order.studentId);
+            ps.executeUpdate();
+        }
+    }
+
+    private void creditTeacherWallets(Connection conn, LockedOrder order) throws SQLException {
+        String itemSql = "SELECT teacher_id, price_amount, course_id FROM course_order_items "
+                + "WHERE order_id = ?::uuid AND teacher_id IS NOT NULL";
+        try (PreparedStatement ps = conn.prepareStatement(itemSql)) {
+            ps.setString(1, order.id);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String teacherId = rs.getString("teacher_id");
+                    BigDecimal priceAmount = rs.getBigDecimal("price_amount");
+                    String courseId = rs.getString("course_id");
+                    if (teacherId != null && priceAmount != null && priceAmount.compareTo(BigDecimal.ZERO) > 0) {
+                        addToTeacherWalletBalance(conn, teacherId, priceAmount);
+                        insertTeacherWalletTransaction(conn, teacherId, priceAmount, order.id, courseId);
+                    }
+                }
+            }
+        }
+    }
+
+    private void addToTeacherWalletBalance(Connection conn, String teacherId, BigDecimal amount) throws SQLException {
+        String sql = "UPDATE users SET wallet_balance = wallet_balance + ?, updated_at = now() WHERE id = ?::uuid";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBigDecimal(1, amount);
+            ps.setString(2, teacherId);
+            ps.executeUpdate();
+        }
+    }
+
+    private void insertTeacherWalletTransaction(Connection conn, String teacherId, BigDecimal amount,
+            String orderId, String courseId) throws SQLException {
+        String sql = "INSERT INTO wallet_transactions "
+                + "(user_id, amount, transaction_type, reference_id, description) "
+                + "VALUES (?::uuid, ?, 'deposit', ?::uuid, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, teacherId);
+            ps.setBigDecimal(2, amount);
+            ps.setString(3, orderId);
+            String orderRef = orderId != null && orderId.length() >= 8 ? orderId.substring(0, 8).toUpperCase() : "";
+            ps.setString(4, "Doanh thu từ bán khóa học - Đơn " + orderRef);
             ps.executeUpdate();
         }
     }

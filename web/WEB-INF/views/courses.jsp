@@ -1648,9 +1648,17 @@
 
         <main class="course-results-panel">
             <div class="course-results-toolbar">
-                <div class="course-results-title">Tất cả khóa học</div>
+                <div class="course-results-title">
+                    <p class="result-count" id="resultCount" style="margin: 0;">Hiển thị <strong id="visibleCount"><%= initialCourseCount %></strong> khóa học</p>
+                </div>
                 <div style="display: flex; align-items: center; gap: 1.25rem;">
-                    <p class="result-count" id="resultCount">Hiển thị <strong id="visibleCount"><%= initialCourseCount %></strong> khóa học</p>
+                    <div class="filter-sort-control" style="display: flex; align-items: center; gap: 0.6rem;">
+                        <select class="sort-select" id="enrollmentSelect" onchange="applySorting()">
+                            <option value="all">Tất cả</option>
+                            <option value="enrolled">Đã mua</option>
+                            <option value="not_enrolled">Chưa mua</option>
+                        </select>
+                    </div>
                     <div class="filter-sort-control" style="display: flex; align-items: center; gap: 0.6rem;">
                         <select class="sort-select" id="sortSelect" onchange="applySorting()">
                             <option value="popular">Phổ biến nhất</option>
@@ -1676,7 +1684,7 @@
                         : "background:" + h(course.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";
                 int progress = Math.max(0, Math.min(100, course.getViewerProgressPercent()));
         %>
-        <article class="course-card" data-cat="<%= h(course.getSubjectCode()) %>" data-price-type="<%= h(course.getPriceType()) %>" data-price="<%= h(priceValue) %>" data-rating="<%= h(ratingValue) %>" data-popular="<%= course.getStudentsCount() %>" data-new="<%= course.isNew() ? "1" : "0" %>">
+        <article class="course-card" data-cat="<%= h(course.getSubjectCode()) %>" data-price-type="<%= h(course.getPriceType()) %>" data-price="<%= h(priceValue) %>" data-rating="<%= h(ratingValue) %>" data-popular="<%= course.getStudentsCount() %>" data-new="<%= course.isNew() ? "1" : "0" %>" data-enrolled="<%= course.isViewerEnrolled() ? "true" : "false" %>">
             <div class="card-thumb">
                 <div class="card-thumb-bg" style="<%= thumbStyle %>">
                     <% if (thumbUrl == null || thumbUrl.trim().isEmpty()) { %>
@@ -2137,11 +2145,13 @@ function resetCourseFilters() {
     const allCategory = document.querySelector('.cat-pill[data-cat="all"]');
     const allFilter = document.getElementById('filter-all');
     const sortSelect = document.getElementById('sortSelect');
+    const enrollSelect = document.getElementById('enrollmentSelect');
     if (searchInput) searchInput.value = '';
     searchQuery = '';
     if (allCategory) filterByCategory(allCategory, 'all');
     if (allFilter) applyFilter(allFilter, 'all');
     if (sortSelect) sortSelect.value = 'popular';
+    if (enrollSelect) enrollSelect.value = 'all';
     applyAll();
 }
 
@@ -2167,6 +2177,7 @@ function applySorting() { applyAll(); }
 // ─── APPLY ALL FILTERS ────────────────────────────────
 function applyAll() {
     const sortVal = document.getElementById('sortSelect').value;
+    const enrollVal = document.getElementById('enrollmentSelect')?.value || 'all';
     const grid    = document.getElementById('coursesGrid');
     let   visible = 0;
 
@@ -2186,12 +2197,15 @@ function applyAll() {
             || (activeFilter === 'free'     && card.dataset.priceType === 'free')
             || (activeFilter === 'paid'     && card.dataset.priceType === 'paid')
             || (activeFilter === 'enrolled' && card.querySelector('.card-cta.enrolled'));
+        const enrollMatch = enrollVal === 'all'
+            || (enrollVal === 'enrolled'     && card.dataset.enrolled === 'true')
+            || (enrollVal === 'not_enrolled' && card.dataset.enrolled !== 'true');
         const title   = card.querySelector('.card-title')?.textContent?.toLowerCase() || '';
         const author  = card.querySelector('.author-name')?.textContent?.toLowerCase() || '';
         const subject = card.querySelector('.card-subject')?.textContent?.toLowerCase() || '';
         const srchMatch = !searchQuery || title.includes(searchQuery) || author.includes(searchQuery) || subject.includes(searchQuery);
 
-        const show = catMatch && filterMatch && srchMatch;
+        const show = catMatch && filterMatch && srchMatch && enrollMatch;
         card.style.display = show ? '' : 'none';
         if (show) {
             visible++;

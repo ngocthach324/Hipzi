@@ -4778,62 +4778,61 @@
                         </div>
                     </div>
 
-                    <!-- Lưới thống kê thu nhập chi tiết -->
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem;">
-                        <!-- Card 1 -->
-                        <div class="premium-card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Doanh thu tháng này</span>
-                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #ecfdf5; color: #059669; display: flex; justify-content: center; align-items: center;">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-                                    </div>
-                                </div>
-                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">12.850.000 VND</div>
+                    <!-- Chart Card -->
+                    <div class="premium-card overview-chart-card" style="margin: 0; padding: 1.5rem; display: flex; flex-direction: column;">
+                        <div class="overview-chart-head" style="margin-bottom: 0.5rem; align-items: flex-start; display: flex; justify-content: space-between;">
+                            <div class="overview-chart-title-block">
+                                <h3 class="overview-chart-title" style="font-size: 1.1rem;">Thống kê dòng tiền nạp</h3>
+                                <span class="overview-chart-subtitle" style="font-size: 0.9rem; align-items: baseline; display: flex; gap: 0.3rem;">
+                                    Đã nạp: <strong style="color: #059669; font-size: 1.05rem;">2.500.000đ</strong> vào hệ thống
+                                </span>
                             </div>
-                            <span style="font-size: 0.75rem; color: #059669; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
-                                +12.4% so với tháng trước
-                            </span>
+                            <div class="overview-period-switch" id="walletChartPeriodSwitch" data-active="month">
+                                <button type="button" class="overview-period-btn" data-period="week">Tuần</button>
+                                <button type="button" class="overview-period-btn is-active" data-period="month">Tháng</button>
+                            </div>
                         </div>
-                        <!-- Card 2 -->
-                        <div class="premium-card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Thu nhập chờ duyệt</span>
-                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #fffbeb; color: #d97706; display: flex; justify-content: center; align-items: center;">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
-                                    </div>
-                                </div>
-                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">1.500.000 VND</div>
-                            </div>
-                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Sẽ được đối soát vào ngày 25 hàng tháng</span>
-                        </div>
-                        <!-- Card 3 -->
-                        <div class="premium-card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Khóa học đã bán</span>
-                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #f5f3ff; color: #7c3aed; display: flex; justify-content: center; align-items: center;">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                                    </div>
-                                </div>
-                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">48 <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted);">lượt</span></div>
-                            </div>
-                            <span style="font-size: 0.75rem; color: #7c3aed; font-weight: 700;">Từ 3 khóa học trực tuyến đang mở</span>
-                        </div>
-                        <!-- Card 4 -->
-                        <div class="premium-card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Học viên đăng ký</span>
-                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: flex; justify-content: center; align-items: center;">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                    </div>
-                                </div>
-                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">152 <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted);">học viên</span></div>
-                            </div>
-                            <span style="font-size: 0.75rem; color: #2563eb; font-weight: 700;">+24 học viên mới trong tuần này</span>
+
+                        <div class="overview-line-wrap" style="flex: 1; min-height: 180px;">
+                            <svg class="overview-line-chart" viewBox="0 0 640 200" role="img" style="height: 100%; width: 100%;">
+                                <defs>
+                                    <linearGradient id="walletChartFill" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#059669" stop-opacity="0.3" />
+                                        <stop offset="100%" stop-color="#059669" stop-opacity="0" />
+                                    </linearGradient>
+                                </defs>
+                                <!-- Grid Lines -->
+                                <line x1="45" y1="20" x2="620" y2="20" stroke="#f1f5f9" stroke-width="1.5" stroke-dasharray="4 4" />
+                                <line x1="45" y1="65" x2="620" y2="65" stroke="#f1f5f9" stroke-width="1.5" stroke-dasharray="4 4" />
+                                <line x1="45" y1="110" x2="620" y2="110" stroke="#f1f5f9" stroke-width="1.5" stroke-dasharray="4 4" />
+                                <line x1="45" y1="155" x2="620" y2="155" stroke="#e2e8f0" stroke-width="1.5" />
+
+                                <!-- Y-axis Labels -->
+                                <text x="35" y="24" text-anchor="end" fill="#94a3b8" font-size="11" font-weight="600">3tr</text>
+                                <text x="35" y="69" text-anchor="end" fill="#94a3b8" font-size="11" font-weight="600">2tr</text>
+                                <text x="35" y="114" text-anchor="end" fill="#94a3b8" font-size="11" font-weight="600">1tr</text>
+                                <text x="35" y="159" text-anchor="end" fill="#94a3b8" font-size="11" font-weight="600">0</text>
+
+                                <!-- X-axis Labels -->
+                                <text x="80" y="185" text-anchor="middle" fill="#64748b" font-size="12" font-weight="700">Tháng 1</text>
+                                <text x="180" y="185" text-anchor="middle" fill="#64748b" font-size="12" font-weight="700">Tháng 2</text>
+                                <text x="280" y="185" text-anchor="middle" fill="#64748b" font-size="12" font-weight="700">Tháng 3</text>
+                                <text x="380" y="185" text-anchor="middle" fill="#64748b" font-size="12" font-weight="700">Tháng 4</text>
+                                <text x="480" y="185" text-anchor="middle" fill="#64748b" font-size="12" font-weight="700">Tháng 5</text>
+                                <text x="580" y="185" text-anchor="middle" fill="#64748b" font-size="12" font-weight="700">Tháng 6</text>
+
+                                <!-- Fake Data Path -->
+                                <path d="M45 155 L80 155 C110 155, 150 132.5, 180 132.5 C210 132.5, 250 155, 280 155 C310 155, 350 87.5, 380 87.5 C410 87.5, 450 155, 480 155 C510 155, 550 132.5, 580 132.5 L620 132.5 V155 H45 Z" fill="url(#walletChartFill)" />
+                                <path d="M45 155 L80 155 C110 155, 150 132.5, 180 132.5 C210 132.5, 250 155, 280 155 C310 155, 350 87.5, 380 87.5 C410 87.5, 450 155, 480 155 C510 155, 550 132.5, 580 132.5 L620 132.5" fill="none" stroke="#059669" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+
+                                <!-- Data Points -->
+                                <circle cx="80" cy="155" r="5" fill="#fff" stroke="#059669" stroke-width="2.5" />
+                                <circle cx="180" cy="132.5" r="5" fill="#fff" stroke="#059669" stroke-width="2.5" />
+                                <circle cx="280" cy="155" r="5" fill="#fff" stroke="#059669" stroke-width="2.5" />
+                                <circle cx="380" cy="87.5" r="5" fill="#fff" stroke="#059669" stroke-width="2.5" />
+                                <circle cx="480" cy="155" r="5" fill="#fff" stroke="#059669" stroke-width="2.5" />
+                                <circle cx="580" cy="132.5" r="5" fill="#fff" stroke="#059669" stroke-width="2.5" />
+                            </svg>
                         </div>
                     </div>
                 </div>

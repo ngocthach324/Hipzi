@@ -101,7 +101,7 @@ public class OnboardingServlet extends HttpServlet {
         user.setOnboardingCompleted(true);
         session.setAttribute("loggedUser", user);
 
-        response.sendRedirect(request.getContextPath() + profilePathForRole(selectedRole) + "?welcome=true");
+        response.sendRedirect(request.getContextPath() + "/index?welcome=true");
     }
 
     private String normalizeRole(String roleName) {

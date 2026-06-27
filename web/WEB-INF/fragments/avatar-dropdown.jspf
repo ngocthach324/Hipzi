@@ -44,17 +44,6 @@
         </a>
         <% } %>
         <% if (profileHasTeacher && !profileHasStaff && !profileHasAdmin) { %>
-        <a href="${pageContext.request.contextPath}/teacher-wallet" class="avatar-menu-wallet">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2.2">
-                <path d="M20 7H5a2 2 0 0 0 0 4h15v8H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16v4z" />
-                <path d="M16 14h.01" />
-            </svg>
-            <span class="avatar-menu-copy">
-                <span class="avatar-menu-title">V&#237; gi&#7843;ng vi&#234;n</span>
-                <span class="avatar-menu-subtitle">S&#7889; d&#432;: 1.250.000&#273;</span>
-            </span>
-        </a>
         <a href="${pageContext.request.contextPath}/teacher-management">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2.2">
@@ -65,6 +54,17 @@
             <span class="avatar-menu-copy">
                 <span class="avatar-menu-title">Qu&#7843;n l&#253; gi&#7843;ng d&#7841;y</span>
                 <span class="avatar-menu-subtitle">L&#7899;p h&#7885;c, kh&#243;a h&#7885;c v&#224; t&#224;i li&#7879;u</span>
+            </span>
+        </a>
+        <a href="${pageContext.request.contextPath}/teacher-wallet" class="avatar-menu-wallet">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2">
+                <path d="M20 7H5a2 2 0 0 0 0 4h15v8H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16v4z" />
+                <path d="M16 14h.01" />
+            </svg>
+            <span class="avatar-menu-copy">
+                <span class="avatar-menu-title">V&#237; gi&#7843;ng vi&#234;n</span>
+                <span class="avatar-menu-subtitle">S&#7889; d&#432;: 1.250.000&#273;</span>
             </span>
         </a>
         <% } else if (profileHasStaff && !profileHasAdmin) { %>
