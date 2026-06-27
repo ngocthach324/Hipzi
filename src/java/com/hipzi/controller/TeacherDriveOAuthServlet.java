@@ -4,6 +4,7 @@ import com.hipzi.model.Role;
 import com.hipzi.model.TeacherGoogleAccount;
 import com.hipzi.model.User;
 import com.hipzi.service.GoogleDriveOAuthService;
+import com.hipzi.util.OAuthUriHelper;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -170,60 +171,7 @@ public class TeacherDriveOAuthServlet extends HttpServlet {
     }
 
     private String callbackUri(HttpServletRequest request) {
-        String configured = config(request, "GOOGLE_DRIVE_REDIRECT_URI");
-        if (shouldUseConfiguredCallback(request, configured)) {
-            return configured;
-        }
-        return externalBaseUrl(request) + request.getContextPath() + "/teacher-drive/callback";
-    }
-
-    private String externalBaseUrl(HttpServletRequest request) {
-        String scheme = firstNonBlank(request.getHeader("X-Forwarded-Proto"), request.getScheme());
-        String forwardedHost = request.getHeader("X-Forwarded-Host");
-        if (!isBlank(forwardedHost)) {
-            return scheme + "://" + forwardedHost;
-        }
-        String hostHeader = request.getHeader("Host");
-        if (!isBlank(hostHeader)) {
-            return scheme + "://" + hostHeader;
-        }
-
-        String host = request.getServerName();
-        if (host.contains(":")) {
-            return scheme + "://" + host;
-        }
-
-        int port = request.getServerPort();
-        boolean defaultPort = ("http".equalsIgnoreCase(scheme) && port == 80)
-                || ("https".equalsIgnoreCase(scheme) && port == 443);
-        String portPart = defaultPort ? "" : ":" + port;
-        return scheme + "://" + host + portPart;
-    }
-
-    private boolean shouldUseConfiguredCallback(HttpServletRequest request, String configured) {
-        if (isBlank(configured)) {
-            return false;
-        }
-        try {
-            URI configuredUri = URI.create(configured);
-            String configuredHost = configuredUri.getHost();
-            String requestHost = firstNonBlank(request.getHeader("X-Forwarded-Host"), request.getServerName());
-            if (requestHost != null && requestHost.contains(":")) {
-                requestHost = requestHost.substring(0, requestHost.indexOf(':'));
-            }
-            if (isLocalHost(configuredHost) && !isLocalHost(requestHost)) {
-                return false;
-            }
-        } catch (Exception ignored) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean isLocalHost(String host) {
-        return "localhost".equalsIgnoreCase(host)
-                || "127.0.0.1".equals(host)
-                || "::1".equals(host);
+        return OAuthUriHelper.callbackUri(request, config(request, "GOOGLE_DRIVE_REDIRECT_URI"), "/teacher-drive/callback");
     }
 
     private String tokenEncryptionKey(HttpServletRequest request) {
