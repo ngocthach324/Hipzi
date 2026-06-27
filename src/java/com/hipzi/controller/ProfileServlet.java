@@ -9,6 +9,7 @@ import com.hipzi.model.SupportTicket;
 import com.hipzi.model.TeacherApplication;
 import com.hipzi.model.TeacherGoogleAccount;
 import com.hipzi.model.User;
+import com.hipzi.service.WithdrawalService;
 import com.hipzi.service.AuthService;
 import com.hipzi.service.GoogleDriveOAuthService;
 import com.hipzi.service.OtpService;
@@ -30,12 +31,16 @@ import com.hipzi.dao.AdminUserDao;
 import com.hipzi.dao.ClassroomDao;
 import com.hipzi.dao.TeachingScheduleDao;
 import com.hipzi.dao.CourseDao;
+import com.hipzi.dao.CourseOrderDao;
 import com.hipzi.dao.RepositoryMaterialDao;
 import com.hipzi.dao.SupportTicketDao;
 import com.hipzi.dao.TeacherApplicationDao;
 import com.hipzi.dao.TeacherGoogleAccountDao;
 import com.hipzi.dao.TeacherTransactionDao;
+import com.hipzi.dao.TeacherReviewStatsDao;
+import com.hipzi.dao.TeacherWalletStatsDao;
 import com.hipzi.dao.UserDao;
+import com.hipzi.dao.WithdrawalRequestDao;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -68,11 +73,16 @@ public class ProfileServlet extends HttpServlet {
     private final TeacherApplicationDao teacherApplicationDao = new TeacherApplicationDao();
     private final TeacherGoogleAccountDao teacherGoogleAccountDao = new TeacherGoogleAccountDao();
     private final TeacherTransactionDao teacherTransactionDao = new TeacherTransactionDao();
+    private final TeacherReviewStatsDao teacherReviewStatsDao = new TeacherReviewStatsDao();
+    private final TeacherWalletStatsDao teacherWalletStatsDao = new TeacherWalletStatsDao();
     private final ClassroomDao classroomDao = new ClassroomDao();
     private final CourseDao courseDao = new CourseDao();
+    private final CourseOrderDao courseOrderDao = new CourseOrderDao();
     private final RepositoryMaterialDao repositoryMaterialDao = new RepositoryMaterialDao();
     private final SupportTicketDao supportTicketDao = new SupportTicketDao();
     private final GoogleDriveOAuthService googleDriveOAuthService = new GoogleDriveOAuthService();
+    private final WithdrawalRequestDao withdrawalRequestDao = new WithdrawalRequestDao();
+    private final WithdrawalService withdrawalService = new WithdrawalService();
     private final UserDao userDao = new UserDao();
 
     @Override
@@ -184,6 +194,8 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("teacherMaterialCount", repositoryMaterialDao.countByUploaderId(user.getId()));
             request.setAttribute("teacherGoogleAccount", teacherGoogleAccountDao.findActiveByTeacherId(user.getId()));
             request.setAttribute("teacherTransactions", teacherTransactionDao.findByTeacherId(user.getId()));
+            request.setAttribute("teacherReviewStats", teacherReviewStatsDao.getStats(user.getId()));
+            request.setAttribute("teacherWalletStats", teacherWalletStatsDao.getStats(user.getId()));
             loadUserSupportData(request, user);
         } else if ("/WEB-INF/views/staff-profile.jsp".equals(targetJsp)) {
             request.setAttribute("staffTotalUsers", adminStatsDao.getSystemOverview().getTotalUsers());
@@ -218,6 +230,17 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("courseTitle", courseTitle);
             request.setAttribute("courseSubject", courseSubject);
             request.setAttribute("courseStatus", courseStatus);
+
+            String withdrawalStatus = cleanParam(request.getParameter("withdrawalStatus"));
+            String withdrawalSearch = cleanParam(request.getParameter("withdrawalSearch"));
+            String saleStatus = cleanParam(request.getParameter("saleStatus"));
+            String saleSearch = cleanParam(request.getParameter("saleSearch"));
+            request.setAttribute("withdrawalRequests", withdrawalRequestDao.listForStaff(withdrawalStatus, withdrawalSearch, 120));
+            request.setAttribute("withdrawalStatus", withdrawalStatus);
+            request.setAttribute("withdrawalSearch", withdrawalSearch);
+            request.setAttribute("staffCourseTransactions", courseOrderDao.listForStaffTransactions(saleStatus, saleSearch, 120));
+            request.setAttribute("saleStatus", saleStatus);
+            request.setAttribute("saleSearch", saleSearch);
         } else if ("/WEB-INF/views/admin-profile.jsp".equals(targetJsp)) {
             request.setAttribute("systemOverview", adminStatsDao.getSystemOverview());
             int adminUserPage = parsePositiveInt(request.getParameter("userPage"), 1);
@@ -370,6 +393,28 @@ public class ProfileServlet extends HttpServlet {
                 } else {
                     session.setAttribute("toastMsg", "Không thể khóa tài khoản này.");
                     session.setAttribute("toastType", "error");
+                }
+            } else if ("requestMomoWithdrawal".equals(action)) {
+                if (!hasRole(user, "teacher")) {
+                    session.setAttribute("toastMsg", "Bạn không có quyền tạo yêu cầu rút tiền.");
+                    session.setAttribute("toastType", "error");
+                } else {
+                    WithdrawalService.WithdrawalResult result = withdrawalService.requestMomoWithdrawal(
+                            user,
+                            parseMoneyParam(request.getParameter("amount")),
+                            cleanParam(request.getParameter("momoPhone")),
+                            cleanParam(request.getParameter("receiverName")),
+                            cleanParam(request.getParameter("note"))
+                    );
+                    session.setAttribute("toastMsg", result.getMessage());
+                    session.setAttribute("toastType", result.isSuccess() ? "success" : "error");
+                    if (result.isSuccess()) {
+                        User freshUser = userDao.findById(user.getId());
+                        if (freshUser != null) {
+                            freshUser.setRoles(user.getRoles());
+                            session.setAttribute("loggedUser", freshUser);
+                        }
+                    }
                 }
             } else if ("registerClass".equals(action)) {
                 Classroom classroom = buildClassroomFromRequest(request, user.getId(), null);
@@ -568,6 +613,24 @@ public class ProfileServlet extends HttpServlet {
                     session.setAttribute("toastMsg", "Không thể xóa khóa học này.");
                     session.setAttribute("toastType", "error");
                 }
+            } else if ("markWithdrawalProcessing".equals(action)
+                    || "markWithdrawalPaid".equals(action)
+                    || "rejectWithdrawal".equals(action)
+                    || "failWithdrawal".equals(action)) {
+                if (!hasRole(user, "staff") && !hasRole(user, "admin")) {
+                    session.setAttribute("toastMsg", "Bạn không có quyền xử lý yêu cầu rút tiền.");
+                    session.setAttribute("toastType", "error");
+                } else {
+                    WithdrawalService.WithdrawalResult result = withdrawalService.processStaffAction(
+                            action,
+                            cleanParam(request.getParameter("withdrawalId")),
+                            user.getId(),
+                            cleanParam(request.getParameter("payoutReference")),
+                            cleanParam(request.getParameter("staffNote"))
+                    );
+                    session.setAttribute("toastMsg", result.getMessage());
+                    session.setAttribute("toastType", result.isSuccess() ? "success" : "error");
+                }
             } else if ("submitTeachingRegistration".equals(action)) {
                 String teacherType = cleanParam(request.getParameter("teacherType"));
                 String institutionName = cleanParam(request.getParameter("institutionName"));
@@ -727,6 +790,8 @@ public class ProfileServlet extends HttpServlet {
         } else if ("banUser".equals(action)) {
             String userPage = request.getParameter("userPage");
             returnPath += "?tab=materials&userPage=" + (userPage != null ? userPage : "1");
+        } else if ("requestMomoWithdrawal".equals(action)) {
+            returnPath += "?tab=balance-stats";
         } else if ("submitSupport".equals(action)) {
             returnPath += "?tab=support";
         } else if ("registerClass".equals(action) || "updateClass".equals(action) || "deleteClass".equals(action)) {
@@ -737,6 +802,11 @@ public class ProfileServlet extends HttpServlet {
             returnPath += "?tab=course-registration";
         } else if ("reviewCourse".equals(action) || "deleteManagedCourse".equals(action)) {
             returnPath += "?tab=manage-courses";
+        } else if ("markWithdrawalProcessing".equals(action)
+                || "markWithdrawalPaid".equals(action)
+                || "rejectWithdrawal".equals(action)
+                || "failWithdrawal".equals(action)) {
+            returnPath += "?tab=transaction-management";
         } else if ("submitTeachingRegistration".equals(action)) {
             returnPath += "?tab=teaching-registration";
         } else if ((action == null || action.isEmpty()) && "/teacher-profile".equals(postPath)) {

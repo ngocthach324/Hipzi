@@ -8,6 +8,8 @@
 <%@page import="com.hipzi.model.Notification"%>
 <%@page import="com.hipzi.model.SupportMessage"%>
 <%@page import="com.hipzi.model.SupportTicket"%>
+<%@page import="com.hipzi.model.StaffCourseTransaction"%>
+<%@page import="com.hipzi.model.WithdrawalRequest"%>
 <%@page import="com.hipzi.service.NotificationService"%>
 <%@page import="com.hipzi.util.UserStatusWebSocket"%>
 <%@page import="java.util.List"%>
@@ -61,6 +63,19 @@
         if ("disabled".equalsIgnoreCase(status)) return "Đã khóa";
         if ("pending".equalsIgnoreCase(status)) return "Chờ xác nhận";
         return status != null && !status.trim().isEmpty() ? status : "Chưa rõ";
+    }
+
+    private String withdrawalStatusStyle(String status) {
+        if ("paid".equalsIgnoreCase(status)) return "background:#ecfdf5; color:#059669;";
+        if ("processing".equalsIgnoreCase(status)) return "background:#eff6ff; color:#2563eb;";
+        if ("rejected".equalsIgnoreCase(status) || "failed".equalsIgnoreCase(status) || "cancelled".equalsIgnoreCase(status)) return "background:#fef2f2; color:#dc2626;";
+        return "background:#fff7ed; color:#c2410c;";
+    }
+
+    private String courseSaleStatusStyle(String status) {
+        if ("paid".equalsIgnoreCase(status)) return "background:#ecfdf5; color:#059669;";
+        if ("failed".equalsIgnoreCase(status) || "cancelled".equalsIgnoreCase(status) || "expired".equalsIgnoreCase(status)) return "background:#fef2f2; color:#dc2626;";
+        return "background:#fff7ed; color:#c2410c;";
     }
 %>
 <html lang="vi">
@@ -4099,6 +4114,7 @@
                 !activeStaffTab.equals("tab-manage-teachers") &&
                 !activeStaffTab.equals("tab-manage-classes") &&
                 !activeStaffTab.equals("tab-manage-courses") &&
+                !activeStaffTab.equals("tab-transaction-management") &&
                 !activeStaffTab.equals("tab-profile") &&
                 !activeStaffTab.equals("tab-edit") &&
                 !activeStaffTab.equals("tab-security") &&
@@ -4230,6 +4246,12 @@
                     <a id="nav-tab-manage-courses" class="<%= "tab-manage-courses".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-manage-courses')">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 6.5v12"/><path d="M5 8.5c2.6 0 4.9.5 7 2 2.1-1.5 4.4-2 7-2v11c-2.6 0-4.9.5-7 2-2.1-1.5-4.4-2-7-2z"/></svg>
                         <span>Quản lý khóa học</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-transaction-management" class="<%= "tab-transaction-management".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-transaction-management')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M7 15h3"/><path d="M15 15h2"/></svg>
+                        <span>Quản lý giao dịch</span>
                     </a>
                 </li>
                 <li>
@@ -4866,6 +4888,230 @@
                                     <p style="font-size:0.85rem; max-width:420px; margin:0;">Khóa học do giảng viên gửi sẽ xuất hiện ở đây để staff kiểm tra Google Drive, nội dung và trạng thái hiển thị.</p>
                                 </div>
                             <% } %>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-transaction-management" class="tab-pane <%= "tab-transaction-management".equals(activeStaffTab) ? "active-pane" : "" %>">
+                <div class="tab-grouped-container">
+                    <div class="tab-header-accent">
+                        <div class="tab-header-title-text">Quản lý giao dịch</div>
+                        <div class="tab-header-date-pill">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span><%= currentDateDisplay %></span>
+                        </div>
+                    </div>
+
+                    <div class="tab-body-content">
+                        <div class="section-data-card system-management-card">
+                            <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
+                                <div class="card-header-title">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 0 0-4z"/><circle cx="18" cy="12" r="1"/></svg>
+                                    <span>Yêu cầu rút tiền MoMo</span>
+                                </div>
+                                <span style="font-size:0.8rem; font-weight:700; color:#be185d; background:#fdf2f8; padding:0.2rem 0.75rem; border-radius:1rem;">Manual payout</span>
+                            </div>
+
+                            <%
+                                List<WithdrawalRequest> withdrawalRequests = (List<WithdrawalRequest>) request.getAttribute("withdrawalRequests");
+                                String withdrawalStatus = request.getAttribute("withdrawalStatus") != null ? String.valueOf(request.getAttribute("withdrawalStatus")) : "";
+                                String withdrawalSearch = request.getAttribute("withdrawalSearch") != null ? String.valueOf(request.getAttribute("withdrawalSearch")) : "";
+                            %>
+                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/staff-profile" style="display:flex; align-items:center; gap:1rem;">
+                                <input type="hidden" name="tab" value="transaction-management">
+                                <input name="withdrawalSearch" value="<%= h(withdrawalSearch) %>" type="search" placeholder="Tìm theo giảng viên, SĐT MoMo, mã yêu cầu" style="flex:1; min-width:260px;">
+                                <select name="withdrawalStatus" onchange="this.form.submit()" style="margin-left:auto; width:220px; min-width:220px; border:1px solid #e2e8f0; border-radius:0.8rem; padding:0.8rem 1rem; font-weight:750; color:#0f172a; background:#ffffff; white-space:nowrap;">
+                                    <option value="all" <%= withdrawalStatus.isEmpty() || "all".equals(withdrawalStatus) ? "selected" : "" %>>Tất cả trạng thái</option>
+                                    <option value="pending" <%= "pending".equals(withdrawalStatus) ? "selected" : "" %>>Chờ xử lý</option>
+                                    <option value="processing" <%= "processing".equals(withdrawalStatus) ? "selected" : "" %>>Đang xử lý</option>
+                                    <option value="paid" <%= "paid".equals(withdrawalStatus) ? "selected" : "" %>>Đã thanh toán</option>
+                                    <option value="rejected" <%= "rejected".equals(withdrawalStatus) ? "selected" : "" %>>Từ chối</option>
+                                    <option value="failed" <%= "failed".equals(withdrawalStatus) ? "selected" : "" %>>Thất bại</option>
+                                </select>
+                            </form>
+
+                            <div style="overflow:auto; border:1px solid #e2e8f0; border-radius:1rem; margin-top:1rem;">
+                                <table style="width:100%; border-collapse:collapse; min-width:820px;">
+                                    <thead style="background:#f8fafc;">
+                                        <tr>
+                                            <th style="text-align:left; padding:1rem; color:#64748b; font-weight:900;">Mã yêu cầu</th>
+                                            <th style="text-align:left; padding:1rem; color:#64748b; font-weight:900;">Giảng viên</th>
+                                            <th style="text-align:right; padding:1rem; color:#64748b; font-weight:900;">Số tiền</th>
+                                            <th style="text-align:center; padding:1rem; color:#64748b; font-weight:900;">Trạng thái</th>
+                                            <th style="text-align:right; padding:1rem; color:#64748b; font-weight:900;">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if (withdrawalRequests == null || withdrawalRequests.isEmpty()) { %>
+                                            <tr>
+                                                <td colspan="5" style="padding:2rem; text-align:center; color:#64748b; font-weight:750;">Chưa có yêu cầu rút tiền MoMo phù hợp.</td>
+                                            </tr>
+                                        <% } else { %>
+                                            <% for (WithdrawalRequest wr : withdrawalRequests) { %>
+                                                <tr style="border-top:1px solid #eef2f7;">
+                                                    <td style="padding:1rem; font-weight:900; color:#0f172a;"><%= h(wr.getRequestCode()) %></td>
+                                                    <td style="padding:1rem;">
+                                                        <strong style="display:block; color:#0f172a;"><%= h(wr.getTeacherName()) %></strong>
+                                                    </td>
+                                                    <td style="padding:1rem; text-align:right; color:#be185d; font-weight:900;"><%= h(wr.getAmountLabel()) %></td>
+                                                    <td style="padding:1rem; text-align:center;"><span style="display:inline-flex; white-space:nowrap; <%= withdrawalStatusStyle(wr.getStatus()) %> padding:0.35rem 0.85rem; border-radius:999px; font-weight:850; font-size:0.78rem;"><%= h(wr.getStatusLabel()) %></span></td>
+                                                    <td style="padding:1rem; text-align:right;">
+                                                        <div style="display:flex; justify-content:flex-end; align-items:center; gap:0.45rem; flex-wrap:wrap;">
+                                                            <% if (wr.isOpenStatus()) { %>
+                                                                <form action="${pageContext.request.contextPath}/staff-profile" method="POST" style="display:inline;">
+                                                                    <input type="hidden" name="action" value="markWithdrawalPaid">
+                                                                    <input type="hidden" name="withdrawalId" value="<%= h(wr.getId()) %>">
+                                                                    <button type="submit" class="btn-premium primary" style="padding:0.55rem 0.9rem; font-size:0.82rem; background:#059669; box-shadow:none; white-space:nowrap;">Thanh toán</button>
+                                                                </form>
+                                                                <form action="${pageContext.request.contextPath}/staff-profile" method="POST" style="display:inline;">
+                                                                    <input type="hidden" name="action" value="rejectWithdrawal">
+                                                                    <input type="hidden" name="withdrawalId" value="<%= h(wr.getId()) %>">
+                                                                    <input type="hidden" name="staffNote" value="Staff từ chối yêu cầu rút tiền MoMo.">
+                                                                    <button type="submit" class="btn-premium secondary" style="padding:0.55rem 0.9rem; font-size:0.82rem; white-space:nowrap;">Từ chối</button>
+                                                                </form>
+                                                            <% } %>
+                                                            <button type="button"
+                                                                    class="btn-premium secondary"
+                                                                    style="padding:0.55rem 0.9rem; font-size:0.82rem; white-space:nowrap;"
+                                                                    data-code="<%= h(wr.getRequestCode()) %>"
+                                                                    data-teacher="<%= h(wr.getTeacherName()) %>"
+                                                                    data-email="<%= h(wr.getTeacherEmail()) %>"
+                                                                    data-balance="<%= h(wr.getTeacherWalletBalanceLabel()) %>"
+                                                                    data-phone="<%= h(wr.getMomoPhone()) %>"
+                                                                    data-receiver="<%= h(wr.getReceiverName()) %>"
+                                                                    data-amount="<%= h(wr.getAmountLabel()) %>"
+                                                                    data-status="<%= h(wr.getStatusLabel()) %>"
+                                                                    data-note="<%= h(wr.getTeacherNote() != null ? wr.getTeacherNote() : "") %>"
+                                                                    data-reference="<%= h(wr.getPayoutReference() != null ? wr.getPayoutReference() : "") %>"
+                                                                    onclick="openWithdrawalDetail(this)">Xem chi tiết</button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <% } %>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div id="withdrawal-detail-modal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(15,23,42,0.45); backdrop-filter:blur(5px); align-items:center; justify-content:center; padding:1.5rem;">
+                                <div style="width:min(760px, calc(100vw - 2rem)); max-height:calc(100vh - 3rem); background:#ffffff; border:1px solid #e2e8f0; border-radius:1.25rem; box-shadow:0 24px 70px rgba(15,23,42,0.22); overflow:hidden; display:flex; flex-direction:column;">
+                                    <div style="padding:1.1rem 1.5rem; border-bottom:1px solid #e2e8f0; display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;">
+                                        <div>
+                                            <div style="display:inline-flex; align-items:center; gap:0.45rem; padding:0.25rem 0.7rem; border-radius:999px; background:#fdf2f8; color:#be185d; font-weight:800; font-size:0.76rem; margin-bottom:0.65rem;">
+                                                <span style="width:7px; height:7px; border-radius:50%; background:#db2777;"></span>
+                                                MoMo payout
+                                            </div>
+                                            <h3 style="margin:0; color:#0f172a; font-size:1.35rem; font-weight:900;">Chi tiết yêu cầu rút tiền</h3>
+                                            <p id="withdrawal-detail-code" style="margin:0.35rem 0 0; color:#64748b; font-weight:750;"></p>
+                                        </div>
+                                        <button type="button" onclick="closeWithdrawalDetail()" aria-label="Đóng chi tiết rút tiền" style="width:38px; height:38px; border-radius:50%; border:1px solid #e2e8f0; background:#f8fafc; color:#64748b; font-size:1.35rem; cursor:pointer;">&times;</button>
+                                    </div>
+                                    <div style="padding:1.35rem 1.5rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem; overflow-y:auto;">
+                                        <div style="grid-column:1 / -1; border:1px solid #bbf7d0; background:#ecfdf5; border-radius:0.9rem; padding:0.9rem 1rem; display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+                                            <span style="color:#047857; font-weight:800;">Số dư hiện tại của giảng viên</span>
+                                            <strong id="withdrawal-detail-balance" style="color:#065f46; font-size:1.1rem;"></strong>
+                                        </div>
+                                        <div style="display:grid; gap:0.45rem;">
+                                            <label style="font-weight:800; color:#0f172a;">Tài khoản giảng viên</label>
+                                            <div id="withdrawal-detail-teacher" style="border:1px solid #cbd5e1; border-radius:0.85rem; padding:0.9rem 1rem; font-weight:800; color:#0f172a; min-height:52px;"></div>
+                                        </div>
+                                        <div style="display:grid; gap:0.45rem;">
+                                            <label style="font-weight:800; color:#0f172a;">Email giảng viên</label>
+                                            <div id="withdrawal-detail-email" style="border:1px solid #cbd5e1; border-radius:0.85rem; padding:0.9rem 1rem; font-weight:800; color:#0f172a; min-height:52px;"></div>
+                                        </div>
+                                        <div style="display:grid; gap:0.45rem;">
+                                            <label style="font-weight:800; color:#0f172a;">Số tiền muốn rút</label>
+                                            <div id="withdrawal-detail-amount" style="border:1px solid #cbd5e1; border-radius:0.85rem; padding:0.9rem 1rem; font-weight:900; color:#be185d; min-height:52px;"></div>
+                                        </div>
+                                        <div style="display:grid; gap:0.45rem;">
+                                            <label style="font-weight:800; color:#0f172a;">Số điện thoại MoMo</label>
+                                            <div id="withdrawal-detail-phone" style="border:1px solid #cbd5e1; border-radius:0.85rem; padding:0.9rem 1rem; font-weight:800; color:#0f172a; min-height:52px;"></div>
+                                        </div>
+                                        <div style="grid-column:1 / -1; display:grid; gap:0.45rem;">
+                                            <label style="font-weight:800; color:#0f172a;">Tên người nhận MoMo</label>
+                                            <div id="withdrawal-detail-receiver" style="border:1px solid #cbd5e1; border-radius:0.85rem; padding:0.9rem 1rem; font-weight:800; color:#0f172a; min-height:52px;"></div>
+                                        </div>
+                                        <div style="display:grid; gap:0.45rem;">
+                                            <label style="font-weight:800; color:#0f172a;">Trạng thái</label>
+                                            <div id="withdrawal-detail-status" style="border:1px solid #cbd5e1; border-radius:0.85rem; padding:0.9rem 1rem; font-weight:800; color:#0f172a; min-height:52px;"></div>
+                                        </div>
+                                        <div style="display:grid; gap:0.45rem;">
+                                            <label style="font-weight:800; color:#0f172a;">Mã giao dịch chi trả</label>
+                                            <div id="withdrawal-detail-reference" style="border:1px solid #cbd5e1; border-radius:0.85rem; padding:0.9rem 1rem; font-weight:800; color:#0f172a; min-height:52px;"></div>
+                                        </div>
+                                        <div style="grid-column:1 / -1; display:grid; gap:0.45rem;">
+                                            <label style="font-weight:800; color:#0f172a;">Ghi chú</label>
+                                            <div id="withdrawal-detail-note" style="border:1px solid #cbd5e1; border-radius:0.85rem; padding:0.9rem 1rem; color:#475569; font-weight:700; min-height:72px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-data-card system-management-card" style="margin-top:1.25rem;">
+                            <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
+                                <div class="card-header-title">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 6.5v12"/><path d="M5 8.5c2.6 0 4.9.5 7 2 2.1-1.5 4.4-2 7-2v11c-2.6 0-4.9.5-7 2-2.1-1.5-4.4-2-7-2z"/></svg>
+                                    <span>Giao dịch mua bán khóa học</span>
+                                </div>
+                                <span style="font-size:0.8rem; font-weight:700; color:#047857; background:#ecfdf5; padding:0.2rem 0.75rem; border-radius:1rem;">SePay</span>
+                            </div>
+
+                            <%
+                                List<StaffCourseTransaction> staffCourseTransactions = (List<StaffCourseTransaction>) request.getAttribute("staffCourseTransactions");
+                                String saleStatus = request.getAttribute("saleStatus") != null ? String.valueOf(request.getAttribute("saleStatus")) : "";
+                                String saleSearch = request.getAttribute("saleSearch") != null ? String.valueOf(request.getAttribute("saleSearch")) : "";
+                            %>
+                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/staff-profile" style="display:flex; align-items:center; gap:1rem; margin-top:1rem;">
+                                <input type="hidden" name="tab" value="transaction-management">
+                                <input name="saleSearch" value="<%= h(saleSearch) %>" type="search" placeholder="Tìm mã đơn, học viên, giảng viên, khóa học" style="flex:1; min-width:260px;">
+                                <select name="saleStatus" onchange="this.form.submit()" style="margin-left:auto; width:220px; min-width:220px; border:1px solid #e2e8f0; border-radius:0.8rem; padding:0.8rem 1rem; font-weight:750; color:#0f172a; background:#ffffff; white-space:nowrap;">
+                                    <option value="all" <%= saleStatus.isEmpty() || "all".equals(saleStatus) ? "selected" : "" %>>Tất cả trạng thái</option>
+                                    <option value="pending" <%= "pending".equals(saleStatus) ? "selected" : "" %>>Chờ xử lý</option>
+                                    <option value="paid" <%= "paid".equals(saleStatus) ? "selected" : "" %>>Đã thanh toán</option>
+                                    <option value="failed" <%= "failed".equals(saleStatus) ? "selected" : "" %>>Thất bại</option>
+                                </select>
+                            </form>
+
+                            <div style="overflow:auto; border:1px solid #e2e8f0; border-radius:1rem; margin-top:1rem;">
+                                <table style="width:100%; border-collapse:collapse; min-width:920px;">
+                                    <thead style="background:#f8fafc;">
+                                        <tr>
+                                            <th style="text-align:left; padding:1rem; color:#64748b; font-weight:900;">Mã đơn</th>
+                                            <th style="text-align:left; padding:1rem; color:#64748b; font-weight:900;">Học viên</th>
+                                            <th style="text-align:left; padding:1rem; color:#64748b; font-weight:900;">Giảng viên</th>
+                                            <th style="text-align:left; padding:1rem; color:#64748b; font-weight:900;">Khóa học</th>
+                                            <th style="text-align:right; padding:1rem; color:#64748b; font-weight:900;">Số tiền</th>
+                                            <th style="text-align:center; padding:1rem; color:#64748b; font-weight:900;">Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if (staffCourseTransactions == null || staffCourseTransactions.isEmpty()) { %>
+                                            <tr>
+                                                <td colspan="6" style="padding:2rem; text-align:center; color:#64748b; font-weight:750;">Chưa có giao dịch khóa học phù hợp.</td>
+                                            </tr>
+                                        <% } else { %>
+                                            <% for (StaffCourseTransaction sale : staffCourseTransactions) { %>
+                                                <tr style="border-top:1px solid #eef2f7;">
+                                                    <td style="padding:1rem; font-weight:900; color:#0f172a;"><%= h(sale.getOrderCode()) %></td>
+                                                    <td style="padding:1rem;">
+                                                        <strong style="display:block; color:#0f172a;"><%= h(sale.getStudentName()) %></strong>
+                                                        <span style="color:#64748b; font-weight:650; font-size:0.82rem;"><%= h(sale.getStudentEmail()) %></span>
+                                                    </td>
+                                                    <td style="padding:1rem;">
+                                                        <strong style="display:block; color:#0f172a;"><%= h(sale.getTeacherName()) %></strong>
+                                                        <span style="color:#64748b; font-weight:650; font-size:0.82rem;"><%= h(sale.getTeacherEmail()) %></span>
+                                                    </td>
+                                                    <td style="padding:1rem; color:#0f172a; font-weight:750;"><%= h(sale.getCourseTitle()) %></td>
+                                                    <td style="padding:1rem; text-align:right; color:<%= sale.isPaid() ? "#059669" : "#f97316" %>; font-weight:900;"><%= h(sale.getAmountLabel()) %></td>
+                                                    <td style="padding:1rem; text-align:center;"><span style="display:inline-flex; white-space:nowrap; <%= courseSaleStatusStyle(sale.getStatus()) %> padding:0.35rem 0.85rem; border-radius:999px; font-weight:850; font-size:0.78rem;"><%= h(sale.getStatusLabel()) %></span></td>
+                                                </tr>
+                                            <% } %>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -5638,6 +5884,38 @@
             }, 3000);
         }
 
+        function setWithdrawalDetailText(id, value) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = value && value.trim() ? value : 'Chưa có thông tin';
+            }
+        }
+
+        function openWithdrawalDetail(button) {
+            const modal = document.getElementById('withdrawal-detail-modal');
+            if (!modal || !button) return;
+            const data = button.dataset;
+            setWithdrawalDetailText('withdrawal-detail-code', data.code ? 'Mã yêu cầu ' + data.code : '');
+            setWithdrawalDetailText('withdrawal-detail-balance', data.balance);
+            setWithdrawalDetailText('withdrawal-detail-teacher', data.teacher);
+            setWithdrawalDetailText('withdrawal-detail-email', data.email);
+            setWithdrawalDetailText('withdrawal-detail-amount', data.amount);
+            setWithdrawalDetailText('withdrawal-detail-phone', data.phone);
+            setWithdrawalDetailText('withdrawal-detail-receiver', data.receiver);
+            setWithdrawalDetailText('withdrawal-detail-status', data.status);
+            setWithdrawalDetailText('withdrawal-detail-reference', data.reference);
+            setWithdrawalDetailText('withdrawal-detail-note', data.note);
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeWithdrawalDetail() {
+            const modal = document.getElementById('withdrawal-detail-modal');
+            if (!modal) return;
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
         let profileTabSwitchTimer;
 
         function getProfileTabSlug(tabId) {
@@ -5671,6 +5949,7 @@
             'tab-manage-teachers': 'Quản lý người dùng',
             'tab-manage-classes': 'Quản lý lớp học',
             'tab-manage-courses': 'Quản lý khóa học',
+            'tab-transaction-management': 'Quản lý giao dịch',
             'tab-profile': 'Hồ sơ cá nhân',
             'tab-edit': 'Cập nhật thông tin',
             'tab-security': 'Bảo mật',

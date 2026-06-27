@@ -46,6 +46,9 @@ public class TeacherTransaction {
         if ("paid".equalsIgnoreCase(status) || "success".equalsIgnoreCase(status) || "completed".equalsIgnoreCase(status)) {
             return "Thành công";
         }
+        if ("rejected".equalsIgnoreCase(status)) {
+            return "Từ chối";
+        }
         if ("failed".equalsIgnoreCase(status) || "cancelled".equalsIgnoreCase(status)) {
             return "Thất bại";
         }
@@ -63,6 +66,7 @@ public class TeacherTransaction {
     }
 
     public boolean isFailedStatus() {
-        return "failed".equalsIgnoreCase(status) || "cancelled".equalsIgnoreCase(status) || "expired".equalsIgnoreCase(status);
+        return "failed".equalsIgnoreCase(status) || "cancelled".equalsIgnoreCase(status)
+                || "expired".equalsIgnoreCase(status) || "rejected".equalsIgnoreCase(status);
     }
 }

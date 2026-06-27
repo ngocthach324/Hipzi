@@ -2,8 +2,10 @@ package com.hipzi.dao;
 
 import com.hipzi.model.CourseOrder;
 import com.hipzi.model.CourseOrderItem;
+import com.hipzi.model.StaffCourseTransaction;
 import com.hipzi.util.DBContext;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,6 +15,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class CourseOrderDao {
 
@@ -133,6 +136,57 @@ public class CourseOrderDao {
         return null;
     }
 
+    public List<StaffCourseTransaction> listForStaffTransactions(String status, String search, int limit) {
+        List<StaffCourseTransaction> transactions = new ArrayList<>();
+        String normalizedStatus = emptyToNull(status);
+        String normalizedSearch = emptyToNull(search);
+        StringBuilder sql = new StringBuilder()
+                .append("SELECT o.order_code, COALESCE(o.paid_at, o.created_at) AS transaction_at, ")
+                .append("o.status, oi.course_title, oi.price_amount, oi.currency, ")
+                .append("student.display_name AS student_name, student.email AS student_email, ")
+                .append("teacher.display_name AS teacher_name, teacher.email AS teacher_email ")
+                .append("FROM course_order_items oi ")
+                .append("JOIN course_orders o ON o.id = oi.order_id ")
+                .append("JOIN users student ON student.id = o.student_id ")
+                .append("LEFT JOIN users teacher ON teacher.id = oi.teacher_id ")
+                .append("WHERE 1=1 ");
+        if (normalizedStatus != null && !"all".equalsIgnoreCase(normalizedStatus)) {
+            sql.append("AND o.status = ? ");
+        }
+        if (normalizedSearch != null) {
+            sql.append("AND (LOWER(o.order_code) LIKE ? OR LOWER(oi.course_title) LIKE ? ")
+                    .append("OR LOWER(student.display_name) LIKE ? OR LOWER(student.email) LIKE ? ")
+                    .append("OR LOWER(COALESCE(teacher.display_name, '')) LIKE ? OR LOWER(COALESCE(teacher.email, '')) LIKE ?) ");
+        }
+        sql.append("ORDER BY COALESCE(o.paid_at, o.created_at) DESC LIMIT ?");
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            if (normalizedStatus != null && !"all".equalsIgnoreCase(normalizedStatus)) {
+                ps.setString(idx++, normalizedStatus);
+            }
+            if (normalizedSearch != null) {
+                String like = "%" + normalizedSearch.toLowerCase(Locale.ROOT) + "%";
+                ps.setString(idx++, like);
+                ps.setString(idx++, like);
+                ps.setString(idx++, like);
+                ps.setString(idx++, like);
+                ps.setString(idx++, like);
+                ps.setString(idx++, like);
+            }
+            ps.setInt(idx, Math.max(1, limit));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    transactions.add(mapStaffTransaction(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in CourseOrderDao.listForStaffTransactions: " + e.getMessage());
+        }
+        return transactions;
+    }
+
     private List<CourseOrderItem> listItems(Connection conn, String orderId) throws SQLException {
         String sql = "SELECT id, order_id, course_id, teacher_id, course_title, price_amount, currency, created_at "
                 + "FROM course_order_items WHERE order_id = ?::uuid ORDER BY created_at ASC";
@@ -186,8 +240,28 @@ public class CourseOrderDao {
         return item;
     }
 
+    private StaffCourseTransaction mapStaffTransaction(ResultSet rs) throws SQLException {
+        StaffCourseTransaction transaction = new StaffCourseTransaction();
+        transaction.setOrderCode(rs.getString("order_code"));
+        transaction.setTransactionAt(rs.getTimestamp("transaction_at"));
+        transaction.setStatus(rs.getString("status"));
+        transaction.setCourseTitle(rs.getString("course_title"));
+        BigDecimal amount = rs.getBigDecimal("price_amount");
+        transaction.setAmount(amount == null ? BigDecimal.ZERO : amount);
+        transaction.setCurrency(rs.getString("currency"));
+        transaction.setStudentName(rs.getString("student_name"));
+        transaction.setStudentEmail(rs.getString("student_email"));
+        transaction.setTeacherName(rs.getString("teacher_name"));
+        transaction.setTeacherEmail(rs.getString("teacher_email"));
+        return transaction;
+    }
+
     private String valueOrDefault(String value, String fallback) {
         return value == null || value.trim().isEmpty() ? fallback : value;
+    }
+
+    private String emptyToNull(String value) {
+        return value == null || value.trim().isEmpty() ? null : value.trim();
     }
 
     private void ensureSchema() {

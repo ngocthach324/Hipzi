@@ -8,6 +8,8 @@
 <%@page import="com.hipzi.model.SupportMessage"%>
 <%@page import="com.hipzi.model.SupportTicket"%>
 <%@page import="com.hipzi.model.TeacherTransaction"%>
+<%@page import="com.hipzi.model.TeacherReviewStats"%>
+<%@page import="com.hipzi.model.TeacherWalletStats"%>
 <%@page import="com.hipzi.model.TeacherGoogleAccount"%>
 <%@page import="com.hipzi.service.NotificationService"%>
 <%@page import="java.util.List"%>
@@ -20,6 +22,28 @@
                     .replace("<", "&lt;")
                     .replace(">", "&gt;")
                     .replace("\"", "&quot;");
+    }
+
+    private String walletChartJson(List<TeacherWalletStats.Point> points) {
+        StringBuilder json = new StringBuilder("[");
+        if (points != null) {
+            for (int i = 0; i < points.size(); i++) {
+                TeacherWalletStats.Point point = points.get(i);
+                if (i > 0) json.append(",");
+                json.append("{\"label\":\"")
+                        .append(jsEscape(point.getLabel()))
+                        .append("\",\"value\":")
+                        .append(point.getAmountLong())
+                        .append("}");
+            }
+        }
+        json.append("]");
+        return json.toString();
+    }
+
+    private String jsEscape(String value) {
+        if (value == null) return "";
+        return value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "");
     }
 %>
 <!DOCTYPE html>
@@ -3874,17 +3898,34 @@
                             <div>
                                 <h2 class="overview-chart-title">Đánh giá học sinh</h2>
                             </div>
-                            <span class="overview-chart-chip">Mẫu</span>
                         </div>
 
+                        <%
+                            TeacherReviewStats teacherReviewStats = (TeacherReviewStats) request.getAttribute("teacherReviewStats");
+                            if (teacherReviewStats == null) {
+                                teacherReviewStats = new TeacherReviewStats();
+                            }
+                            int satisfiedReviewPercent = teacherReviewStats.getSatisfiedPercent();
+                            int okayReviewPercent = teacherReviewStats.getOkayPercent();
+                            int needsReviewPercent = teacherReviewStats.getNeedsImprovementPercent();
+                            int okayReviewEndPercent = teacherReviewStats.getOkayEndPercent();
+                            String reviewDonutBackground;
+                            if (teacherReviewStats.getTotalReviews() > 0) {
+                                reviewDonutBackground = "conic-gradient(#059669 0 " + satisfiedReviewPercent
+                                        + "%, #f59e0b " + satisfiedReviewPercent + "% " + okayReviewEndPercent
+                                        + "%, #ef4444 " + okayReviewEndPercent + "% 100%)";
+                            } else {
+                                reviewDonutBackground = "conic-gradient(#e2e8f0 0 100%)";
+                            }
+                        %>
                         <div class="overview-donut-chart-container" aria-label="Biểu đồ tròn đánh giá học sinh">
-                            <div class="overview-donut-chart">
+                            <div class="overview-donut-chart" style="background: <%= reviewDonutBackground %>;">
                                 <div class="overview-donut-hole">
                                     <div class="overview-donut-score">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                        <span>4.2</span>
+                                        <span><%= teacherReviewStats.getAverageRatingLabel() %></span>
                                     </div>
-                                    <span class="overview-donut-total">67 đánh giá</span>
+                                    <span class="overview-donut-total"><%= teacherReviewStats.getTotalReviews() %> đánh giá</span>
                                 </div>
                             </div>
                             <div class="overview-donut-legend">
@@ -3892,9 +3933,9 @@
                                     <div class="overview-donut-legend-color" style="background: #059669;"></div>
                                     <div class="overview-donut-legend-label">Hài lòng</div>
                                     <div class="overview-donut-legend-value">
-                                        68%
+                                        <%= satisfiedReviewPercent %>%
                                         <div class="overview-donut-progress-bg">
-                                            <div class="overview-donut-progress-fill" style="width: 68%; background: #059669;"></div>
+                                            <div class="overview-donut-progress-fill" style="width: <%= satisfiedReviewPercent %>%; background: #059669;"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -3902,9 +3943,9 @@
                                     <div class="overview-donut-legend-color" style="background: #f59e0b;"></div>
                                     <div class="overview-donut-legend-label">Tạm được</div>
                                     <div class="overview-donut-legend-value">
-                                        22%
+                                        <%= okayReviewPercent %>%
                                         <div class="overview-donut-progress-bg">
-                                            <div class="overview-donut-progress-fill" style="width: 22%; background: #f59e0b;"></div>
+                                            <div class="overview-donut-progress-fill" style="width: <%= okayReviewPercent %>%; background: #f59e0b;"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -3912,9 +3953,9 @@
                                     <div class="overview-donut-legend-color" style="background: #ef4444;"></div>
                                     <div class="overview-donut-legend-label">Cần cải thiện</div>
                                     <div class="overview-donut-legend-value">
-                                        10%
+                                        <%= needsReviewPercent %>%
                                         <div class="overview-donut-progress-bg">
-                                            <div class="overview-donut-progress-fill" style="width: 10%; background: #ef4444;"></div>
+                                            <div class="overview-donut-progress-fill" style="width: <%= needsReviewPercent %>%; background: #ef4444;"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -4758,6 +4799,13 @@
                     if (user != null) {
                         displayBalance = new java.text.DecimalFormat("#,##0").format(user.getWalletBalance());
                     }
+                    TeacherWalletStats teacherWalletStats = (TeacherWalletStats) request.getAttribute("teacherWalletStats");
+                    if (teacherWalletStats == null) {
+                        teacherWalletStats = new TeacherWalletStats();
+                    }
+                    String totalRevenueLabel = teacherWalletStats.getTotalRevenueLabel();
+                    String weeklyRevenueJson = walletChartJson(teacherWalletStats.getWeeklyRevenue());
+                    String monthlyRevenueJson = walletChartJson(teacherWalletStats.getMonthlyRevenue());
                 %>
 
                 <div class="dashboard-grid-layout" style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-top: 1rem;">
@@ -4772,8 +4820,8 @@
                             <div style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.5px;"><%= displayBalance %> <span style="font-size: 1.35rem; font-weight: 600;">VND</span></div>
                         </div>
                         <div style="margin-top: 1.5rem;">
-                            <button type="button" class="btn-premium primary" style="background: #ffffff; color: #047857; width: 100%; border: none; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 0.75rem; padding: 0.8rem 1.25rem;" onclick="alert('Chức năng yêu cầu rút tiền tạm thời chưa mở. Đội ngũ kỹ thuật đang kết nối cổng thanh toán ngân hàng.')">
-                                Rút tiền về ngân hàng
+                            <button type="button" class="btn-premium primary" style="background: #ffffff; color: #047857; width: 100%; border: none; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 0.75rem; padding: 0.8rem 1.25rem;" onclick="openMomoWithdrawModal()">
+                                Rút tiền về MoMo
                             </button>
                         </div>
                     </div>
@@ -4782,9 +4830,9 @@
                     <div class="premium-card overview-chart-card" style="margin: 0; padding: 1.5rem; display: flex; flex-direction: column;">
                         <div class="overview-chart-head" style="margin-bottom: 0.5rem; align-items: flex-start; display: flex; justify-content: space-between;">
                             <div class="overview-chart-title-block">
-                                <h3 class="overview-chart-title" style="font-size: 1.1rem;">Thống kê dòng tiền nạp</h3>
+                                <h3 class="overview-chart-title" style="font-size: 1.1rem;">Doanh thu khóa học</h3>
                                 <span class="overview-chart-subtitle" style="font-size: 0.9rem; align-items: baseline; display: flex; gap: 0.3rem;">
-                                    Đã nạp: <strong style="color: #059669; font-size: 1.05rem;">2.500.000đ</strong> vào hệ thống
+                                    Đã nhận: <strong style="color: #059669; font-size: 1.05rem;"><%= h(totalRevenueLabel) %></strong> từ khóa học
                                 </span>
                             </div>
                             <div class="overview-period-switch" id="walletChartPeriodSwitch" data-active="month">
@@ -4794,7 +4842,7 @@
                         </div>
 
                         <div class="overview-line-wrap" style="flex: 1; min-height: 180px;">
-                            <svg class="overview-line-chart" viewBox="0 0 640 200" role="img" style="height: 100%; width: 100%;">
+                            <svg id="walletRevenueChart" class="overview-line-chart" viewBox="0 0 640 200" role="img" aria-label="Biểu đồ doanh thu khóa học" style="height: 100%; width: 100%;">
                                 <defs>
                                     <linearGradient id="walletChartFill" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="0%" stop-color="#059669" stop-opacity="0.3" />
@@ -5002,7 +5050,60 @@
         </div>
     </div>
 
-    
+    <div id="momo-withdraw-modal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(15,23,42,0.45); backdrop-filter:blur(5px); align-items:center; justify-content:center; padding:1.5rem;">
+        <div style="width:min(760px, calc(100vw - 2rem)); max-height:calc(100vh - 3rem); background:#ffffff; border:1px solid #e2e8f0; border-radius:1.25rem; box-shadow:0 24px 70px rgba(15,23,42,0.22); overflow:hidden; display:flex; flex-direction:column;">
+            <div style="padding:1.1rem 1.5rem; border-bottom:1px solid #e2e8f0; display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;">
+                <div>
+                    <div style="display:inline-flex; align-items:center; gap:0.45rem; padding:0.25rem 0.7rem; border-radius:999px; background:#fdf2f8; color:#be185d; font-weight:800; font-size:0.76rem; margin-bottom:0.65rem;">
+                        <span style="width:7px; height:7px; border-radius:50%; background:#db2777;"></span>
+                        MoMo payout
+                    </div>
+                    <h3 style="margin:0; color:#0f172a; font-size:1.35rem; font-weight:900;">Yêu cầu rút tiền</h3>
+                </div>
+                <button type="button" onclick="closeMomoWithdrawModal()" aria-label="Đóng form rút tiền" style="width:38px; height:38px; border-radius:50%; border:1px solid #e2e8f0; background:#f8fafc; color:#64748b; font-size:1.35rem; cursor:pointer;">&times;</button>
+            </div>
+
+            <form id="momo-withdraw-form" action="${pageContext.request.contextPath}/teacher-profile" method="POST" onsubmit="return validateMomoWithdrawForm()" style="padding:1.35rem 1.5rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem; overflow-y:auto;">
+                <input type="hidden" name="action" value="requestMomoWithdrawal">
+                <div style="grid-column:1 / -1; border:1px solid #bbf7d0; background:#ecfdf5; border-radius:0.9rem; padding:0.9rem 1rem; display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+                    <span style="color:#047857; font-weight:800;">Số dư khả dụng</span>
+                    <strong style="color:#065f46; font-size:1.1rem;"><%= displayBalance %> VND</strong>
+                </div>
+
+                <div style="display:grid; gap:0.45rem;">
+                    <label for="momoWithdrawAmount" style="font-weight:800; color:#0f172a;">Số tiền muốn rút <span style="color:#ef4444;">*</span></label>
+                    <input id="momoWithdrawAmount" name="amount" type="number" min="10000" step="1000" placeholder="Ví dụ: 100000" required
+                           style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:0.85rem; padding:0.9rem 1rem; font:inherit; font-weight:700;">
+                </div>
+
+                <div style="display:grid; gap:0.45rem;">
+                    <label for="momoWithdrawPhone" style="font-weight:800; color:#0f172a;">Số điện thoại MoMo <span style="color:#ef4444;">*</span></label>
+                    <input id="momoWithdrawPhone" name="momoPhone" type="tel" inputmode="numeric" placeholder="Ví dụ: 0901234567" required
+                           style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:0.85rem; padding:0.9rem 1rem; font:inherit; font-weight:700;">
+                </div>
+
+                <small style="grid-column:1 / -1; color:#64748b; font-weight:650; margin-top:-0.5rem;">Số tiền rút tối thiểu 10.000đ và không vượt quá số dư khả dụng.</small>
+
+                <div style="grid-column:1 / -1; display:grid; gap:0.45rem;">
+                    <label for="momoWithdrawName" style="font-weight:800; color:#0f172a;">Tên người nhận MoMo <span style="color:#ef4444;">*</span></label>
+                    <input id="momoWithdrawName" name="receiverName" type="text" placeholder="Tên hiển thị trên ví MoMo" required
+                           style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:0.85rem; padding:0.9rem 1rem; font:inherit; font-weight:700;">
+                </div>
+
+                <div style="grid-column:1 / -1; display:grid; gap:0.45rem;">
+                    <label for="momoWithdrawNote" style="font-weight:800; color:#0f172a;">Ghi chú</label>
+                    <textarea id="momoWithdrawNote" name="note" rows="3" placeholder="Ví dụ: Rút doanh thu khóa học tháng này"
+                              style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:0.85rem; padding:0.9rem 1rem; font:inherit; resize:vertical;"></textarea>
+                </div>
+
+                <div style="grid-column:1 / -1; display:flex; justify-content:flex-end; gap:0.75rem; padding-top:0.5rem; flex-wrap:wrap;">
+                    <button type="button" class="btn-premium secondary" onclick="closeMomoWithdrawModal()" style="padding:0.75rem 1.2rem;">Hủy</button>
+                    <button type="submit" class="btn-premium primary" style="padding:0.75rem 1.4rem; background:#be185d; box-shadow:0 12px 26px rgba(190,24,93,0.18);">Gửi yêu cầu rút</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- ===== JAVASCRIPT XỬ LÝ CHUYỂN TAB MƯỢT MÀ ===== -->
     <script>
         function showToast(message, type = 'success') {
@@ -5027,6 +5128,163 @@
             setTimeout(() => {
                 toast.remove();
             }, 3000);
+        }
+
+        const walletRevenueChartData = {
+            week: <%= weeklyRevenueJson %>,
+            month: <%= monthlyRevenueJson %>
+        };
+
+        function formatCompactVnd(value) {
+            const amount = Number(value || 0);
+            if (amount >= 1000000) {
+                const million = amount / 1000000;
+                return (Number.isInteger(million) ? million.toFixed(0) : million.toFixed(1)) + 'tr';
+            }
+            if (amount >= 1000) {
+                const thousand = amount / 1000;
+                return (Number.isInteger(thousand) ? thousand.toFixed(0) : thousand.toFixed(0)) + 'k';
+            }
+            return String(amount);
+        }
+
+        function walletChartText(x, y, text, anchor = 'middle', fill = '#64748b', size = 12, weight = 700) {
+            const el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            el.setAttribute('x', x);
+            el.setAttribute('y', y);
+            el.setAttribute('text-anchor', anchor);
+            el.setAttribute('fill', fill);
+            el.setAttribute('font-size', size);
+            el.setAttribute('font-weight', weight);
+            el.textContent = text;
+            return el;
+        }
+
+        function drawWalletRevenueChart(period = 'month') {
+            const svg = document.getElementById('walletRevenueChart');
+            if (!svg) return;
+
+            svg.querySelectorAll('text, path, circle, g.wallet-generated').forEach((node) => node.remove());
+
+            const data = walletRevenueChartData[period] || walletRevenueChartData.month || [];
+            const points = data.length ? data : [{ label: '', value: 0 }];
+            const left = 45;
+            const right = 620;
+            const top = 20;
+            const bottom = 155;
+            const labelY = 185;
+            const maxValue = Math.max(...points.map((item) => Number(item.value || 0)), 1);
+            const niceMax = Math.max(10000, Math.ceil(maxValue / 10000) * 10000);
+            const stepX = points.length > 1 ? (right - left) / (points.length - 1) : 0;
+            const coords = points.map((item, index) => {
+                const x = points.length > 1 ? left + stepX * index : (left + right) / 2;
+                const ratio = Math.min(Number(item.value || 0) / niceMax, 1);
+                const y = bottom - ratio * (bottom - top);
+                return { x, y, label: item.label || '', value: Number(item.value || 0) };
+            });
+
+            const yGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            yGroup.classList.add('wallet-generated');
+            [niceMax, niceMax * 2 / 3, niceMax / 3, 0].forEach((value, index) => {
+                const y = [24, 69, 114, 159][index];
+                yGroup.appendChild(walletChartText(35, y, formatCompactVnd(value), 'end', '#94a3b8', 11, 600));
+            });
+            svg.appendChild(yGroup);
+
+            const xGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            xGroup.classList.add('wallet-generated');
+            coords.forEach((point) => {
+                xGroup.appendChild(walletChartText(point.x, labelY, point.label, 'middle', '#64748b', 12, 700));
+            });
+            svg.appendChild(xGroup);
+
+            const lineD = coords.map((point, index) => (index === 0 ? 'M' : 'L') + ' ' + point.x.toFixed(1) + ' ' + point.y.toFixed(1)).join(' ');
+            const areaD = lineD + ' L ' + coords[coords.length - 1].x.toFixed(1) + ' ' + bottom + ' L ' + coords[0].x.toFixed(1) + ' ' + bottom + ' Z';
+
+            const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            area.classList.add('wallet-generated');
+            area.setAttribute('d', areaD);
+            area.setAttribute('fill', 'url(#walletChartFill)');
+            svg.appendChild(area);
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            line.classList.add('wallet-generated');
+            line.setAttribute('d', lineD);
+            line.setAttribute('fill', 'none');
+            line.setAttribute('stroke', '#059669');
+            line.setAttribute('stroke-width', '3.5');
+            line.setAttribute('stroke-linecap', 'round');
+            line.setAttribute('stroke-linejoin', 'round');
+            svg.appendChild(line);
+
+            const pointGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            pointGroup.classList.add('wallet-generated');
+            coords.forEach((point) => {
+                const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                dot.setAttribute('cx', point.x);
+                dot.setAttribute('cy', point.y);
+                dot.setAttribute('r', '5');
+                dot.setAttribute('fill', '#fff');
+                dot.setAttribute('stroke', '#059669');
+                dot.setAttribute('stroke-width', '2.5');
+                dot.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'title')).textContent =
+                    point.label + ': ' + Number(point.value).toLocaleString('vi-VN') + ' VND';
+                pointGroup.appendChild(dot);
+            });
+            svg.appendChild(pointGroup);
+        }
+
+        const teacherAvailableBalance = <%= user != null ? user.getWalletBalance() : 0 %>;
+
+        function openMomoWithdrawModal() {
+            const modal = document.getElementById('momo-withdraw-modal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            const amountInput = document.getElementById('momoWithdrawAmount');
+            if (amountInput) {
+                amountInput.value = '';
+                setTimeout(() => amountInput.focus(), 80);
+            }
+        }
+
+        function closeMomoWithdrawModal() {
+            const modal = document.getElementById('momo-withdraw-modal');
+            if (!modal) return;
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        function validateMomoWithdrawForm() {
+            const amountInput = document.getElementById('momoWithdrawAmount');
+            const phoneInput = document.getElementById('momoWithdrawPhone');
+            const nameInput = document.getElementById('momoWithdrawName');
+            const amount = amountInput ? Number(amountInput.value) : 0;
+            const phone = phoneInput ? phoneInput.value.trim() : '';
+            const receiverName = nameInput ? nameInput.value.trim() : '';
+
+            if (!amount || amount < 10000) {
+                showToast('Số tiền rút tối thiểu là 10.000đ.', 'info');
+                if (amountInput) amountInput.focus();
+                return false;
+            }
+            if (amount > teacherAvailableBalance) {
+                showToast('Số tiền rút không được vượt quá số dư khả dụng.', 'info');
+                if (amountInput) amountInput.focus();
+                return false;
+            }
+            if (!/^0\d{9}$/.test(phone)) {
+                showToast('Vui lòng nhập số điện thoại MoMo hợp lệ.', 'info');
+                if (phoneInput) phoneInput.focus();
+                return false;
+            }
+            if (receiverName.length < 2) {
+                showToast('Vui lòng nhập tên người nhận MoMo.', 'info');
+                if (nameInput) nameInput.focus();
+                return false;
+            }
+
+            return true;
         }
 
         let teacherTabSwitchTimer;
@@ -5391,6 +5649,27 @@
             });
         }
 
+        function initWalletRevenueChart() {
+            const switchEl = document.getElementById('walletChartPeriodSwitch');
+            if (!switchEl) {
+                return;
+            }
+            const initialPeriod = switchEl.dataset.active || 'month';
+            drawWalletRevenueChart(initialPeriod);
+            switchEl.querySelectorAll('.overview-period-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const period = button.dataset.period || 'month';
+                    switchEl.dataset.active = period;
+                    switchEl.querySelectorAll('.overview-period-btn').forEach(item => {
+                        const isActive = item === button;
+                        item.classList.toggle('is-active', isActive);
+                        item.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                    });
+                    drawWalletRevenueChart(period);
+                });
+            });
+        }
+
         <% if (session.getAttribute("toastMsg") != null) { 
             String msg = (String) session.getAttribute("toastMsg");
             String type = (String) session.getAttribute("toastType");
@@ -5411,6 +5690,7 @@
             }
             observeTeacherDashboardFrame();
             initOverviewPeriodSwitch();
+            initWalletRevenueChart();
         });
 
         window.addEventListener('DOMContentLoaded', () => {
