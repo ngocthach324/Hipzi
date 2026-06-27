@@ -174,21 +174,30 @@ public class TeacherDriveOAuthServlet extends HttpServlet {
         if (shouldUseConfiguredCallback(request, configured)) {
             return configured;
         }
+        return externalBaseUrl(request) + request.getContextPath() + "/teacher-drive/callback";
+    }
+
+    private String externalBaseUrl(HttpServletRequest request) {
         String scheme = firstNonBlank(request.getHeader("X-Forwarded-Proto"), request.getScheme());
         String forwardedHost = request.getHeader("X-Forwarded-Host");
         if (!isBlank(forwardedHost)) {
-            return scheme + "://" + forwardedHost + request.getContextPath() + "/teacher-drive/callback";
+            return scheme + "://" + forwardedHost;
+        }
+        String hostHeader = request.getHeader("Host");
+        if (!isBlank(hostHeader)) {
+            return scheme + "://" + hostHeader;
         }
 
         String host = request.getServerName();
         if (host.contains(":")) {
-            return scheme + "://" + host + request.getContextPath() + "/teacher-drive/callback";
+            return scheme + "://" + host;
         }
+
         int port = request.getServerPort();
         boolean defaultPort = ("http".equalsIgnoreCase(scheme) && port == 80)
                 || ("https".equalsIgnoreCase(scheme) && port == 443);
         String portPart = defaultPort ? "" : ":" + port;
-        return scheme + "://" + host + portPart + request.getContextPath() + "/teacher-drive/callback";
+        return scheme + "://" + host + portPart;
     }
 
     private boolean shouldUseConfiguredCallback(HttpServletRequest request, String configured) {

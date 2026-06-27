@@ -189,22 +189,30 @@ public class GoogleOAuthServlet extends HttpServlet {
             return configured;
         }
 
+        return externalBaseUrl(request) + request.getContextPath() + "/auth/google/callback";
+    }
+
+    private String externalBaseUrl(HttpServletRequest request) {
         String scheme = firstNonBlank(request.getHeader("X-Forwarded-Proto"), request.getScheme());
         String forwardedHost = request.getHeader("X-Forwarded-Host");
         if (!isBlank(forwardedHost)) {
-            return scheme + "://" + forwardedHost + request.getContextPath() + "/auth/google/callback";
+            return scheme + "://" + forwardedHost;
+        }
+        String hostHeader = request.getHeader("Host");
+        if (!isBlank(hostHeader)) {
+            return scheme + "://" + hostHeader;
         }
 
         String host = request.getServerName();
         if (host.contains(":")) {
-            return scheme + "://" + host + request.getContextPath() + "/auth/google/callback";
+            return scheme + "://" + host;
         }
 
         int port = request.getServerPort();
         boolean defaultPort = ("http".equalsIgnoreCase(scheme) && port == 80)
                 || ("https".equalsIgnoreCase(scheme) && port == 443);
         String portPart = defaultPort ? "" : ":" + port;
-        return scheme + "://" + host + portPart + request.getContextPath() + "/auth/google/callback";
+        return scheme + "://" + host + portPart;
     }
 
     private boolean shouldUseConfiguredCallback(HttpServletRequest request, String configured) {
