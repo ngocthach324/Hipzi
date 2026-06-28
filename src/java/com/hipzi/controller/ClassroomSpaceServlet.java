@@ -106,6 +106,14 @@ public class ClassroomSpaceServlet extends HttpServlet {
             return;
         }
 
+        String addStudentEmail = cleanParam(request.getParameter("addStudentEmail"));
+        if (canReviewEnrollments && !addStudentEmail.isEmpty()) {
+            User addStudentCandidate = enrollmentDao.findAddableStudentByEmail(classId, addStudentEmail);
+            request.setAttribute("addStudentEmail", addStudentEmail);
+            request.setAttribute("addStudentCandidate", addStudentCandidate);
+            request.setAttribute("addStudentSearchDone", Boolean.TRUE);
+        }
+
         List<ClassroomMaterial> allMaterials = materialDao.listByClassroom(classId);
         boolean canSubmitHomework = acceptedStudent && hasRole(user, "student") && !canManageClassroom;
         List<ClassroomQuiz> classroomQuizzes = quizDao.listByClassroom(classId, !canManageClassroom);
@@ -229,7 +237,30 @@ public class ClassroomSpaceServlet extends HttpServlet {
             session.setAttribute("toastMsg", saved
                     ? ("accepted".equals(decision) ? "ÄÃ£ cháº¥p nháº­n há»c viÃªn vÃ o lá»›p." : "ÄÃ£ tá»« chá»‘i yÃªu cáº§u tham gia lá»›p.")
                     : "ChÆ°a cáº­p nháº­t Ä‘Æ°á»£c yÃªu cáº§u tham gia lá»›p.");
+            session.setAttribute("toastMsg", saved
+                    ? ("accepted".equals(decision)
+                            ? "\u0110\u00e3 ch\u1ea5p nh\u1eadn h\u1ecdc vi\u00ean v\u00e0o l\u1edbp."
+                            : "\u0110\u00e3 x\u00f3a h\u1ecdc vi\u00ean kh\u1ecfi l\u1edbp.")
+                    : "Ch\u01b0a c\u1eadp nh\u1eadt \u0111\u01b0\u1ee3c h\u1ecdc vi\u00ean.");
             session.setAttribute("toastType", saved ? "success" : "error");
+        } else if ("addStudentByEmail".equals(action)) {
+            if (!canReviewEnrollments) {
+                session.setAttribute("toastMsg", "Chỉ giảng viên phụ trách lớp mới có thể thêm học sinh thủ công.");
+                session.setAttribute("toastType", "error");
+                response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-info");
+                return;
+            }
+            String studentId = cleanParam(request.getParameter("studentId"));
+            String studentEmail = cleanParam(request.getParameter("studentEmail"));
+            User candidate = enrollmentDao.findAddableStudentByEmail(classId, studentEmail);
+            boolean saved = candidate != null
+                    && candidate.getId() != null
+                    && candidate.getId().equals(studentId)
+                    && enrollmentDao.addAcceptedStudent(classId, studentId, user.getId());
+            session.setAttribute("toastMsg", saved ? "Đã thêm học sinh vào lớp." : "Không thể thêm học sinh này. Tài khoản có thể không phải học sinh hoặc đã ở trong lớp.");
+            session.setAttribute("toastType", saved ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-info");
+            return;
         } else if ("uploadClassMaterial".equals(action)) {
             boolean saved;
             try {

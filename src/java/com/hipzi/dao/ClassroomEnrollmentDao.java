@@ -1,6 +1,7 @@
 package com.hipzi.dao;
 
 import com.hipzi.model.ClassroomEnrollment;
+import com.hipzi.model.User;
 import com.hipzi.util.DBContext;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,6 +11,65 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClassroomEnrollmentDao {
+
+    public User findAddableStudentByEmail(String classroomId, String email) {
+        String normalizedEmail = email == null ? "" : email.trim().toLowerCase();
+        if (classroomId == null || classroomId.trim().isEmpty() || normalizedEmail.isEmpty()) {
+            return null;
+        }
+        String sql = "SELECT u.* "
+                + "FROM users u "
+                + "JOIN user_roles ur ON ur.user_id = u.id AND ur.is_active = true "
+                + "JOIN roles r ON r.id = ur.role_id AND LOWER(r.name) = 'student' "
+                + "LEFT JOIN classroom_enrollments ce "
+                + "ON ce.classroom_id = ?::uuid AND ce.student_id = u.id AND ce.status = 'accepted' "
+                + "WHERE LOWER(TRIM(u.email)) = ? "
+                + "AND u.deleted_at IS NULL "
+                + "AND u.account_status = 'active' "
+                + "AND ce.id IS NULL "
+                + "LIMIT 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, classroomId);
+            ps.setString(2, normalizedEmail);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getString("id"));
+                    user.setEmail(rs.getString("email"));
+                    user.setDisplayName(rs.getString("display_name"));
+                    user.setAvatarUrl(rs.getString("avatar_url"));
+                    user.setAccountStatus(rs.getString("account_status"));
+                    user.setStudentCode(rs.getString("student_code"));
+                    return user;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in ClassroomEnrollmentDao.findAddableStudentByEmail: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean addAcceptedStudent(String classroomId, String studentId, String reviewerId) {
+        String sql = "INSERT INTO classroom_enrollments (classroom_id, student_id, status, reviewed_by, reviewed_at) "
+                + "VALUES (?::uuid, ?::uuid, 'accepted', ?::uuid, now()) "
+                + "ON CONFLICT (classroom_id, student_id) DO UPDATE SET "
+                + "status = 'accepted', reviewed_by = EXCLUDED.reviewed_by, reviewed_at = now(), updated_at = now()";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, classroomId);
+            ps.setString(2, studentId);
+            ps.setString(3, reviewerId);
+            int changed = ps.executeUpdate();
+            if (changed > 0) {
+                refreshStudentCount(conn, classroomId);
+            }
+            return changed > 0;
+        } catch (SQLException e) {
+            System.err.println("Error in ClassroomEnrollmentDao.addAcceptedStudent: " + e.getMessage());
+        }
+        return false;
+    }
 
     public ClassroomEnrollment findByClassroomAndStudent(String classroomId, String studentId) {
         String sql = "SELECT ce.*, u.display_name AS student_name, u.email AS student_email "

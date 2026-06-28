@@ -1595,17 +1595,16 @@
             })
             .then(function(data) {
                 examRunning = false;
-                examSubmitting = false;
                 if (data.success) {
-                    window.alert((autoSubmit ? 'Đã hết giờ. ' : '') + 'Nộp bài thành công!\nĐiểm của bạn: ' + data.score + '\nVi phạm ghi nhận: ' + violations.length);
-                } else {
-                    window.alert('Thông báo: ' + data.message);
+                    <% if (classId != null && !classId.trim().isEmpty()) { %>
+                        window.location.replace("<%= request.getContextPath() %>/classroom?id=<%= h(classId) %>#tab-exams");
+                    <% } else { %>
+                        window.location.replace("<%= request.getContextPath() %>/exam-room");
+                    <% } %>
+                    return;
                 }
-                <% if (classId != null && !classId.trim().isEmpty()) { %>
-                    window.location.href = "<%= request.getContextPath() %>/classroom?id=<%= h(classId) %>#tab-exams";
-                <% } else { %>
-                    window.location.href = "<%= request.getContextPath() %>/exam-room";
-                <% } %>
+                examSubmitting = false;
+                window.alert('Thông báo: ' + data.message);
             })
             .catch(function(err) {
                 examSubmitting = false;

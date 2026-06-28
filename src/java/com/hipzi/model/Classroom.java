@@ -20,6 +20,7 @@ public class Classroom {
     private Time startTime;
     private Time endTime;
     private String schedule;
+    private String onlineRoomUrl;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
@@ -92,6 +93,9 @@ public class Classroom {
 
     public String getSchedule() { return schedule; }
     public void setSchedule(String schedule) { this.schedule = schedule; }
+
+    public String getOnlineRoomUrl() { return onlineRoomUrl; }
+    public void setOnlineRoomUrl(String onlineRoomUrl) { this.onlineRoomUrl = onlineRoomUrl; }
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }

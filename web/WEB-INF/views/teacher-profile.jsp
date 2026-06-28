@@ -3627,6 +3627,10 @@
                                                     <label>Mô tả ngắn</label>
                                                     <textarea name="classDescription" rows="3"><%= cls.getDescription() != null ? cls.getDescription() : "" %></textarea>
                                                 </div>
+                                                <div class="form-group-premium" style="margin: 0;">
+                                                    <label>Link Zoom lớp học</label>
+                                                    <input type="url" name="classOnlineRoomUrl" value="<%= cls.getOnlineRoomUrl() != null ? cls.getOnlineRoomUrl() : "" %>" placeholder="Dán link Zoom meeting của giảng viên">
+                                                </div>
                                             </div>
                                         </form>
                                     </div>
@@ -3721,6 +3725,11 @@
                             <div class="form-group-premium" style="margin-bottom: 1.25rem;">
                                 <label>Mô tả ngắn</label>
                                 <textarea name="classDescription" rows="3" placeholder="Nhập mô tả vắn tắt về lớp học này..."></textarea>
+                            </div>
+
+                            <div class="form-group-premium" style="margin-bottom: 1.25rem;">
+                                <label>Link Zoom lớp học</label>
+                                <input type="url" name="classOnlineRoomUrl" placeholder="Dán link Zoom meeting của giảng viên">
                             </div>
 
                             <div class="form-actions-row-premium">

@@ -4,6 +4,7 @@
 <%@page import="com.hipzi.model.AdminUserSummary"%>
 <%@page import="com.hipzi.model.Classroom"%>
 <%@page import="com.hipzi.model.Course"%>
+<%@page import="com.hipzi.model.MockExam"%>
 <%@page import="com.hipzi.model.TeacherApplication"%>
 <%@page import="com.hipzi.model.Notification"%>
 <%@page import="com.hipzi.model.SupportMessage"%>
@@ -77,6 +78,17 @@
         if ("paid".equalsIgnoreCase(status)) return "background:#ecfdf5; color:#059669;";
         if ("failed".equalsIgnoreCase(status) || "cancelled".equalsIgnoreCase(status) || "expired".equalsIgnoreCase(status)) return "background:#fef2f2; color:#dc2626;";
         return "background:#fff7ed; color:#c2410c;";
+    }
+
+    private String mockExamTypeLabel(String type) {
+        if ("essay".equals(type)) return "Tự luận";
+        return "Trắc nghiệm";
+    }
+
+    private String mockExamStatusLabel(String status) {
+        if ("published".equals(status)) return "Đã xuất bản";
+        if ("archived".equals(status)) return "Đã lưu trữ";
+        return "Bản nháp";
     }
 
     private String staffUserGrowthJson(List<StaffUserGrowthStats.Point> points) {
@@ -4131,6 +4143,7 @@
         if (staffUserGrowthStats == null) {
             staffUserGrowthStats = new StaffUserGrowthStats();
         }
+        List<MockExam> staffMockExams = (List<MockExam>) request.getAttribute("staffMockExams");
         String staffWeeklyUserGrowthJson = staffUserGrowthJson(staffUserGrowthStats.getWeeklyPoints());
         String staffMonthlyUserGrowthJson = staffUserGrowthJson(staffUserGrowthStats.getMonthlyPoints());
         String activeStaffTab = request.getParameter("tab");
@@ -4153,6 +4166,7 @@
                 !activeStaffTab.equals("tab-profile") &&
                 !activeStaffTab.equals("tab-edit") &&
                 !activeStaffTab.equals("tab-materials") &&
+                !activeStaffTab.equals("tab-mock-exams") &&
                 !activeStaffTab.equals("tab-practice") &&
                 !activeStaffTab.equals("tab-notifications") &&
                 !activeStaffTab.equals("tab-support")) {
@@ -4292,6 +4306,12 @@
                     <a id="nav-tab-materials" class="<%= "tab-materials".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-materials')">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                         <span>Hàng đợi duyệt tài liệu</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-tab-mock-exams" class="<%= "tab-mock-exams".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-mock-exams')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        <span>Đăng tải thi thử</span>
                     </a>
                 </li>
                 <li>
@@ -5542,6 +5562,8 @@
             </section>
 
             <!-- ========================================== -->
+            <jsp:include page="/WEB-INF/views/partials/staff-mock-exams-tab.jsp" />
+
             <!-- TAB 5: LỊCH SỬ LUYỆN TẬP                   -->
             <!-- ========================================== -->
             <section id="tab-practice" class="tab-pane <%= "tab-practice".equals(activeStaffTab) ? "active-pane" : "" %>">
@@ -6093,6 +6115,7 @@
             'tab-profile': 'Hồ sơ cá nhân',
             'tab-edit': 'Cập nhật thông tin',
             'tab-materials': 'Hàng đợi duyệt tài liệu',
+            'tab-mock-exams': 'Đăng tải thi thử',
             'tab-practice': 'Đăng ký giảng viên',
             'tab-notifications': 'Thông báo hệ thống',
             'tab-support': 'Hỗ trợ nghiệp vụ',
@@ -6435,7 +6458,10 @@
             <% } %>
         }
 
-        window.addEventListener('DOMContentLoaded', connectStaffStatusSocket);
+        window.addEventListener('DOMContentLoaded', () => {
+            connectStaffStatusSocket();
+            toggleMockExamTypeFields();
+        });
 
         const supportForm = document.getElementById('supportForm');
         if (supportForm) {
@@ -6476,4 +6502,6 @@
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
 </html>
+
+
 

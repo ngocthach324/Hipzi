@@ -3,6 +3,9 @@ package com.hipzi.controller;
 import com.hipzi.model.Notification;
 import com.hipzi.model.Classroom;
 import com.hipzi.model.Course;
+import com.hipzi.model.MockExam;
+import com.hipzi.model.MockExamEssay;
+import com.hipzi.model.MockExamQuestion;
 import com.hipzi.model.StudentProfile;
 import com.hipzi.model.SupportMessage;
 import com.hipzi.model.SupportTicket;
@@ -32,6 +35,7 @@ import com.hipzi.dao.ClassroomDao;
 import com.hipzi.dao.TeachingScheduleDao;
 import com.hipzi.dao.CourseDao;
 import com.hipzi.dao.CourseOrderDao;
+import com.hipzi.dao.MockExamDao;
 import com.hipzi.dao.RepositoryMaterialDao;
 import com.hipzi.dao.StaffUserGrowthStatsDao;
 import com.hipzi.dao.StudentStudyProgressDao;
@@ -82,6 +86,7 @@ public class ProfileServlet extends HttpServlet {
     private final ClassroomDao classroomDao = new ClassroomDao();
     private final CourseDao courseDao = new CourseDao();
     private final CourseOrderDao courseOrderDao = new CourseOrderDao();
+    private final MockExamDao mockExamDao = new MockExamDao();
     private final RepositoryMaterialDao repositoryMaterialDao = new RepositoryMaterialDao();
     private final SupportTicketDao supportTicketDao = new SupportTicketDao();
     private final GoogleDriveOAuthService googleDriveOAuthService = new GoogleDriveOAuthService();
@@ -247,6 +252,7 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("staffCourseTransactions", courseOrderDao.listForStaffTransactions(saleStatus, saleSearch, 120));
             request.setAttribute("saleStatus", saleStatus);
             request.setAttribute("saleSearch", saleSearch);
+            request.setAttribute("staffMockExams", mockExamDao.listForStaff(80));
         } else if ("/WEB-INF/views/admin-profile.jsp".equals(targetJsp)) {
             request.setAttribute("systemOverview", adminStatsDao.getSystemOverview());
             int adminUserPage = parsePositiveInt(request.getParameter("userPage"), 1);
@@ -752,6 +758,35 @@ public class ProfileServlet extends HttpServlet {
                     session.setAttribute("toastMsg", "Không thể cập nhật trạng thái hồ sơ. Vui lòng thử lại.");
                     session.setAttribute("toastType", "error");
                 }
+            } else if ("createMockExam".equals(action)) {
+                if (!hasRole(user, "staff") && !hasRole(user, "admin")) {
+                    session.setAttribute("toastMsg", "Bạn không có quyền đăng tải đề thi thử.");
+                    session.setAttribute("toastType", "error");
+                } else {
+                    MockExam exam = buildMockExamFromRequest(request, user.getId());
+                    String examType = cleanParam(request.getParameter("mockExamType"));
+                    if ("essay".equals(examType)) {
+                        List<MockExamEssay> essays = buildMockExamEssaysFromRequest(request);
+                        if (!isValidMockExam(exam) || essays.isEmpty()) {
+                            session.setAttribute("toastMsg", "Vui lòng nhập đầy đủ tiêu đề, môn, khối lớp và ít nhất một đề tự luận.");
+                            session.setAttribute("toastType", "error");
+                        } else {
+                            boolean saved = mockExamDao.createEssay(exam, essays);
+                            session.setAttribute("toastMsg", saved ? "Đã đăng tải đề tự luận thi thử." : "Chưa lưu được đề tự luận. Vui lòng kiểm tra database mock_exam_essays.");
+                            session.setAttribute("toastType", saved ? "success" : "error");
+                        }
+                    } else {
+                        List<MockExamQuestion> questions = buildMockExamQuestionsFromRequest(request);
+                        if (!isValidMockExam(exam) || questions.isEmpty()) {
+                            session.setAttribute("toastMsg", "Vui lòng nhập đầy đủ tiêu đề, môn, khối lớp và ít nhất một câu trắc nghiệm có đủ 4 đáp án.");
+                            session.setAttribute("toastType", "error");
+                        } else {
+                            boolean saved = mockExamDao.createMultipleChoice(exam, questions);
+                            session.setAttribute("toastMsg", saved ? "Đã đăng tải đề trắc nghiệm thi thử." : "Chưa lưu được đề trắc nghiệm. Vui lòng kiểm tra database mock_exam_questions.");
+                            session.setAttribute("toastType", saved ? "success" : "error");
+                        }
+                    }
+                }
             } else if ("submitSupport".equals(action)) {
                 String title = request.getParameter("title");
                 String message = request.getParameter("message");
@@ -819,6 +854,8 @@ public class ProfileServlet extends HttpServlet {
             returnPath += "?tab=teaching-registration";
         } else if ("reviewTeacherApplication".equals(action)) {
             returnPath += "?tab=teacher-approval";
+        } else if ("createMockExam".equals(action)) {
+            returnPath += "?tab=mock-exams";
         }
         response.sendRedirect(request.getContextPath() + returnPath);
     }
@@ -840,6 +877,88 @@ public class ProfileServlet extends HttpServlet {
                 || request.getParameter("currentStudyYear") != null
                 || request.getParameter("teacherBio") != null
                 || request.getParameterValues("teachingSubjects") != null;
+    }
+
+    private MockExam buildMockExamFromRequest(HttpServletRequest request, String creatorId) {
+        MockExam exam = new MockExam();
+        exam.setTitle(cleanParam(request.getParameter("mockExamTitle")));
+        exam.setDescription(cleanParam(request.getParameter("mockExamDescription")));
+        String type = cleanParam(request.getParameter("mockExamType"));
+        exam.setExamType("essay".equals(type) ? "essay" : "multiple_choice");
+        exam.setSubject(cleanParam(request.getParameter("mockExamSubject")));
+        exam.setGradeLevel(cleanParam(request.getParameter("mockExamGrade")));
+        int duration = parsePositiveInt(request.getParameter("mockExamDuration"), 0);
+        exam.setDurationMinutes(duration > 0 ? duration : null);
+        String status = cleanParam(request.getParameter("mockExamStatus"));
+        exam.setStatus("published".equals(status) ? "published" : "draft");
+        exam.setCreatedBy(creatorId);
+        return exam;
+    }
+
+    private List<MockExamQuestion> buildMockExamQuestionsFromRequest(HttpServletRequest request) {
+        List<MockExamQuestion> questions = new ArrayList<>();
+        String[] texts = request.getParameterValues("questionText");
+        String[] optionA = request.getParameterValues("optionA");
+        String[] optionB = request.getParameterValues("optionB");
+        String[] optionC = request.getParameterValues("optionC");
+        String[] optionD = request.getParameterValues("optionD");
+        String[] correct = request.getParameterValues("correctOption");
+        String[] explanations = request.getParameterValues("explanation");
+        int total = texts == null ? 0 : texts.length;
+        for (int i = 0; i < total; i++) {
+            String questionText = cleanAt(texts, i);
+            if (questionText.isEmpty()) continue;
+            String a = cleanAt(optionA, i);
+            String b = cleanAt(optionB, i);
+            String c = cleanAt(optionC, i);
+            String d = cleanAt(optionD, i);
+            String right = cleanAt(correct, i).toUpperCase(Locale.ROOT);
+            if (a.isEmpty() || b.isEmpty() || c.isEmpty() || d.isEmpty() || !right.matches("[ABCD]")) {
+                continue;
+            }
+            MockExamQuestion question = new MockExamQuestion();
+            question.setQuestionText(questionText);
+            question.setOptionA(a);
+            question.setOptionB(b);
+            question.setOptionC(c);
+            question.setOptionD(d);
+            question.setCorrectOption(right);
+            question.setExplanation(cleanAt(explanations, i));
+            question.setSortOrder(questions.size() + 1);
+            questions.add(question);
+        }
+        return questions;
+    }
+
+    private List<MockExamEssay> buildMockExamEssaysFromRequest(HttpServletRequest request) {
+        List<MockExamEssay> essays = new ArrayList<>();
+        String[] prompts = request.getParameterValues("essayPrompt");
+        String[] answers = request.getParameterValues("essayReferenceAnswer");
+        int total = prompts == null ? 0 : prompts.length;
+        for (int i = 0; i < total; i++) {
+            String prompt = cleanAt(prompts, i);
+            if (prompt.isEmpty()) continue;
+            MockExamEssay essay = new MockExamEssay();
+            essay.setPromptText(prompt);
+            essay.setReferenceAnswer(cleanAt(answers, i));
+            essay.setSortOrder(essays.size() + 1);
+            essays.add(essay);
+        }
+        return essays;
+    }
+
+    private boolean isValidMockExam(MockExam exam) {
+        return exam != null
+                && exam.getTitle() != null && !exam.getTitle().trim().isEmpty()
+                && exam.getSubject() != null && !exam.getSubject().trim().isEmpty()
+                && exam.getGradeLevel() != null && !exam.getGradeLevel().trim().isEmpty();
+    }
+
+    private String cleanAt(String[] values, int index) {
+        if (values == null || index < 0 || index >= values.length) {
+            return "";
+        }
+        return cleanParam(values[index]);
     }
 
     private String uploadLimitMessage(IllegalStateException e) {
@@ -889,6 +1008,7 @@ public class ProfileServlet extends HttpServlet {
                 : cleanParam(request.getParameter("scheduleDays")));
         classroom.setStartTime(parseTimeParam(request.getParameter("startTime")));
         classroom.setEndTime(parseTimeParam(request.getParameter("endTime")));
+        classroom.setOnlineRoomUrl(normalizeOnlineRoomUrl(request.getParameter("classOnlineRoomUrl")));
 
         String status = cleanParam(request.getParameter("classStatus"));
         if (!"upcoming".equals(status) && !"closed".equals(status)) {
@@ -896,6 +1016,15 @@ public class ProfileServlet extends HttpServlet {
         }
         classroom.setStatus(status);
         return classroom;
+    }
+
+    private String normalizeOnlineRoomUrl(String value) {
+        String cleaned = cleanParam(value);
+        if (cleaned.isEmpty()) {
+            return "";
+        }
+        String lower = cleaned.toLowerCase(java.util.Locale.ROOT);
+        return (lower.startsWith("https://") || lower.startsWith("http://")) ? cleaned : "";
     }
 
     private Course buildCourseFromRequest(HttpServletRequest request, User user)

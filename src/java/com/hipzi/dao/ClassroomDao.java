@@ -74,7 +74,7 @@ public class ClassroomDao {
         long startedAt = System.nanoTime();
         StringBuilder sql = new StringBuilder(
                 "SELECT c.id, c.class_code, c.teacher_id, c.title, c.subject, c.grade_level, c.description, "
-                + "c.student_count, c.status, c.schedule_days, c.start_time, c.end_time, "
+                + "c.student_count, c.status, c.schedule_days, c.start_time, c.end_time, c.online_room_url, "
                 + "c.created_at, c.updated_at, "
                 + "u.display_name AS teacher_name, u.avatar_url AS teacher_avatar_url, "
                 + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "
@@ -207,8 +207,8 @@ public class ClassroomDao {
             classroom.setClassCode("HPZ-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(Locale.ROOT));
         }
         String sql = "INSERT INTO classrooms "
-                + "(id, teacher_id, class_code, title, subject, grade_level, description, schedule_days, start_time, end_time, status) "
-                + "VALUES (?::uuid, ?::uuid, ?, ?, ?, ?, ?, ?, ?::time, ?::time, ?)";
+                + "(id, teacher_id, class_code, title, subject, grade_level, description, schedule_days, start_time, end_time, status, online_room_url) "
+                + "VALUES (?::uuid, ?::uuid, ?, ?, ?, ?, ?, ?, ?::time, ?::time, ?, ?)";
 
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -217,6 +217,7 @@ public class ClassroomDao {
             ps.setString(2, classroom.getTeacherId());
             ps.setString(3, classroom.getClassCode());
             bindEditableFields(ps, classroom, 4, false);
+            ps.setString(12, classroom.getOnlineRoomUrl());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error in ClassroomDao.create: " + e.getMessage());
@@ -227,15 +228,16 @@ public class ClassroomDao {
     public boolean updateForTeacher(Classroom classroom) {
         String sql = "UPDATE classrooms SET "
                 + "title = ?, subject = ?, grade_level = ?, description = ?, schedule_days = ?, "
-                + "start_time = ?::time, end_time = ?::time, status = ?, updated_at = NOW() "
+                + "start_time = ?::time, end_time = ?::time, status = ?, online_room_url = ?, updated_at = NOW() "
                 + "WHERE id = ?::uuid AND teacher_id = ?::uuid";
 
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             bindEditableFields(ps, classroom, 1, false);
-            ps.setString(9, classroom.getId());
-            ps.setString(10, classroom.getTeacherId());
+            ps.setString(9, classroom.getOnlineRoomUrl());
+            ps.setString(10, classroom.getId());
+            ps.setString(11, classroom.getTeacherId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error in ClassroomDao.updateForTeacher: " + e.getMessage());
@@ -303,6 +305,8 @@ public class ClassroomDao {
         classroom.setTeacherName(readOptionalString(rs, "teacher_name"));
         classroom.setTeacherSchool(readOptionalString(rs, "teacher_school"));
         classroom.setTeacherAvatarUrl(readOptionalString(rs, "teacher_avatar_url"));
+        String onlineRoomUrl = readOptionalString(rs, "online_room_url");
+        classroom.setOnlineRoomUrl(onlineRoomUrl != null ? onlineRoomUrl.trim() : "");
         classroom.setSchedule(formatSchedule(classroom.getScheduleDays(), classroom.getStartTime(), classroom.getEndTime()));
         classroom.setCreatedAt(rs.getTimestamp("created_at"));
         classroom.setUpdatedAt(rs.getTimestamp("updated_at"));
@@ -337,6 +341,7 @@ public class ClassroomDao {
                     + "SET class_code = 'HPZ-' || upper(substring(id::text from 1 for 6)) "
                     + "WHERE class_code IS NULL OR trim(class_code) = ''");
             st.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_classrooms_class_code_unique ON classrooms(class_code)");
+            st.execute("ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS online_room_url TEXT");
         } catch (SQLException e) {
             System.err.println("Error in ClassroomDao.ensureSchema: " + e.getMessage());
         }

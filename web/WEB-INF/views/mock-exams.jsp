@@ -1,5 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
+<%@page import="com.hipzi.model.MockExam"%>
+<%@page import="java.util.List"%>
 <%!
     private String h(String value) {
         if (value == null) return "";
@@ -11,6 +13,10 @@
 %>
 <%
     User user = (User) session.getAttribute("loggedUser");
+    List<MockExam> publishedMockMcqExams = (List<MockExam>) request.getAttribute("publishedMockMcqExams");
+    List<MockExam> publishedMockEssayExams = (List<MockExam>) request.getAttribute("publishedMockEssayExams");
+    boolean hasPublishedMcq = publishedMockMcqExams != null && !publishedMockMcqExams.isEmpty();
+    boolean hasPublishedEssay = publishedMockEssayExams != null && !publishedMockEssayExams.isEmpty();
     String initials = "H";
     if (user != null && user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
         String[] parts = user.getDisplayName().trim().split("\\s+");
@@ -993,6 +999,38 @@
                     </div>
 
                     <div class="exam-grid">
+                        <% if (hasPublishedMcq) {
+                            for (MockExam exam : publishedMockMcqExams) {
+                                String desc = exam.getDescription() != null && !exam.getDescription().trim().isEmpty()
+                                        ? exam.getDescription()
+                                        : "Đề trắc nghiệm được staff HIPZI đăng tải từ dữ liệu thật.";
+                        %>
+                        <article class="exam-card" data-search="<%= h((exam.getTitle() + " " + exam.getSubject() + " " + exam.getGradeLevel()).toLowerCase()) %>" data-tags="<%= h((exam.getSubject() + " " + exam.getGradeLevel()).toLowerCase()) %>">
+                            <div class="exam-card-top">
+                                <span class="exam-type">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                    Trắc nghiệm
+                                </span>
+                                <span class="exam-match">Dữ liệu thật</span>
+                            </div>
+                            <h3><%= h(exam.getTitle()) %></h3>
+                            <p class="exam-desc"><%= h(desc) %></p>
+                            <div class="exam-meta-grid">
+                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg><%= h(exam.getSubject()) %></span>
+                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><%= exam.getDurationMinutes() != null ? exam.getDurationMinutes() + " phút" : "Không giới hạn" %></span>
+                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg><%= exam.getItemCount() %> câu</span>
+                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg><%= h(exam.getGradeLevel()) %></span>
+                            </div>
+                            <div class="exam-progress">
+                                <div class="exam-progress-row"><span>Trạng thái dữ liệu</span><strong>Live</strong></div>
+                                <span class="progress-track"><span style="--value: 100%;"></span></span>
+                            </div>
+                            <div class="exam-footer">
+                                <a href="#" class="btn-start">Vào thi <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+                            </div>
+                        </article>
+                        <% }
+                        } else { %>
                         <article class="exam-card" data-search="Đề thi thử THPT Quốc Gia Môn Toán Mã đề 101 trắc nghiệm toán học 90 phút nâng cao" data-tags="toan thpt nang-cao">
                             <div class="exam-card-top">
                                 <span class="exam-type">
@@ -1070,6 +1108,7 @@
                                 <button type="button" class="icon-action" aria-label="Lưu đề Sinh học" title="Lưu đề"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
                             </div>
                         </article>
+                        <% } %>
                     </div>
 
                     <div class="empty-state" aria-live="polite">
@@ -1185,6 +1224,38 @@
                     </div>
 
                     <div class="exam-grid">
+                        <% if (hasPublishedEssay) {
+                            for (MockExam exam : publishedMockEssayExams) {
+                                String desc = exam.getDescription() != null && !exam.getDescription().trim().isEmpty()
+                                        ? exam.getDescription()
+                                        : "Đề tự luận được staff HIPZI đăng tải từ dữ liệu thật.";
+                        %>
+                        <article class="exam-card" data-search="<%= h((exam.getTitle() + " " + exam.getSubject() + " " + exam.getGradeLevel()).toLowerCase()) %>" data-tags="<%= h((exam.getSubject() + " " + exam.getGradeLevel()).toLowerCase()) %>">
+                            <div class="exam-card-top">
+                                <span class="exam-type essay">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                    Tự luận
+                                </span>
+                                <span class="exam-match">Dữ liệu thật</span>
+                            </div>
+                            <h3><%= h(exam.getTitle()) %></h3>
+                            <p class="exam-desc"><%= h(desc) %></p>
+                            <div class="exam-meta-grid">
+                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg><%= h(exam.getSubject()) %></span>
+                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><%= exam.getDurationMinutes() != null ? exam.getDurationMinutes() + " phút" : "Không giới hạn" %></span>
+                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><%= exam.getItemCount() %> đề</span>
+                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg><%= h(exam.getGradeLevel()) %></span>
+                            </div>
+                            <div class="exam-progress">
+                                <div class="exam-progress-row"><span>Trạng thái dữ liệu</span><strong>Live</strong></div>
+                                <span class="progress-track"><span style="--value: 100%;"></span></span>
+                            </div>
+                            <div class="exam-footer">
+                                <a href="#" class="btn-start">Luyện viết <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+                            </div>
+                        </article>
+                        <% }
+                        } else { %>
                         <article class="exam-card" data-search="Tự luận Ngữ văn phân tích đoạn thơ Việt Bắc viết nâng cao" data-tags="ngu-van viet nang-cao">
                             <div class="exam-card-top">
                                 <span class="exam-type essay">
@@ -1236,6 +1307,7 @@
                                 <button type="button" class="icon-action" aria-label="Lưu bài tự luận Tiếng Anh" title="Lưu bài"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
                             </div>
                         </article>
+                        <% } %>
                     </div>
 
                     <div class="empty-state" aria-live="polite">

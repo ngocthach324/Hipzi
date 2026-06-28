@@ -157,6 +157,9 @@
     boolean canSubmitHomework = Boolean.TRUE.equals(request.getAttribute("canSubmitHomework"));
     List<ClassroomEnrollment> pendingEnrollments = (List<ClassroomEnrollment>) request.getAttribute("pendingEnrollments");
     List<ClassroomEnrollment> acceptedEnrollments = (List<ClassroomEnrollment>) request.getAttribute("acceptedEnrollments");
+    String addStudentEmail = (String) request.getAttribute("addStudentEmail");
+    User addStudentCandidate = (User) request.getAttribute("addStudentCandidate");
+    boolean addStudentSearchDone = Boolean.TRUE.equals(request.getAttribute("addStudentSearchDone"));
     List<ClassroomMaterial> classMaterials = (List<ClassroomMaterial>) request.getAttribute("classMaterials");
     List<ClassroomMaterial> classHomework = (List<ClassroomMaterial>) request.getAttribute("classHomework");
     List<ClassroomMaterial> classExamMaterials = (List<ClassroomMaterial>) request.getAttribute("classExamMaterials");
@@ -173,7 +176,10 @@
     String teacherAvatarUrl = classroom != null && classroom.getTeacherAvatarUrl() != null ? classroom.getTeacherAvatarUrl().trim() : "";
     String schedule = classroom != null && classroom.getSchedule() != null ? classroom.getSchedule() : "Lịch học đang cập nhật";
     String statusLabel = classroom != null ? classroom.getStatusLabel() : "Đang mở";
-    String onlineRoomHref = "https://meet.google.com/new";
+    String onlineRoomHref = classroom != null && classroom.getOnlineRoomUrl() != null && !classroom.getOnlineRoomUrl().trim().isEmpty()
+            ? classroom.getOnlineRoomUrl().trim()
+            : "";
+    boolean hasOnlineRoomLink = !onlineRoomHref.isEmpty();
     int pendingCount = pendingEnrollments != null ? pendingEnrollments.size() : 0;
     int acceptedCount = acceptedEnrollments != null ? acceptedEnrollments.size() : 0;
     int materialCount = classMaterials != null ? classMaterials.size() : 0;
@@ -747,6 +753,76 @@
         .student-card-remove:hover {
             background: #fee2e2;
             color: #ef4444;
+        }
+
+        .manual-student-add {
+            display: grid;
+            gap: 0.85rem;
+        }
+
+        .manual-student-search {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .manual-student-search input {
+            width: 100%;
+            min-height: 46px;
+            border: 1px solid #dbeafe;
+            border-radius: 999px;
+            padding: 0 1rem;
+            font: inherit;
+            font-weight: 700;
+            color: #0f172a;
+            background: #f8fafc;
+            box-sizing: border-box;
+        }
+
+        .manual-student-search input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+            background: #fff;
+        }
+
+        .manual-student-result {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem;
+            border: 1px solid #dbeafe;
+            border-radius: 1rem;
+            background: #f8fafc;
+        }
+
+        .manual-student-result-main {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            min-width: 0;
+        }
+
+        .manual-student-result-main strong,
+        .manual-student-result-main span {
+            display: block;
+        }
+
+        .manual-student-result-main span {
+            color: #64748b;
+            font-weight: 700;
+            font-size: 0.9rem;
+            word-break: break-word;
+        }
+
+        @media (max-width: 640px) {
+            .manual-student-search,
+            .manual-student-result {
+                grid-template-columns: 1fr;
+                display: grid;
+            }
         }
 
         .review-actions {
@@ -2111,7 +2187,13 @@
 
         <section class="classroom-hero">
             <div class="classroom-hero-main">
-                <a class="online-room-btn" href="<%= h(onlineRoomHref) %>" target="_blank" rel="noopener">Vào phòng học online</a>
+                <% if (hasOnlineRoomLink) { %>
+                    <a class="online-room-btn" href="<%= h(onlineRoomHref) %>" target="_blank" rel="noopener">Vào phòng học online</a>
+                <% } else if (canManageClassroom) { %>
+                    <a class="online-room-btn" href="${pageContext.request.contextPath}/teacher-profile?tab=class-registration" title="Dán link Zoom meeting thật của lớp trong phần chỉnh sửa lớp">Cập nhật link Zoom</a>
+                <% } else { %>
+                    <button type="button" class="online-room-btn" disabled title="Giảng viên sẽ cập nhật link Zoom meeting cho lớp học" style="cursor:not-allowed; opacity:0.72;">Chờ link Zoom từ giảng viên</button>
+                <% } %>
             </div>
             <aside class="classroom-teacher-card" aria-label="Thông tin giảng viên">
                 <div class="classroom-teacher-photo">
@@ -2169,6 +2251,43 @@
                 </section>
 
                 <% if (canReviewEnrollments) { %>
+                    <section class="classroom-card classroom-tab-panel active" data-classroom-panel="info">
+                        <h2>Thêm học sinh</h2>
+                        <div class="manual-student-add">
+                            <form class="manual-student-search" action="${pageContext.request.contextPath}/classroom" method="GET">
+                                <input type="hidden" name="id" value="<%= h(classroom.getId()) %>">
+                                <input type="hidden" name="tab" value="info">
+                                <input type="email" name="addStudentEmail" value="<%= h(addStudentEmail) %>" placeholder="Nhập email học sinh" required>
+                                <button class="mini-btn primary" type="submit">Tìm học sinh</button>
+                            </form>
+
+                            <% if (addStudentSearchDone && addStudentCandidate != null) {
+                                String candidateName = addStudentCandidate.getDisplayName() != null && !addStudentCandidate.getDisplayName().trim().isEmpty()
+                                        ? addStudentCandidate.getDisplayName().trim()
+                                        : "Học sinh";
+                            %>
+                                <div class="manual-student-result">
+                                    <div class="manual-student-result-main">
+                                        <div class="student-avatar"><%= h(candidateName.substring(0, 1).toUpperCase()) %></div>
+                                        <div>
+                                            <strong><%= h(candidateName) %></strong>
+                                            <span><%= h(addStudentCandidate.getEmail()) %></span>
+                                        </div>
+                                    </div>
+                                    <form action="${pageContext.request.contextPath}/classroom" method="POST">
+                                        <input type="hidden" name="action" value="addStudentByEmail">
+                                        <input type="hidden" name="classId" value="<%= h(classroom.getId()) %>">
+                                        <input type="hidden" name="studentId" value="<%= h(addStudentCandidate.getId()) %>">
+                                        <input type="hidden" name="studentEmail" value="<%= h(addStudentCandidate.getEmail()) %>">
+                                        <button class="mini-btn primary" type="submit">Thêm vào lớp</button>
+                                    </form>
+                                </div>
+                            <% } else if (addStudentSearchDone) { %>
+                                <div class="empty-state">Không tìm thấy tài khoản học sinh phù hợp, hoặc học sinh đã ở trong lớp.</div>
+                            <% } %>
+                        </div>
+                    </section>
+
                     <section class="classroom-card classroom-tab-panel active" data-classroom-panel="info">
                         <h2>Hàng chờ học viên</h2>
                         <div class="student-card-grid">
@@ -2447,6 +2566,9 @@
                                     String manageHref = request.getContextPath()
                                             + "/class-exam-manage?classId=" + u(classroom.getId())
                                             + "&code=" + u(exam.getExamCode());
+                                    String resultHref = request.getContextPath()
+                                            + "/class-exam-result?classId=" + u(classroom.getId())
+                                            + "&code=" + u(exam.getExamCode());
                                     boolean isExamOpenNow = "open".equals(exam.getStatus())
                                             && exam.getStartAt() != null
                                             && exam.getEndAt() != null
@@ -2461,6 +2583,7 @@
                                     int usedAttempts = examUsage != null ? examUsage.getAttemptCount() : 0;
                                     int allowedAttempts = examUsage != null ? examUsage.getAllowedAttemptCount() : Math.max(1, exam.getAttemptLimit());
                                     boolean hasActiveAttempt = examUsage != null && examUsage.getAttempt() != null && "in_progress".equals(examUsage.getAttempt().getStatus());
+                                    boolean hasExamResult = examUsage != null && examUsage.getBestScore() != null;
                                     boolean outOfAttempts = usedAttempts >= allowedAttempts && !hasActiveAttempt;
                                 %>
                                     <article class="class-exam-card">
@@ -2497,9 +2620,14 @@
                                                 <% } else { %>
                                                     <% if (outOfAttempts) { %>
                                                         <button type="button" class="mini-btn preview" disabled style="cursor:not-allowed; opacity:0.78;">Đã hết lượt làm bài</button>
-                                                        <button type="button" class="mini-btn primary" disabled title="Phát triển sau" style="cursor:not-allowed; opacity:0.78;">Xem kết quả</button>
+                                                        <% if (hasExamResult) { %>
+                                                            <a class="mini-btn primary" href="<%= h(resultHref) %>">Xem kết quả</a>
+                                                        <% } %>
                                                     <% } else { %>
                                                         <button type="button" class="mini-btn primary" onclick="openExamRulesModal('<%= h(examHref + "&autoStart=true") %>')">Vào làm bài</button>
+                                                        <% if (hasExamResult) { %>
+                                                            <a class="mini-btn preview" href="<%= h(resultHref) %>">Xem kết quả</a>
+                                                        <% } %>
                                                     <% } %>
                                                 <% } %>
                                                 <% if (exam.getSourceMaterialId() != null && !exam.getSourceMaterialId().isEmpty()) { %>
