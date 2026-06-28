@@ -116,7 +116,7 @@
         </div>
 
         <div class="tab-body-content" style="display:grid; gap:1.25rem;">
-            <div class="section-data-card">
+            <div class="section-data-card" style="overflow: visible;">
                 <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
                     <div class="card-header-title">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -148,7 +148,21 @@
                         </div>
                         <div class="form-group-premium">
                             <label>Môn học</label>
-                            <input type="text" name="mockExamSubject" required placeholder="Tiếng Anh, Toán, Ngữ văn...">
+                            <select name="mockExamSubject" required style="width:100%; padding:0.9rem 1rem; border:1px solid #dbe7ef; border-radius:0.85rem; font-weight:750;">
+                                <option value="" disabled selected>Chọn môn học...</option>
+                                <option value="Toán">Toán</option>
+                                <option value="Vật lý">Vật lý</option>
+                                <option value="Hóa học">Hóa học</option>
+                                <option value="Sinh học">Sinh học</option>
+                                <option value="Ngữ văn">Ngữ văn</option>
+                                <option value="Lịch sử">Lịch sử</option>
+                                <option value="Địa lý">Địa lý</option>
+                                <option value="Tiếng Anh">Tiếng Anh</option>
+                                <option value="Giáo dục công dân">Giáo dục công dân</option>
+                                <option value="Tin học">Tin học</option>
+                                <option value="Công nghệ">Công nghệ</option>
+                                <option value="Ngoại ngữ khác">Ngoại ngữ khác</option>
+                            </select>
                         </div>
                         <div class="form-group-premium">
                             <label>Khối / cấp độ</label>
@@ -170,7 +184,7 @@
                                 <h3 style="margin:0; font-size:1rem; color:#0f172a;">Câu hỏi trắc nghiệm</h3>
                                 <p style="margin:0.25rem 0 0; color:#64748b; font-weight:650;">Mỗi câu lưu 4 đáp án và một đáp án chính xác.</p>
                             </div>
-                            <button type="button" class="btn-premium btn-secondary" onclick="addMockQuestionBlock()">Thêm câu hỏi</button>
+                            <button type="button" class="btn-premium btn-primary" onclick="addMockQuestionBlock()">Thêm câu hỏi</button>
                         </div>
                         <div id="mockQuestionList" style="display:grid; gap:1rem;">
                             <div class="mock-question-block">
@@ -189,7 +203,7 @@
                                         <option value="D">Đúng: D</option>
                                     </select>
                                     <input name="explanation" type="text" placeholder="Giải thích ngắn nếu có">
-                                    <button type="button" class="btn-premium btn-secondary" onclick="removeMockBlock(this)">Xóa</button>
+                                    <button type="button" class="btn-premium btn-primary" onclick="removeMockBlock(this)">Xóa</button>
                                 </div>
                             </div>
                         </div>
@@ -201,14 +215,14 @@
                                 <h3 style="margin:0; font-size:1rem; color:#0f172a;">Đề tự luận</h3>
                                 <p style="margin:0.25rem 0 0; color:#64748b; font-weight:650;">Lưu đề dạng text và đáp án tham khảo.</p>
                             </div>
-                            <button type="button" class="btn-premium btn-secondary" onclick="addMockEssayBlock()">Thêm đề tự luận</button>
+                            <button type="button" class="btn-premium btn-primary" onclick="addMockEssayBlock()">Thêm đề tự luận</button>
                         </div>
                         <div id="mockEssayList" style="display:grid; gap:1rem;">
                             <div class="mock-essay-block">
                                 <textarea name="essayPrompt" rows="4" placeholder="Nhập đề bài tự luận"></textarea>
                                 <textarea name="essayReferenceAnswer" rows="4" placeholder="Gợi ý đáp án, dàn ý hoặc rubric tham khảo"></textarea>
                                 <div style="display:flex; justify-content:flex-end;">
-                                    <button type="button" class="btn-premium btn-secondary" onclick="removeMockBlock(this)">Xóa</button>
+                                    <button type="button" class="btn-premium btn-primary" onclick="removeMockBlock(this)">Xóa</button>
                                 </div>
                             </div>
                         </div>

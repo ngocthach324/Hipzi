@@ -50,7 +50,6 @@
             --mock-rose: #be123c;
             --mock-shadow: 0 18px 50px rgba(15, 23, 42, 0.09);
         }
-
         body {
             background: #f6fbf9;
             color: var(--mock-ink);
@@ -76,7 +75,7 @@
         /* ── EXAM HERO ──────────────────────────────── */
         .page-hero-exam {
             text-align: center;
-            padding: 8rem 1.5rem 3.5rem;
+            padding: 2.5rem 1.5rem 1rem;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -199,7 +198,7 @@
         .mock-shell {
             position: relative;
             z-index: 1;
-            width: min(1180px, 100%);
+            width: 98%; max-width: none;
             margin: 0 auto;
         }
 
@@ -366,7 +365,7 @@
 
         .mock-tabs {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 0.6rem;
             padding: 0.85rem;
             background: rgba(248, 250, 252, 0.82);
@@ -487,22 +486,28 @@
             flex-wrap: wrap;
         }
 
-        .mock-filter {
+        .mock-filter-select {
             min-height: 40px;
             border: 1px solid var(--mock-line);
             border-radius: 8px;
             background: #ffffff;
             color: #475569;
-            padding: 0.55rem 0.8rem;
+            padding: 0.55rem 2.5rem 0.55rem 1rem;
             font-family: inherit;
             font-weight: 800;
             cursor: pointer;
-            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            outline: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="none" viewBox="0 0 24 24" stroke="%23475569" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>');
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+            transition: all 0.2s ease;
         }
 
-        .mock-filter:hover,
-        .mock-filter.active {
-            background: #ecfdf5;
+        .mock-filter-select:focus,
+        .mock-filter-select:hover {
+            background-color: #ecfdf5;
             color: var(--mock-primary-strong);
             border-color: rgba(4, 120, 87, 0.3);
         }
@@ -563,7 +568,7 @@
 
         .exam-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 1rem;
         }
 
@@ -793,7 +798,7 @@
 
         @media (max-width: 1080px) {
             .mock-hero {
-                grid-template-columns: 1fr;
+                flex-direction: column;
             }
 
             .mock-hero-card {
@@ -832,11 +837,11 @@
             }
 
             .mock-tabs {
-                grid-template-columns: 1fr;
+                flex-direction: column;
             }
 
             .mock-toolbox {
-                grid-template-columns: 1fr;
+                flex-direction: column;
             }
 
             .mock-filters {
@@ -853,7 +858,7 @@
             }
 
             .exam-grid {
-                grid-template-columns: 1fr;
+                flex-direction: column;
             }
         }
 
@@ -876,7 +881,7 @@
             }
 
             .exam-meta-grid {
-                grid-template-columns: 1fr;
+                flex-direction: column;
             }
         }
     </style>
@@ -896,7 +901,7 @@
                 <li><a href="${pageContext.request.contextPath}/material-repository">Kho tài liệu</a></li>
                 <li><a href="${pageContext.request.contextPath}/classes">Lớp học</a></li>
 
-                <li><a href="${pageContext.request.contextPath}/exam-room" class="active">Phòng thi</a></li>
+                <li><a href="${pageContext.request.contextPath}/mock-exams" class="active">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
                 <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
             </ul>
@@ -929,19 +934,7 @@
                 <h1 id="mock-title" class="hero-title-exam">
                     Chọn đúng dạng luyện tập, <span class="hero-title-accent">vào bài nhanh hơn.</span>
                 </h1>
-                <p class="hero-sub-exam">
-                    Giao diện gom đề thi theo 3 dạng rõ ràng: <strong>trắc nghiệm</strong> để kiểm tra tốc độ,
-                    <strong>flashcard</strong> để ghi nhớ trọng tâm và <strong>tự luận</strong> để rèn lập luận.
-                    Mỗi lựa chọn được sắp theo mục tiêu giúp bạn nhìn nhanh nội dung phù hợp trước khi bắt đầu.
-                </p>
-                <div class="hero-exam-search-wrap">
-                    <div class="hero-exam-search-bar">
-                        <svg style="color:#64748b;flex-shrink:0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                        <input id="heroExamSearch" type="text" class="hero-exam-search-input" placeholder="Tìm kiếm đề thi, môn học, chủ đề..." autocomplete="off">
-                        <button class="hero-exam-search-btn" onclick="syncSearchToToolbox()">Tìm kiếm</button>
-                    </div>
-                </div>
-            </section>
+</section>
 
             <section class="mock-board" aria-label="Danh sách bài thi thử">
                 <div class="mock-tabs" role="tablist" aria-label="Chọn dạng bài thi">
@@ -980,12 +973,21 @@
                         <input id="mockSearch" type="search" placeholder="Tìm theo môn, kỹ năng, mục tiêu...">
                     </label>
                     <div class="mock-filters" aria-label="Bộ lọc nhanh">
-                        <button type="button" class="mock-filter active" data-filter="all">Tất cả</button>
-                        <button type="button" class="mock-filter" data-filter="toan">Toán</button>
-                        <button type="button" class="mock-filter" data-filter="tieng-anh">Tiếng Anh</button>
-                        <button type="button" class="mock-filter" data-filter="nang-cao">Nâng cao</button>
-                        <button type="button" class="mock-filter" data-filter="cap-toc">Cấp tốc</button>
-                        <button type="button" class="mock-filter" data-filter="viet">Viết</button>
+                        <select class="mock-filter-select" aria-label="Chọn môn học hoặc kỹ năng">
+                                                        <option value="all">Tất cả</option>
+                            <option value="toan">Toán</option>
+                            <option value="ngu-van">Ngữ văn</option>
+                            <option value="vat-ly">Vật lý</option>
+                            <option value="hoa-hoc">Hóa học</option>
+                            <option value="sinh-hoc">Sinh học</option>
+                            <option value="lich-su">Lịch sử</option>
+                            <option value="dia-ly">Địa lý</option>
+                            <option value="tieng-anh">Tiếng Anh</option>
+                            <option value="giao-duc-cong-dan">Giáo dục công dân</option>
+                            <option value="tin-hoc">Tin học</option>
+                            <option value="cong-nghe">Công nghệ</option>
+                            <option value="ngoai-ngu-khac">Ngoại ngữ khác</option>
+                        </select>
                     </div>
                 </div>
 
@@ -1011,22 +1013,17 @@
                                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                                     Trắc nghiệm
                                 </span>
-                                <span class="exam-match">Dữ liệu thật</span>
                             </div>
                             <h3><%= h(exam.getTitle()) %></h3>
                             <p class="exam-desc"><%= h(desc) %></p>
                             <div class="exam-meta-grid">
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg><%= h(exam.getSubject()) %></span>
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><%= exam.getDurationMinutes() != null ? exam.getDurationMinutes() + " phút" : "Không giới hạn" %></span>
+                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><%= exam.getDurationMinutes() != null ? exam.getDurationMinutes() + " phút" : "45 phút" %></span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg><%= exam.getItemCount() %> câu</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg><%= h(exam.getGradeLevel()) %></span>
                             </div>
-                            <div class="exam-progress">
-                                <div class="exam-progress-row"><span>Trạng thái dữ liệu</span><strong>Live</strong></div>
-                                <span class="progress-track"><span style="--value: 100%;"></span></span>
-                            </div>
                             <div class="exam-footer">
-                                <a href="#" class="btn-start">Vào thi <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+                                <a href="${pageContext.request.contextPath}/mock-exam-room?examId=<%= exam.getId() %>" class="btn-start">Vào thi <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
                             </div>
                         </article>
                         <% }
@@ -1046,10 +1043,6 @@
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>90 phút</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>50 câu</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Nâng cao</span>
-                            </div>
-                            <div class="exam-progress">
-                                <div class="exam-progress-row"><span>Mức sẵn sàng</span><strong>78%</strong></div>
-                                <span class="progress-track"><span style="--value: 78%;"></span></span>
                             </div>
                             <div class="exam-footer">
                                 <a href="#" class="btn-start">Vào thi <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
@@ -1073,10 +1066,6 @@
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>20 câu</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>Cấp tốc</span>
                             </div>
-                            <div class="exam-progress">
-                                <div class="exam-progress-row"><span>Mức sẵn sàng</span><strong>64%</strong></div>
-                                <span class="progress-track"><span style="--value: 64%;"></span></span>
-                            </div>
                             <div class="exam-footer">
                                 <a href="#" class="btn-start">Vào thi <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
                                 <button type="button" class="icon-action" aria-label="Lưu đề Tiếng Anh" title="Lưu đề"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
@@ -1098,10 +1087,6 @@
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>45 phút</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>35 câu</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Nâng cao</span>
-                            </div>
-                            <div class="exam-progress">
-                                <div class="exam-progress-row"><span>Mức sẵn sàng</span><strong>71%</strong></div>
-                                <span class="progress-track"><span style="--value: 71%;"></span></span>
                             </div>
                             <div class="exam-footer">
                                 <a href="#" class="btn-start">Vào thi <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
@@ -1144,10 +1129,6 @@
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>12 phút</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>Cấp tốc</span>
                             </div>
-                            <div class="exam-progress">
-                                <div class="exam-progress-row"><span>Đã ghi nhớ</span><strong>42%</strong></div>
-                                <span class="progress-track"><span style="--value: 42%;"></span></span>
-                            </div>
                             <div class="exam-footer">
                                 <a href="#" class="btn-start">Ôn tập thẻ <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
                                 <button type="button" class="icon-action" aria-label="Lưu bộ thẻ Tiếng Anh" title="Lưu bộ thẻ"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
@@ -1170,10 +1151,6 @@
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>18 phút</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Nâng cao</span>
                             </div>
-                            <div class="exam-progress">
-                                <div class="exam-progress-row"><span>Đã ghi nhớ</span><strong>68%</strong></div>
-                                <span class="progress-track"><span style="--value: 68%;"></span></span>
-                            </div>
                             <div class="exam-footer">
                                 <a href="#" class="btn-start">Ôn tập thẻ <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
                                 <button type="button" class="icon-action" aria-label="Lưu bộ thẻ Vật lý" title="Lưu bộ thẻ"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
@@ -1195,10 +1172,6 @@
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h8"/></svg>84 thẻ</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>10 phút</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>Cấp tốc</span>
-                            </div>
-                            <div class="exam-progress">
-                                <div class="exam-progress-row"><span>Đã ghi nhớ</span><strong>35%</strong></div>
-                                <span class="progress-track"><span style="--value: 35%;"></span></span>
                             </div>
                             <div class="exam-footer">
                                 <a href="#" class="btn-start">Ôn tập thẻ <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
@@ -1236,19 +1209,14 @@
                                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                                     Tự luận
                                 </span>
-                                <span class="exam-match">Dữ liệu thật</span>
                             </div>
                             <h3><%= h(exam.getTitle()) %></h3>
                             <p class="exam-desc"><%= h(desc) %></p>
                             <div class="exam-meta-grid">
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg><%= h(exam.getSubject()) %></span>
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><%= exam.getDurationMinutes() != null ? exam.getDurationMinutes() + " phút" : "Không giới hạn" %></span>
+                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><%= exam.getDurationMinutes() != null ? exam.getDurationMinutes() + " phút" : "45 phút" %></span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><%= exam.getItemCount() %> đề</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg><%= h(exam.getGradeLevel()) %></span>
-                            </div>
-                            <div class="exam-progress">
-                                <div class="exam-progress-row"><span>Trạng thái dữ liệu</span><strong>Live</strong></div>
-                                <span class="progress-track"><span style="--value: 100%;"></span></span>
                             </div>
                             <div class="exam-footer">
                                 <a href="#" class="btn-start">Luyện viết <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
@@ -1272,10 +1240,6 @@
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Viết dàn ý</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Nâng cao</span>
                             </div>
-                            <div class="exam-progress">
-                                <div class="exam-progress-row"><span>Độ hoàn thiện</span><strong>58%</strong></div>
-                                <span class="progress-track"><span style="--value: 58%;"></span></span>
-                            </div>
                             <div class="exam-footer">
                                 <a href="#" class="btn-start">Luyện viết <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
                                 <button type="button" class="icon-action" aria-label="Lưu bài tự luận Ngữ văn" title="Lưu bài"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
@@ -1297,10 +1261,6 @@
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>40 phút</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>250 từ</span>
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Nâng cao</span>
-                            </div>
-                            <div class="exam-progress">
-                                <div class="exam-progress-row"><span>Độ hoàn thiện</span><strong>46%</strong></div>
-                                <span class="progress-track"><span style="--value: 46%;"></span></span>
                             </div>
                             <div class="exam-footer">
                                 <a href="#" class="btn-start">Luyện viết <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
@@ -1325,7 +1285,7 @@
         (function () {
             const tabs = Array.from(document.querySelectorAll('.mock-tab'));
             const panels = Array.from(document.querySelectorAll('.mock-tab-content'));
-            const filters = Array.from(document.querySelectorAll('.mock-filter'));
+            const filterSelect = document.querySelector('.mock-filter-select');
             const searchInput = document.getElementById('mockSearch');
             let activeTab = 'mcq';
             let activeFilter = 'all';
@@ -1343,9 +1303,10 @@
 
             function setFilter(nextFilter) {
                 activeFilter = nextFilter;
-                filters.forEach(filter => {
-                    filter.classList.toggle('active', filter.dataset.filter === nextFilter);
-                });
+                if (filterSelect && filterSelect.value !== nextFilter) {
+                    filterSelect.value = nextFilter;
+                }
+            });
             }
 
             function applyFilters() {
@@ -1395,12 +1356,12 @@
                 tab.addEventListener('click', () => switchTab(tab.dataset.tabTarget));
             });
 
-            filters.forEach(filter => {
-                filter.addEventListener('click', () => {
-                    setFilter(filter.dataset.filter);
+            if (filterSelect) {
+                filterSelect.addEventListener('change', (e) => {
+                    setFilter(e.target.value);
                     applyFilters();
                 });
-            });
+            }
 
             if (searchInput) {
                 searchInput.addEventListener('input', applyFilters);
@@ -1419,20 +1380,19 @@
             });
             applyFilters();
         })();
-
-        // Sync hero search to the toolbox search input
-        function syncSearchToToolbox() {
-            const heroInput = document.getElementById('heroExamSearch');
-            const toolboxInput = document.getElementById('mockSearch');
-            if (heroInput && toolboxInput) {
-                toolboxInput.value = heroInput.value;
-                toolboxInput.dispatchEvent(new Event('input'));
-                toolboxInput.closest('.mock-board')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-        document.getElementById('heroExamSearch')?.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') { e.preventDefault(); syncSearchToToolbox(); }
-        });
-    </script>
+</script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+

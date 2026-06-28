@@ -137,6 +137,61 @@ public class MockExamDao {
         return exams;
     }
 
+    public MockExam findByIdAndStatus(String id, String status) {
+        ensureSchema();
+        String sql = "SELECT me.*, u.display_name AS creator_name, "
+                + "CASE "
+                + "WHEN me.exam_type = 'multiple_choice' THEN COALESCE((SELECT COUNT(*) FROM mock_exam_questions q WHERE q.mock_exam_id = me.id), 0) "
+                + "WHEN me.exam_type = 'essay' THEN COALESCE((SELECT COUNT(*) FROM mock_exam_essays e WHERE e.mock_exam_id = me.id), 0) "
+                + "ELSE 0 END AS item_count "
+                + "FROM mock_exams me "
+                + "LEFT JOIN users u ON u.id = me.created_by "
+                + "WHERE me.id = ?::uuid AND me.status = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, id);
+            ps.setString(2, status);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in MockExamDao.findByIdAndStatus: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public List<MockExamQuestion> listQuestionsByExamId(String examId) {
+        ensureSchema();
+        List<MockExamQuestion> list = new ArrayList<>();
+        String sql = "SELECT * FROM mock_exam_questions WHERE mock_exam_id = ?::uuid ORDER BY sort_order ASC";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, examId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    MockExamQuestion q = new MockExamQuestion();
+                    q.setId(rs.getString("id"));
+                    q.setMockExamId(rs.getString("mock_exam_id"));
+                    q.setQuestionText(rs.getString("question_text"));
+                    q.setOptionA(rs.getString("option_a"));
+                    q.setOptionB(rs.getString("option_b"));
+                    q.setOptionC(rs.getString("option_c"));
+                    q.setOptionD(rs.getString("option_d"));
+                    q.setCorrectOption(rs.getString("correct_option"));
+                    q.setExplanation(rs.getString("explanation"));
+                    q.setSortOrder(rs.getInt("sort_order"));
+                    q.setCreatedAt(rs.getTimestamp("created_at"));
+                    list.add(q);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in MockExamDao.listQuestionsByExamId: " + e.getMessage());
+        }
+        return list;
+    }
+
     private String insertExam(Connection conn, MockExam exam, String type) throws SQLException {
         String sql = "INSERT INTO mock_exams "
                 + "(title, description, exam_type, subject, grade_level, duration_minutes, status, created_by) "
@@ -300,3 +355,4 @@ public class MockExamDao {
         }
     }
 }
+

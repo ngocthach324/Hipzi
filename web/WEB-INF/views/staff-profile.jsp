@@ -4168,7 +4168,6 @@
                 !activeStaffTab.equals("tab-materials") &&
                 !activeStaffTab.equals("tab-mock-exams") &&
                 !activeStaffTab.equals("tab-practice") &&
-                !activeStaffTab.equals("tab-notifications") &&
                 !activeStaffTab.equals("tab-support")) {
                 activeStaffTab = "tab-teacher-approval";
             }
@@ -4190,7 +4189,7 @@
                 <li><a href="${pageContext.request.contextPath}/classes">Lớp học</a></li>
 
 
-                <li><a href="${pageContext.request.contextPath}/exam-room">Phòng thi</a></li>
+                <li><a href="${pageContext.request.contextPath}/mock-exams">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
                 <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
             </ul>
@@ -6502,6 +6501,7 @@
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
 </html>
+
 
 
 

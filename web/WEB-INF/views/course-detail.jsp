@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Course"%>
 <%!
@@ -494,7 +494,7 @@
             <ul class="nav-links">
                 <li><a href="${pageContext.request.contextPath}/material-repository">Kho tài liệu</a></li>
                 <li><a href="${pageContext.request.contextPath}/classes">Lớp học</a></li>
-                <li><a href="${pageContext.request.contextPath}/exam-room">Phòng thi</a></li>
+                <li><a href="${pageContext.request.contextPath}/mock-exams">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/courses" class="active">Khóa học</a></li>
                 <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
             </ul>
@@ -1285,3 +1285,4 @@
     <% } %>
 </body>
 </html>
+
