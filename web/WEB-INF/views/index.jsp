@@ -17,6 +17,7 @@
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=10">
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/hero-v2.css">
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/hipzi-chat-widget.css?v=4">
                 <!-- Hiệu ứng cuộn mượt và chậm Lenis CSS -->
                 <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.13/dist/lenis.css">
                 <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
@@ -1699,7 +1700,10 @@
                         </div>
                     </footer>
 
+                    <%@ include file="/WEB-INF/fragments/hipzi-chat-widget.jspf" %>
+
                     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=3"></script>
+                    <script src="${pageContext.request.contextPath}/assets/js/hipzi-chat-widget.js?v=3"></script>
                     <!-- Hieu ung cuon muot va cham Lenis JS -->
                     <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
                     <script>

@@ -1,0 +1,328 @@
+.hipzi-chat {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 1100;
+    font-family: var(--font-sans, "Be Vietnam Pro", sans-serif);
+}
+
+.hipzi-chat * {
+    box-sizing: border-box;
+}
+
+.hipzi-chat__panel {
+    position: absolute;
+    right: 0;
+    bottom: 76px;
+    width: min(390px, calc(100vw - 32px));
+    height: min(520px, calc(100vh - 118px));
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    border: 1px solid rgba(219, 231, 239, 0.95);
+    border-radius: 24px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+    transform-origin: bottom right;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.hipzi-chat.is-open .hipzi-chat__panel {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.hipzi-chat__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px 12px;
+    background: linear-gradient(135deg, #047857 0%, #0f766e 100%);
+    color: #ffffff;
+}
+
+.hipzi-chat__identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.hipzi-chat__avatar {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    flex: 0 0 auto;
+}
+
+.hipzi-chat__title {
+    min-width: 0;
+}
+
+.hipzi-chat__title strong {
+    display: block;
+    font-size: 0.98rem;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.hipzi-chat__title span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 3px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.hipzi-chat__status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #86efac;
+    box-shadow: 0 0 0 4px rgba(134, 239, 172, 0.16);
+}
+
+.hipzi-chat__close {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.13);
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.hipzi-chat__body {
+    min-height: 0;
+    overflow: auto;
+    padding: 16px 16px;
+    background:
+        radial-gradient(circle at 10% 0%, rgba(209, 250, 229, 0.78), transparent 34%),
+        linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.hipzi-chat__day {
+    width: fit-content;
+    margin: 0 auto 12px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #eef6f2;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.hipzi-chat__messages {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.hipzi-chat__message {
+    max-width: 84%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.hipzi-chat__bubble {
+    padding: 11px 13px;
+    border-radius: 16px;
+    font-size: 0.88rem;
+    font-weight: 650;
+    line-height: 1.5;
+    white-space: pre-line;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+}
+
+.hipzi-chat__message--bot .hipzi-chat__bubble {
+    border-top-left-radius: 6px;
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+}
+
+.hipzi-chat__message--user {
+    align-self: flex-end;
+}
+
+.hipzi-chat__message--user .hipzi-chat__bubble {
+    border-top-right-radius: 6px;
+    background: #059669;
+    color: #ffffff;
+}
+
+.hipzi-chat__time {
+    padding: 0 4px;
+    color: #94a3b8;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.hipzi-chat__message--user .hipzi-chat__time {
+    text-align: right;
+}
+
+.hipzi-chat__chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.hipzi-chat__chip {
+    border: 1px solid #cdeee1;
+    border-radius: 999px;
+    background: #ecfdf5;
+    color: #047857;
+    padding: 7px 10px;
+    font: inherit;
+    font-size: 0.76rem;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.hipzi-chat__typing {
+    display: none;
+    align-items: center;
+    gap: 5px;
+    width: fit-content;
+    margin-top: 2px;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px 16px 16px 6px;
+    background: #ffffff;
+}
+
+.hipzi-chat.is-typing .hipzi-chat__typing {
+    display: flex;
+}
+
+.hipzi-chat__typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #94a3b8;
+    animation: hipzi-chat-pulse 1s ease-in-out infinite;
+}
+
+.hipzi-chat__typing span:nth-child(2) {
+    animation-delay: 0.12s;
+}
+
+.hipzi-chat__typing span:nth-child(3) {
+    animation-delay: 0.24s;
+}
+
+.hipzi-chat__composer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: end;
+    padding: 10px 12px;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.hipzi-chat__input {
+    min-height: 46px;
+    max-height: 112px;
+    resize: none;
+    border: 1px solid #dbe7ef;
+    border-radius: 16px;
+    padding: 12px 13px;
+    color: #0f172a;
+    background: #f8fafc;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 650;
+    line-height: 1.4;
+    outline: none;
+}
+
+.hipzi-chat__input:focus {
+    border-color: #10b981;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+}
+
+.hipzi-chat__send {
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 16px;
+    background: #059669;
+    color: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 12px 24px rgba(5, 150, 105, 0.24);
+}
+
+.hipzi-chat__send:disabled {
+    opacity: 0.48;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.hipzi-chat__launcher {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    margin-left: auto;
+    border: 0;
+    border-radius: 22px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+    box-shadow: 0 18px 34px rgba(5, 150, 105, 0.33);
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.hipzi-chat__launcher:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 22px 42px rgba(5, 150, 105, 0.38);
+}
+
+.hipzi-chat.is-open .hipzi-chat__launcher-open,
+.hipzi-chat__launcher-close {
+    display: none;
+}
+
+.hipzi-chat.is-open .hipzi-chat__launcher-close {
+    display: block;
+}
+
+@keyframes hipzi-chat-pulse {
+    0%, 80%, 100% { opacity: 0.35; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-3px); }
+}
+
+@media (max-width: 640px) {
+    .hipzi-chat {
+        right: 14px;
+        bottom: 14px;
+    }
+
+    .hipzi-chat__panel {
+        bottom: 72px;
+        width: calc(100vw - 28px);
+        height: min(480px, calc(100vh - 104px));
+        border-radius: 20px;
+    }
+}
