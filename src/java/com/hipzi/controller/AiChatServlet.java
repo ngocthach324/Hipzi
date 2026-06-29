@@ -47,9 +47,21 @@ public class AiChatServlet extends HttpServlet {
             }
 
             GroqChatService groq = new GroqChatService(config(request, "GROQ_API_KEYS"), config(request, "GROQ_MODEL"));
+            if (isGeneralLearningQuestion(message) && !isHipziResourceRequest(message)) {
+                String reply = groq.isConfigured()
+                        ? groq.chatGeneral(message)
+                        : generalLearningFallback(message, request.getContextPath());
+                writeJson(response, true, reply);
+                return;
+            }
+
             AiRecommendationService.AiContext aiContext = recommendationService.buildContext(message, request.getContextPath());
             if (isAvailabilityRequest(message)) {
                 writeJson(response, true, availabilityReply(aiContext, message, request.getContextPath()));
+                return;
+            }
+            if (isLearningRoadmapRequest(message)) {
+                writeJson(response, true, learningRoadmapReply(message, aiContext, request.getContextPath()));
                 return;
             }
             if (isStudyMaterialRequest(message, aiContext)) {
@@ -77,6 +89,14 @@ public class AiChatServlet extends HttpServlet {
         if (normalized.length() <= 30 && (normalized.equals("chao ban") || normalized.equals("chao")
                 || normalized.equals("hi") || normalized.equals("hello") || normalized.startsWith("xin chao"))) {
             return "Ch\u00e0o b\u1ea1n, m\u00ecnh l\u00e0 Hipzi AI. B\u1ea1n mu\u1ed1n m\u00ecnh h\u1ed7 tr\u1ee3 t\u00ecm l\u1edbp h\u1ecdc, t\u00e0i li\u1ec7u, kh\u00f3a h\u1ecdc hay ph\u00f2ng thi tr\u00ean HIPZI?";
+        }
+
+        if (normalized.contains("dang nhap") || normalized.contains("login")) {
+            return "B\u1ea1n \u0111\u0103ng nh\u1eadp HIPZI theo c\u00e1c b\u01b0\u1edbc n\u00e0y nh\u00e9:\n"
+                    + "1. B\u1ea5m n\u00fat B\u1eaft \u0111\u1ea7u ho\u1eb7c v\u00e0o trang \u0110\u0103ng nh\u1eadp.\n"
+                    + "2. Nh\u1eadp email/m\u1eadt kh\u1ea9u ho\u1eb7c ch\u1ecdn \u0111\u0103ng nh\u1eadp Google n\u1ebfu c\u00f3.\n"
+                    + "3. Sau khi \u0111\u0103ng nh\u1eadp, b\u1ea1n s\u1ebd \u0111\u01b0\u1ee3c chuy\u1ec3n v\u1ec1 h\u1ed3 s\u01a1 \u0111\u00fang vai tr\u00f2.\n"
+                    + "Link: " + contextPath + "/login";
         }
 
         if (normalized.contains("dang tai tai lieu") || normalized.contains("upload tai lieu")
@@ -156,10 +176,61 @@ public class AiChatServlet extends HttpServlet {
 
     private boolean isAvailabilityRequest(String message) {
         String normalized = normalize(message);
-        return normalized.contains(" con ") || normalized.startsWith("con ") || normalized.contains(" co ")
-                || normalized.startsWith("co ") || normalized.contains("co mon") || normalized.contains("co lop")
+        return normalized.contains(" con ") || normalized.startsWith("con ")
+                || normalized.contains("co mon") || normalized.contains("co lop")
+                || normalized.contains("co khoa hoc") || normalized.contains("co tai lieu")
                 || normalized.contains("he thong") || normalized.contains("lop hoc dang co")
                 || normalized.contains("nhung lop hoc nao") || normalized.contains("danh sach lop");
+    }
+
+    private boolean isHipziResourceRequest(String message) {
+        String normalized = normalize(message);
+        boolean resourceWord = normalized.contains("tai lieu") || normalized.contains("kho tai lieu")
+                || normalized.contains("lop hoc") || normalized.contains("khoa hoc")
+                || normalized.contains("phong thi") || normalized.contains("thi thu")
+                || normalized.contains("de thi");
+        boolean lookupWord = normalized.contains("tim") || normalized.contains("co ")
+                || normalized.startsWith("co ") || normalized.contains("con ")
+                || normalized.startsWith("con ") || normalized.contains("danh sach")
+                || normalized.contains("o dau") || normalized.contains("link")
+                || normalized.contains("trong hipzi") || normalized.contains("tren hipzi");
+        return resourceWord && lookupWord;
+    }
+
+    private boolean isGeneralLearningQuestion(String message) {
+        String normalized = normalize(message);
+        if (normalized.matches(".*\\d+\\s*(cong|tru|nhan|chia|\\+|\\-|x|\\*)\\s*\\d+.*")) {
+            return true;
+        }
+        boolean learningAction = normalized.contains("giai thich")
+                || normalized.contains("la gi")
+                || normalized.contains("bang may")
+                || normalized.contains("tinh ")
+                || normalized.startsWith("tinh ")
+                || normalized.contains("lo trinh")
+                || normalized.contains("ke hoach")
+                || normalized.contains("cach hoc")
+                || normalized.contains("hoc nhu the nao")
+                || normalized.contains("bat dau tu dau")
+                || normalized.contains("nen hoc gi")
+                || normalized.contains("goi y hoc")
+                || normalized.contains("muon hoc")
+                || normalized.contains("yeu phan")
+                || normalized.contains("mat goc");
+        boolean learningTopic = normalized.contains("hoc")
+                || normalized.contains("toan")
+                || normalized.contains("dai so")
+                || normalized.contains("hinh hoc")
+                || normalized.contains("luong giac")
+                || normalized.contains("tieng anh")
+                || normalized.contains("ngu van")
+                || normalized.contains("vat ly")
+                || normalized.contains("hoa hoc")
+                || normalized.contains("sinh hoc")
+                || normalized.contains("lap trinh")
+                || normalized.contains("tin hoc")
+                || normalized.matches(".*\\d+.*");
+        return learningAction && learningTopic;
     }
 
     private boolean isStudyMaterialRequest(String message, AiRecommendationService.AiContext context) {
@@ -170,6 +241,117 @@ public class AiChatServlet extends HttpServlet {
                 || normalized.contains("hoc kem") || normalized.contains("yeu") || normalized.contains("mat goc")
                 || normalized.contains("on tap") || normalized.contains("can tai lieu")
                 || normalized.contains("goi y tai lieu") || normalized.contains("nen hoc gi"));
+    }
+
+    private boolean isLearningRoadmapRequest(String message) {
+        String normalized = normalize(message);
+        boolean asksForPlan = normalized.contains("lo trinh")
+                || normalized.contains("ke hoach")
+                || normalized.contains("cach hoc")
+                || normalized.contains("hoc nhu the nao")
+                || normalized.contains("bat dau tu dau")
+                || normalized.contains("bat dau tu")
+                || normalized.contains("nen hoc gi")
+                || normalized.contains("goi y hoc")
+                || normalized.contains("muon hoc ve")
+                || normalized.contains("yeu phan")
+                || normalized.contains("mat goc");
+        boolean learningTopic = normalized.contains("hoc") || normalized.contains("on tap")
+                || normalized.contains("toan") || normalized.contains("luong giac")
+                || normalized.contains("tieng anh") || normalized.contains("ngu van")
+                || normalized.contains("vat ly") || normalized.contains("hoa hoc")
+                || normalized.contains("sinh hoc") || normalized.contains("lap trinh")
+                || normalized.contains("tin hoc");
+        return asksForPlan && learningTopic;
+    }
+
+    private String learningRoadmapReply(String message, AiRecommendationService.AiContext context, String contextPath) {
+        String normalized = normalize(message);
+        String topic = readableLearningTopic(message, context);
+        StringBuilder reply = new StringBuilder();
+
+        if (normalized.contains("luong giac")) {
+            reply.append("Được chứ. Nếu bạn đang yếu Toán lượng giác, mình gợi ý lộ trình cơ bản như này:\n")
+                    .append("1. Ôn nền tảng: góc, radian/độ, đường tròn lượng giác, sin/cos/tan/cot.\n")
+                    .append("2. Nắm giá trị đặc biệt: 0, 30, 45, 60, 90 độ và các góc liên quan trên đường tròn.\n")
+                    .append("3. Học công thức cốt lõi: hệ thức cơ bản, công thức cộng, nhân đôi, hạ bậc.\n")
+                    .append("4. Luyện biến đổi biểu thức: rút gọn, chứng minh đẳng thức, đổi sin-cos-tan hợp lý.\n")
+                    .append("5. Học phương trình lượng giác cơ bản: sin x = a, cos x = a, tan x = a, rồi tới dạng biến đổi đơn giản.\n")
+                    .append("6. Làm bài theo mức độ: nhận dạng công thức -> bài áp dụng -> bài tổng hợp.\n\n")
+                    .append("Mỗi ngày bạn có thể học 45-60 phút: 15 phút ôn công thức, 30 phút làm bài, 10 phút ghi lại lỗi sai. ");
+        } else {
+            reply.append("Được chứ. Với ").append(topic.isEmpty() ? "chủ đề bạn đang học" : topic)
+                    .append(", mình gợi ý lộ trình cơ bản:\n")
+                    .append("1. Xác định mục tiêu: học để lấy lại gốc, ôn kiểm tra hay nâng cao.\n")
+                    .append("2. Ôn khái niệm nền tảng và thuật ngữ chính trước khi làm bài.\n")
+                    .append("3. Học từng dạng bài nhỏ, mỗi dạng làm vài ví dụ mẫu.\n")
+                    .append("4. Luyện bài từ dễ đến trung bình, ghi lại lỗi sai lặp lại.\n")
+                    .append("5. Sau 1-2 tuần, làm một bài tổng hợp để kiểm tra phần còn hổng.\n\n")
+                    .append("Nếu bạn cho mình biết lớp và mục tiêu cụ thể, mình sẽ chia lịch học sát hơn. ");
+        }
+
+        String materialUrl = materialUrlForContext(context, contextPath);
+        if (!materialUrl.isEmpty()) {
+            reply.append("\n\nBạn cũng có thể mở Kho tài liệu HIPZI theo môn liên quan tại: ").append(materialUrl);
+        } else {
+            reply.append("\n\nBạn có thể tìm thêm tài liệu luyện tập trong Kho tài liệu HIPZI: ")
+                    .append(contextPath).append("/material-repository");
+        }
+
+        return reply.toString();
+    }
+
+    private String readableLearningTopic(String message, AiRecommendationService.AiContext context) {
+        String normalized = normalize(message);
+        if (normalized.contains("luong giac")) return "Toán lượng giác";
+        if (context != null && context.getHint() != null) {
+            if (!context.getHint().getMaterialSubject().isEmpty()) return context.getHint().getMaterialSubject();
+            if (!context.getHint().getClassroomSubject().isEmpty()) return context.getHint().getClassroomSubject();
+        }
+        if (normalized.contains("toan")) return "môn Toán";
+        if (normalized.contains("tieng anh") || normalized.contains("english")) return "môn Tiếng Anh";
+        if (normalized.contains("ngu van") || normalized.contains("van hoc")) return "môn Ngữ văn";
+        if (normalized.contains("lap trinh") || normalized.contains("tin hoc")) return "Tin học/lập trình";
+        return "";
+    }
+
+    private String generalLearningFallback(String message, String contextPath) {
+        String normalized = normalize(message);
+        if (normalized.matches(".*\\b1\\s*(\\+|cong)\\s*1\\b.*")) {
+            return "1 + 1 = 2.";
+        }
+        if (normalized.contains("toan") && normalized.contains("lop 10")
+                && (normalized.contains("lo trinh") || normalized.contains("ke hoach") || normalized.contains("cach hoc"))) {
+            return "M\u00ecnh g\u1ee3i \u00fd l\u1ed9 tr\u00ecnh To\u00e1n l\u1edbp 10 c\u01a1 b\u1ea3n nh\u01b0 sau:\n"
+                    + "1. \u00d4n \u0111\u1ea1i s\u1ed1 n\u1ec1n: m\u1ec7nh \u0111\u1ec1, t\u1eadp h\u1ee3p, bi\u1ebfn \u0111\u1ed5i bi\u1ec3u th\u1ee9c.\n"
+                    + "2. H\u1ecdc h\u00e0m s\u1ed1 v\u00e0 \u0111\u1ed3 th\u1ecb, \u0111\u1eb7c bi\u1ec7t h\u00e0m b\u1eadc nh\u1ea5t, b\u1eadc hai.\n"
+                    + "3. Luy\u1ec7n ph\u01b0\u01a1ng tr\u00ecnh, b\u1ea5t ph\u01b0\u01a1ng tr\u00ecnh v\u00e0 h\u1ec7 ph\u01b0\u01a1ng tr\u00ecnh c\u01a1 b\u1ea3n.\n"
+                    + "4. H\u1ecdc vect\u01a1, t\u00edch v\u00f4 h\u01b0\u1edbng v\u00e0 h\u00ecnh h\u1ecdc t\u1ecda \u0111\u1ed9.\n"
+                    + "5. Sau m\u1ed7i ch\u01b0\u01a1ng, l\u00e0m 1 \u0111\u1ec1 t\u1ed5ng h\u1ee3p \u0111\u1ec3 t\u00ecm ph\u1ea7n c\u00f2n h\u1ed5ng.\n\n"
+                    + "B\u1ea1n c\u00f3 th\u1ec3 t\u00ecm th\u00eam t\u00e0i li\u1ec7u trong HIPZI: " + contextPath + "/material-repository?subject=To%C3%A1n&grade=L%E1%BB%9Bp+10";
+        }
+        if (isLearningRoadmapRequest(message)) {
+            return "\u0110\u01b0\u1ee3c ch\u1ee9. M\u00ecnh g\u1ee3i \u00fd b\u1ea1n h\u1ecdc theo 5 b\u01b0\u1edbc:\n"
+                    + "1. X\u00e1c \u0111\u1ecbnh m\u1ee5c ti\u00eau v\u00e0 ph\u1ea7n \u0111ang y\u1ebfu.\n"
+                    + "2. \u00d4n kh\u00e1i ni\u1ec7m n\u1ec1n t\u1ea3ng tr\u01b0\u1edbc.\n"
+                    + "3. L\u00e0m v\u00ed d\u1ee5 m\u1eabu theo t\u1eebng d\u1ea1ng.\n"
+                    + "4. Luy\u1ec7n b\u00e0i t\u1eeb d\u1ec5 \u0111\u1ebfn trung b\u00ecnh v\u00e0 ghi l\u1ea1i l\u1ed7i sai.\n"
+                    + "5. M\u1ed7i tu\u1ea7n l\u00e0m m\u1ed9t b\u00e0i t\u1ed5ng h\u1ee3p \u0111\u1ec3 ki\u1ec3m tra ti\u1ebfn \u0111\u1ed9.\n\n"
+                    + "B\u1ea1n c\u00f3 th\u1ec3 t\u00ecm th\u00eam t\u00e0i li\u1ec7u trong HIPZI: " + contextPath + "/material-repository";
+        }
+        return "M\u00ecnh c\u00f3 th\u1ec3 tr\u1ea3 l\u1eddi c\u00e2u h\u1ecfi h\u1ecdc t\u1eadp chung, nh\u01b0ng hi\u1ec7n Groq ch\u01b0a \u0111\u01b0\u1ee3c c\u1ea5u h\u00ecnh. B\u1ea1n th\u00eam GROQ_API_KEYS \u0111\u1ec3 m\u00ecnh tr\u1ea3 l\u1eddi linh ho\u1ea1t h\u01a1n nh\u00e9.";
+    }
+
+    private String materialUrlForContext(AiRecommendationService.AiContext context, String contextPath) {
+        if (context == null || context.getHint() == null) return "";
+        AiRecommendationService.QueryHint hint = context.getHint();
+        String subject = !hint.getMaterialSubject().isEmpty() ? hint.getMaterialSubject() : hint.getClassroomSubject();
+        if (subject.isEmpty()) return "";
+        String materialUrl = contextPath + "/material-repository?subject=" + url(subject);
+        if (!hint.getGrade().isEmpty()) {
+            materialUrl += "&grade=" + url(hint.getGrade());
+        }
+        return materialUrl;
     }
 
     private String materialRecommendationReply(AiRecommendationService.AiContext context, String contextPath) {
@@ -217,7 +399,9 @@ public class AiChatServlet extends HttpServlet {
         String normalized = normalize(message);
         String target = readableTarget(context.getHint(), normalized);
         List<Classroom> classrooms = filteredClassroomsForHint(context);
-        boolean wantsClassroom = normalized.contains("lop") || normalized.contains("lop hoc");
+        boolean wantsClassroom = normalized.contains("lop hoc") || normalized.contains("cac lop")
+                || normalized.contains("danh sach lop") || normalized.contains("co lop")
+                || normalized.contains("tim lop");
         boolean wantsCourse = normalized.contains("khoa hoc") || normalized.contains("course");
         boolean wantsMaterial = normalized.contains("tai lieu") || normalized.contains("kho tai lieu");
 

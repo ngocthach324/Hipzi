@@ -3,6 +3,7 @@
     if (!root) return;
 
     const launcher = root.querySelector('[data-chat-launcher]');
+    const panel = root.querySelector('.hipzi-chat__panel');
     const closeButton = root.querySelector('[data-chat-close]');
     const form = root.querySelector('[data-chat-form]');
     const input = root.querySelector('[data-chat-input]');
@@ -11,6 +12,7 @@
     const sendButton = root.querySelector('[data-chat-send]');
     const chips = root.querySelectorAll('[data-chat-chip]');
     const endpoint = root.dataset.chatEndpoint || '/ai-chat';
+    let touchStartY = 0;
 
     function setOpen(open) {
         root.classList.toggle('is-open', open);
@@ -40,6 +42,30 @@
         scrollBottom();
     }
 
+    function canScrollBody() {
+        return body && body.scrollHeight > body.clientHeight;
+    }
+
+    function scrollChatBody(deltaY, event) {
+        if (!root.classList.contains('is-open') || !body) return false;
+        event.preventDefault();
+        event.stopPropagation();
+        if (!canScrollBody()) return true;
+        const atTop = body.scrollTop <= 0;
+        const atBottom = body.scrollTop + body.clientHeight >= body.scrollHeight - 1;
+        if (!((deltaY < 0 && atTop) || (deltaY > 0 && atBottom))) {
+            body.scrollTop += deltaY;
+        }
+        return true;
+    }
+
+    function containPanelScroll(event, deltaY) {
+        if (!root.classList.contains('is-open')) return;
+        if (panel && panel.contains(event.target)) {
+            scrollChatBody(deltaY, event);
+        }
+    }
+
     async function requestReply(text) {
         root.classList.add('is-typing');
         scrollBottom();
@@ -63,6 +89,30 @@
 
     launcher?.addEventListener('click', () => setOpen(!root.classList.contains('is-open')));
     closeButton?.addEventListener('click', () => setOpen(false));
+
+    body?.addEventListener('wheel', event => {
+        scrollChatBody(event.deltaY, event);
+    }, { passive: false });
+
+    body?.addEventListener('touchstart', event => {
+        touchStartY = event.touches[0]?.clientY || 0;
+    }, { passive: true });
+
+    body?.addEventListener('touchmove', event => {
+        const currentY = event.touches[0]?.clientY || touchStartY;
+        scrollChatBody(touchStartY - currentY, event);
+        touchStartY = currentY;
+    }, { passive: false });
+
+    document.addEventListener('wheel', event => {
+        containPanelScroll(event, event.deltaY);
+    }, { passive: false, capture: true });
+
+    document.addEventListener('touchmove', event => {
+        const currentY = event.touches[0]?.clientY || touchStartY;
+        containPanelScroll(event, touchStartY - currentY);
+        touchStartY = currentY;
+    }, { passive: false, capture: true });
 
     chips.forEach(chip => {
         chip.addEventListener('click', () => {

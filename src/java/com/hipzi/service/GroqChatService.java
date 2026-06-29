@@ -73,6 +73,49 @@ public class GroqChatService {
         return "Hipzi AI dang qua tai. Ban thu lai sau mot chut nhe.";
     }
 
+    public String chatGeneral(String userMessage) throws IOException, InterruptedException {
+        if (!isConfigured()) {
+            return "Hipzi AI chua duoc cau hinh Groq API key. Vui long them GROQ_API_KEYS tren server.";
+        }
+
+        int attempts = 0;
+        IOException lastIo = null;
+        while (attempts < 4) {
+            GroqKeyRotator.Lease lease = keyRotator.nextLease();
+            if (lease == null) {
+                return "Hipzi AI dang ban vi tat ca key tam thoi cham gioi han. Ban thu lai sau mot chut nhe.";
+            }
+            attempts++;
+            String payload = buildGeneralPayload(userMessage);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(GROQ_URL))
+                    .timeout(Duration.ofSeconds(35))
+                    .header("Authorization", "Bearer " + lease.getKey())
+                    .header("Content-Type", "application/json; charset=UTF-8")
+                    .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
+                    .build();
+            try {
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                int status = response.statusCode();
+                if (status == 200) {
+                    return extractContent(response.body());
+                }
+                if (status == 429 || status == 503 || status == 500) {
+                    keyRotator.markLimited(lease.getIndex());
+                    continue;
+                }
+                return "Hipzi AI chua the tra loi luc nay. Ma loi Groq: " + status + ".";
+            } catch (IOException e) {
+                lastIo = e;
+                keyRotator.markLimited(lease.getIndex());
+            }
+        }
+        if (lastIo != null) {
+            throw lastIo;
+        }
+        return "Hipzi AI dang qua tai. Ban thu lai sau mot chut nhe.";
+    }
+
     private String buildPayload(String userMessage, AiRecommendationService.AiContext context) {
         String system = "Ban la Hipzi AI, tro ly hoc tap tren website HIPZI. "
                 + "Tra loi bang tieng Viet co dau, ngan gon, than thien. "
@@ -83,6 +126,26 @@ public class GroqChatService {
         String user = "Cau hoi cua nguoi dung: " + nullToEmpty(userMessage)
                 + "\n\nDu lieu that tim duoc trong HIPZI:\n" + contextText(context)
                 + "\nHay tra loi va neu co item phu hop thi liet ke ten + link.";
+        return "{"
+                + "\"model\":\"" + json(model) + "\","
+                + "\"temperature\":0.35,"
+                + "\"max_tokens\":650,"
+                + "\"messages\":["
+                + "{\"role\":\"system\",\"content\":\"" + json(system) + "\"},"
+                + "{\"role\":\"user\",\"content\":\"" + json(user) + "\"}"
+                + "]"
+                + "}";
+    }
+
+    private String buildGeneralPayload(String userMessage) {
+        String system = "Ban la Hipzi AI, tro ly hoc tap tren website HIPZI. "
+                + "Tra loi truc tiep cac cau hoi hoc tap pho thong bang tieng Viet co dau, ngan gon, than thien. "
+                + "Co the giai thich phep tinh, khai niem, bai hoc, cach hoc va lo trinh hoc tap. "
+                + "Khong bat buoc phai co du lieu trong database HIPZI moi duoc tra loi. "
+                + "Neu nguoi dung hoi tim lop hoc, khoa hoc, tai lieu cu the trong HIPZI thi chi nen noi rang he thong se kiem tra du lieu HIPZI, khong bia ten tai nguyen. "
+                + "Khong goi y nguoi dung sang website khac.";
+        String user = "Cau hoi cua nguoi dung: " + nullToEmpty(userMessage)
+                + "\nHay tra loi nhu mot tro ly hoc tap. Neu phu hop, co the noi nguoi dung tim them tai lieu trong HIPZI nhung khong chi tra link.";
         return "{"
                 + "\"model\":\"" + json(model) + "\","
                 + "\"temperature\":0.35,"
