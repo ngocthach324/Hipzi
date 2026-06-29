@@ -93,7 +93,8 @@ public class RememberMeFilter implements Filter {
 
     private boolean isStaticAsset(HttpServletRequest request) {
         String path = request.getRequestURI().substring(request.getContextPath().length());
-        return path.startsWith("/assets/")
+        return path.equals("/manifest.json")
+                || path.startsWith("/assets/")
                 || path.startsWith("/favicon")
                 || path.endsWith(".png")
                 || path.endsWith(".jpg")

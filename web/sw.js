@@ -1,26 +1,37 @@
-const CACHE_NAME = 'hipzi-cache-v1';
+const CACHE_NAME = 'hipzi-cache-v2';
+const APP_ROOT = new URL('./', self.location.href);
 const urlsToCache = [
-  '/HipZi/',
-  '/HipZi/assets/images/favicon.png'
+  APP_ROOT.href,
+  new URL('assets/images/pwa-icon-192.png', APP_ROOT).href,
+  new URL('assets/images/pwa-icon-512.png', APP_ROOT).href
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache).catch(err => console.log('Cache addAll failed:', err));
-      })
+      .then(cache => cache.addAll(urlsToCache)
+        .catch(error => console.warn('Cache addAll failed:', error)))
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET'
+      || new URL(event.request.url).origin !== self.location.origin) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response; // Return from cache
-        }
-        return fetch(event.request); // Fetch from network
-      })
+      .then(response => response || fetch(event.request))
   );
 });

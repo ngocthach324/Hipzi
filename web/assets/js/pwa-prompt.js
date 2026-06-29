@@ -1,138 +1,115 @@
-let deferredPrompt;
+let deferredPrompt = null;
 let bannerReady = false;
 
-// Listen for the beforeinstallprompt event at the top level so we don't miss it
-window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent Chrome 67 and earlier from automatically showing the prompt
-    e.preventDefault();
-    // Stash the event so it can be triggered later.
-    deferredPrompt = e;
-    
-    // Check if the user already dismissed the prompt recently (e.g. keep hidden for 1 hour)
-    const dismissedTime = localStorage.getItem('pwa-dismissed-time');
-    const now = new Date().getTime();
-    const hideDuration = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
-    
-    if (!dismissedTime || (now - parseInt(dismissedTime, 10)) > hideDuration) {
-        bannerReady = true;
-        
-        // If DOM is already loaded, show it immediately
-        const pwaBanner = document.getElementById('pwa-install-banner');
-        if (pwaBanner) {
-            pwaBanner.style.display = 'flex';
-            checkScrollGlobal();
-        }
-    }
-});
+const pwaScript = document.currentScript;
+const appContextPath = (pwaScript && pwaScript.dataset.contextPath) || '';
+const DISMISS_KEY = 'pwa-dismissed-time';
+const DISMISS_DURATION = 60 * 60 * 1000;
 
-// For testing/design purposes, forcefully show it on localhost
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    setTimeout(() => {
-        bannerReady = true;
-        const pwaBanner = document.getElementById('pwa-install-banner');
-        if (pwaBanner) {
-            pwaBanner.style.display = 'flex';
-            checkScrollGlobal();
-        }
-    }, 1500);
+function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
 }
+
+function wasDismissedRecently() {
+    const dismissedTime = Number(localStorage.getItem(DISMISS_KEY));
+    return Number.isFinite(dismissedTime)
+        && Date.now() - dismissedTime < DISMISS_DURATION;
+}
+
+function showInstallBanner() {
+    if (isStandalone() || wasDismissedRecently()) return;
+
+    bannerReady = true;
+    const banner = document.getElementById('pwa-install-banner');
+    if (!banner) return;
+
+    banner.style.display = 'flex';
+    checkScrollGlobal();
+}
+
+function hideInstallBanner() {
+    bannerReady = false;
+    const banner = document.getElementById('pwa-install-banner');
+    if (!banner) return;
+
+    banner.classList.remove('is-visible');
+    window.setTimeout(() => {
+        banner.style.display = 'none';
+    }, 400);
+}
+
+// Capture the native install event as early as possible.
+window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredPrompt = event;
+    showInstallBanner();
+});
 
 function checkScrollGlobal() {
     if (!bannerReady) return;
-    const pwaBanner = document.getElementById('pwa-install-banner');
-    if (!pwaBanner) return;
-    
-    if (window.scrollY > 50) {
-        pwaBanner.classList.add('is-visible');
-    } else {
-        pwaBanner.classList.remove('is-visible');
-    }
+    const banner = document.getElementById('pwa-install-banner');
+    if (!banner) return;
+
+    banner.classList.toggle('is-visible', window.scrollY > 50);
 }
 
 window.addEventListener('scroll', checkScrollGlobal, { passive: true });
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/HipZi/sw.js')
-            .then(registration => {
-                console.log('SW registered:', registration);
-            })
-            .catch(error => {
-                console.log('SW registration failed:', error);
-            });
+        const serviceWorkerUrl = `${appContextPath}/sw.js`;
+        const serviceWorkerScope = `${appContextPath}/` || '/';
+
+        navigator.serviceWorker.register(serviceWorkerUrl, { scope: serviceWorkerScope })
+            .then(registration => console.log('SW registered:', registration))
+            .catch(error => console.warn('SW registration failed:', error));
     }
 
-    const pwaBanner = document.getElementById('pwa-install-banner');
+    const banner = document.getElementById('pwa-install-banner');
     const installBtn = document.getElementById('pwa-install-btn');
     const dismissBtn = document.getElementById('pwa-dismiss-btn');
 
-    if (!pwaBanner) return;
-    
-    // If beforeinstallprompt already fired before DOMContentLoaded
-    if (bannerReady) {
-        pwaBanner.style.display = 'flex';
-        checkScrollGlobal();
-    }
+    if (!banner || isStandalone()) return;
 
-    // Handle install button click
+    if (bannerReady) showInstallBanner();
+
+    // Keep the download entry visible on production even when a browser does
+    // not expose beforeinstallprompt. The button then provides instructions.
+    window.setTimeout(showInstallBanner, 1500);
+
     if (installBtn) {
         installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
-                // Hide our user interface that shows our A2HS button
-                bannerReady = false;
-                pwaBanner.classList.remove('is-visible');
-                setTimeout(() => pwaBanner.style.display = 'none', 400);
-                
-                // Show the prompt
+                hideInstallBanner();
                 deferredPrompt.prompt();
-                
-                // Wait for the user to respond to the prompt
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response to the install prompt: ${outcome}`);
-                
-                // We've used the prompt, and can't use it again, throw it away
+                await deferredPrompt.userChoice;
                 deferredPrompt = null;
-            } else {
-                // Trình duyệt không hỗ trợ hoặc đang chặn prompt (do vừa gỡ cài đặt)
-                // Thay đổi nội dung banner để hướng dẫn người dùng tự cài
-                const textDiv = pwaBanner.querySelector('.pwa-text');
-                if (textDiv) {
-                    textDiv.innerHTML = `
-                        <strong>Hướng dẫn cài đặt thủ công</strong>
-                        <p>Nhấp vào biểu tượng 📱 (hoặc ⬇️) trên thanh địa chỉ URL, hoặc vào Menu (⋮) > Cài đặt ứng dụng.</p>
-                    `;
-                }
-                installBtn.style.display = 'none'; // Ẩn nút cài đặt đi vì không dùng được
+                return;
             }
+
+            const text = banner.querySelector('.pwa-text');
+            if (text) {
+                text.innerHTML = `
+                    <strong>Hướng dẫn cài đặt</strong>
+                    <p>Mở menu trình duyệt rồi chọn “Cài đặt ứng dụng” hoặc “Thêm vào màn hình chính”.</p>
+                `;
+            }
+            installBtn.style.display = 'none';
         });
     }
 
-    // Handle dismiss button click
     if (dismissBtn) {
         dismissBtn.addEventListener('click', () => {
-            bannerReady = false;
-            pwaBanner.classList.remove('is-visible');
-            setTimeout(() => pwaBanner.style.display = 'none', 400);
-            
-            // Save dismiss time to local storage
-            localStorage.setItem('pwa-dismissed-time', new Date().getTime().toString());
+            localStorage.setItem(DISMISS_KEY, String(Date.now()));
+            hideInstallBanner();
         });
     }
 
-    // Handle successful installation
-    window.addEventListener('appinstalled', (evt) => {
-        // Log install to analytics
+    window.addEventListener('appinstalled', () => {
         console.log('HIPZI App was installed successfully');
-        
-        // Hide the banner if it is visible
-        bannerReady = false;
-        if(pwaBanner) {
-            pwaBanner.classList.remove('is-visible');
-            setTimeout(() => pwaBanner.style.display = 'none', 400);
-        }
-        
-        // Clear deferredPrompt
         deferredPrompt = null;
+        localStorage.removeItem(DISMISS_KEY);
+        hideInstallBanner();
     });
 });

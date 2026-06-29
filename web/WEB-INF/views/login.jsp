@@ -3,11 +3,12 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Đăng nhập - HIPZI</title>
     <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=block" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/auth.css?v=3">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/auth-mobile.css?v=1">
 </head>
 <body>
     <% 
@@ -26,7 +27,8 @@
     %>
     <div class="auth-page-wrapper login-auth-page">
         <!-- Nút Favicon Về Trang Chủ -->
-        <a href="${pageContext.request.contextPath}/index" class="auth-home-btn" title="Về trang chủ" <%= disableAnimStyle %>>
+        <a href="${pageContext.request.contextPath}/index" class="auth-home-btn" title="Về trang chủ"
+           aria-label="Về trang chủ HIPZI" <%= disableAnimStyle %>>
             <img src="${pageContext.request.contextPath}/assets/images/favicon.png" alt="HIPZI Logo">
         </a>
 
@@ -104,7 +106,7 @@
                             <div class="remembered-email-wrapper">
                                 <input type="email" id="email" name="email" class="form-control" 
                                        value="${email != null ? email : ''}" required placeholder="hocsinh@gmail.com"
-                                       autocomplete="off" readonly>
+                                       autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" readonly>
                                 <div class="remembered-email-menu" id="rememberedEmailMenu"></div>
                             </div>
                         </div>
@@ -299,7 +301,7 @@
     
     <% if (toastMessageToDisplay != null) { %>
     <div id="custom-toast-container" class="custom-toast-container">
-        <div class="custom-toast-msg">
+        <div class="custom-toast-msg <%= (errorMsg != null && successMsg == null) ? "error" : "" %>">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             <span><%= toastMessageToDisplay %></span>
         </div>

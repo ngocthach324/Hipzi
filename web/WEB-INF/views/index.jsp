@@ -13,12 +13,15 @@
                 <title>HIPZI - Nền tảng học tập thông minh cùng AI</title>
                 <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
                 <link rel="manifest" href="${pageContext.request.contextPath}/manifest.json">
+                <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/pwa-icon-192.png">
+                <meta name="theme-color" content="#0f766e">
                 <link rel="dns-prefetch" href="//fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=10">
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/hero-v2.css">
-                <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/hipzi-chat-widget.css?v=6">
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/hipzi-chat-widget.css?v=7">
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/home-responsive.css?v=1">
                 <!-- Hiệu ứng cuộn mượt và chậm Lenis CSS -->
                 <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.13/dist/lenis.css">
                 <script src="${pageContext.request.contextPath}/assets/js/page-transition.js" defer></script>
@@ -61,6 +64,21 @@
                                             đầu</a>
                                     </div>
                                     <% } %>
+
+                            <button class="mobile-nav-toggle" type="button" aria-expanded="false"
+                                aria-controls="mobile-home-nav" aria-label="Mở menu điều hướng">
+                                <span></span><span></span><span></span>
+                            </button>
+
+                            <nav class="mobile-nav-menu" id="mobile-home-nav" aria-label="Điều hướng trên điện thoại" hidden>
+                                <a href="${pageContext.request.contextPath}/material-repository">Kho tài liệu</a>
+                                <a href="${pageContext.request.contextPath}/classes">Lớp học</a>
+                                <a href="${pageContext.request.contextPath}/mock-exams">Phòng thi</a>
+                                <a href="${pageContext.request.contextPath}/courses">Khóa học</a>
+                                <% if (user == null) { %>
+                                    <a class="mobile-nav-primary" href="${pageContext.request.contextPath}/login">Bắt đầu học</a>
+                                <% } %>
+                            </nav>
                         </div>
                     </header>
 
@@ -1205,11 +1223,11 @@
                                     </div>
 
                                     <!-- Hàng Flex chính chia 2 cột -->
-                                    <div
+                                    <div class="community-main"
                                         style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; gap:2.5rem; flex-wrap:wrap;">
 
                                         <!-- Cột Trái: Tiêu đề & Lời kêu gọi -->
-                                        <div
+                                        <div class="community-copy"
                                             style="flex:1; min-width:320px; display:flex; flex-direction:column; gap:1rem; text-align:left;">
                                             <h3
                                                 style="font-weight:800; font-size:2.15rem; color:#0f172a; line-height:1.25; margin:0; letter-spacing:-0.5px;">
@@ -1225,7 +1243,7 @@
                                             </p>
 
                                             <!-- Hàng Nút Hành động CTA -->
-                                            <div
+                                            <div class="community-actions"
                                                 style="display:flex; align-items:center; gap:0.85rem; margin-top:0.5rem; flex-wrap:wrap;">
                                                 <a href="https://zalo.me/g/hipzi2024" target="_blank"
                                                     style="background:#059669; color:#ffffff; font-weight:700; font-size:0.85rem; padding:0.85rem 1.75rem; border-radius:0.75rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem; box-shadow:0 4px 12px rgba(5, 150, 105, 0.25); transition:all 0.2s ease; letter-spacing:0.5px;"
@@ -1241,7 +1259,7 @@
                                         </div>
 
                                         <!-- Cột Phải: Khung Highlight Thông số bo tròn màu xám nhạt -->
-                                        <div
+                                        <div class="community-stats"
                                             style="background:#f8fafc; border-radius:1.25rem; padding:1.5rem; border:1px solid #f1f5f9; display:flex; flex-direction:column; gap:1.25rem; min-width:260px;">
 
                                             <!-- Thông số 1 -->
@@ -1706,6 +1724,7 @@
                     <%@ include file="/WEB-INF/fragments/hipzi-chat-widget.jspf" %>
 
                     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=3"></script>
+                    <script src="${pageContext.request.contextPath}/assets/js/home-responsive.js?v=1"></script>
                     <script src="${pageContext.request.contextPath}/assets/js/hipzi-chat-widget.js?v=5"></script>
                     <!-- Hieu ung cuon muot va cham Lenis JS -->
                     <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>

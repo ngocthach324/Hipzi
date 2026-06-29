@@ -318,13 +318,13 @@
 @media (max-width: 640px) {
     .hipzi-chat {
         right: 14px;
-        bottom: 14px;
+        bottom: calc(14px + env(safe-area-inset-bottom));
     }
 
     .hipzi-chat__panel {
         bottom: 72px;
         width: calc(100vw - 28px);
-        height: min(480px, calc(100vh - 104px));
+        height: min(480px, calc(100dvh - 104px - env(safe-area-inset-bottom)));
         border-radius: 20px;
     }
 }
