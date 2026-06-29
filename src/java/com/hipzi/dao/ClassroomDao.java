@@ -171,6 +171,32 @@ public class ClassroomDao {
         return classrooms;
     }
 
+    public List<Classroom> findAcceptedByStudent(String studentId) {
+        String sql = "SELECT c.*, u.display_name AS teacher_name, u.avatar_url AS teacher_avatar_url, "
+                + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "
+                + "FROM classrooms c "
+                + "JOIN classroom_enrollments ce ON c.id = ce.classroom_id "
+                + "JOIN users u ON u.id = c.teacher_id "
+                + "LEFT JOIN teacher_applications ta ON ta.user_id = c.teacher_id "
+                + "WHERE ce.student_id = ?::uuid AND ce.status = 'accepted' "
+                + "ORDER BY ce.created_at DESC";
+
+        List<Classroom> classrooms = new ArrayList<>();
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, studentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    classrooms.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in ClassroomDao.findAcceptedByStudent: " + e.getMessage());
+        }
+        return classrooms;
+    }
+
     public List<String> listSubjects() {
         String sql = "SELECT DISTINCT subject FROM classrooms WHERE subject IS NOT NULL AND TRIM(subject) <> '' ORDER BY subject";
         List<String> subjects = new ArrayList<>();

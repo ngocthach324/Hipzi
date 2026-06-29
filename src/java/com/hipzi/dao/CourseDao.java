@@ -149,6 +149,35 @@ public class CourseDao {
         return courses;
     }
 
+    public List<Course> findPurchasedByStudent(String studentId) {
+        String sql = "SELECT c.*, u.display_name AS teacher_name, u.email AS teacher_email, u.avatar_url AS teacher_avatar_url, "
+                + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "
+                + "FROM courses c "
+                + "JOIN course_enrollments ce ON c.id = ce.course_id "
+                + "JOIN users u ON u.id = c.teacher_id "
+                + "LEFT JOIN LATERAL ("
+                + "SELECT institution_name, workplace FROM teacher_applications "
+                + "WHERE user_id = c.teacher_id ORDER BY submitted_at DESC LIMIT 1"
+                + ") ta ON true "
+                + "WHERE ce.student_id = ?::uuid AND ce.status IN ('pending_access', 'active') AND c.deleted_at IS NULL "
+                + "ORDER BY ce.created_at DESC";
+
+        List<Course> courses = new ArrayList<>();
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, studentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    courses.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in CourseDao.findPurchasedByStudent: " + e.getMessage());
+        }
+        return courses;
+    }
+
     public List<Course> listForStaff(String titleFilter, String subjectFilter, String statusFilter) {
         StringBuilder sql = new StringBuilder(
                 "SELECT c.*, u.display_name AS teacher_name, u.email AS teacher_email, u.avatar_url AS teacher_avatar_url, "

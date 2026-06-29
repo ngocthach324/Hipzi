@@ -190,6 +190,8 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("studentProfile", studentProfile);
             request.setAttribute("studentStudyProgressStats", studentStudyProgressDao.getStats(user.getId()));
             request.setAttribute("studentSchedules", teachingScheduleDao.findByStudentId(user.getId()));
+            request.setAttribute("studentClasses", classroomDao.findAcceptedByStudent(user.getId()));
+            request.setAttribute("studentCourses", courseDao.findPurchasedByStudent(user.getId()));
             request.setAttribute("tuitionInvoices", tuitionInvoiceDao.listVisibleByStudent(user.getId()));
             loadUserSupportData(request, user);
         } else if ("/WEB-INF/views/parent-profile.jsp".equals(targetJsp)) {

@@ -2,6 +2,9 @@
     <%@page import="com.hipzi.model.User" %>
         <%@page import="com.hipzi.model.Role" %>
             <%@page import="com.hipzi.model.Classroom" %>
+            <%@page import="com.hipzi.model.Course" %>
+            <%@page import="java.text.NumberFormat" %>
+            <%@page import="java.util.Locale" %>
                 <%@page import="com.hipzi.model.TuitionInvoice" %>
                 <%@page import="com.hipzi.model.TeachingSchedule" %>
                 <%@page import="com.hipzi.model.TeacherApplication" %>

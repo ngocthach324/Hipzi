@@ -4952,7 +4952,7 @@
                                 %>
                                 <tr>
                                     <td colspan="5" style="padding: 2rem 1.5rem; text-align: center; color: var(--text-muted); font-weight: 700;">
-                                        Chưa có giao dịch phát sinh từ khóa học.
+                                        Chưa có giao dịch nào phát sinh.
                                     </td>
                                 </tr>
                                 <%
