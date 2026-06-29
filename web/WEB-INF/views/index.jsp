@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8" %>
+<%@page contentType="text/html" pageEncoding="UTF-8" %>
     <%@page import="com.hipzi.model.User" %>
         <% User user=(User) session.getAttribute("loggedUser"); String initials="H" ; if (user !=null) { if
             (user.getDisplayName() !=null && !user.getDisplayName().isEmpty()) { String[]
@@ -12,6 +12,7 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>HIPZI - Nền tảng học tập thông minh cùng AI</title>
                 <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
+                <link rel="manifest" href="${pageContext.request.contextPath}/manifest.json">
                 <link rel="dns-prefetch" href="//fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,7 +44,6 @@
                                 <li><a href="${pageContext.request.contextPath}/classes">Lớp học</a></li>
                                 <li><a href="${pageContext.request.contextPath}/mock-exams">Phòng thi</a></li>
                                 <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
-                                <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
                             </ul>
 
                             <% if (user !=null) { %>
@@ -787,7 +787,7 @@
                         </div>
 
                         <div class="ai-roadmap-action">
-                            <a class="ai-roadmap-cta" href="${pageContext.request.contextPath}/login">Bắt đầu với HIPZI
+                            <a class="ai-roadmap-cta" style="cursor:pointer;" onclick="document.querySelector('[data-chat-launcher]')?.click()">Bắt đầu với HIPZI
                                 AI <span aria-hidden="true">›</span></a>
                         </div>
                     </section>
@@ -1698,6 +1698,9 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Update timestamp for tomcat -->
+                        <%@ include file="/WEB-INF/fragments/pwa-install-prompt.jspf" %>
                     </footer>
 
                     <%@ include file="/WEB-INF/fragments/hipzi-chat-widget.jspf" %>

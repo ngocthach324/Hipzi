@@ -1,0 +1,21 @@
+{
+  "name": "HIPZI - Nền tảng học tập",
+  "short_name": "HIPZI",
+  "start_url": "/HipZi/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f766e",
+  "description": "Ứng dụng học tập HIPZI",
+  "icons": [
+    {
+      "src": "/HipZi/assets/images/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/HipZi/assets/images/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

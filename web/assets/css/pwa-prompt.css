@@ -1,0 +1,122 @@
+.pwa-install-banner {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    opacity: 0;
+    background: #ffffff;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    z-index: 9999;
+    width: max-content;
+    max-width: 90vw;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.pwa-install-banner.is-visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.pwa-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pwa-icon {
+    flex-shrink: 0;
+}
+
+.pwa-icon img {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pwa-text strong {
+    display: block;
+    font-size: 15px;
+    color: #111827;
+    margin-bottom: 2px;
+    font-weight: 600;
+}
+
+.pwa-text p {
+    margin: 0;
+    font-size: 13px;
+    color: #4b5563;
+    line-height: 1.4;
+}
+
+.pwa-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.pwa-install-btn {
+    background-color: #0f766e;
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.pwa-install-btn:hover {
+    background-color: #0d9488;
+}
+
+.pwa-install-btn:active {
+    transform: scale(0.96);
+}
+
+.pwa-dismiss-btn {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.pwa-dismiss-btn:hover {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+@media (max-width: 640px) {
+    .pwa-install-banner {
+        flex-direction: column;
+        align-items: stretch;
+        bottom: 16px;
+        padding: 16px;
+        width: calc(100vw - 32px);
+    }
+    
+    .pwa-banner-actions {
+        justify-content: flex-end;
+        margin-top: 12px;
+    }
+    
+    .pwa-text p {
+        font-size: 12px;
+    }
+}

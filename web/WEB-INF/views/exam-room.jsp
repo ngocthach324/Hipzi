@@ -359,7 +359,6 @@
                 <li><a href="${pageContext.request.contextPath}/classes">Lớp học</a></li>
                 <li><a href="${pageContext.request.contextPath}/mock-exams" class="active">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
-                <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
             </ul>
 
             <% if (user != null) { %>

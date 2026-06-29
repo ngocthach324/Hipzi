@@ -2157,7 +2157,6 @@
 
                 <li><a href="${pageContext.request.contextPath}/mock-exams">Phòng thi</a></li>
                 <li><a href="${pageContext.request.contextPath}/courses">Khóa học</a></li>
-                <li><a href="${pageContext.request.contextPath}/index#ai-roadmap">Hipzi AI</a></li>
             </ul>
             <div class="navbar-user-controls">
                 <%@ include file="/WEB-INF/fragments/notification-bell.jspf" %>
