@@ -1,9 +1,13 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Role"%>
 <%@page import="com.hipzi.model.Notification"%>
 <%@page import="com.hipzi.model.SystemOverviewStats"%>
+<%@page import="com.hipzi.model.AdminFinancialStats"%>
 <%@page import="com.hipzi.model.AdminUserSummary"%>
+<%@page import="com.hipzi.model.StaffUserGrowthStats"%>
+<%@page import="com.hipzi.model.Classroom"%>
+<%@page import="com.hipzi.model.Course"%>
 <%@page import="com.hipzi.service.NotificationService"%>
 <%@page import="com.hipzi.util.UserStatusWebSocket"%>
 <%@page import="java.util.List"%>
@@ -24,8 +28,99 @@
         topNotifications = notiService.getRecentNotifications(user.getId(), 5);
         unreadCount = notiService.getUnreadCount(user.getId());
     }
+    StaffUserGrowthStats staffUserGrowthStats = (StaffUserGrowthStats) request.getAttribute("staffUserGrowthStats");
+    if (staffUserGrowthStats == null) {
+        staffUserGrowthStats = new StaffUserGrowthStats();
+    }
+    String staffWeeklyUserGrowthJson = staffUserGrowthJson(staffUserGrowthStats.getWeeklyPoints());
+    String staffMonthlyUserGrowthJson = staffUserGrowthJson(staffUserGrowthStats.getMonthlyPoints());
+
+    List<AdminUserSummary> managedUsers = (List<AdminUserSummary>) request.getAttribute("managedUsers");
+    String searchUser = request.getAttribute("searchUser") != null ? (String) request.getAttribute("searchUser") : "";
+    String userRoleParam = request.getAttribute("userRole") != null ? (String) request.getAttribute("userRole") : "ALL";
+    if (userRoleParam.isEmpty()) userRoleParam = "ALL";
+    String userStatusParam = request.getAttribute("userStatus") != null ? (String) request.getAttribute("userStatus") : "ALL";
+    if (userStatusParam.isEmpty()) userStatusParam = "ALL";
+    
+    List<Classroom> managedClassrooms = (List<Classroom>) request.getAttribute("managedClassrooms");
+    String classTitle = request.getAttribute("classTitle") != null ? (String) request.getAttribute("classTitle") : "";
+    String classSubjectParam = request.getAttribute("classSubject") != null ? (String) request.getAttribute("classSubject") : "ALL";
+    if (classSubjectParam.isEmpty()) classSubjectParam = "ALL";
+    String classStatusParam = request.getAttribute("classStatus") != null ? (String) request.getAttribute("classStatus") : "ALL";
+    if (classStatusParam.isEmpty()) classStatusParam = "ALL";
+    List<String> classSubjects = (List<String>) request.getAttribute("classSubjects");
+
+    List<Course> managedCourses = (List<Course>) request.getAttribute("managedCourses");
+    String courseTitle = request.getAttribute("courseTitle") != null ? (String) request.getAttribute("courseTitle") : "";
+    String courseSubjectParam = request.getAttribute("courseSubject") != null ? (String) request.getAttribute("courseSubject") : "ALL";
+    if (courseSubjectParam.isEmpty()) courseSubjectParam = "ALL";
+    String courseStatusParam = request.getAttribute("courseStatus") != null ? (String) request.getAttribute("courseStatus") : "ALL";
+    if (courseStatusParam.isEmpty()) courseStatusParam = "ALL";
+    List<Course> courseSubjects = (List<Course>) request.getAttribute("courseSubjects");
+
+    String userRoleFilterLabel = "Tất cả";
+    if ("teacher".equals(userRoleParam)) userRoleFilterLabel = "Giảng viên";
+    else if ("student".equals(userRoleParam)) userRoleFilterLabel = "Học sinh";
+    else if ("parent".equals(userRoleParam)) userRoleFilterLabel = "Phụ huynh";
+    else if ("staff".equals(userRoleParam)) userRoleFilterLabel = "Nhân viên";
+
+    String userStatusFilterLabel = "Tất cả";
+    if ("active".equals(userStatusParam)) userStatusFilterLabel = "Đang hoạt động";
+    else if ("disabled".equals(userStatusParam)) userStatusFilterLabel = "Bị ban";
+
+    String classSubjectFilterLabel = "ALL".equals(classSubjectParam) ? "Tất cả môn học" : classSubjectParam;
+    
+    String classStatusFilterLabel = "Tất cả trạng thái";
+    if ("open".equals(classStatusParam)) classStatusFilterLabel = "Đang mở";
+    else if ("upcoming".equals(classStatusParam)) classStatusFilterLabel = "Sắp khai giảng";
+    else if ("closed".equals(classStatusParam)) classStatusFilterLabel = "Đã đóng";
+
+    String courseSubjectFilterLabel = "ALL".equals(courseSubjectParam) ? "Tất cả môn học" : courseSubjectParam;
+    if (!"ALL".equals(courseSubjectParam) && courseSubjects != null) {
+        for (Course s : courseSubjects) {
+            if (s.getSubjectCode() != null && s.getSubjectCode().equals(courseSubjectParam)) {
+                courseSubjectFilterLabel = s.getSubjectName();
+                break;
+            }
+        }
+    }
+
+    String courseStatusFilterLabel = "Tất cả trạng thái";
+    if ("pending_review".equals(courseStatusParam)) courseStatusFilterLabel = "Chờ duyệt";
+    else if ("approved".equals(courseStatusParam)) courseStatusFilterLabel = "Đã duyệt";
+    else if ("needs_revision".equals(courseStatusParam)) courseStatusFilterLabel = "Cần chỉnh sửa";
+    else if ("rejected".equals(courseStatusParam)) courseStatusFilterLabel = "Từ chối";
 %>
 <%!
+    private String staffUserGrowthJson(List<StaffUserGrowthStats.Point> points) {
+        StringBuilder json = new StringBuilder("[");
+        if (points != null) {
+            for (int i = 0; i < points.size(); i++) {
+                StaffUserGrowthStats.Point point = points.get(i);
+                if (i > 0) json.append(",");
+                json.append("{\"label\":\"")
+                        .append(jsEscape(point.getLabel()))
+                        .append("\",\"fullLabel\":\"")
+                        .append(jsEscape(point.getFullLabel()))
+                        .append("\",\"count\":")
+                        .append(point.getCount())
+                        .append(",\"countLabel\":\"")
+                        .append(jsEscape(point.getCountLabel()))
+                        .append("\"}");
+            }
+        }
+        json.append("]");
+        return json.toString();
+    }
+
+    private String jsEscape(String value) {
+        if (value == null) return "";
+        return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "");
+    }
+
     private String escAttr(String value) {
         if (value == null) return "";
         return value
@@ -33,6 +128,26 @@
                 .replace("\"", "&quot;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;");
+    }
+
+    private String h(String value) {
+        return escAttr(value);
+    }
+
+    private String userRoleLabel(String roles) {
+        if (roles == null) return "Học sinh";
+        roles = roles.toLowerCase();
+        if (roles.contains("admin")) return "Quản trị viên";
+        if (roles.contains("staff")) return "Nhân viên";
+        if (roles.contains("teacher")) return "Giảng viên";
+        return "Học sinh";
+    }
+
+    private String userStatusLabel(String status) {
+        if (status == null) return "Unknown";
+        if (status.equalsIgnoreCase("active")) return "Đang hoạt động";
+        if (status.equalsIgnoreCase("disabled") || status.equalsIgnoreCase("banned") || status.equalsIgnoreCase("suspended")) return "Bị ban";
+        return status;
     }
 %>
 <!DOCTYPE html>
@@ -44,6 +159,7 @@
     <meta name="description" content="Trung tâm quản trị hệ thống, giám sát phân quyền, theo dõi hoạt động và nhật ký kiểm toán HIPZI.">
     <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/favicon.png">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/landing.css?v=5">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/staff-user-growth-chart.css?v=1">
     <style>
         /* ===== OVERRIDE NỀN TẢNG & GIAO DIỆN PREMIUM TƯƠNG TỰ BẢN THIẾT KẾ ===== */
         body {
@@ -2125,6 +2241,54 @@
             text-transform: capitalize;
         }
 
+        .managed-role-pill-btn {
+            border: none;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+        .managed-role-pill-btn:hover {
+            background: #d1fae5;
+            box-shadow: 0 2px 8px rgba(5,150,105,0.18);
+            transform: translateY(-1px);
+        }
+
+        .role-option-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.9rem 0.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            background: #f8fafc;
+            user-select: none;
+        }
+        .role-option-card:hover {
+            border-color: #a78bfa;
+            background: #faf5ff;
+        }
+        .role-option-card.selected {
+            border-color: #7c3aed;
+            background: #ede9fe;
+            box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+        }
+        .role-option-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .role-option-label {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
         .live-status-badge {
             display: inline-flex;
             align-items: center;
@@ -2752,6 +2916,987 @@
                 grid-template-columns: 1fr;
             }
         }
+        #tab-teacher-approval .tab-grouped-container,
+        #tab-manage-teachers .tab-grouped-container,
+        #tab-manage-classes .tab-grouped-container,
+        #tab-manage-courses .tab-grouped-container,
+        #tab-materials .tab-grouped-container,
+        #tab-practice .tab-grouped-container {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 0;
+            min-height: 0;
+            overflow: visible;
+        }
+
+        #tab-teacher-approval .tab-header-accent,
+        #tab-manage-teachers .tab-header-accent,
+        #tab-manage-classes .tab-header-accent,
+        #tab-manage-courses .tab-header-accent,
+        #tab-materials .tab-header-accent,
+        #tab-practice .tab-header-accent {
+            display: flex;
+            color: var(--text-main);
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 0 0 1rem 0;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        #tab-teacher-approval .tab-header-title-text,
+        #tab-manage-teachers .tab-header-title-text,
+        #tab-manage-classes .tab-header-title-text,
+        #tab-manage-courses .tab-header-title-text,
+        #tab-materials .tab-header-title-text,
+        #tab-practice .tab-header-title-text {
+            font-size: 1.75rem;
+            line-height: 1.15;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+
+        #tab-teacher-approval .tab-header-title-text::after,
+        #tab-manage-teachers .tab-header-title-text::after,
+        #tab-manage-classes .tab-header-title-text::after,
+        #tab-manage-courses .tab-header-title-text::after,
+        #tab-materials .tab-header-title-text::after,
+        #tab-practice .tab-header-title-text::after {
+            display: block;
+            margin-top: 0.35rem;
+            color: #475569;
+            font-size: 0.95rem;
+            line-height: 1.45;
+            font-weight: 600;
+            letter-spacing: 0;
+        }
+
+        #tab-teacher-approval .tab-header-title-text::after {
+            content: "Xét duyệt hồ sơ đăng kí giảng dạy và cập nhật trạng thái cho giảng viên.";
+        }
+
+        #tab-manage-teachers .tab-header-title-text::after {
+            content: "Theo dõi danh sách giảng viên và học sinh đang sử dụng nền tảng.";
+        }
+
+        #tab-manage-classes .tab-header-title-text::after {
+            content: "Quản lý các lớp học đang mở, sắp khai giảng hoặc đã đóng trên HIPZI.";
+        }
+
+        #tab-manage-courses .tab-header-title-text::after {
+            content: "Rà soát khóa học, trạng thái duyệt và nội dung liên kết Google Drive.";
+        }
+
+        #tab-materials .tab-header-title-text::after {
+            content: "Kiểm tra hàng đợi tài liệu học tập do giảng viên gửi lên kho học liệu.";
+        }
+
+        #tab-practice .tab-header-title-text::after {
+            content: "Theo dõi yêu cầu đăng kí giảng viên và các bước xác minh nghiệp vụ.";
+        }
+
+        #tab-teacher-approval .tab-header-date-pill,
+        #tab-manage-teachers .tab-header-date-pill,
+        #tab-manage-classes .tab-header-date-pill,
+        #tab-manage-courses .tab-header-date-pill,
+        #tab-materials .tab-header-date-pill,
+        #tab-practice .tab-header-date-pill {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-dark);
+            border-radius: 1rem;
+            padding: 0.5rem 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        #tab-teacher-approval .tab-body-content,
+        #tab-manage-teachers .tab-body-content,
+        #tab-manage-classes .tab-body-content,
+        #tab-manage-courses .tab-body-content,
+        #tab-materials .tab-body-content,
+        #tab-practice .tab-body-content {
+            padding: 0;
+            overflow: visible;
+            gap: 1.5rem;
+        }
+
+        #tab-teacher-approval .section-data-card,
+        #tab-manage-teachers .section-data-card,
+        #tab-manage-classes .section-data-card,
+        #tab-manage-courses .section-data-card,
+        #tab-materials .section-data-card,
+        #tab-practice .section-data-card {
+            background: #ffffff;
+            border: 1px solid #dbe4ee;
+            border-radius: 1.25rem;
+            padding: 1.65rem;
+            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.04);
+            min-height: 420px;
+        }
+
+        #tab-teacher-approval .card-header-layout,
+        #tab-manage-teachers .card-header-layout,
+        #tab-manage-classes .card-header-layout,
+        #tab-manage-courses .card-header-layout,
+        #tab-materials .card-header-layout,
+        #tab-practice .card-header-layout {
+            padding-bottom: 1.15rem !important;
+            margin-bottom: 1.5rem !important;
+            border-bottom: 1px solid #dbe4ee !important;
+        }
+
+        #tab-manage-teachers .section-data-card > form,
+        #tab-manage-classes .section-data-card > form,
+        #tab-manage-courses .section-data-card > form {
+            background: #ffffff !important;
+            border: 1px solid #dbe4ee !important;
+            border-radius: 1rem !important;
+            padding: 1rem !important;
+            margin-bottom: 1.75rem !important;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.035);
+        }
+
+        #tab-manage-teachers .section-data-card > form.management-toolbar,
+        #tab-manage-classes .section-data-card > form.management-toolbar,
+        #tab-manage-courses .section-data-card > form.management-toolbar {
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+            margin: 0.9rem 0 1.35rem !important;
+            box-shadow: none !important;
+        }
+
+        #tab-manage-teachers .section-data-card > form input,
+        #tab-manage-teachers .section-data-card > form select,
+        #tab-manage-classes .section-data-card > form input,
+        #tab-manage-classes .section-data-card > form select,
+        #tab-manage-courses .section-data-card > form input,
+        #tab-manage-courses .section-data-card > form select {
+            background: #f8fafc !important;
+            border-color: #dbe4ee !important;
+            border-radius: 0.85rem !important;
+            min-height: 3rem;
+            font-weight: 700;
+        }
+
+        #tab-manage-teachers .section-data-card > form.management-toolbar input,
+        #tab-manage-teachers .section-data-card > form.management-toolbar select,
+        #tab-manage-classes .section-data-card > form.management-toolbar input,
+        #tab-manage-classes .section-data-card > form.management-toolbar select,
+        #tab-manage-courses .section-data-card > form.management-toolbar input,
+        #tab-manage-courses .section-data-card > form.management-toolbar select {
+            min-height: 0 !important;
+            border: 1px solid var(--border-dark) !important;
+            border-radius: 999px !important;
+            padding: 0.7rem 1rem !important;
+            font-size: 0.88rem !important;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03) !important;
+        }
+
+        #tab-manage-teachers .section-data-card > form.management-toolbar input,
+        #tab-manage-classes .section-data-card > form.management-toolbar input,
+        #tab-manage-courses .section-data-card > form.management-toolbar input {
+            background: #f8fafc !important;
+            color: var(--text-main) !important;
+            font-weight: 650 !important;
+        }
+
+        #tab-manage-teachers .section-data-card > form.management-toolbar select,
+        #tab-manage-classes .section-data-card > form.management-toolbar select,
+        #tab-manage-courses .section-data-card > form.management-toolbar select {
+            appearance: none !important;
+            background-color: #ffffff !important;
+            background-image: linear-gradient(45deg, transparent 50%, #059669 50%), linear-gradient(135deg, #059669 50%, transparent 50%) !important;
+            background-position: calc(100% - 1.25rem) 50%, calc(100% - 0.9rem) 50% !important;
+            background-size: 0.45rem 0.45rem, 0.45rem 0.45rem !important;
+            background-repeat: no-repeat !important;
+            color: #0f172a !important;
+            padding: 0.7rem 2.4rem 0.7rem 1rem !important;
+            font-weight: 900 !important;
+        }
+
+        #tab-manage-teachers .section-data-card > form > button,
+        #tab-manage-classes .section-data-card > form > button,
+        #tab-manage-courses .section-data-card > form > button {
+            background: #059669 !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 0.85rem !important;
+            min-height: 3rem;
+            box-shadow: 0 14px 28px rgba(5, 150, 105, 0.18);
+        }
+
+        #tab-teacher-approval .teacher-approval-grid,
+        #tab-manage-teachers .teacher-approval-grid,
+        #tab-manage-classes .staff-class-list,
+        #tab-manage-courses .staff-class-list {
+            gap: 1.15rem;
+        }
+
+        #tab-teacher-approval .teacher-approval-card,
+        #tab-manage-teachers .teacher-approval-card,
+        #tab-manage-classes .staff-class-card,
+        #tab-manage-courses .staff-class-card {
+            border: 1px solid #dbe4ee;
+            border-left: 4px solid #059669;
+            border-radius: 1rem;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.035);
+        }
+
+        #tab-teacher-approval .empty-status-panel,
+        #tab-manage-teachers .empty-status-panel,
+        #tab-manage-classes .empty-status-panel,
+        #tab-manage-courses .empty-status-panel,
+        #tab-materials .empty-status-panel,
+        #tab-practice .empty-status-panel {
+            background: #ffffff;
+            border: 1px dashed #dbe4ee;
+            border-radius: 1.25rem;
+            box-shadow: none;
+        }
+
+        #tab-teacher-approval .section-data-card {
+            background: #ffffff;
+            border: 1px solid #dbe4ee;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            min-height: 560px;
+            overflow: hidden;
+            box-shadow: none;
+        }
+
+        #tab-teacher-approval .section-data-card.system-management-card,
+        #tab-manage-teachers .section-data-card.system-management-card,
+        #tab-manage-classes .section-data-card.system-management-card,
+        #tab-manage-courses .section-data-card.system-management-card {
+            background: #ffffff;
+            border: 1px solid #dbe4ee;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            min-height: 560px;
+            overflow: hidden;
+            box-shadow: none;
+        }
+
+        #tab-teacher-approval .card-header-layout {
+            padding: 0 0 1rem 0 !important;
+            margin: 0 0 1.35rem 0 !important;
+            background: transparent !important;
+            border-bottom: 1px solid var(--border-dark) !important;
+        }
+
+        #tab-teacher-approval .system-management-card .card-header-layout,
+        #tab-manage-teachers .system-management-card .card-header-layout,
+        #tab-manage-classes .system-management-card .card-header-layout,
+        #tab-manage-courses .system-management-card .card-header-layout {
+            padding: 0 0 1rem 0 !important;
+            margin: 0 0 1.45rem 0 !important;
+            background: transparent !important;
+            border-bottom: 1px solid var(--border-dark) !important;
+        }
+
+        #tab-teacher-approval .card-header-title,
+        #tab-manage-teachers .card-header-title,
+        #tab-manage-classes .card-header-title,
+        #tab-manage-courses .card-header-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 900;
+            line-height: 1.25;
+        }
+
+        #tab-teacher-approval .card-header-title svg,
+        #tab-manage-teachers .card-header-title svg,
+        #tab-manage-classes .card-header-title svg,
+        #tab-manage-courses .card-header-title svg {
+            color: #059669;
+            stroke: currentColor;
+        }
+
+        #tab-teacher-approval .card-header-layout > span,
+        #tab-manage-teachers .card-header-layout > span,
+        #tab-manage-classes .card-header-layout > span,
+        #tab-manage-courses .card-header-layout > span {
+            font-size: 0.78rem !important;
+            font-weight: 850 !important;
+            color: #059669 !important;
+            background: #dcfce7 !important;
+            padding: 0.25rem 0.75rem !important;
+            border-radius: 999px !important;
+        }
+
+        .system-management-card .management-toolbar {
+            display: grid !important;
+            grid-template-columns: minmax(420px, calc((100% - 1rem) / 2)) 1fr 220px 220px auto;
+            gap: 1rem !important;
+            align-items: center;
+            margin: 0.9rem 0 1.35rem !important;
+            padding: 0 !important;
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+
+        #tab-teacher-approval .management-toolbar,
+        #tab-manage-teachers .management-toolbar {
+            grid-template-columns: minmax(420px, calc((100% - 1rem) / 2)) 1fr 220px 220px auto;
+        }
+
+        #tab-teacher-approval .management-toolbar select {
+            grid-column: auto;
+        }
+
+        #tab-teacher-approval .management-toolbar .management-filter-dropdown {
+            grid-column: 4;
+        }
+
+        #tab-manage-teachers .management-toolbar .management-filter-dropdown:first-of-type {
+            grid-column: 3;
+        }
+
+        #tab-manage-teachers .management-toolbar .management-filter-dropdown:nth-of-type(2) {
+            grid-column: 4;
+        }
+
+        #tab-manage-classes .management-toolbar .management-filter-dropdown:first-of-type,
+        #tab-manage-courses .management-toolbar .management-filter-dropdown:first-of-type {
+            grid-column: 3;
+        }
+
+        #tab-manage-classes .management-toolbar .management-filter-dropdown:nth-of-type(2),
+        #tab-manage-courses .management-toolbar .management-filter-dropdown:nth-of-type(2) {
+            grid-column: 4;
+        }
+
+        #tab-manage-teachers .management-toolbar > button,
+        #tab-manage-classes .management-toolbar > button,
+        #tab-manage-courses .management-toolbar > button {
+            display: none !important;
+        }
+
+        .system-management-card .management-toolbar input,
+        .system-management-card .management-toolbar select {
+            width: 100% !important;
+            min-height: 0 !important;
+            border: 1px solid var(--border-dark) !important;
+            background-color: #ffffff !important;
+            color: var(--text-main) !important;
+            border-radius: 999px !important;
+            padding: 0.7rem 1rem !important;
+            font-size: 0.88rem !important;
+            font-weight: 900 !important;
+            outline: none !important;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03) !important;
+        }
+
+        .system-management-card .management-toolbar input {
+            background-color: #f8fafc !important;
+            font-weight: 650 !important;
+        }
+
+        .system-management-card .management-toolbar select {
+            appearance: none;
+            cursor: pointer;
+            color: #0f172a !important;
+            padding: 0.7rem 2.4rem 0.7rem 1rem !important;
+            background: #ffffff linear-gradient(45deg, transparent 50%, #059669 50%), linear-gradient(135deg, #059669 50%, transparent 50%) !important;
+            background-position: calc(100% - 1.25rem) 50%, calc(100% - 0.9rem) 50%;
+            background-size: 0.45rem 0.45rem, 0.45rem 0.45rem;
+            background-repeat: no-repeat;
+        }
+
+        #tab-teacher-approval .system-management-card .management-toolbar select,
+        #tab-manage-teachers .system-management-card .management-toolbar select,
+        #tab-manage-classes .system-management-card .management-toolbar select,
+        #tab-manage-courses .system-management-card .management-toolbar select {
+            background: #ffffff linear-gradient(45deg, transparent 50%, #059669 50%), linear-gradient(135deg, #059669 50%, transparent 50%) !important;
+            background-position: calc(100% - 1.25rem) 50%, calc(100% - 0.9rem) 50% !important;
+            background-size: 0.45rem 0.45rem, 0.45rem 0.45rem !important;
+            background-repeat: no-repeat !important;
+            color: #0f172a !important;
+            border: 1px solid var(--border-dark) !important;
+            border-radius: 999px !important;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03) !important;
+        }
+
+        .management-filter-select-wrap {
+            position: relative;
+            min-width: 190px;
+            width: 100%;
+        }
+
+        .management-filter-select-wrap::after {
+            content: "";
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            width: 0.55rem;
+            height: 0.55rem;
+            border-right: 2px solid #059669;
+            border-bottom: 2px solid #059669;
+            transform: translateY(-65%) rotate(45deg);
+            pointer-events: none;
+        }
+
+        .system-management-card .management-toolbar .management-filter-select {
+            width: 100% !important;
+            appearance: none !important;
+            border: 1px solid var(--border-dark) !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border-radius: 999px !important;
+            padding: 0.7rem 2.4rem 0.7rem 1rem !important;
+            font-size: 0.88rem !important;
+            font-weight: 900 !important;
+            cursor: pointer !important;
+            outline: none !important;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04) !important;
+        }
+
+        .system-management-card .management-toolbar .management-filter-select:focus {
+            border-color: #059669 !important;
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12) !important;
+        }
+
+        .system-management-card .management-toolbar .management-filter-select option {
+            background: #ffffff !important;
+            color: #475569 !important;
+            font-weight: 700 !important;
+        }
+
+        .management-filter-dropdown {
+            position: relative;
+            min-width: 220px;
+            width: 100%;
+        }
+
+        .management-filter-trigger {
+            width: 100%;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.9rem;
+            border: 1px solid #99f6e4;
+            background: #ffffff;
+            color: #334155;
+            border-radius: 0.9rem;
+            padding: 0.7rem 0.9rem 0.7rem 1rem;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            outline: none;
+            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.06);
+            white-space: nowrap;
+            transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease;
+        }
+
+        .management-filter-trigger svg {
+            flex: 0 0 auto;
+            color: #059669;
+        }
+
+        .management-filter-label {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .management-filter-dropdown.is-open .management-filter-trigger,
+        .management-filter-trigger:focus {
+            border-color: #10b981;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+        }
+
+        .management-filter-menu {
+            position: absolute;
+            top: calc(100% + 0.55rem);
+            right: 0;
+            z-index: 40;
+            display: grid;
+            gap: 0.2rem;
+            width: 100%;
+            min-width: 100%;
+            padding: 0.45rem;
+            border: 1px solid #ccfbf1;
+            border-radius: 0.9rem;
+            background: #ffffff;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-0.35rem) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 170ms ease, transform 170ms cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 170ms;
+        }
+
+        .management-filter-dropdown.is-open .management-filter-menu {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+            transition-delay: 0s;
+        }
+
+        .management-filter-option {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            border: 0;
+            background: transparent;
+            color: #475569;
+            border-radius: 0.65rem;
+            padding: 0.58rem 0.7rem;
+            font-size: 0.86rem;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            white-space: nowrap;
+            box-sizing: border-box;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background-color 150ms ease, color 150ms ease;
+        }
+
+        .management-filter-option:hover,
+        .management-filter-option.is-selected {
+            background: #dff8ee;
+            color: #059669;
+        }
+
+        .management-filter-check {
+            color: #059669;
+            font-weight: 800;
+            opacity: 0;
+            transition: opacity 140ms ease;
+        }
+
+        .management-filter-option.is-selected .management-filter-check {
+            opacity: 1;
+        }
+
+        .system-management-card .management-toolbar input:focus,
+        .system-management-card .management-toolbar select:focus {
+            border-color: #059669 !important;
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12) !important;
+        }
+
+        .system-management-card .management-toolbar > button {
+            min-height: 0 !important;
+            border-radius: 999px !important;
+            background: #059669 !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 0.7rem 1.35rem !important;
+            font-size: 0.88rem !important;
+            font-weight: 900 !important;
+            box-shadow: 0 14px 28px rgba(5, 150, 105, 0.16) !important;
+            white-space: nowrap;
+        }
+
+        #tab-teacher-approval .teacher-approval-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+            padding-top: 0.45rem !important;
+        }
+
+        #tab-manage-teachers .teacher-approval-grid,
+        #tab-manage-classes .staff-class-list,
+        #tab-manage-courses .staff-class-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        #tab-teacher-approval .teacher-approval-card {
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1rem;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.04);
+            transition: border-color 0.18s ease, border-left-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, background-color 0.18s ease;
+        }
+
+        #tab-teacher-approval .teacher-approval-card:hover,
+        #tab-teacher-approval .teacher-approval-card:focus-visible {
+            border-color: #86efac;
+            border-left-color: #059669;
+            box-shadow: 0 18px 36px rgba(5, 150, 105, 0.14);
+            transform: translateY(-2px);
+            background: #f0fdf4;
+            outline: none;
+        }
+
+        #tab-teacher-approval .teacher-application-summary {
+            display: block;
+            min-width: 0;
+            margin: -1rem;
+            padding: 1rem;
+            border-radius: inherit;
+            outline: none;
+        }
+
+        #tab-teacher-approval .teacher-application-summary:focus-visible {
+            outline: none;
+        }
+
+        #tab-teacher-approval .teacher-application-summary-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        #tab-teacher-approval .teacher-application-summary-identity {
+            min-width: 0;
+        }
+
+        #tab-teacher-approval .teacher-application-summary-line {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            min-width: 0;
+        }
+
+        #tab-teacher-approval .teacher-application-summary-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 999px;
+            flex: 0 0 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #dcfce7;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+            font-size: 0.78rem;
+            font-weight: 900;
+            overflow: hidden;
+            box-shadow: 0 8px 18px rgba(5, 150, 105, 0.08);
+        }
+
+        #tab-teacher-approval .teacher-application-summary-name {
+            min-width: 0;
+            color: #334155;
+            font-weight: 850;
+            font-size: 0.82rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #tab-teacher-approval .teacher-application-summary-title {
+            display: block;
+            color: #0f172a;
+            font-weight: 900;
+            font-size: 0.98rem;
+            margin-top: 0.55rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #tab-teacher-approval .teacher-application-summary-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.8rem;
+        }
+
+        #tab-teacher-approval .teacher-application-summary-role {
+            color: #334155;
+            font-size: 0.78rem;
+            font-weight: 850;
+        }
+
+        #tab-teacher-approval .teacher-application-summary-date {
+            color: #64748b;
+            font-size: 0.72rem;
+            font-weight: 850;
+            text-align: right;
+            line-height: 1.25;
+        }
+
+        #tab-manage-teachers .teacher-approval-card,
+        #tab-manage-classes .staff-class-card,
+        #tab-manage-courses .staff-class-card {
+            border: 1px solid #dbe4ee !important;
+            border-left: 4px solid #e2e8f0 !important;
+            border-radius: 1rem !important;
+            padding: 1.35rem !important;
+            background: #ffffff !important;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.04) !important;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, background-color 0.18s ease;
+        }
+
+        #tab-manage-teachers .teacher-approval-card:hover,
+        #tab-manage-classes .staff-class-card:hover,
+        #tab-manage-courses .staff-class-card:hover {
+            border-color: #86efac !important;
+            border-left-color: #059669 !important;
+            box-shadow: 0 18px 36px rgba(5, 150, 105, 0.12) !important;
+            transform: translateY(-2px);
+            background: #f0fdf4 !important;
+        }
+
+        #tab-manage-courses .staff-class-card {
+            cursor: pointer;
+            max-width: 680px;
+        }
+
+        #tab-manage-teachers .user-management-table {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.035);
+        }
+
+        #tab-manage-teachers .user-management-row {
+            display: grid;
+            grid-template-columns: minmax(260px, 1.7fr) 0.9fr 0.9fr 0.75fr;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        #tab-manage-teachers .user-management-row:last-child {
+            border-bottom: 0;
+        }
+
+        #tab-manage-teachers .user-management-head {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 0.76rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        #tab-manage-teachers .user-management-item {
+            transition: background-color 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        #tab-manage-teachers .user-management-item:hover {
+            background: #f0fdf4;
+            box-shadow: inset 4px 0 0 #059669;
+        }
+
+        #tab-manage-teachers .user-management-main {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+
+        #tab-manage-teachers .user-management-avatar {
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 0.55rem;
+            flex: 0 0 2.2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #dcfce7;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+            font-size: 0.82rem;
+            font-weight: 900;
+        }
+
+        #tab-manage-teachers .user-management-name {
+            display: block;
+            color: #0f172a;
+            font-size: 0.9rem;
+            font-weight: 900;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #tab-manage-teachers .user-management-email {
+            display: block;
+            color: #64748b;
+            font-size: 0.76rem;
+            font-weight: 700;
+            margin-top: 0.12rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #tab-manage-teachers .user-management-cell {
+            color: #334155;
+            font-size: 0.82rem;
+            font-weight: 800;
+            min-width: 0;
+        }
+
+        #tab-manage-teachers .user-management-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 0.22rem 0.7rem;
+            font-size: 0.72rem;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        #tab-manage-teachers .user-management-pill.active {
+            background: #dcfce7;
+            color: #047857;
+        }
+
+        #tab-manage-teachers .user-management-pill.disabled {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        @media (max-width: 900px) {
+            #tab-teacher-approval .teacher-approval-grid,
+            #tab-manage-teachers .teacher-approval-grid,
+            #tab-manage-classes .staff-class-list,
+            #tab-manage-courses .staff-class-list {
+                grid-template-columns: 1fr;
+            }
+
+            #tab-manage-teachers .user-management-row {
+                grid-template-columns: 1fr;
+                gap: 0.55rem;
+            }
+
+            #tab-manage-teachers .user-management-head {
+                display: none;
+            }
+
+            .system-management-card .management-toolbar,
+            #tab-teacher-approval .management-toolbar,
+            #tab-manage-teachers .management-toolbar {
+                grid-template-columns: 1fr;
+            }
+
+            #tab-teacher-approval .management-toolbar select,
+            #tab-manage-teachers .management-toolbar select,
+            #tab-manage-classes .management-toolbar select,
+            #tab-manage-courses .management-toolbar select,
+            #tab-teacher-approval .management-toolbar .management-filter-dropdown,
+            #tab-manage-teachers .management-toolbar .management-filter-dropdown,
+            #tab-manage-classes .management-toolbar .management-filter-dropdown,
+            #tab-manage-courses .management-toolbar .management-filter-dropdown,
+            #tab-teacher-approval .management-toolbar .support-filter-select-wrap,
+            #tab-manage-teachers .management-toolbar .support-filter-select-wrap,
+            #tab-manage-classes .management-toolbar .support-filter-select-wrap,
+            #tab-manage-courses .management-toolbar .support-filter-select-wrap,
+            #tab-manage-teachers .management-toolbar > button,
+            #tab-manage-classes .management-toolbar > button,
+            #tab-manage-courses .management-toolbar > button {
+                grid-column: auto;
+            }
+        }
+
+        .class-detail-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 180ms ease, visibility 0s linear 180ms;
+        }
+
+        .class-detail-modal.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition-delay: 0s;
+        }
+
+        .class-detail-modal-card {
+            width: min(100%, 680px);
+            max-height: calc(100vh - 2.5rem);
+            overflow: auto;
+            border: 1px solid #dbe4ee;
+            border-left: 4px solid #059669;
+            border-radius: 1rem;
+            background: #ffffff;
+            padding: 1.35rem;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.2);
+            transform: translateY(0.6rem) scale(0.98);
+            transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .class-detail-modal.active .class-detail-modal-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .class-detail-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 1.1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eef2f7;
+        }
+
+        .class-detail-cancel,
+        .class-detail-delete {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 2.75rem;
+            border-radius: 0.8rem;
+            padding: 0 1.15rem;
+            font-weight: 850;
+            cursor: pointer;
+            background: #ffffff;
+        }
+
+        .class-detail-cancel {
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
+        }
+
+        .class-detail-delete {
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+
+        .class-detail-cancel:hover {
+            background: #f8fafc;
+        }
+
+        .class-detail-delete:hover {
+            background: #fef2f2;
+        }
+
     </style>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=block">
 </head>
@@ -2783,6 +3928,12 @@
         if (systemOverview == null) {
             systemOverview = new SystemOverviewStats();
         }
+        
+        AdminFinancialStats financialOverview = (AdminFinancialStats) request.getAttribute("financialOverview");
+        if (financialOverview == null) {
+            financialOverview = new AdminFinancialStats();
+        }
+
         Map<String, Integer> roleCounts = systemOverview.getRoleCounts();
         NumberFormat numberFmt = NumberFormat.getIntegerInstance(new Locale("vi", "VN"));
         NumberFormat currencyFmt = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
@@ -2803,6 +3954,9 @@
             }
             if (!activeAdminTab.equals("tab-dashboard") &&
                 !activeAdminTab.equals("tab-materials") &&
+                !activeAdminTab.equals("tab-manage-classes") &&
+                !activeAdminTab.equals("tab-manage-courses") &&
+                !activeAdminTab.equals("tab-revenue") &&
                 !activeAdminTab.equals("tab-teacher-approval") &&
                 !activeAdminTab.equals("tab-profile") &&
                 !activeAdminTab.equals("tab-edit") &&
@@ -2867,10 +4021,10 @@
         <div class="dashboard-unified-header">
             <span class="unified-header-tab-title" id="unified-header-title">
                 <%= "tab-materials".equals(activeAdminTab) ? "Quản lý người dùng" :
-                    "tab-teacher-approval".equals(activeAdminTab) ? "Duyệt hồ sơ giảng viên" :
-                    "tab-profile".equals(activeAdminTab) ? "Hồ sơ cá nhân" :
+                    "tab-manage-classes".equals(activeAdminTab) ? "Quản lý lớp học" :
+                    "tab-manage-courses".equals(activeAdminTab) ? "Quản lý khóa học" :
+                    "tab-revenue".equals(activeAdminTab) ? "Thống kê tiền" :
                     "tab-edit".equals(activeAdminTab) ? "Cập nhật thông tin" :
-                    "tab-security".equals(activeAdminTab) ? "Bảo mật và mật khẩu" :
                     "tab-notifications".equals(activeAdminTab) ? "Thông báo hệ thống" :
                     "Tổng quan hệ thống" %>
             </span>
@@ -2914,33 +4068,32 @@
                         </a>
                     </li>
                     <li>
-                        <a id="nav-tab-teacher-approval" class="<%= "tab-teacher-approval".equals(activeAdminTab) ? "active" : "" %>" onclick="switchTab('tab-teacher-approval')">
+                        <a id="nav-tab-manage-classes" class="<%= "tab-manage-classes".equals(activeAdminTab) ? "active" : "" %>" onclick="switchTab('tab-manage-classes')">
                             <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-                                <span>Duyệt hồ sơ giảng viên</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                <span>Quản lý lớp học</span>
                             </div>
                             <span class="menu-indicator">&rarr;</span>
                         </a>
                     </li>
                     <li>
-                        <a id="nav-tab-profile" class="<%= ("tab-profile".equals(activeAdminTab) || "tab-edit".equals(activeAdminTab)) ? "active" : "" %>" onclick="switchTab('tab-profile')">
+                        <a id="nav-tab-manage-courses" class="<%= "tab-manage-courses".equals(activeAdminTab) ? "active" : "" %>" onclick="switchTab('tab-manage-courses')">
                             <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                <span>Hồ sơ cá nhân</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 6.5v12"/><path d="M5 8.5c2.6 0 4.9.5 7 2 2.1-1.5 4.4-2 7-2v11c-2.6 0-4.9.5-7 2-2.1-1.5-4.4-2-7-2z"/></svg>
+                                <span>Quản lý khóa học</span>
                             </div>
                             <span class="menu-indicator">&rarr;</span>
                         </a>
                     </li>
                     <li>
-                        <a id="nav-tab-security" class="<%= "tab-security".equals(activeAdminTab) ? "active" : "" %>" onclick="switchTab('tab-security')">
+                        <a id="nav-tab-revenue" class="<%= "tab-revenue".equals(activeAdminTab) ? "active" : "" %>" onclick="switchTab('tab-revenue')">
                             <div class="menu-label-group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                <span>Bảo mật và mật khẩu</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="12" cy="14.5" r="2.2"/></svg>
+                                <span>Thống kê tiền</span>
                             </div>
                             <span class="menu-indicator">&rarr;</span>
                         </a>
-                    </li>
-                    <li>
+                    </li>                    <li>
                         <a id="nav-tab-notifications" class="<%= "tab-notifications".equals(activeAdminTab) ? "active" : "" %>" onclick="switchTab('tab-notifications')">
                             <div class="menu-label-group">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -3039,13 +4192,13 @@
                             </div>
                             <div class="system-metric-card">
                                 <div class="system-metric-icon">
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
                                 </div>
                                 <div>
-                                    <div class="system-metric-label">Tổng doanh thu</div>
-                                    <div class="system-metric-value" style="font-size:1.45rem;"><%= currencyFmt.format(systemOverview.getTotalRevenue()) %></div>
+                                    <div class="system-metric-label">Tổng khóa học</div>
+                                    <div class="system-metric-value"><%= numberFmt.format(systemOverview.getTotalCourses()) %></div>
                                 </div>
-                                <div class="system-metric-note">Tính từ bảng thanh toán nếu đã cấu hình</div>
+                                <div class="system-metric-note">Các khóa học đang có trên hệ thống</div>
                             </div>
                             <div class="system-metric-card">
                                 <div class="system-metric-icon">
@@ -3058,176 +4211,80 @@
                                 <div class="system-metric-note">Lớp học đang mở hoặc sắp khai giảng</div>
                             </div>
                         </div>
-                        <div class="role-breakdown-panel">
-                            <h3 class="role-breakdown-title">Người dùng theo từng loại vai trò</h3>
-                            <div class="role-breakdown-list">
-                                <div class="role-breakdown-item"><span class="role-breakdown-name">Học sinh</span><span class="role-breakdown-count"><%= numberFmt.format(roleCounts.getOrDefault("student", 0)) %></span></div>
-                                <div class="role-breakdown-item"><span class="role-breakdown-name">Phụ huynh</span><span class="role-breakdown-count"><%= numberFmt.format(roleCounts.getOrDefault("parent", 0)) %></span></div>
-                                <div class="role-breakdown-item"><span class="role-breakdown-name">Giáo viên</span><span class="role-breakdown-count"><%= numberFmt.format(roleCounts.getOrDefault("teacher", 0)) %></span></div>
-                                <div class="role-breakdown-item"><span class="role-breakdown-name">Nhân viên</span><span class="role-breakdown-count"><%= numberFmt.format(roleCounts.getOrDefault("staff", 0)) %></span></div>
-                                <div class="role-breakdown-item"><span class="role-breakdown-name">Quản trị viên</span><span class="role-breakdown-count"><%= numberFmt.format(roleCounts.getOrDefault("admin", 0)) %></span></div>
+                        <div class="overview-chart-card" style="margin-top: 1.5rem;">
+                            <div class="overview-chart-head">
+                                <div class="overview-chart-title-block">
+                                    <h2 class="overview-chart-title">Tăng trưởng người dùng</h2>
+                                    <div class="overview-chart-summary" aria-label="Tổng quan tăng trưởng người dùng">
+                                        <span class="overview-summary-pill taught">
+                                            <strong id="staffUserGrowthTotal"><%= staffUserGrowthStats.getWeeklyTotal() %></strong>
+                                            <span>người dùng mới</span>
+                                        </span>
+                                        <span class="overview-summary-pill trend">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: -0.2rem;">
+                                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                                <polyline points="17 6 23 6 23 12"></polyline>
+                                            </svg>
+                                            <strong id="staffUserGrowthTrend"><%= staffUserGrowthStats.getTrendPercentLabel() %></strong>
+                                            <span>so với tuần trước</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="overview-period-switch" id="staffUserGrowthPeriodSwitch" data-active="week" aria-label="Chọn khoảng thời gian biểu đồ người dùng">
+                                    <button type="button" class="overview-period-btn is-active" data-period="week" aria-pressed="true">Tuần</button>
+                                    <button type="button" class="overview-period-btn" data-period="month" aria-pressed="false">Tháng</button>
+                                </div>
+                            </div>
+        
+                            <div class="overview-line-wrap" id="staffUserGrowthLineWrap">
+                                <svg id="staffUserGrowthChart" class="overview-line-chart" viewBox="0 0 640 214" role="img" aria-label="Biểu đồ tăng trưởng người dùng">
+                                    <defs>
+                                        <linearGradient id="staffUserGrowthFill" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#059669" stop-opacity="0.18" />
+                                            <stop offset="100%" stop-color="#059669" stop-opacity="0" />
+                                        </linearGradient>
+                                    </defs>
+                                    <line x1="52" y1="24" x2="610" y2="24" stroke="#e2e8f0" stroke-width="1" />
+                                    <line x1="52" y1="70" x2="610" y2="70" stroke="#e2e8f0" stroke-width="1" />
+                                    <line x1="52" y1="116" x2="610" y2="116" stroke="#e2e8f0" stroke-width="1" />
+                                    <line x1="52" y1="162" x2="610" y2="162" stroke="#e2e8f0" stroke-width="1" />
+        
+                                    <text id="staffUserGrowthY4" x="4" y="28">3</text>
+                                    <text id="staffUserGrowthY3" x="4" y="74">2</text>
+                                    <text id="staffUserGrowthY2" x="4" y="120">1</text>
+                                    <text id="staffUserGrowthY1" x="4" y="166">0</text>
+        
+                                    <path id="staffUserGrowthArea" d="M64 162 L610 162 L610 162 L64 162 Z" fill="url(#staffUserGrowthFill)" />
+                                    <path id="staffUserGrowthLine" d="M64 162 L610 162" fill="none" stroke="#059669" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <line id="staffUserGrowthGuideLine" x1="610" y1="34" x2="610" y2="174" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 6" />
+                                    <circle id="staffUserGrowthDot" cx="610" cy="162" r="5" fill="#059669" stroke="#ffffff" stroke-width="3" />
+        
+                                    <text id="staffUserGrowthTick1" x="58" y="202"></text>
+                                    <text id="staffUserGrowthTick2" x="150" y="202"></text>
+                                    <text id="staffUserGrowthTick3" x="240" y="202"></text>
+                                    <text id="staffUserGrowthTick4" x="332" y="202"></text>
+                                    <text id="staffUserGrowthTick5" x="424" y="202"></text>
+                                    <text id="staffUserGrowthTick6" x="516" y="202"></text>
+                                    <text id="staffUserGrowthTick7" x="586" y="202"></text>
+                                </svg>
+        
+                                <div class="overview-line-tooltip" id="staffUserGrowthTooltip">
+                                    <strong id="staffUserGrowthTooltipDate"></strong>
+                                    <div class="overview-tooltip-row">
+                                        <span class="overview-tooltip-label"><span class="overview-tooltip-dot" style="background:#059669;"></span>Đăng ký mới</span>
+                                        <span id="staffUserGrowthTooltipValue">0 tài khoản</span>
+                                    </div>
+                                </div>
+                            </div>
+        
+                            <div class="overview-chart-legend">
+                                <span class="overview-legend-item"><span class="overview-legend-dot" style="background:#059669;"></span>Người dùng mới</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section id="tab-profile" class="tab-pane <%= "tab-profile".equals(activeAdminTab) ? "active-pane" : "" %>">
-                <% String adminProfileStatus = (user != null) ? user.getAccountStatus() : "active";
-                   String adminProfileStatusLabel = "active".equals(adminProfileStatus) ? "Đang hoạt động" : "suspended".equals(adminProfileStatus) ? "Tạm khóa" : "Vô hiệu hóa"; %>
-                <div class="tab-pane-header">
-                    <div class="tab-pane-header-left">
-                        <h1>Hồ sơ cá nhân</h1>
-                        <p>Xem và quản lý thông tin tài khoản quản trị viên của bạn trên HIPZI.</p>
-                    </div>
-                    <div class="tab-pane-header-right">
-                        <div class="date-badge">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span><%= currentDateDisplay %></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="metrics-row">
-                    <div class="metric-card">
-                        <div class="metric-card-top">
-                            <span class="metric-card-title">Họ và tên hiển thị</span>
-                            <div class="metric-arrow-btn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="metric-card-value"><%= user != null ? user.getDisplayName() : "—" %></div>
-                            <span class="metric-card-sub">Quản trị viên hệ thống</span>
-                        </div>
-                        <div class="metric-ghost-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="metric-card">
-                        <div class="metric-card-top">
-                            <span class="metric-card-title">Ngày tham gia</span>
-                            <div class="metric-arrow-btn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="metric-card-value"><%= joinDate %></div>
-                            <span class="metric-card-sub" style="background:#f5f3ff; color:#7c3aed;">Khởi tạo tài khoản</span>
-                        </div>
-                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#7c3aed; background:#f5f3ff;">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="metric-card">
-                        <div class="metric-card-top">
-                            <span class="metric-card-title">Địa chỉ Email</span>
-                            <div class="metric-arrow-btn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="metric-card-value compact"><%= user != null ? user.getEmail() : "—" %></div>
-                            <span class="metric-card-sub" style="background:#fff7ed; color:#ea580c;">Tài khoản định danh</span>
-                        </div>
-                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#ea580c; background:#fff7ed;">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="metric-card">
-                        <div class="metric-card-top">
-                            <span class="metric-card-title">Trạng thái tài khoản</span>
-                            <div class="metric-arrow-btn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="metric-card-value" style="font-size:1rem;">
-                                <span class="acc-status-tag <%= adminProfileStatus %>"><%= adminProfileStatusLabel %></span>
-                            </div>
-                            <span class="metric-card-sub" style="background:#eff6ff; color:#2563eb;">Chế độ bảo mật</span>
-                        </div>
-                        <div class="metric-ghost-icon" aria-hidden="true" style="color:#2563eb; background:#eff6ff;">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="dashboard-grid-layout">
-                    <div class="premium-card" style="grid-column: 1 / -1;">
-                        <div class="premium-card-header">
-                            <span class="premium-card-title">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                Chi tiết tài khoản
-                            </span>
-                            <div class="account-header-actions">
-                                <button type="button" id="accountEditTrigger" onclick="toggleAccountNameEdit(true)" class="btn-premium profile-edit-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; min-height: 36px;">
-                                    <span>Chỉnh sửa</span>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                                </button>
-                                <div id="accountEditActions" class="account-edit-actions" style="display: none;">
-                                    <button type="button" class="btn-premium account-cancel-btn" onclick="toggleAccountNameEdit(false)" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; min-height: 36px;">Hủy bỏ</button>
-                                    <button type="submit" form="accountNameInlineForm" class="btn-premium account-save-btn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; min-height: 36px;">Lưu</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <form id="adminAvatarUploadForm" action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" style="display:none;">
-                            <input type="hidden" name="action" value="updateAvatar">
-                            <input type="file" id="adminAvatarFile" name="avatarFile" accept="image/*" onchange="if(this.files.length > 0) { showToast('Đang tải ảnh lên...', 'info'); document.getElementById('adminAvatarUploadForm').submit(); }">
-                        </form>
-
-                        <div class="account-summary-panel">
-                            <div class="account-summary-main">
-                                <div class="account-avatar-wrap">
-                                    <% if (user != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) { %>
-                                        <img src="<%= user.getAvatarUrl() %>" class="account-avatar-img" alt="Avatar">
-                                    <% } else { %>
-                                        <div class="account-avatar-placeholder"><%= initials %></div>
-                                    <% } %>
-                                    <button type="button" class="avatar-camera-btn" title="Cập nhật ảnh đại diện" onclick="document.getElementById('adminAvatarFile').click();">
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                                    </button>
-                                </div>
-                                <div class="account-identity">
-                                    <h3 class="account-name"><%= user != null ? user.getDisplayName() : "Quản trị viên HIPZI" %></h3>
-                                    <form id="accountNameInlineForm" class="account-name-edit-form" action="${pageContext.request.contextPath}/profile" method="POST" style="display: none;">
-                                        <input type="hidden" name="action" value="updateName">
-                                        <input id="accountDisplayNameInput" class="account-name-input" type="text" name="displayName" required value="<%= user != null ? user.getDisplayName() : "" %>" placeholder="Nhập họ và tên của bạn...">
-                                    </form>
-                                    <span class="account-email" title="<%= user != null ? user.getEmail() : "" %>"><%= user != null ? user.getEmail() : "info@hipzi.vn" %></span>
-                                </div>
-                            </div>
-                            <div class="account-side-meta">
-                                <div class="account-meta-pill">
-                                    <span class="account-meta-label">Ngày tham gia</span>
-                                    <span class="account-meta-value"><%= joinDate %></span>
-                                </div>
-                                <div class="account-meta-pill">
-                                    <span class="account-meta-label">Vai trò</span>
-                                    <span class="account-meta-value">
-                                        <% if (roles != null && !roles.isEmpty()) {
-                                            for (Role r : roles) { %>
-                                                <span class="role-tag <%= r.getName() %>">
-                                                    <%= r.getName().equals("student")  ? "Học viên"    :
-                                                        r.getName().equals("parent")   ? "Phụ huynh"   :
-                                                        r.getName().equals("teacher")  ? "Giảng viên"  :
-                                                        r.getName().equals("staff")    ? "Nhân viên"   :
-                                                        r.getName().equals("admin")    ? "Quản trị"    : r.getName() %>
-                                                </span>
-                                        <% }} else { %>
-                                            <span class="role-tag admin">Quản trị viên</span>
-                                        <% } %>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             <!-- ========================================== -->
             <!-- TAB 2: CHỈNH SỬA HỒ SƠ                     -->
@@ -3272,83 +4329,6 @@
             <!-- ========================================== -->
             <!-- TAB 3: BẢO MẬT VÀ MẬT KHẨU                 -->
             <!-- ========================================== -->
-            <section id="tab-security" class="tab-pane <%= "tab-security".equals(activeAdminTab) ? "active-pane" : "" %>">
-                <div class="tab-grouped-container">
-                    <div class="tab-header-accent">
-                        <div class="tab-header-title-text">Bảo mật tài khoản</div>
-                        <div class="tab-header-date-pill">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span><%= currentDateDisplay %></span>
-                        </div>
-                    </div>
-
-                    <div class="tab-body-content">
-                        <div class="form-grouped-section">
-                            <!-- Password Change Block -->
-                            <div style="background:#ffffff; border-radius:1.25rem; border:1px solid rgba(226, 232, 240, 0.9); box-shadow:0 4px 12px rgba(0, 0, 0, 0.02); overflow:hidden;">
-                                <div style="padding:1.75rem; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.25rem;">
-                                    <div>
-                                        <span style="font-weight:800; font-size:1.15rem; color:#b45309; letter-spacing:0.5px; text-transform:uppercase; display:block;">Mật khẩu đăng nhập</span>
-                                        <p style="font-size:0.85rem; color:var(--text-muted); margin:0.35rem 0 0 0;">Cập nhật mật khẩu định kỳ để bảo mật tốt hơn.</p>
-                                    </div>
-                                    <button type="button" onclick="document.getElementById('pwd-modal-overlay').style.display='flex';" style="display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; background:#059669; color:#ffffff; font-weight:800; font-size:0.85rem; padding:0.65rem 1.35rem; border-radius:9999px; border:none; box-shadow:0 4px 14px rgba(5, 150, 105, 0.25); cursor:pointer; transition:all 0.2s ease;">
-                                        <span>Đổi mật khẩu</span>
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                                    </button>
-                                </div>
-
-                                <div style="padding:1rem 1.75rem; border-top:1px solid var(--border-dark); background:rgba(248, 250, 252, 0.4); display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
-                                    <div style="display:flex; align-items:center; gap:0.4rem; color:#10b981; font-weight:700; font-size:0.85rem;">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                        <span>Mật khẩu mạnh</span>
-                                    </div>
-                                    <div style="display:flex; align-items:center; gap:0.4rem; color:<%= (user != null && user.isTwoFactorEnabled()) ? "#10b981" : "var(--text-muted)" %>; font-weight:700; font-size:0.85rem;">
-                                        <% if (user != null && user.isTwoFactorEnabled()) { %>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                                            <span>Xác thực 2 lớp: Đang bật</span>
-                                        <% } else { %>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                            <span>Xác thực 2 lớp: Tắt</span>
-                                        <% } %>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="security-card-row">
-                                <!-- 2FA Toggle -->
-                                <div style="background:#ffffff; border-radius:1.25rem; border:1px solid rgba(226, 232, 240, 0.9); box-shadow:0 4px 12px rgba(0, 0, 0, 0.02); padding:1.5rem; display:flex; flex-direction:column; justify-content:space-between; gap:1.5rem;">
-                                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                        <span style="font-weight:800; font-size:0.9rem; color:var(--text-main); text-transform:uppercase; letter-spacing:0.5px;">Bảo mật 2 lớp (OTP)</span>
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                    </div>
-                                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                                        <span style="font-weight:700; font-size:0.95rem; color:var(--text-main);">Mã OTP qua Email</span>
-                                        <form id="toggle2faForm" action="${pageContext.request.contextPath}/profile" method="POST" style="display:none;">
-                                            <input type="hidden" name="action" value="toggle2FA">
-                                        </form>
-                                        <% boolean is2fa = (user != null && user.isTwoFactorEnabled()); %>
-                                        <div id="otp-toggle-btn" onclick="document.getElementById('toggle2faForm').submit();" style="width:44px; height:24px; background:<%= is2fa ? "#10b981" : "#cbd5e1" %>; border-radius:12px; padding:2px; cursor:pointer; transition:background 0.3s ease; display:flex; align-items:center;">
-                                            <div class="toggle-circle" style="width:20px; height:20px; background:#ffffff; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); transform:translateX(<%= is2fa ? "20px" : "0" %>);"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Current Device -->
-                                <div style="background:#ffffff; border-radius:1.25rem; border:1px solid rgba(226, 232, 240, 0.9); box-shadow:0 4px 12px rgba(0, 0, 0, 0.02); padding:1.5rem; display:flex; flex-direction:column; justify-content:space-between; gap:1.5rem;">
-                                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                        <span style="font-weight:800; font-size:0.9rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Thiết bị hiện tại</span>
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                                    </div>
-                                    <div>
-                                        <span style="font-weight:800; font-size:1.1rem; color:var(--text-main); display:block;">Windows - Chrome (Vietnam)</span>
-                                        <span style="font-size:0.75rem; color:#10b981; font-weight:600; display:inline-block; margin-top:0.25rem; background:#ecfdf5; padding:0.15rem 0.5rem; border-radius:0.25rem;">Phiên truy cập an toàn</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             <!-- ========================================== -->
             <!-- TAB 4: TÀI LIỆU ĐÃ LƯU                     -->
@@ -3364,14 +4344,45 @@
                     </div>
 
                     <div class="tab-body-content">
-                        <div class="form-grouped-section">
                             <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
                                 <div class="card-header-title">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                    <span>Danh sách student, teacher, parent, staff</span>
+                                    <span>Danh sách người dùng</span>
                                 </div>
                                 <span style="font-size:0.82rem; font-weight:800; color:#059669; background:#ecfdf5; padding:0.4rem 1rem; border-radius:999px;"><%= numberFmt.format(adminUserTotalCount) %> người dùng</span>
                             </div>
+                            
+                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/admin-profile" style="display: grid; grid-template-columns: minmax(200px, 1fr) auto auto auto; gap: 1rem; align-items: center; margin-top: 1.5rem; margin-bottom: 1.5rem; background: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0;">
+                                <input type="hidden" name="tab" value="materials">
+                                <input type="text" name="searchUser" value="<%= h(searchUser) %>" placeholder="Tìm tên hoặc email người dùng..." style="flex: 1; min-width: 200px; padding: 0.6rem 1rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; outline: none; font-size: 0.9rem;">
+                                <input id="admin-user-role-filter" type="hidden" name="userRole" value="<%= h(userRoleParam) %>">
+                                <div class="management-filter-dropdown" data-target-input="admin-user-role-filter" data-submit-on-change="true">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label"><%= h(userRoleFilterLabel) %></span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option <%= "ALL".equals(userRoleParam) ? "is-selected" : "" %>" data-value="ALL">Tất cả <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "teacher".equals(userRoleParam) ? "is-selected" : "" %>" data-value="teacher">Giảng viên <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "student".equals(userRoleParam) ? "is-selected" : "" %>" data-value="student">Học sinh <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "parent".equals(userRoleParam) ? "is-selected" : "" %>" data-value="parent">Phụ huynh <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "staff".equals(userRoleParam) ? "is-selected" : "" %>" data-value="staff">Nhân viên <span class="management-filter-check">&#10003;</span></button>
+                                    </div>
+                                </div>
+                                <input id="admin-user-status-filter" type="hidden" name="userStatus" value="<%= h(userStatusParam) %>">
+                                <div class="management-filter-dropdown" data-target-input="admin-user-status-filter" data-submit-on-change="true">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label"><%= h(userStatusFilterLabel) %></span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option <%= "ALL".equals(userStatusParam) ? "is-selected" : "" %>" data-value="ALL">Tất cả <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "active".equals(userStatusParam) ? "is-selected" : "" %>" data-value="active">Đang hoạt động <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "disabled".equals(userStatusParam) ? "is-selected" : "" %>" data-value="disabled">Bị ban <span class="management-filter-check">&#10003;</span></button>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.25rem; border-radius: 0.5rem; font-weight: 700;">Lọc kết quả</button>
+                            </form>
                             <div class="admin-user-table-wrap">
                                 <table class="admin-user-table">
                                     <thead>
@@ -3399,7 +4410,19 @@
                                                     <span class="managed-user-email"><%= managedEmail %></span>
                                                 </div>
                                             </td>
-                                            <td><span class="managed-role-pill"><%= managedRoles %></span></td>
+                                            <td>
+                                                <button type="button"
+                                                        class="managed-role-pill managed-role-pill-btn"
+                                                        data-userid="<%= managedUser.getId() %>"
+                                                        data-current-role="<%= managedRoles %>"
+                                                        data-name="<%= escAttr(managedName) %>"
+                                                        onclick="openChangeRoleModal(this)"
+                                                        title="Nhấn để đổi vai trò"
+                                                        aria-label="Đổi vai trò người dùng">
+                                                    <%= managedRoles %>
+                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:4px;opacity:0.6;"><polyline points="6 9 12 15 18 9"/></svg>
+                                                </button>
+                                            </td>
                                             <td>
                                                 <span id="admin-status-<%= managedUser.getId() %>" class="live-status-badge <%= managedOnline ? "live-status-online" : "live-status-offline" %>"><%= managedOnline ? "Online" : "Offline" %></span>
                                             </td>
@@ -3448,6 +4471,305 @@
                                     <% } %>
                                 </div>
                             </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================== -->
+            <!-- TAB: QUẢN LÝ NGƯỜI DÙNG                   -->
+            <!-- ========================================== -->
+
+            <!-- ========================================== -->
+            <!-- TAB: QUẢN LÝ LỚP HỌC (MOCKUP)             -->
+            <!-- ========================================== -->
+            <section id="tab-manage-classes" class="tab-pane <%= "tab-manage-classes".equals(activeAdminTab) ? "active-pane" : "" %>">
+                <div class="tab-grouped-container">
+                    <div class="tab-header-accent">
+                        <div class="tab-header-title-text">Quản lý lớp học</div>
+                        <div class="tab-header-date-pill">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span><%= currentDateDisplay %></span>
+                        </div>
+                    </div>
+                    <div class="tab-body-content">
+                        <div class="section-data-card system-management-card">
+                            <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
+                                <div class="card-header-title">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                    <span>Danh sách lớp học</span>
+                                </div>
+                                <span><%= managedClassrooms != null ? managedClassrooms.size() : 0 %> lớp học</span>
+                            </div>
+
+                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/admin-profile" style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; background:#f8fafc; padding:1rem; border-radius:0.75rem; border:1px solid #e2e8f0;">
+                                <input type="hidden" name="tab" value="manage-classes">
+                                <input type="text" name="classTitle" value="<%= h(classTitle) %>" placeholder="Tìm tên lớp học..." style="flex:1; min-width:220px; padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem;">
+                                <input id="class-subject-filter" type="hidden" name="classSubject" value="<%= h(classSubjectParam) %>">
+                                <div class="management-filter-dropdown" data-target-input="class-subject-filter" data-submit-on-change="true">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label"><%= h(classSubjectFilterLabel) %></span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option <%= "ALL".equals(classSubjectParam) ? "is-selected" : "" %>" data-value="ALL">Tất cả môn học <span class="management-filter-check">&#10003;</span></button>
+                                        <% if (classSubjects != null) {
+                                            for (String subject : classSubjects) { %>
+                                                <button type="button" class="management-filter-option <%= subject.equals(classSubjectParam) ? "is-selected" : "" %>" data-value="<%= h(subject) %>"><%= h(subject) %> <span class="management-filter-check">&#10003;</span></button>
+                                        <%  }
+                                        } %>
+                                    </div>
+                                </div>
+                                <input id="class-status-filter" type="hidden" name="classStatus" value="<%= h(classStatusParam) %>">
+                                <div class="management-filter-dropdown" data-target-input="class-status-filter" data-submit-on-change="true">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label"><%= h(classStatusFilterLabel) %></span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option <%= "ALL".equals(classStatusParam) ? "is-selected" : "" %>" data-value="ALL">Tất cả trạng thái <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "open".equals(classStatusParam) ? "is-selected" : "" %>" data-value="open">Đang mở <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "upcoming".equals(classStatusParam) ? "is-selected" : "" %>" data-value="upcoming">Sắp khai giảng <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "closed".equals(classStatusParam) ? "is-selected" : "" %>" data-value="closed">Đã đóng <span class="management-filter-check">&#10003;</span></button>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.25rem; border-radius:0.5rem; font-weight:700;">Lọc lớp học</button>
+                            </form>
+
+                            <% if (managedClassrooms != null && !managedClassrooms.isEmpty()) { %>
+                                <div class="staff-class-list">
+                                    <% for (Classroom cls : managedClassrooms) { %>
+                                        <%
+                                            String classModalId = "class-detail-modal-" + cls.getId();
+                                        %>
+                                        <div class="staff-class-card"
+                                             role="button"
+                                             tabindex="0"
+                                             onclick="openClassDetailModal('<%= h(classModalId) %>')"
+                                             onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClassDetailModal('<%= h(classModalId) %>'); }">
+                                            <div style="min-width:0;">
+                                                <h3 class="staff-class-title"><%= h(cls.getTitle()) %></h3>
+                                                <div style="display:flex; gap:1rem; flex-wrap:wrap; color:var(--text-muted); font-size:0.86rem; font-weight:650;">
+                                                    <span>Giảng viên: <strong style="color:var(--text-main);"><%= h(cls.getTeacherName()) %></strong></span>
+                                                </div>
+                                            </div>
+                                            <span class="class-status-pill <%= h(cls.getStatus()) %>"><%= h(cls.getStatusLabel()) %></span>
+                                        </div>
+                                        <div id="<%= h(classModalId) %>" class="class-detail-modal" onclick="closeClassDetailModalOnBackdrop(event, this)">
+                                            <div class="class-detail-modal-card" role="dialog" aria-modal="true" aria-labelledby="class-detail-title-<%= h(cls.getId()) %>">
+                                                <h3 id="class-detail-title-<%= h(cls.getId()) %>" class="staff-class-title"><%= h(cls.getTitle()) %></h3>
+                                                <div class="teacher-approval-meta-grid" style="margin-top:1rem;">
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Môn học</span>
+                                                        <strong><%= h(cls.getSubject()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Lớp</span>
+                                                        <strong><%= h(cls.getGrade() != null && !cls.getGrade().isEmpty() ? cls.getGrade() : "Chưa cập nhật") %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Giảng viên</span>
+                                                        <strong><%= h(cls.getTeacherName()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Lịch học</span>
+                                                        <strong><%= h(cls.getSchedule()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Sĩ số</span>
+                                                        <strong><%= cls.getStudentCount() %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Mã lớp</span>
+                                                        <strong><%= h(cls.getClassCode()) %></strong>
+                                                    </div>
+                                                </div>
+                                                <% if (cls.getDescription() != null && !cls.getDescription().trim().isEmpty()) { %>
+                                                    <div class="teacher-approval-note" style="margin-top:1rem;">
+                                                        <span>Mô tả</span>
+                                                        <p><%= h(cls.getDescription()) %></p>
+                                                    </div>
+                                                <% } %>
+                                                <div class="class-detail-actions">
+                                                    <button type="button" class="class-detail-cancel" onclick="closeClassDetailModal('<%= h(classModalId) %>')">Hủy bỏ</button>
+                                                    <form action="${pageContext.request.contextPath}/admin-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa lớp học này khỏi hệ thống?');">
+                                                        <input type="hidden" name="action" value="deleteManagedClass">
+                                                        <input type="hidden" name="classId" value="<%= h(cls.getId()) %>">
+                                                        <button type="submit" class="class-detail-delete" title="Xóa lớp học">
+                                                            <span>Xóa</span>
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            <% } else { %>
+                                <div class="empty-status-panel" style="padding:4rem 2rem;">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                                    <span style="font-weight:700; color:var(--text-main);">Không tìm thấy lớp học</span>
+                                    <p style="font-size:0.85rem; max-width:420px; margin:0;">Không có lớp học phù hợp với bộ lọc hiện tại.</p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-manage-courses" class="tab-pane <%= "tab-manage-courses".equals(activeAdminTab) ? "active-pane" : "" %>">
+                <div class="tab-grouped-container">
+                    <div class="tab-header-accent">
+                        <div class="tab-header-title-text">Quản lý khóa học</div>
+                        <div class="tab-header-date-pill">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span><%= currentDateDisplay %></span>
+                        </div>
+                    </div>
+                    <div class="tab-body-content">
+                        <div class="section-data-card system-management-card">
+                            <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
+                                <div class="card-header-title">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 6.5v12"/><path d="M5 8.5c2.6 0 4.9.5 7 2 2.1-1.5 4.4-2 7-2v11c-2.6 0-4.9.5-7 2-2.1-1.5-4.4-2-7-2z"/></svg>
+                                    <span>Danh sách khóa học</span>
+                                </div>
+                                <span><%= managedCourses != null ? managedCourses.size() : 0 %> khóa học</span>
+                            </div>
+
+                            <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/admin-profile" style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; background:#f8fafc; padding:1rem; border-radius:0.75rem; border:1px solid #e2e8f0;">
+                                <input type="hidden" name="tab" value="manage-courses">
+                                <input type="text" name="courseTitle" value="<%= h(courseTitle) %>" placeholder="Tìm tên khóa học hoặc giảng viên..." style="flex:1; min-width:220px; padding:0.6rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; outline:none; font-size:0.9rem;">
+                                <input id="course-subject-filter" type="hidden" name="courseSubject" value="<%= h(courseSubjectParam) %>">
+                                <div class="management-filter-dropdown" data-target-input="course-subject-filter" data-submit-on-change="true">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label"><%= h(courseSubjectFilterLabel) %></span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option <%= "ALL".equals(courseSubjectParam) ? "is-selected" : "" %>" data-value="ALL">Tất cả môn học <span class="management-filter-check">&#10003;</span></button>
+                                        <% if (courseSubjects != null) {
+                                            for (Course subject : courseSubjects) { %>
+                                                <button type="button" class="management-filter-option <%= subject.getSubjectCode() != null && subject.getSubjectCode().equals(courseSubjectParam) ? "is-selected" : "" %>" data-value="<%= h(subject.getSubjectCode()) %>"><%= h(subject.getSubjectName()) %> <span class="management-filter-check">&#10003;</span></button>
+                                        <%  }
+                                        } %>
+                                    </div>
+                                </div>
+                                <input id="course-status-filter" type="hidden" name="courseStatus" value="<%= h(courseStatusParam) %>">
+                                <div class="management-filter-dropdown" data-target-input="course-status-filter" data-submit-on-change="true">
+                                    <button type="button" class="management-filter-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="management-filter-label"><%= h(courseStatusFilterLabel) %></span>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                    <div class="management-filter-menu" role="listbox">
+                                        <button type="button" class="management-filter-option <%= "ALL".equals(courseStatusParam) ? "is-selected" : "" %>" data-value="ALL">Tất cả trạng thái <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "pending_review".equals(courseStatusParam) ? "is-selected" : "" %>" data-value="pending_review">Chờ duyệt <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "approved".equals(courseStatusParam) ? "is-selected" : "" %>" data-value="approved">Đã duyệt <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "needs_revision".equals(courseStatusParam) ? "is-selected" : "" %>" data-value="needs_revision">Cần chỉnh sửa <span class="management-filter-check">&#10003;</span></button>
+                                        <button type="button" class="management-filter-option <%= "rejected".equals(courseStatusParam) ? "is-selected" : "" %>" data-value="rejected">Từ chối <span class="management-filter-check">&#10003;</span></button>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.25rem; border-radius:0.5rem; font-weight:700;">Lọc khóa học</button>
+                            </form>
+
+                            <% if (managedCourses != null && !managedCourses.isEmpty()) { %>
+                                <div class="staff-class-list">
+                                    <% for (Course course : managedCourses) {
+                                        String courseStatus = course.getStatus() != null ? course.getStatus() : "pending_review";
+                                        String statusBg = "approved".equals(courseStatus) ? "#dcfce7" : ("rejected".equals(courseStatus) ? "#fee2e2" : ("needs_revision".equals(courseStatus) ? "#ffedd5" : "#fef9c3"));
+                                        String statusColor = "approved".equals(courseStatus) ? "#15803d" : ("rejected".equals(courseStatus) ? "#b91c1c" : ("needs_revision".equals(courseStatus) ? "#c2410c" : "#a16207"));
+                                        String courseModalId = "course-detail-modal-" + course.getId();
+                                    %>
+                                        <div class="staff-class-card"
+                                             role="button"
+                                             tabindex="0"
+                                             onclick="openClassDetailModal('<%= h(courseModalId) %>')"
+                                             onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openClassDetailModal('<%= h(courseModalId) %>'); }">
+                                            <div style="min-width:0;">
+                                                <h3 class="staff-class-title"><%= h(course.getTitle()) %></h3>
+                                                <div style="display:flex; gap:1rem; flex-wrap:wrap; color:var(--text-muted); font-size:0.86rem; font-weight:650;">
+                                                    <span>Giảng viên: <strong style="color:var(--text-main);"><%= h(course.getTeacherName()) %></strong></span>
+                                                </div>
+                                            </div>
+                                            <span style="font-size:0.75rem; font-weight:800; color:<%= statusColor %>; background:<%= statusBg %>; padding:0.25rem 0.65rem; border-radius:999px; white-space:nowrap;"><%= h(course.getStatusLabel()) %></span>
+                                        </div>
+                                        <div id="<%= h(courseModalId) %>" class="class-detail-modal" onclick="closeClassDetailModalOnBackdrop(event, this)">
+                                            <div class="class-detail-modal-card" role="dialog" aria-modal="true" aria-labelledby="course-detail-title-<%= h(course.getId()) %>">
+                                                <h3 id="course-detail-title-<%= h(course.getId()) %>" class="staff-class-title"><%= h(course.getTitle()) %></h3>
+                                                <div class="teacher-approval-meta-grid" style="margin-top:1rem;">
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Môn học</span>
+                                                        <strong><%= h(course.getSubjectName()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Trạng thái</span>
+                                                        <strong><%= h(course.getStatusLabel()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Giá</span>
+                                                        <strong><%= h(course.getPriceLabel()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Giảng viên</span>
+                                                        <strong><%= h(course.getTeacherName()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Email Drive</span>
+                                                        <strong><%= h(course.getDriveOwnerEmail()) %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Bài học</span>
+                                                        <strong><%= course.getLessonsCount() %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Học viên</span>
+                                                        <strong><%= course.getStudentsCount() %></strong>
+                                                    </div>
+                                                    <div class="teacher-approval-meta">
+                                                        <span>Ngày gửi</span>
+                                                        <strong><%= course.getSubmittedAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(course.getSubmittedAt()) : "Chưa cập nhật" %></strong>
+                                                    </div>
+                                                </div>
+                                                <% if (course.getShortDescription() != null && !course.getShortDescription().trim().isEmpty()) { %>
+                                                    <div class="teacher-approval-note" style="margin-top:1rem;">
+                                                        <span>Mô tả</span>
+                                                        <p><%= h(course.getShortDescription()) %></p>
+                                                    </div>
+                                                <% } %>
+                                                <div style="margin-top:1rem;">
+                                                    <a href="<%= h(course.getGoogleDriveUrl()) %>" target="_blank" rel="noopener" style="color:#047857; font-weight:850; font-size:0.9rem; text-decoration:none;">Mở Google Drive →</a>
+                                                </div>
+                                                <form action="${pageContext.request.contextPath}/admin-profile" method="POST" style="display:flex; flex-direction:column; gap:0.75rem; margin-top:1rem;">
+                                                    <input type="hidden" name="action" value="reviewCourse">
+                                                    <input type="hidden" name="courseId" value="<%= h(course.getId()) %>">
+                                                    <textarea name="reviewNote" rows="3" placeholder="Ghi chú duyệt hoặc yêu cầu chỉnh sửa..." style="width:100%; resize:vertical; padding:0.8rem 0.9rem; border:1px solid #cbd5e1; border-radius:0.8rem; font-size:0.9rem;"><%= h(course.getReviewNote()) %></textarea>
+                                                    <div class="class-detail-actions" style="margin-top:0; padding-top:0; border-top:0;">
+                                                        <button type="button" class="class-detail-cancel" onclick="closeClassDetailModal('<%= h(courseModalId) %>')">Hủy bỏ</button>
+                                                        <button type="submit" name="decision" value="approved" class="class-detail-cancel" style="border-color:#bbf7d0; color:#047857;">Duyệt</button>
+                                                        <button type="submit" name="decision" value="needs_revision" class="class-detail-cancel" style="border-color:#fed7aa; color:#c2410c;">Yêu cầu sửa</button>
+                                                        <button type="submit" name="decision" value="rejected" class="class-detail-delete">Từ chối</button>
+                                                    </div>
+                                                </form>
+                                                <form action="${pageContext.request.contextPath}/admin-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa tạm khóa học này?');">
+                                                    <input type="hidden" name="action" value="deleteManagedCourse">
+                                                    <input type="hidden" name="courseId" value="<%= h(course.getId()) %>">
+                                                    <input type="hidden" name="deleteReason" value="Staff soft delete from profile">
+                                                    <div class="class-detail-actions" style="margin-top:0.75rem;">
+                                                        <button type="submit" class="class-detail-delete" title="Xóa tạm khóa học">
+                                                            <span>Xóa tạm</span>
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            <% } else { %>
+                                <div class="empty-status-panel" style="padding:4rem 2rem;">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 6.5v12"/><path d="M5 8.5c2.6 0 4.9.5 7 2 2.1-1.5 4.4-2 7-2v11c-2.6 0-4.9.5-7 2-2.1-1.5-4.4-2-7-2z"/></svg>
+                                    <span style="font-weight:700; color:var(--text-main);">Không tìm thấy khóa học</span>
+                                    <p style="font-size:0.85rem; max-width:420px; margin:0;">Khóa học do giảng viên gửi sẽ xuất hiện ở đây để staff kiểm tra Google Drive, nội dung và trạng thái hiển thị.</p>
+                                </div>
+                            <% } %>
                         </div>
                     </div>
                 </div>
@@ -3456,88 +4778,88 @@
             <!-- ========================================== -->
             <!-- TAB: DUYET HO SO GIANG VIEN                -->
             <!-- ========================================== -->
-            <section id="tab-teacher-approval" class="tab-pane <%= "tab-teacher-approval".equals(activeAdminTab) ? "active-pane" : "" %>">
+
+            <!-- ========================================== -->
+            <!-- TAB REVENUE: THỐNG KÊ TIỀN                 -->
+            <!-- ========================================== -->
+            <section id="tab-revenue" class="tab-pane <%= "tab-revenue".equals(activeAdminTab) ? "active-pane" : "" %>">
                 <div class="tab-grouped-container">
                     <div class="tab-header-accent">
-                        <div class="tab-header-title-text">Duyệt hồ sơ giảng viên</div>
+                        <div class="tab-header-title-text">Thống kê tiền</div>
                         <div class="tab-header-date-pill">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                             <span><%= currentDateDisplay %></span>
                         </div>
                     </div>
 
-                    <div class="tab-body-content">
-                        <div class="form-grouped-section">
-                            <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
-                                <div class="card-header-title">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-                                    <span>Hàng chờ xét duyệt hồ sơ</span>
+                    <div style="padding: 1.5rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 1.25rem;">Tổng quan tài chính</h3>
+                        <div class="system-overview-grid" style="grid-template-columns: repeat(2, 1fr);">
+                            <div class="system-metric-card">
+                                <div class="system-metric-icon" style="color: #059669; background: #dcfce7;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                                 </div>
-                                <span style="font-size:0.82rem; font-weight:800; color:#059669; background:#ecfdf5; padding:0.4rem 1rem; border-radius:999px;">Giao diện mẫu</span>
+                                <div>
+                                    <div class="system-metric-label">Tổng doanh thu khóa học</div>
+                                    <div class="system-metric-value"><%= currencyFmt.format(financialOverview.getTotalCourseRevenue()) %></div>
+                                </div>
+                                <div class="system-metric-note">Khóa học đã thanh toán</div>
                             </div>
 
-                            <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem;">
-                                <div class="system-metric-card" style="min-height:auto;">
-                                    <div class="system-metric-icon">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                    </div>
-                                    <div>
-                                        <div class="system-metric-label">Chờ duyệt</div>
-                                        <div class="system-metric-value">0</div>
-                                    </div>
-                                    <div class="system-metric-note">Hồ sơ mới gửi lên</div>
+                            <div class="system-metric-card">
+                                <div class="system-metric-icon" style="color: #8b5cf6; background: #ede9fe;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
                                 </div>
-                                <div class="system-metric-card" style="min-height:auto;">
-                                    <div class="system-metric-icon">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>
-                                    </div>
-                                    <div>
-                                        <div class="system-metric-label">Đã duyệt</div>
-                                        <div class="system-metric-value">0</div>
-                                    </div>
-                                    <div class="system-metric-note">Giảng viên hợp lệ</div>
+                                <div>
+                                    <div class="system-metric-label">Tổng tiền đã rút</div>
+                                    <div class="system-metric-value"><%= currencyFmt.format(financialOverview.getTotalWithdrawals()) %></div>
                                 </div>
-                                <div class="system-metric-card" style="min-height:auto;">
-                                    <div class="system-metric-icon">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                                    </div>
-                                    <div>
-                                        <div class="system-metric-label">Từ chối</div>
-                                        <div class="system-metric-value">0</div>
-                                    </div>
-                                    <div class="system-metric-note">Cần bổ sung thông tin</div>
-                                </div>
+                                <div class="system-metric-note">Đã chuyển cho giảng viên</div>
                             </div>
-
-                            <div class="admin-user-table-wrap">
-                                <table class="admin-user-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Giảng viên</th>
-                                            <th>Chuyên môn</th>
-                                            <th>Trạng thái hồ sơ</th>
-                                            <th>Ngày gửi</th>
-                                            <th>Thao tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td colspan="5" style="text-align:center; padding:3rem; color:#64748b; font-weight:700;">
-                                                Chưa có hồ sơ giảng viên nào cần duyệt.
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div style="padding:1.25rem; border-radius:1rem; background:#f8fafc; border:1px dashed #cbd5e1; color:#64748b; font-weight:650; line-height:1.6;">
-                                Khu vực này đã sẵn giao diện để sau này nối dữ liệu hồ sơ giảng viên, xem minh chứng chuyên môn, duyệt hoặc yêu cầu bổ sung thông tin.
+                        </div>
+                        
+                        <div style="margin-top: 2rem;">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 1.25rem;">Giao dịch mua khóa học gần nhất</h3>
+                            <div class="user-management-table" style="margin: 0; padding: 0;">
+                                <div class="user-management-header" style="display: grid; gap: 1rem; grid-template-columns: 2fr 1fr 1fr 1fr;">
+                                    <div>Người dùng</div>
+                                    <div>Mã đơn hàng</div>
+                                    <div>Số tiền</div>
+                                    <div>Trạng thái</div>
+                                </div>
+                                <% if (financialOverview.getRecentTransactions() != null && !financialOverview.getRecentTransactions().isEmpty()) { 
+                                    SimpleDateFormat dt = new SimpleDateFormat("HH:mm - dd/MM/yyyy");
+                                    for (Map<String, Object> tx : financialOverview.getRecentTransactions()) { %>
+                                    <div class="user-management-row" style="display: grid; gap: 1rem; border-bottom: 1px solid #eef2f7; padding: 1rem 0; grid-template-columns: 2fr 1fr 1fr 1fr; align-items: center;">
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                            <span style="font-weight: 600; color: #1e293b;"><%= h((String) tx.get("user")) %></span>
+                                            <span style="font-size: 0.85rem; color: #64748b;"><%= dt.format((java.util.Date) tx.get("date")) %></span>
+                                        </div>
+                                        <div style="font-family: monospace; color: #334155;"><%= h((String) tx.get("code")) %></div>
+                                        <div style="font-weight: 600; color: #059669;"><%= currencyFmt.format((java.math.BigDecimal) tx.get("amount")) %></div>
+                                        <div>
+                                            <span class="user-status-badge <%= "paid".equals(tx.get("status")) ? "status-active" : "status-disabled" %>">
+                                                <%= "paid".equals(tx.get("status")) ? "Thành công" : "Đang chờ" %>
+                                            </span>
+                                        </div>
+                                    </div>
+                                <%  } 
+                                } else { %>
+                                    <div style="padding: 2rem; text-align: center; color: #64748b;">
+                                        Không có giao dịch nào gần đây.
+                                    </div>
+                                <% } %>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-
+            
+            <!-- ========================================== -->
+            <!-- TAB REVENUE: THỐNG KÊ TIỀN                 -->
+            <!-- ========================================== -->
+            
+            
             <!-- ========================================== -->
             <!-- TAB 6: THÔNG BÁO HỆ THỐNG                  -->
             <!-- ========================================== -->
@@ -3673,6 +4995,89 @@
                 </div>
             </div>
 
+            <!-- ========================================== -->
+            <!-- MODAL: ĐỔI VAI TRÒ NGƯỜI DÙNG             -->
+            <!-- ========================================== -->
+            <div id="changeRoleModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.55); backdrop-filter:blur(6px); z-index:10000; display:none; justify-content:center; align-items:center; padding:1rem;" aria-hidden="true">
+                <div style="background:#ffffff; border-radius:1.5rem; width:100%; max-width:430px; padding:2rem; box-shadow:0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); border:1px solid #e2e8f0; animation:modalScaleUp 0.25s ease-out;" role="dialog" aria-modal="true">
+                    <!-- Header -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                        <div style="display:flex; align-items:center; gap:0.65rem;">
+                            <div style="width:36px; height:36px; border-radius:50%; background:#ede9fe; color:#7c3aed; display:flex; justify-content:center; align-items:center;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <div>
+                                <div style="font-size:1.1rem; font-weight:850; color:#0f172a;">Đổi vai trò</div>
+                                <div id="changeRoleUserName" style="font-size:0.82rem; color:#64748b; font-weight:600; margin-top:0.1rem;">-</div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="closeChangeRoleModal()" style="background:none; border:none; font-size:1.35rem; color:#64748b; cursor:pointer; line-height:1;">&times;</button>
+                    </div>
+
+                    <!-- Current role display -->
+                    <div style="background:#f8fafc; border-radius:1rem; padding:0.9rem 1.1rem; margin-bottom:1.25rem; display:flex; align-items:center; gap:0.65rem; border:1px solid #e2e8f0;">
+                        <span style="font-size:0.82rem; color:#64748b; font-weight:700;">Vai trò hiện tại:</span>
+                        <span id="changeRoleCurrentBadge" style="display:inline-block; background:#ecfdf5; color:#059669; border-radius:999px; padding:0.2rem 0.65rem; font-size:0.78rem; font-weight:850; text-transform:capitalize;">-</span>
+                    </div>
+
+                    <!-- Role selection -->
+                    <form id="changeRoleForm" action="${pageContext.request.contextPath}/admin-profile" method="POST">
+                        <input type="hidden" name="action" value="changeRole">
+                        <input type="hidden" name="userPage" value="1">
+                        <input type="hidden" id="changeRoleUserId" name="targetUserId" value="">
+
+                        <div style="margin-bottom:1.25rem;">
+                            <label style="font-size:0.85rem; font-weight:750; color:#0f172a; display:block; margin-bottom:0.75rem;">Chọn vai trò mới</label>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;" id="roleOptions">
+                                <label class="role-option-card" data-role="student">
+                                    <input type="radio" name="newRole" value="student" style="display:none;">
+                                    <div class="role-option-icon" style="background:#dbeafe; color:#2563eb;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                                    </div>
+                                    <span class="role-option-label">Student</span>
+                                </label>
+                                <label class="role-option-card" data-role="teacher">
+                                    <input type="radio" name="newRole" value="teacher" style="display:none;">
+                                    <div class="role-option-icon" style="background:#dcfce7; color:#16a34a;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                                    </div>
+                                    <span class="role-option-label">Teacher</span>
+                                </label>
+                                <label class="role-option-card" data-role="staff">
+                                    <input type="radio" name="newRole" value="staff" style="display:none;">
+                                    <div class="role-option-icon" style="background:#fef3c7; color:#d97706;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    </div>
+                                    <span class="role-option-label">Staff</span>
+                                </label>
+                                <label class="role-option-card" data-role="parent">
+                                    <input type="radio" name="newRole" value="parent" style="display:none;">
+                                    <div class="role-option-icon" style="background:#fce7f3; color:#be185d;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+                                    </div>
+                                    <span class="role-option-label">Parent</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Warning -->
+                        <div style="background:#fef9c3; border:1px solid #fde047; border-radius:0.75rem; padding:0.75rem 1rem; margin-bottom:1.25rem; display:flex; align-items:flex-start; gap:0.5rem;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2.5" style="flex-shrink:0; margin-top:1px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <span style="font-size:0.78rem; color:#92400e; font-weight:700;">Hành động này sẽ xóa toàn bộ vai trò cũ và chỉ giữ lại vai trò mới được chọn.</span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+                            <button type="button" onclick="closeChangeRoleModal()" style="padding:0.65rem 1.25rem; border-radius:0.75rem; background:#f1f5f9; color:#475569; font-weight:700; border:none; cursor:pointer; font-size:0.9rem;">Hủy bỏ</button>
+                            <button type="submit" id="changeRoleSubmitBtn" disabled style="display:inline-flex; align-items:center; gap:0.5rem; background:#7c3aed; color:#ffffff; font-weight:800; font-size:0.9rem; padding:0.65rem 1.35rem; border-radius:9999px; border:none; box-shadow:0 4px 14px rgba(124,58,237,0.3); cursor:not-allowed; opacity:0.5; transition:all 0.2s;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                Xác nhận đổi role
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <div id="pwd-modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.6); backdrop-filter:blur(4px); z-index:9999; display:none; justify-content:center; align-items:center; padding:1rem;">
                 <div style="background:#ffffff; border-radius:1.5rem; width:100%; max-width:440px; padding:2rem; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); border:1px solid #e2e8f0; animation:modalScaleUp 0.25s ease-out;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
@@ -3722,6 +5127,91 @@
     
     <!-- ===== JAVASCRIPT XỬ LÝ CHUYỂN TAB MƯỢT MÀ ===== -->
     <script>
+        function openClassDetailModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            if (modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeClassDetailModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function closeClassDetailModalOnBackdrop(event, modal) {
+            if (event.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.class-detail-modal.active').forEach(m => {
+                    m.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+        });
+
+        function setupManagementFilterDropdowns() {
+            const dropdowns = Array.from(document.querySelectorAll('.management-filter-dropdown'));
+            if (!dropdowns.length) return;
+
+            function closeDropdown(dropdown) {
+                dropdown.classList.remove('is-open');
+                const trigger = dropdown.querySelector('.management-filter-trigger');
+                if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            }
+
+            dropdowns.forEach(dropdown => {
+                const trigger = dropdown.querySelector('.management-filter-trigger');
+                const label = dropdown.querySelector('.management-filter-label');
+                const options = Array.from(dropdown.querySelectorAll('.management-filter-option'));
+                const targetInput = document.getElementById(dropdown.dataset.targetInput || '');
+                if (!trigger || !label || !targetInput) return;
+
+                trigger.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const willOpen = !dropdown.classList.contains('is-open');
+                    dropdowns.forEach(closeDropdown);
+                    dropdown.classList.toggle('is-open', willOpen);
+                    trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+                });
+
+                options.forEach(option => {
+                    option.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        const value = option.dataset.value || '';
+                        targetInput.value = value;
+                        label.textContent = option.textContent.replace(/\u2713/g, '').trim();
+                        options.forEach(item => item.classList.toggle('is-selected', item === option));
+                        targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                        closeDropdown(dropdown);
+
+                        if (dropdown.dataset.submitOnChange === 'true') {
+                            const form = dropdown.closest('form');
+                            if (form) {
+                                if (typeof form.requestSubmit === 'function') form.requestSubmit();
+                                else form.submit();
+                            }
+                        }
+                    });
+                });
+            });
+
+            document.addEventListener('click', () => dropdowns.forEach(closeDropdown));
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') dropdowns.forEach(closeDropdown);
+            });
+        }
+
         function showToast(message, type = 'success') {
             let container = document.getElementById('custom-toast-container');
             if (!container) {
@@ -3814,6 +5304,57 @@
             });
         }
 
+        // ─── Change Role Modal ────────────────────────────────────────
+        function openChangeRoleModal(btn) {
+            const modal = document.getElementById('changeRoleModal');
+            if (!modal || !btn) return;
+
+            const userId = btn.dataset.userid;
+            const currentRole = btn.dataset.currentRole || '';
+            const name = btn.dataset.name || 'Người dùng';
+
+            document.getElementById('changeRoleUserId').value = userId;
+            document.getElementById('changeRoleUserName').textContent = name;
+            document.getElementById('changeRoleCurrentBadge').textContent = currentRole;
+
+            // Reset selection
+            document.querySelectorAll('.role-option-card').forEach(card => {
+                card.classList.remove('selected');
+                card.querySelector('input[type=radio]').checked = false;
+            });
+            document.getElementById('changeRoleSubmitBtn').disabled = true;
+            document.getElementById('changeRoleSubmitBtn').style.opacity = '0.5';
+            document.getElementById('changeRoleSubmitBtn').style.cursor = 'not-allowed';
+
+            modal.style.display = 'flex';
+            modal.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeChangeRoleModal() {
+            const modal = document.getElementById('changeRoleModal');
+            if (!modal) return;
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        // Role card click → select + enable submit
+        document.querySelectorAll('.role-option-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.role-option-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                card.querySelector('input[type=radio]').checked = true;
+                const submitBtn = document.getElementById('changeRoleSubmitBtn');
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+            });
+        });
+
+        // Close on backdrop click
+        document.getElementById('changeRoleModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('changeRoleModal')) closeChangeRoleModal();
+        });
+
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') closeAdminUserDetail();
         });
@@ -3844,10 +5385,10 @@
         const TAB_TITLES = {
             'tab-dashboard': 'Tổng quan hệ thống',
             'tab-materials': 'Quản lý người dùng',
-            'tab-teacher-approval': 'Duyệt hồ sơ giảng viên',
-            'tab-profile': 'Hồ sơ cá nhân',
+            'tab-manage-classes': 'Quản lý lớp học',
+            'tab-manage-courses': 'Quản lý khóa học',
+            'tab-revenue': 'Thống kê tiền',
             'tab-edit': 'Cập nhật thông tin',
-            'tab-security': 'Bảo mật và mật khẩu',
             'tab-notifications': 'Thông báo hệ thống',
         };
 
@@ -3959,6 +5500,7 @@
         });
         <% } %>
         window.addEventListener('DOMContentLoaded', () => {
+            setupManagementFilterDropdowns();
             const urlParams = new URLSearchParams(window.location.search);
             const tabParam = urlParams.get('tab');
             if (tabParam) {
@@ -3968,6 +5510,9 @@
                 if (activePane) updateProfileTabUrl(activePane.id, true);
             }
             initAdminStatusWS();
+            if (typeof initStaffUserGrowthChart === 'function') {
+                initStaffUserGrowthChart();
+            }
         });
 
         window.addEventListener('popstate', (event) => {
@@ -4012,6 +5557,13 @@
             });
         }
     </script>
+    <script>
+        window.HipziStaffUserGrowthData = {
+            week: <%= staffWeeklyUserGrowthJson %>,
+            month: <%= staffMonthlyUserGrowthJson %>
+        };
+    </script>
+    <script src="${pageContext.request.contextPath}/assets/js/staff-user-growth-chart.js?v=1"></script>
     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 package com.hipzi.dao;
 
+import com.hipzi.model.AdminFinancialStats;
 import com.hipzi.model.SystemOverviewStats;
 import com.hipzi.util.DBContext;
 
@@ -9,8 +10,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+
 
 public class AdminStatsDao {
 
@@ -21,7 +26,9 @@ public class AdminStatsDao {
             stats.setRoleCounts(loadRoleCounts(conn));
             stats.setUsersWithoutRole(loadUsersWithoutRole(conn));
             stats.setTotalMaterials(loadFirstAvailableCount(conn, 10,
-                    "materials", "learning_materials", "documents", "resources"));
+                    "repository_materials", "materials", "learning_materials"));
+            stats.setTotalCourses(loadFirstAvailableCount(conn, 0,
+                    "courses"));
             stats.setTotalClassrooms(loadFirstAvailableCount(conn, 8,
                     "classrooms", "classes"));
             stats.setTotalRevenue(loadTotalRevenue(conn));
@@ -119,5 +126,58 @@ public class AdminStatsDao {
             }
         }
         return BigDecimal.ZERO;
+    }
+
+    public AdminFinancialStats getFinancialOverview() {
+        AdminFinancialStats stats = new AdminFinancialStats();
+        try (Connection conn = DBContext.getConnection()) {
+            // 1. Total Course Revenue (course_orders where status='paid')
+            try (Statement st = conn.createStatement();
+                 ResultSet rs = st.executeQuery("SELECT COALESCE(SUM(total_amount), 0) AS total FROM course_orders WHERE status = 'paid'")) {
+                if (rs.next()) stats.setTotalCourseRevenue(rs.getBigDecimal("total"));
+            } catch (SQLException ignored) {}
+
+            // 2. Total Wallet Deposits
+            try (Statement st = conn.createStatement();
+                 ResultSet rs = st.executeQuery("SELECT COALESCE(SUM(amount), 0) AS total FROM wallet_transactions WHERE transaction_type = 'deposit'")) {
+                if (rs.next()) stats.setTotalWalletDeposits(rs.getBigDecimal("total"));
+            } catch (SQLException ignored) {}
+
+            // 3. Total Momo Withdrawals
+            try (Statement st = conn.createStatement();
+                 ResultSet rs = st.executeQuery("SELECT COALESCE(SUM(amount), 0) AS total FROM momo_withdrawals WHERE status = 'completed'")) {
+                if (rs.next()) stats.setTotalWithdrawals(rs.getBigDecimal("total"));
+            } catch (SQLException ignored) {}
+
+            // 4. Total Wallet Balance (system liability)
+            try (Statement st = conn.createStatement();
+                 ResultSet rs = st.executeQuery("SELECT COALESCE(SUM(wallet_balance), 0) AS total FROM users WHERE deleted_at IS NULL")) {
+                if (rs.next()) stats.setTotalWalletBalance(rs.getBigDecimal("total"));
+            } catch (SQLException ignored) {}
+
+            // 5. Recent 10 Course Orders
+            List<Map<String, Object>> recentTransactions = new ArrayList<>();
+            String sql = "SELECT o.order_code, o.total_amount, o.status, o.created_at, u.full_name " +
+                         "FROM course_orders o " +
+                         "JOIN users u ON o.student_id = u.id " +
+                         "ORDER BY o.created_at DESC LIMIT 10";
+            try (Statement st = conn.createStatement();
+                 ResultSet rs = st.executeQuery(sql)) {
+                while (rs.next()) {
+                    Map<String, Object> tx = new HashMap<>();
+                    tx.put("code", rs.getString("order_code"));
+                    tx.put("amount", rs.getBigDecimal("total_amount"));
+                    tx.put("status", rs.getString("status"));
+                    tx.put("date", rs.getTimestamp("created_at"));
+                    tx.put("user", rs.getString("full_name"));
+                    recentTransactions.add(tx);
+                }
+            } catch (SQLException ignored) {}
+            stats.setRecentTransactions(recentTransactions);
+
+        } catch (SQLException e) {
+            System.err.println("Error in AdminStatsDao.getFinancialOverview: " + e.getMessage());
+        }
+        return stats;
     }
 }

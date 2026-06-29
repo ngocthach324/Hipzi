@@ -11,6 +11,7 @@ public class SystemOverviewStats {
     private int verifiedUsers;
     private int usersWithoutRole;
     private int totalMaterials;
+    private int totalCourses;
     private int totalClassrooms;
     private BigDecimal totalRevenue = BigDecimal.ZERO;
     private Map<String, Integer> roleCounts = new LinkedHashMap<>();
@@ -32,6 +33,9 @@ public class SystemOverviewStats {
 
     public int getTotalMaterials() { return totalMaterials; }
     public void setTotalMaterials(int totalMaterials) { this.totalMaterials = totalMaterials; }
+
+    public int getTotalCourses() { return totalCourses; }
+    public void setTotalCourses(int totalCourses) { this.totalCourses = totalCourses; }
 
     public int getTotalClassrooms() { return totalClassrooms; }
     public void setTotalClassrooms(int totalClassrooms) { this.totalClassrooms = totalClassrooms; }

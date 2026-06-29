@@ -255,17 +255,46 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("staffMockExams", mockExamDao.listForStaff(80));
         } else if ("/WEB-INF/views/admin-profile.jsp".equals(targetJsp)) {
             request.setAttribute("systemOverview", adminStatsDao.getSystemOverview());
+            request.setAttribute("financialOverview", adminStatsDao.getFinancialOverview());
+            request.setAttribute("staffUserGrowthStats", staffUserGrowthStatsDao.getStats());
+            String searchUser = cleanParam(request.getParameter("searchUser"));
+            String userRole = cleanParam(request.getParameter("userRole"));
+            String userStatus = cleanParam(request.getParameter("userStatus"));
+            
             int adminUserPage = parsePositiveInt(request.getParameter("userPage"), 1);
             int adminUserPageSize = 10;
-            int totalManagedUsers = adminUserDao.countManagedUsers();
+            int totalManagedUsers = adminUserDao.countManagedUsers(searchUser, userRole, userStatus);
             int adminUserTotalPages = Math.max(1, (int) Math.ceil(totalManagedUsers / (double) adminUserPageSize));
             if (adminUserPage > adminUserTotalPages) {
                 adminUserPage = adminUserTotalPages;
             }
-            request.setAttribute("adminUsers", adminUserDao.listManagedUsers(adminUserPage, adminUserPageSize));
+            request.setAttribute("adminUsers", adminUserDao.listManagedUsers(searchUser, userRole, userStatus, adminUserPage, adminUserPageSize));
             request.setAttribute("adminUserPage", adminUserPage);
             request.setAttribute("adminUserTotalPages", adminUserTotalPages);
             request.setAttribute("adminUserTotalCount", totalManagedUsers);
+
+            request.setAttribute("managedUsers", adminUserDao.listStaffManagedLearnersAndTeachers(searchUser, userRole, userStatus));
+            request.setAttribute("searchUser", searchUser);
+            request.setAttribute("userRole", userRole);
+            request.setAttribute("userStatus", userStatus);
+
+            String classTitle = cleanParam(request.getParameter("classTitle"));
+            String classSubject = cleanParam(request.getParameter("classSubject"));
+            String classStatus = cleanParam(request.getParameter("classStatus"));
+            request.setAttribute("managedClassrooms", classroomDao.listForStaff(classTitle, classSubject, classStatus));
+            request.setAttribute("classSubjects", classroomDao.listSubjects());
+            request.setAttribute("classTitle", classTitle);
+            request.setAttribute("classSubject", classSubject);
+            request.setAttribute("classStatus", classStatus);
+
+            String courseTitle = cleanParam(request.getParameter("courseTitle"));
+            String courseSubject = cleanParam(request.getParameter("courseSubject"));
+            String courseStatus = cleanParam(request.getParameter("courseStatus"));
+            request.setAttribute("managedCourses", courseDao.listForStaff(courseTitle, courseSubject, courseStatus));
+            request.setAttribute("courseSubjects", courseDao.listSubjects());
+            request.setAttribute("courseTitle", courseTitle);
+            request.setAttribute("courseSubject", courseSubject);
+            request.setAttribute("courseStatus", courseStatus);
         }
 
         // Tải danh sách thông báo hệ thống gần nhất (Giới hạn 10 thông báo)
@@ -404,6 +433,22 @@ public class ProfileServlet extends HttpServlet {
                     session.setAttribute("toastType", "success");
                 } else {
                     session.setAttribute("toastMsg", "Không thể khóa tài khoản này.");
+                    session.setAttribute("toastType", "error");
+                }
+            } else if ("changeRole".equals(action)) {
+                String targetUserId = request.getParameter("targetUserId");
+                String newRole = request.getParameter("newRole");
+                if (!hasRole(user, "admin")) {
+                    session.setAttribute("toastMsg", "Bạn không có quyền thay đổi vai trò người dùng.");
+                    session.setAttribute("toastType", "error");
+                } else if (newRole == null || newRole.trim().isEmpty()) {
+                    session.setAttribute("toastMsg", "Vai trò không hợp lệ.");
+                    session.setAttribute("toastType", "error");
+                } else if (adminUserDao.changeUserRole(targetUserId, newRole.trim(), user.getId())) {
+                    session.setAttribute("toastMsg", "Đã cập nhật vai trò người dùng thành công.");
+                    session.setAttribute("toastType", "success");
+                } else {
+                    session.setAttribute("toastMsg", "Không thể cập nhật vai trò này.");
                     session.setAttribute("toastType", "error");
                 }
             } else if ("requestMomoWithdrawal".equals(action)) {
@@ -828,7 +873,7 @@ public class ProfileServlet extends HttpServlet {
         }
         if ("changePassword".equals(action) || "toggle2FA".equals(action)) {
             returnPath += "?tab=security";
-        } else if ("banUser".equals(action)) {
+        } else if ("banUser".equals(action) || "changeRole".equals(action)) {
             String userPage = request.getParameter("userPage");
             returnPath += "?tab=materials&userPage=" + (userPage != null ? userPage : "1");
         } else if ("requestMomoWithdrawal".equals(action)) {
