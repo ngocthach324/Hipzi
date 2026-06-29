@@ -3631,6 +3631,16 @@
                                                     <label>Link Zoom lớp học</label>
                                                     <input type="url" name="classOnlineRoomUrl" value="<%= cls.getOnlineRoomUrl() != null ? cls.getOnlineRoomUrl() : "" %>" placeholder="Dán link Zoom meeting của giảng viên">
                                                 </div>
+                                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                                                    <div class="form-group-premium" style="margin:0;">
+                                                        <label>Học phí (VND)</label>
+                                                        <input type="number" name="tuitionFee" min="1000" step="1000" value="<%= cls.getTuitionFee() != null ? cls.getTuitionFee().toPlainString() : "" %>" required>
+                                                    </div>
+                                                    <div class="form-group-premium" style="margin:0;">
+                                                        <label>Thời hạn nộp học phí</label>
+                                                        <input type="date" name="tuitionDueDate" value="<%= cls.getTuitionDueDate() != null ? cls.getTuitionDueDate().toString() : "" %>" required>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </form>
                                     </div>
@@ -3730,6 +3740,16 @@
                             <div class="form-group-premium" style="margin-bottom: 1.25rem;">
                                 <label>Link Zoom lớp học</label>
                                 <input type="url" name="classOnlineRoomUrl" placeholder="Dán link Zoom meeting của giảng viên">
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+                                <div class="form-group-premium" style="margin:0;">
+                                    <label>Học phí (VND)</label>
+                                    <input type="number" name="tuitionFee" min="1000" step="1000" placeholder="Ví dụ: 500000" required>
+                                </div>
+                                <div class="form-group-premium" style="margin:0;">
+                                    <label>Thời hạn nộp học phí</label>
+                                    <input type="date" name="tuitionDueDate" min="<%= java.time.LocalDate.now() %>" required>
+                                </div>
                             </div>
 
                             <div class="form-actions-row-premium">

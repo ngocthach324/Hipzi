@@ -2,6 +2,9 @@
 <%
     java.util.List<com.hipzi.model.TeachingSchedule> allSchedules = 
         (java.util.List<com.hipzi.model.TeachingSchedule>) request.getAttribute("teacherSchedules");
+    if (allSchedules == null) {
+        allSchedules = (java.util.List<com.hipzi.model.TeachingSchedule>) request.getAttribute("studentSchedules");
+    }
     if (allSchedules == null) allSchedules = new java.util.ArrayList<>();
 
     int weekOffset = 0;
@@ -36,11 +39,16 @@
             <div class="schedule-header">
                 <h2><%= scheduleMonthYear %></h2>
                 <div class="schedule-btn-group">
-                    <button onclick="changeScheduleWeek(-1)">&lt;</button>
+                    <button>Tháng</button>
                     <button class="active">Tuần</button>
-                    <button onclick="changeScheduleWeek(1)">&gt;</button>
+                    <button>Ngày</button>
                 </div>
                 <div class="schedule-actions">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="schedule-close-btn" onclick="changeScheduleWeek(-1)" style="border-radius:0.5rem;">&lt;</button>
+                        <button class="schedule-close-btn" onclick="changeScheduleWeek(0, true)" style="border-radius:0.5rem; width:auto; padding:0 1rem; font-weight:600; color:var(--text-main);">Hôm nay</button>
+                        <button class="schedule-close-btn" onclick="changeScheduleWeek(1)" style="border-radius:0.5rem;">&gt;</button>
+                    </div>
                     <button class="schedule-close-btn" onclick="closeScheduleModal()" style="margin-left: 1rem;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>

@@ -12,6 +12,7 @@ import com.hipzi.model.SupportTicket;
 import com.hipzi.model.TeacherApplication;
 import com.hipzi.model.TeacherGoogleAccount;
 import com.hipzi.model.User;
+import com.hipzi.model.TuitionInvoice;
 import com.hipzi.service.WithdrawalService;
 import com.hipzi.service.AuthService;
 import com.hipzi.service.GoogleDriveOAuthService;
@@ -47,11 +48,13 @@ import com.hipzi.dao.TeacherReviewStatsDao;
 import com.hipzi.dao.TeacherWalletStatsDao;
 import com.hipzi.dao.UserDao;
 import com.hipzi.dao.WithdrawalRequestDao;
+import com.hipzi.dao.TuitionInvoiceDao;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.Normalizer;
 import java.sql.Time;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -86,6 +89,7 @@ public class ProfileServlet extends HttpServlet {
     private final ClassroomDao classroomDao = new ClassroomDao();
     private final CourseDao courseDao = new CourseDao();
     private final CourseOrderDao courseOrderDao = new CourseOrderDao();
+    private final TuitionInvoiceDao tuitionInvoiceDao = new TuitionInvoiceDao();
     private final MockExamDao mockExamDao = new MockExamDao();
     private final RepositoryMaterialDao repositoryMaterialDao = new RepositoryMaterialDao();
     private final SupportTicketDao supportTicketDao = new SupportTicketDao();
@@ -121,8 +125,13 @@ public class ProfileServlet extends HttpServlet {
         String preferredProfilePath = preferredProfilePath(user);
 
         String action = request.getParameter("action");
-        if ("getScheduleGrid".equals(action) && hasRole(user, "teacher")) {
-            request.setAttribute("teacherSchedules", teachingScheduleDao.findByTeacherId(user.getId()));
+        if ("getScheduleGrid".equals(action)) {
+            if (hasRole(user, "teacher")) {
+                request.setAttribute("teacherSchedules", teachingScheduleDao.findByTeacherId(user.getId()));
+            } else if (hasRole(user, "student")) {
+                request.setAttribute("studentSchedules", teachingScheduleDao.findByStudentId(user.getId()));
+            request.setAttribute("tuitionInvoices", tuitionInvoiceDao.listVisibleByStudent(user.getId()));
+            }
             request.getRequestDispatcher("/WEB-INF/views/partials/schedule-grid.jsp").forward(request, response);
             return;
         }
@@ -181,6 +190,7 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("studentProfile", studentProfile);
             request.setAttribute("studentStudyProgressStats", studentStudyProgressDao.getStats(user.getId()));
             request.setAttribute("studentSchedules", teachingScheduleDao.findByStudentId(user.getId()));
+            request.setAttribute("tuitionInvoices", tuitionInvoiceDao.listVisibleByStudent(user.getId()));
             loadUserSupportData(request, user);
         } else if ("/WEB-INF/views/parent-profile.jsp".equals(targetJsp)) {
             List<ParentStudentLink> trackedStudents = linkDao.findLinksByParentId(user.getId());
@@ -1054,6 +1064,8 @@ public class ProfileServlet extends HttpServlet {
         classroom.setStartTime(parseTimeParam(request.getParameter("startTime")));
         classroom.setEndTime(parseTimeParam(request.getParameter("endTime")));
         classroom.setOnlineRoomUrl(normalizeOnlineRoomUrl(request.getParameter("classOnlineRoomUrl")));
+        classroom.setTuitionFee(parseMoneyParam(request.getParameter("tuitionFee")));
+        classroom.setTuitionDueDate(parseDateParam(request.getParameter("tuitionDueDate")));
 
         String status = cleanParam(request.getParameter("classStatus"));
         if (!"upcoming".equals(status) && !"closed".equals(status)) {
@@ -1061,6 +1073,16 @@ public class ProfileServlet extends HttpServlet {
         }
         classroom.setStatus(status);
         return classroom;
+    }
+
+    private LocalDate parseDateParam(String value) {
+        String cleaned = cleanParam(value);
+        if (cleaned.isEmpty()) return null;
+        try {
+            return LocalDate.parse(cleaned);
+        } catch (java.time.format.DateTimeParseException ex) {
+            return null;
+        }
     }
 
     private String normalizeOnlineRoomUrl(String value) {
@@ -1326,7 +1348,10 @@ public class ProfileServlet extends HttpServlet {
                 && !classroom.getScheduleDays().isEmpty()
                 && classroom.getStartTime() != null
                 && classroom.getEndTime() != null
-                && classroom.getEndTime().after(classroom.getStartTime());
+                && classroom.getEndTime().after(classroom.getStartTime())
+                && classroom.getTuitionFee() != null
+                && classroom.getTuitionFee().compareTo(BigDecimal.ZERO) > 0
+                && classroom.getTuitionDueDate() != null;
     }
 
     private boolean canManageClassrooms(User user, TeacherApplication application) {

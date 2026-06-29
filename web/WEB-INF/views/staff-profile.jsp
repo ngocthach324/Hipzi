@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Role"%>
 <%@page import="com.hipzi.model.AdminUserSummary"%>
@@ -5105,7 +5105,7 @@
                             <div class="card-header-layout" style="padding:0 0 1rem 0; margin:0; background:transparent; border-bottom:1px solid #e2e8f0;">
                                 <div class="card-header-title">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 6.5v12"/><path d="M5 8.5c2.6 0 4.9.5 7 2 2.1-1.5 4.4-2 7-2v11c-2.6 0-4.9.5-7 2-2.1-1.5-4.4-2-7-2z"/></svg>
-                                    <span>Giao dịch mua bán khóa học</span>
+                                    <span>Giao dịch khóa học & học phí</span>
                                 </div>
                                 <span style="font-size:0.8rem; font-weight:700; color:#047857; background:#ecfdf5; padding:0.2rem 0.75rem; border-radius:1rem;">SePay</span>
                             </div>
@@ -5117,7 +5117,7 @@
                             %>
                             <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/staff-profile" style="display:flex; align-items:center; gap:1rem; margin-top:1rem;">
                                 <input type="hidden" name="tab" value="transaction-management">
-                                <input name="saleSearch" value="<%= h(saleSearch) %>" type="search" placeholder="Tìm mã đơn, học viên, giảng viên, khóa học" style="flex:1; min-width:260px;">
+                                <input name="saleSearch" value="<%= h(saleSearch) %>" type="search" placeholder="Tìm mã đơn, học viên, giảng viên, lớp hoặc khóa học" style="flex:1; min-width:260px;">
                                 <select name="saleStatus" onchange="this.form.submit()" style="margin-left:auto; width:220px; min-width:220px; border:1px solid #e2e8f0; border-radius:0.8rem; padding:0.8rem 1rem; font-weight:750; color:#0f172a; background:#ffffff; white-space:nowrap;">
                                     <option value="all" <%= saleStatus.isEmpty() || "all".equals(saleStatus) ? "selected" : "" %>>Tất cả trạng thái</option>
                                     <option value="pending" <%= "pending".equals(saleStatus) ? "selected" : "" %>>Chờ xử lý</option>
@@ -5133,7 +5133,7 @@
                                             <th style="text-align:left; padding:1rem; color:#64748b; font-weight:900;">Mã đơn</th>
                                             <th style="text-align:left; padding:1rem; color:#64748b; font-weight:900;">Học viên</th>
                                             <th style="text-align:left; padding:1rem; color:#64748b; font-weight:900;">Giảng viên</th>
-                                            <th style="text-align:left; padding:1rem; color:#64748b; font-weight:900;">Khóa học</th>
+                                            <th style="text-align:left; padding:1rem; color:#64748b; font-weight:900;">Nội dung</th>
                                             <th style="text-align:right; padding:1rem; color:#64748b; font-weight:900;">Số tiền</th>
                                             <th style="text-align:center; padding:1rem; color:#64748b; font-weight:900;">Trạng thái</th>
                                         </tr>
@@ -5141,7 +5141,7 @@
                                     <tbody>
                                         <% if (staffCourseTransactions == null || staffCourseTransactions.isEmpty()) { %>
                                             <tr>
-                                                <td colspan="6" style="padding:2rem; text-align:center; color:#64748b; font-weight:750;">Chưa có giao dịch khóa học phù hợp.</td>
+                                                <td colspan="6" style="padding:2rem; text-align:center; color:#64748b; font-weight:750;">Chưa có giao dịch SePay phù hợp.</td>
                                             </tr>
                                         <% } else { %>
                                             <% for (StaffCourseTransaction sale : staffCourseTransactions) { %>

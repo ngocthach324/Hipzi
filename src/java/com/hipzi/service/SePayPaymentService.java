@@ -1,6 +1,7 @@
 package com.hipzi.service;
 
 import com.hipzi.dao.CoursePaymentDao;
+import com.hipzi.dao.TuitionInvoiceDao;
 import com.hipzi.model.PaymentProcessResult;
 
 import java.math.BigDecimal;
@@ -9,12 +10,14 @@ import java.util.regex.Pattern;
 import jakarta.servlet.http.HttpServletRequest;
 
 public class SePayPaymentService {
-    private static final Pattern ORDER_CODE_PATTERN = Pattern.compile("\\b(?:HIPZI\\d{6,8}|HZ\\d{16})\\b", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ORDER_CODE_PATTERN = Pattern.compile("\\b(?:HIPZI\\d{6,8}|HZ\\d{16}|HT\\d{16})\\b", Pattern.CASE_INSENSITIVE);
     private final CoursePaymentDao paymentDao;
+    private final TuitionInvoiceDao tuitionInvoiceDao;
     private final CourseAccessGrantService accessGrantService;
 
     public SePayPaymentService() {
         this.paymentDao = new CoursePaymentDao();
+        this.tuitionInvoiceDao = new TuitionInvoiceDao();
         this.accessGrantService = new CourseAccessGrantService();
     }
 
@@ -37,8 +40,11 @@ public class SePayPaymentService {
             orderCode = extractOrderCode(rawPayload);
         }
 
-        PaymentProcessResult result = paymentDao.processSePayPayment(orderCode, amount, reference, content, providerEventId, rawPayload);
-        if (result.isSuccess() && "paid".equalsIgnoreCase(result.getStatus())) {
+        boolean tuitionPayment = orderCode.toUpperCase().startsWith("HT");
+        PaymentProcessResult result = tuitionPayment
+                ? tuitionInvoiceDao.processSePayPayment(orderCode, amount, reference, content, providerEventId, rawPayload)
+                : paymentDao.processSePayPayment(orderCode, amount, reference, content, providerEventId, rawPayload);
+        if (!tuitionPayment && result.isSuccess() && "paid".equalsIgnoreCase(result.getStatus())) {
             accessGrantService.processOrderAccessGrants(result.getOrderCode(), request.getServletContext());
         }
         return result;

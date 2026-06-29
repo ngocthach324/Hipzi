@@ -2,6 +2,7 @@
     <%@page import="com.hipzi.model.User" %>
         <%@page import="com.hipzi.model.Role" %>
             <%@page import="com.hipzi.model.Classroom" %>
+                <%@page import="com.hipzi.model.TuitionInvoice" %>
                 <%@page import="com.hipzi.model.TeachingSchedule" %>
                 <%@page import="com.hipzi.model.TeacherApplication" %>
                     <%@page import="com.hipzi.model.Notification" %>
@@ -637,7 +638,7 @@
                                                             /* ===== THỀ METRICS (DONEZO STYLE) ===== */
                                                             .metrics-row {
                                                                 display: grid;
-                                                                grid-template-columns: repeat(4, 1fr);
+                                                                grid-template-columns: repeat(3, 1fr);
                                                                 gap: 1.25rem;
                                                             }
 
@@ -2434,264 +2435,240 @@
                                                             }
 
                                                             /* ========================================== */
-                                                            /* SCHEDULE MODAL (FAKE DATA)                 */
-                                                            /* ========================================== */
-                                                            .schedule-modal-backdrop {
-                                                                position: fixed;
-                                                                top: 0;
-                                                                left: 0;
-                                                                width: 100vw;
-                                                                height: 100vh;
-                                                                background: rgba(15, 23, 42, 0.45);
-                                                                backdrop-filter: blur(4px);
-                                                                z-index: 9999;
-                                                                display: none;
-                                                                align-items: center;
-                                                                justify-content: center;
-                                                                opacity: 0;
-                                                                transition: opacity 0.3s ease;
-                                                            }
+        .schedule-modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
-                                                            .schedule-modal-backdrop.show {
-                                                                display: flex;
-                                                                opacity: 1;
-                                                            }
+        .schedule-modal-backdrop.show {
+            display: flex;
+            opacity: 1;
+        }
 
-                                                            .schedule-modal-box {
-                                                                background: #ffffff;
-                                                                width: 95vw;
-                                                                max-width: 1100px;
-                                                                height: 85vh;
-                                                                border-radius: 1.5rem;
-                                                                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-                                                                display: flex;
-                                                                flex-direction: column;
-                                                                overflow: hidden;
-                                                                transform: scale(0.95) translateY(20px);
-                                                                transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                                                            }
+        .schedule-modal-box {
+            background: #ffffff;
+            width: 95vw;
+            max-width: 1100px;
+            height: 85vh;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.95) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-                                                            .schedule-modal-backdrop.show .schedule-modal-box {
-                                                                transform: scale(1) translateY(0);
-                                                            }
+        .schedule-modal-backdrop.show .schedule-modal-box {
+            transform: scale(1) translateY(0);
+        }
 
-                                                            .schedule-header {
-                                                                padding: 1.5rem 2rem;
-                                                                border-bottom: 1px solid #e2e8f0;
-                                                                display: grid;
-                                                                grid-template-columns: 1fr auto 1fr;
-                                                                align-items: center;
-                                                            }
+        .schedule-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+        }
 
-                                                            .schedule-header h2 {
-                                                                font-size: 1.5rem;
-                                                                font-weight: 800;
-                                                                margin: 0;
-                                                                color: var(--text-main);
-                                                            }
+        .schedule-header h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0;
+            color: var(--text-main);
+        }
 
-                                                            .schedule-actions {
-                                                                display: flex;
-                                                                gap: 1rem;
-                                                                align-items: center;
-                                                                justify-content: flex-end;
-                                                            }
+        .schedule-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: flex-end;
+        }
 
-                                                            .schedule-btn-group {
-                                                                display: flex;
-                                                                background: #f1f5f9;
-                                                                border-radius: 0.5rem;
-                                                                padding: 0.25rem;
-                                                                justify-self: center;
-                                                            }
+        .schedule-btn-group {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+            justify-self: center;
+        }
 
-                                                            .schedule-btn-group button {
-                                                                border: none;
-                                                                background: transparent;
-                                                                padding: 0.5rem 1rem;
-                                                                border-radius: 0.35rem;
-                                                                font-weight: 600;
-                                                                color: #64748b;
-                                                                cursor: pointer;
-                                                                transition: all 0.2s;
-                                                            }
+        .schedule-btn-group button {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            border-radius: 0.35rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-                                                            .schedule-btn-group button.active {
-                                                                background: #ffffff;
-                                                                color: var(--text-main);
-                                                                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-                                                            }
+        .schedule-btn-group button.active {
+            background: #ffffff;
+            color: var(--text-main);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
 
-                                                            .schedule-close-btn {
-                                                                background: #f1f5f9;
-                                                                border: none;
-                                                                width: 36px;
-                                                                height: 36px;
-                                                                border-radius: 50%;
-                                                                display: flex;
-                                                                align-items: center;
-                                                                justify-content: center;
-                                                                cursor: pointer;
-                                                                color: #64748b;
-                                                            }
+        .schedule-close-btn {
+            background: #f1f5f9;
+            border: none;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center; justify-content: center;
+            cursor: pointer;
+            color: #64748b;
+        }
 
-                                                            .schedule-close-btn:hover {
-                                                                background: #e2e8f0;
-                                                                color: #0f172a;
-                                                            }
+        .schedule-close-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
 
-                                                            .schedule-body {
-                                                                flex: 1;
-                                                                overflow-y: auto;
-                                                                display: flex;
-                                                                flex-direction: column;
-                                                                background: #f8fafc;
-                                                            }
+        .schedule-body {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc;
+        }
 
-                                                            .schedule-body::-webkit-scrollbar {
-                                                                width: 8px;
-                                                            }
+        .schedule-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        .schedule-body::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .schedule-body::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
 
-                                                            .schedule-body::-webkit-scrollbar-thumb {
-                                                                background: #cbd5e1;
-                                                                border-radius: 4px;
-                                                            }
+        .schedule-days-header {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
 
-                                                            .schedule-body::-webkit-scrollbar-track {
-                                                                background: #f1f5f9;
-                                                            }
+        .schedule-day-col {
+            padding: 1rem 0;
+            text-align: center;
+            border-left: 1px solid #f1f5f9;
+        }
 
-                                                            .schedule-days-header {
-                                                                display: grid;
-                                                                grid-template-columns: 60px repeat(7, 1fr);
-                                                                background: #ffffff;
-                                                                border-bottom: 1px solid #e2e8f0;
-                                                                position: sticky;
-                                                                top: 0;
-                                                                z-index: 10;
-                                                            }
+        .schedule-day-name {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
 
-                                                            .schedule-day-col {
-                                                                padding: 1rem 0;
-                                                                text-align: center;
-                                                                border-left: 1px solid #f1f5f9;
-                                                            }
+        .schedule-day-num {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-top: 0.25rem;
+        }
 
-                                                            .schedule-day-name {
-                                                                font-size: 0.8rem;
-                                                                color: #64748b;
-                                                                font-weight: 600;
-                                                                text-transform: uppercase;
-                                                            }
+        .schedule-day-col.active {
+            background: var(--primary);
+            border-radius: 0.5rem;
+            margin: 0.5rem;
+            padding: 0.5rem 0;
+        }
 
-                                                            .schedule-day-num {
-                                                                font-size: 1.5rem;
-                                                                font-weight: 800;
-                                                                color: var(--text-main);
-                                                                margin-top: 0.25rem;
-                                                            }
+        .schedule-day-col.active .schedule-day-name,
+        .schedule-day-col.active .schedule-day-num {
+            color: #ffffff;
+        }
 
-                                                            .schedule-day-col.active {
-                                                                background: var(--primary);
-                                                                border-radius: 0.5rem;
-                                                                margin: 0.5rem;
-                                                                padding: 0.5rem 0;
-                                                            }
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            flex: 1;
+            position: relative;
+            padding-top: 1.25rem;
+        }
 
-                                                            .schedule-day-col.active .schedule-day-name,
-                                                            .schedule-day-col.active .schedule-day-num {
-                                                                color: #ffffff;
-                                                            }
+        .schedule-time-col {
+            display: flex;
+            flex-direction: column;
+        }
 
-                                                            .schedule-grid {
-                                                                display: grid;
-                                                                grid-template-columns: 60px repeat(7, 1fr);
-                                                                flex: 1;
-                                                                position: relative;
-                                                                padding-top: 1.25rem;
-                                                            }
+        .schedule-time-slot {
+            height: 80px;
+            text-align: right;
+            padding-right: 0.75rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 600;
+            position: relative;
+            transform: translateY(-0.5rem);
+        }
 
-                                                            .schedule-time-col {
-                                                                display: flex;
-                                                                flex-direction: column;
-                                                            }
+        .schedule-grid-cols {
+            display: contents;
+        }
 
-                                                            .schedule-time-slot {
-                                                                height: 80px;
-                                                                text-align: right;
-                                                                padding-right: 0.75rem;
-                                                                font-size: 0.75rem;
-                                                                color: #94a3b8;
-                                                                font-weight: 600;
-                                                                position: relative;
-                                                                transform: translateY(-0.5rem);
-                                                            }
+        .schedule-grid-col {
+            border-left: 1px solid #e2e8f0;
+            background-image: linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+            background-size: 100% 80px;
+            position: relative;
+        }
 
-                                                            .schedule-grid-cols {
-                                                                display: contents;
-                                                            }
+        .schedule-event {
+            position: absolute;
+            left: 0.5rem; right: 0.5rem;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            overflow: hidden;
+        }
 
-                                                            .schedule-grid-col {
-                                                                border-left: 1px solid #e2e8f0;
-                                                                background-image: linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
-                                                                background-size: 100% 80px;
-                                                                position: relative;
-                                                            }
+        .schedule-event:hover {
+            transform: scale(1.02);
+            z-index: 20;
+        }
 
-                                                            .schedule-event {
-                                                                position: absolute;
-                                                                left: 0.5rem;
-                                                                right: 0.5rem;
-                                                                border-radius: 0.75rem;
-                                                                padding: 0.75rem;
-                                                                cursor: pointer;
-                                                                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-                                                                transition: transform 0.2s;
-                                                                overflow: hidden;
-                                                            }
+        .schedule-event-title {
+            font-weight: 800;
+            font-size: 0.85rem;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
-                                                            .schedule-event:hover {
-                                                                transform: scale(1.02);
-                                                                z-index: 20;
-                                                            }
+        .schedule-event-time {
+            font-size: 0.75rem;
+            color: rgba(15, 23, 42, 0.7);
+            font-weight: 600;
+        }
 
-                                                            .schedule-event-title {
-                                                                font-weight: 800;
-                                                                font-size: 0.85rem;
-                                                                color: #0f172a;
-                                                                margin-bottom: 0.25rem;
-                                                                display: -webkit-box;
-                                                                -webkit-line-clamp: 2;
-                                                                -webkit-box-orient: vertical;
-                                                                overflow: hidden;
-                                                            }
-
-                                                            .schedule-event-time {
-                                                                font-size: 0.75rem;
-                                                                color: rgba(15, 23, 42, 0.7);
-                                                                font-weight: 600;
-                                                            }
-
-                                                            /* Colors for events */
-                                                            .event-blue {
-                                                                background: #bfdbfe;
-                                                            }
-
-                                                            .event-green {
-                                                                background: #bbf7d0;
-                                                            }
-
-                                                            .event-yellow {
-                                                                background: #fef08a;
-                                                            }
-
-                                                            .event-purple {
-                                                                background: #e9d5ff;
-                                                            }
-
-                                                            .event-pink {
-                                                                background: #fbcfe8;
-                                                            }
+        /* Colors for events */
+        .event-blue { background: #bfdbfe; }
+        .event-green { background: #bbf7d0; }
+        .event-yellow { background: #fef08a; }
+        .event-purple { background: #e9d5ff; }
+        .event-pink { background: #fbcfe8; }
         html.dark-profile {
             --background: #0D1410;
             --surface: #152219;
@@ -3122,18 +3099,6 @@
                                                                                                 <ul
                                                                                                     class="sidebar-menu">
 
-
-                                                                                                    <li>
-                                                                                                        <a id="nav-tab-my-schedule"
-                                                                                                            class="<%= "tab-my-schedule".equals(initialTab) ? "active" : "" %>"
-                                                                                                            onclick="switchTab('tab-my-schedule')"
-                                                                                                            title="Lịch học của tôi">
-                                                                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                                                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-                                                                                                            </svg>
-                                                                                                            <span>Lịch học của tôi</span>
-                                                                                                        </a>
-                                                                                                    </li>
                                                                                                     <li>
                                                                                                         <a id="nav-tab-my-classes"
                                                                                                             class="<%= "tab-my-classes".equals(initialTab) ? "active" : "" %>"
@@ -3581,72 +3546,9 @@
                                                                                                                         </div>
                                                                                                                     </div>
 
-                                                                                                                    <!-- Metric 3: Uploaded materials -->
-                                                                                                                    <div class="metric-card secondary"
-                                                                                                                        onclick="switchTab('tab-history')">
-                                                                                                                        <div
-                                                                                                                            class="metric-card-top">
-                                                                                                                            <span
-                                                                                                                                class="metric-card-title">Cấp
-                                                                                                                                độ
-                                                                                                                                học
-                                                                                                                                viên</span>
-                                                                                                                            <div
-                                                                                                                                class="metric-arrow-btn">
-                                                                                                                                <svg width="16"
-                                                                                                                                    height="16"
-                                                                                                                                    viewBox="0 0 24 24"
-                                                                                                                                    fill="none"
-                                                                                                                                    stroke="currentColor"
-                                                                                                                                    stroke-width="2.5">
-                                                                                                                                    <line
-                                                                                                                                        x1="7"
-                                                                                                                                        y1="17"
-                                                                                                                                        x2="17"
-                                                                                                                                        y2="7" />
-                                                                                                                                    <polyline
-                                                                                                                                        points="7 7 17 7 17 17" />
-                                                                                                                                </svg>
-                                                                                                                            </div>
-                                                                                                                        </div>
-                                                                                                                        <div>
-                                                                                                                            <div class="metric-card-value"
-                                                                                                                                style="font-size: 1.5rem;">
-                                                                                                                                Cơ
-                                                                                                                                bản
-                                                                                                                            </div>
-                                                                                                                            <span
-                                                                                                                                class="metric-card-sub"
-                                                                                                                                style="background:#fff7ed; color:#ea580c;">Cấp
-                                                                                                                                độ</span>
-                                                                                                                        </div>
-                                                                                                                        <div class="metric-ghost-icon"
-                                                                                                                            aria-hidden="true"
-                                                                                                                            style="color:#ea580c; background:#fff7ed;">
-                                                                                                                            <svg viewBox="0 0 24 24"
-                                                                                                                                fill="none"
-                                                                                                                                stroke="currentColor">
-                                                                                                                                <path
-                                                                                                                                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                                                                                                                <polyline
-                                                                                                                                    points="14 2 14 8 20 8" />
-                                                                                                                                <line
-                                                                                                                                    x1="16"
-                                                                                                                                    y1="13"
-                                                                                                                                    x2="8"
-                                                                                                                                    y2="13" />
-                                                                                                                                <line
-                                                                                                                                    x1="16"
-                                                                                                                                    y1="17"
-                                                                                                                                    x2="8"
-                                                                                                                                    y2="17" />
-                                                                                                                            </svg>
-                                                                                                                        </div>
-                                                                                                                    </div>
-
                                                                                                                     <!-- Metric 4: Teaching schedule placeholder -->
                                                                                                                     <div class="metric-card secondary"
-                                                                                                                        onclick="switchTab('tab-history')"
+                                                                                                                        onclick="openScheduleModal()"
                                                                                                                         style="cursor: pointer; border-top-color: #3b82f6;">
                                                                                                                         <div
                                                                                                                             class="metric-card-top">
@@ -4135,216 +4037,67 @@
 
                                                                                                             <!-- TAB: THANH TOÁN HỌC PHÍ (Gộp Lịch sử giao dịch) -->
                                                                                                             <section id="tab-wallet-history" class="tab-pane <%= "tab-wallet-history".equals(initialTab) ? "active-pane" : "" %>">
-                                                                                                                <div class="tab-pane-header">
-                                                                                                                    <div class="tab-pane-header-left">
-                                                                                                                        <h1>Thanh toán học phí</h1>
-                                                                                                                        <p>Quản lý và thanh toán các khoản học phí Khóa học, Lớp học của bạn.</p>
-                                                                                                                    </div>
-                                                                                                                </div>
+    <%
+        List<TuitionInvoice> tuitionInvoices = (List<TuitionInvoice>) request.getAttribute("tuitionInvoices");
+        if (tuitionInvoices == null) tuitionInvoices = new java.util.ArrayList<TuitionInvoice>();
+        int pendingTuitionCount = 0;
+        int paidTuitionCount = 0;
+        for (TuitionInvoice item : tuitionInvoices) {
+            if (item.isPaid()) paidTuitionCount++; else if ("pending".equals(item.getStatus())) pendingTuitionCount++;
+        }
+        java.time.format.DateTimeFormatter tuitionDateFormat = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        SimpleDateFormat tuitionPaidFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+    %>
+    <div class="tab-pane-header">
+        <div class="tab-pane-header-left">
+            <h1>Thanh toán học phí</h1>
+            <p>Hóa đơn lớp học sẽ xuất hiện trước thời hạn nộp 5 ngày và được SePay đối soát tự động.</p>
+        </div>
+    </div>
 
-                                                                                                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; align-items: stretch;">
+    <div class="premium-card" style="margin:0 0 1.5rem; padding:1.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:1rem;">
+            <h3 style="font-size:1.1rem;font-weight:800;color:var(--text-main);margin:0;">Hóa đơn chờ thanh toán</h3>
+            <span style="background:#fff7ed;color:#c2410c;padding:.3rem .7rem;border-radius:999px;font-size:.8rem;font-weight:800;"><%= pendingTuitionCount %> khoản</span>
+        </div>
+        <% if (pendingTuitionCount == 0) { %>
+            <div style="padding:2rem;text-align:center;border:1px dashed var(--border-dark);border-radius:12px;color:var(--text-muted);font-weight:700;">Hiện chưa có học phí đến kỳ thanh toán.</div>
+        <% } else { %>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1rem;">
+                <% for (TuitionInvoice item : tuitionInvoices) { if (item.isPaid() || !"pending".equals(item.getStatus())) continue; %>
+                <article style="border:1px solid <%= item.isOverdue() ? "#fecaca" : "var(--border-dark)" %>;border-radius:14px;padding:1.15rem;background:#fff;display:flex;flex-direction:column;gap:.8rem;">
+                    <div style="display:flex;justify-content:space-between;gap:.75rem;align-items:flex-start;">
+                        <div><div style="font-weight:850;color:var(--text-main);line-height:1.4;"><%= h(item.getClassroomTitle()) %></div><div style="font-size:.84rem;color:var(--text-muted);margin-top:.3rem;"><%= h(item.getTeacherName()) %></div></div>
+                        <span style="white-space:nowrap;background:<%= item.isOverdue() ? "#fef2f2" : "#ecfdf5" %>;color:<%= item.isOverdue() ? "#dc2626" : "#047857" %>;padding:.25rem .55rem;border-radius:999px;font-size:.72rem;font-weight:800;"><%= item.isOverdue() ? "Quá hạn" : (item.getDaysUntilDue() == 0 ? "Hạn hôm nay" : "Còn " + item.getDaysUntilDue() + " ngày") %></span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;border-top:1px solid #f1f5f9;padding-top:.8rem;">
+                        <div><div style="font-size:.78rem;color:var(--text-muted);font-weight:700;">Hạn <%= item.getDueDate().format(tuitionDateFormat) %></div><div style="font-size:1.2rem;color:#059669;font-weight:900;margin-top:.25rem;"><%= h(item.getAmountLabel()) %></div></div>
+                        <a href="${pageContext.request.contextPath}/tuition-checkout?id=<%= h(item.getId()) %>" style="padding:.6rem .9rem;border-radius:9px;background:#059669;color:#fff;text-decoration:none;font-weight:850;font-size:.85rem;">Thanh toán QR</a>
+                    </div>
+                </article>
+                <% } %>
+            </div>
+        <% } %>
+    </div>
 
-                                                                                                                    <!-- Pending Invoices -->
-                                                                                                                    <div class="premium-card" style="margin: 0; padding: 1.5rem; display: flex; flex-direction: column;">
-                                                                                                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                                                                                                            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin: 0;">Hóa đơn chờ thanh toán</h3>
-                                                                                                                            <span style="background: var(--amber-50); color: var(--amber-600); padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.8rem; font-weight: 600;">2 khoản</span>
-                                                                                                                        </div>
-                                                                                                                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                                                                                                            <!-- Invoice 1 -->
-                                                                                                                            <div style="border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s, box-shadow 0.2s; background: white;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none'">
-                                                                                                                                <div style="display: flex; gap: 1rem; align-items: center;">
-                                                                                                                                    <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center;">
-                                                                                                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                                                                                                                                    </div>
-                                                                                                                                    <div>
-                                                                                                                                        <div style="font-weight: 700; color: var(--text-dark); margin-bottom: 0.2rem;">Khóa học Toán 12 Nâng Cao</div>
-                                                                                                                                        <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
-                                                                                                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                                                                                                                            Thầy Nguyễn Văn Minh
-                                                                                                                                        </div>
-                                                                                                                                    </div>
-                                                                                                                                </div>
-                                                                                                                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-                                                                                                                                    <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary);">500.000đ</div>
-                                                                                                                                    <button class="btn btn-primary btn-sm" style="padding: 0.35rem 0.75rem; font-size: 0.85rem; font-weight: 600; border-radius: 0.4rem;">Thanh toán</button>
-                                                                                                                                </div>
-                                                                                                                            </div>
-                                                                                                                            <!-- Invoice 2 -->
-                                                                                                                            <div style="border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s, box-shadow 0.2s; background: white;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none'">
-                                                                                                                                <div style="display: flex; gap: 1rem; align-items: center;">
-                                                                                                                                    <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--blue-50); color: var(--blue-600); display: flex; align-items: center; justify-content: center;">
-                                                                                                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-                                                                                                                                    </div>
-                                                                                                                                    <div>
-                                                                                                                                        <div style="font-weight: 700; color: var(--text-dark); margin-bottom: 0.2rem;">Lớp Vật Lý 11 - Nhóm Chiều</div>
-                                                                                                                                        <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
-                                                                                                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                                                                                                                            Cô Lê Thị Lan
-                                                                                                                                        </div>
-                                                                                                                                    </div>
-                                                                                                                                </div>
-                                                                                                                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-                                                                                                                                    <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary);">300.000đ</div>
-                                                                                                                                    <button class="btn btn-primary btn-sm" style="padding: 0.35rem 0.75rem; font-size: 0.85rem; font-weight: 600; border-radius: 0.4rem;">Thanh toán</button>
-                                                                                                                                </div>
-                                                                                                                            </div>
-                                                                                                                        </div>
-                                                                                                                    </div>
+    <div class="premium-card" style="padding:0;overflow:hidden;">
+        <div class="premium-card-header" style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border-dark);display:flex;justify-content:space-between;">
+            <h3 class="premium-card-title" style="margin:0;font-size:1.1rem;font-weight:800;">Lịch sử học phí</h3>
+            <span style="color:#64748b;font-size:.82rem;font-weight:750;"><%= paidTuitionCount %> giao dịch</span>
+        </div>
+        <% if (paidTuitionCount == 0) { %>
+            <div style="padding:2rem;text-align:center;color:var(--text-muted);font-weight:700;">Chưa có giao dịch học phí đã hoàn tất.</div>
+        <% } else { %>
+        <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;text-align:left;font-size:.9rem;">
+            <thead><tr style="background:#f8fafc;border-bottom:1px solid var(--border-dark);"><th style="padding:1rem 1.25rem;">Mã hóa đơn</th><th style="padding:1rem 1.25rem;">Ngày thanh toán</th><th style="padding:1rem 1.25rem;">Lớp học</th><th style="padding:1rem 1.25rem;text-align:right;">Số tiền</th><th style="padding:1rem 1.25rem;text-align:center;">Trạng thái</th></tr></thead>
+            <tbody><% for (TuitionInvoice item : tuitionInvoices) { if (!item.isPaid()) continue; %>
+                <tr style="border-bottom:1px solid var(--border-light);"><td style="padding:1rem 1.25rem;font-weight:800;"><%= h(item.getInvoiceCode()) %></td><td style="padding:1rem 1.25rem;color:var(--text-muted);"><%= item.getPaidAt() != null ? tuitionPaidFormat.format(item.getPaidAt()) : "" %></td><td style="padding:1rem 1.25rem;"><%= h(item.getClassroomTitle()) %></td><td style="padding:1rem 1.25rem;text-align:right;font-weight:900;color:#ef4444;">-<%= h(item.getAmountLabel()) %></td><td style="padding:1rem 1.25rem;text-align:center;"><span style="background:#ecfdf5;color:#047857;padding:.3rem .7rem;border-radius:999px;font-size:.75rem;font-weight:800;">Thành công</span></td></tr>
+            <% } %></tbody>
+        </table></div>
+        <% } %>
+    </div>
+</section>
 
-                                                                                                                    <!-- Paid Invoices -->
-                                                                                                                    <div class="premium-card" style="margin: 0; padding: 1.5rem; display: flex; flex-direction: column;">
-                                                                                                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                                                                                                            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin: 0;">Hóa đơn đã thanh toán</h3>
-                                                                                                                            <span style="background: var(--green-50); color: var(--green-600); padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.8rem; font-weight: 600;">Gần đây</span>
-                                                                                                                        </div>
-                                                                                                                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                                                                                                            <!-- Paid Invoice 1 -->
-                                                                                                                            <div style="border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; background: var(--background-light);">
-                                                                                                                                <div style="display: flex; gap: 1rem; align-items: center;">
-                                                                                                                                    <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--green-50); color: var(--green-600); display: flex; align-items: center; justify-content: center;">
-                                                                                                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                                                                                                                                    </div>
-                                                                                                                                    <div>
-                                                                                                                                        <div style="font-weight: 700; color: var(--text-dark); margin-bottom: 0.2rem;">Khóa học Hóa 10 Căn Bản</div>
-                                                                                                                                        <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
-                                                                                                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                                                                                                                            Thầy Trần Văn A
-                                                                                                                                        </div>
-                                                                                                                                    </div>
-                                                                                                                                </div>
-                                                                                                                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
-                                                                                                                                    <div style="font-size: 1rem; font-weight: 700; color: var(--text-dark);">200.000đ</div>
-                                                                                                                                    <div style="font-size: 0.8rem; color: var(--green-600); font-weight: 600;">Đã hoàn tất</div>
-                                                                                                                                </div>
-                                                                                                                            </div>
-                                                                                                                        </div>
-                                                                                                                    </div>
-                                                                                                                </div>
-
-                                                                                                                <!-- Payment History -->
-                                                                                                                <div class="premium-card" style="padding: 0; overflow: hidden; margin-top: 1rem;">
-                                                                                                                    <div class="premium-card-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-dark);">
-                                                                                                                        <h3 class="premium-card-title" style="margin: 0; font-size: 1.1rem; font-weight: 800;">Lịch sử giao dịch</h3>
-                                                                                                                    </div>
-                                                                                                                    <div style="overflow-x: auto;">
-                                                                                                                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.92rem;">
-                                                                                                                            <thead>
-                                                                                                                                <tr style="background: #f8fafc; border-bottom: 1px solid var(--border-dark);">
-                                                                                                                                    <th style="padding: 1rem 1.5rem; font-weight: 800; color: var(--text-muted);">Mã giao dịch</th>
-                                                                                                                                    <th style="padding: 1rem 1.5rem; font-weight: 800; color: var(--text-muted);">Ngày giao dịch</th>
-                                                                                                                                    <th style="padding: 1rem 1.5rem; font-weight: 800; color: var(--text-muted);">Nội dung</th>
-                                                                                                                                    <th style="padding: 1rem 1.5rem; font-weight: 800; color: var(--text-muted); text-align: right;">Số tiền</th>
-                                                                                                                                    <th style="padding: 1rem 1.5rem; font-weight: 800; color: var(--text-muted); text-align: center;">Trạng thái</th>
-                                                                                                                                </tr>
-                                                                                                                            </thead>
-                                                                                                                            <tbody>
-                                                                                                                                <tr style="border-bottom: 1px solid var(--border-light);">
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; font-weight: 700; color: var(--text-main);">TXN1024</td>
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; color: var(--text-muted);">15/06/2026 14:30</td>
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; color: var(--text-main); font-weight: 500;">Thanh toán Khóa học: Hóa 10 Căn Bản</td>
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; text-align: right; font-weight: 800; color: #ef4444;">-200.000 VND</td>
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; text-align: center;">
-                                                                                                                                        <span style="display: inline-block; background: #ecfdf5; color: #059669; font-weight: 700; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 1rem;">Thành công</span>
-                                                                                                                                    </td>
-                                                                                                                                </tr>
-                                                                                                                                <tr style="border-bottom: 1px solid var(--border-light);">
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; font-weight: 700; color: var(--text-main);">TXN1023</td>
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; color: var(--text-muted);">12/06/2026 09:15</td>
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; color: var(--text-main); font-weight: 500;">Nạp tiền vào ví từ Techcombank</td>
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; text-align: right; font-weight: 800; color: #059669;">+500.000 VND</td>
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; text-align: center;">
-                                                                                                                                        <span style="display: inline-block; background: #ecfdf5; color: #059669; font-weight: 700; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 1rem;">Thành công</span>
-                                                                                                                                    </td>
-                                                                                                                                </tr>
-                                                                                                                                <tr style="border-bottom: none;">
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; font-weight: 700; color: var(--text-main);">TXN1022</td>
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; color: var(--text-muted);">05/06/2026 16:20</td>
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; color: var(--text-main); font-weight: 500;">Thanh toán Lớp học: Luyện thi THPT</td>
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; text-align: right; font-weight: 800; color: #ef4444;">-300.000 VND</td>
-                                                                                                                                    <td style="padding: 1.15rem 1.5rem; text-align: center;">
-                                                                                                                                        <span style="display: inline-block; background: #fef2f2; color: #ef4444; font-weight: 700; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 1rem; cursor: help;" title="Giao dịch bị từ chối bởi ngân hàng liên kết.">Thất bại</span>
-                                                                                                                                    </td>
-                                                                                                                                </tr>
-                                                                                                                            </tbody>
-                                                                                                                        </table>
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                            </section>
-
-                                                                                                            <!-- TAB: LỊCH HỌC CỦA TÔI -->
-                                                                                                            <section id="tab-my-schedule" class="tab-pane <%= "tab-my-schedule".equals(initialTab) ? "active-pane" : "" %>">
-                                                                                                                <div class="tab-pane-header">
-                                                                                                                    <div class="tab-pane-header-left">
-                                                                                                                        <h1>Lịch học của tôi</h1>
-                                                                                                                        <p>Theo dõi lịch học của các lớp đang tham gia.</p>
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                                
-                                                                                                                <div class="premium-card">
-                                                                                                                    <div class="card-header">
-                                                                                                                        <div class="card-title">Danh sách buổi học sắp tới</div>
-                                                                                                                    </div>
-                                                                                                                    <div class="card-body">
-                                                                                                                        <%
-                                                                                                                            List<TeachingSchedule> studentSchedules = (List<TeachingSchedule>) request.getAttribute("studentSchedules");
-                                                                                                                            if (studentSchedules == null || studentSchedules.isEmpty()) {
-                                                                                                                        %>
-                                                                                                                            <div class="empty-state">
-                                                                                                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                                                                                                                <h3>Không có lịch học nào</h3>
-                                                                                                                                <p>Bạn chưa tham gia lớp học nào có lịch học hoặc lịch học chưa được xếp.</p>
-                                                                                                                            </div>
-                                                                                                                        <% } else { %>
-                                                                                                                            <div class="table-responsive">
-                                                                                                                                <table class="hipzi-table">
-                                                                                                                                    <thead>
-                                                                                                                                        <tr>
-                                                                                                                                            <th>Ngày</th>
-                                                                                                                                            <th>Giờ</th>
-                                                                                                                                            <th>Môn học / Lớp</th>
-                                                                                                                                            <th>Nội dung</th>
-                                                                                                                                            <th>Trạng thái</th>
-                                                                                                                                            <th>Link / Vị trí</th>
-                                                                                                                                        </tr>
-                                                                                                                                    </thead>
-                                                                                                                                    <tbody>
-                                                                                                                                    <% for (TeachingSchedule s : studentSchedules) { %>
-                                                                                                                                        <tr>
-                                                                                                                                            <td><%= new java.text.SimpleDateFormat("dd/MM/yyyy").format(s.getSessionDate()) %></td>
-                                                                                                                                            <td><%= s.getStartTime() %> - <%= s.getEndTime() %></td>
-                                                                                                                                            <td>
-                                                                                                                                                <strong><%= h(s.getClassroomTitle()) %></strong>
-                                                                                                                                            </td>
-                                                                                                                                            <td><%= h(s.getTitle()) %></td>
-                                                                                                                                            <td>
-                                                                                                                                                <% if ("scheduled".equals(s.getStatus())) { %>
-                                                                                                                                                    <span class="status-badge status-pending">Sắp diễn ra</span>
-                                                                                                                                                <% } else if ("ongoing".equals(s.getStatus())) { %>
-                                                                                                                                                    <span class="status-badge status-approved">Đang diễn ra</span>
-                                                                                                                                                <% } else if ("completed".equals(s.getStatus())) { %>
-                                                                                                                                                    <span class="status-badge" style="background: var(--bg-soft); color: var(--text-muted);">Đã xong</span>
-                                                                                                                                                <% } else { %>
-                                                                                                                                                    <span class="status-badge status-rejected">Đã hủy</span>
-                                                                                                                                                <% } %>
-                                                                                                                                            </td>
-                                                                                                                                            <td>
-                                                                                                                                                <% if (s.getMeetLink() != null && !s.getMeetLink().isEmpty()) { %>
-                                                                                                                                                    <a href="<%= h(s.getMeetLink()) %>" target="_blank" class="btn btn-secondary btn-sm">Vào lớp</a>
-                                                                                                                                                <% } else if (s.getLocation() != null && !s.getLocation().isEmpty()) { %>
-                                                                                                                                                    <%= h(s.getLocation()) %>
-                                                                                                                                                <% } else { %>
-                                                                                                                                                    Chưa có
-                                                                                                                                                <% } %>
-                                                                                                                                            </td>
-                                                                                                                                        </tr>
-                                                                                                                                    <% } %>
-                                                                                                                                    </tbody>
-                                                                                                                                </table>
-                                                                                                                            </div>
-                                                                                                                        <% } %>
-                                                                                                                    </div>
-                                                                                                                </div>
                                                                                                             </section>
 
                                                                                                             <!-- TAB: LỚP HỌC CỦA TÔI -->
@@ -5341,7 +5094,7 @@
                                                                                                 'tab-support': 'Hỗ trợ học tập',
                                                                                                 'tab-balance-stats': 'Thống kê số dư',
                                                                                                 'tab-transaction-history': 'Lịch sử giao dịch',
-                                                                                                'tab-my-schedule': 'Lịch học của tôi',
+
                                                                                                 'tab-my-classes': 'Lớp học của tôi',
                                                                                                 'tab-my-courses': 'Khóa học của tôi',
                                                                                                 'tab-wallet-history': 'Thanh toán học phí'
@@ -6239,426 +5992,6 @@
                                                                                         </script>
                                                                                         <script
                                                                                             src="${pageContext.request.contextPath}/assets/js/navbar.js?v=2"></script>
-                                                                                        <!-- ========================================== -->
-                                                                                        <!-- SCHEDULE MODAL (FAKE DATA)                 -->
-                                                                                        <!-- ========================================== -->
-                                                                                        <div class="schedule-modal-backdrop"
-                                                                                            id="scheduleModal"
-                                                                                            onclick="closeScheduleModal(event)">
-                                                                                            <div class="schedule-modal-box"
-                                                                                                onclick="event.stopPropagation()">
-                                                                                                <div
-                                                                                                    class="schedule-header">
-                                                                                                    <h2>Tháng 6, 2026
-                                                                                                    </h2>
-                                                                                                    <div
-                                                                                                        class="schedule-btn-group">
-                                                                                                        <button>Tháng</button>
-                                                                                                        <button
-                                                                                                            class="active">Tuần</button>
-                                                                                                        <button>Ngày</button>
-                                                                                                    </div>
-                                                                                                    <div
-                                                                                                        class="schedule-actions">
-                                                                                                        <div
-                                                                                                            style="display: flex; gap: 0.5rem;">
-                                                                                                            <button
-                                                                                                                class="schedule-close-btn"
-                                                                                                                style="border-radius:0.5rem;">&lt;</button>
-                                                                                                            <button
-                                                                                                                class="schedule-close-btn"
-                                                                                                                style="border-radius:0.5rem; width:auto; padding:0 1rem; font-weight:600; color:var(--text-main);">Hôm
-                                                                                                                nay</button>
-                                                                                                            <button
-                                                                                                                class="schedule-close-btn"
-                                                                                                                style="border-radius:0.5rem;">&gt;</button>
-                                                                                                        </div>
-                                                                                                        <button
-                                                                                                            class="schedule-close-btn"
-                                                                                                            onclick="closeScheduleModal()"
-                                                                                                            style="margin-left: 1rem;">
-                                                                                                            <svg width="20"
-                                                                                                                height="20"
-                                                                                                                viewBox="0 0 24 24"
-                                                                                                                fill="none"
-                                                                                                                stroke="currentColor"
-                                                                                                                stroke-width="2">
-                                                                                                                <line
-                                                                                                                    x1="18"
-                                                                                                                    y1="6"
-                                                                                                                    x2="6"
-                                                                                                                    y2="18">
-                                                                                                                </line>
-                                                                                                                <line
-                                                                                                                    x1="6"
-                                                                                                                    y1="6"
-                                                                                                                    x2="18"
-                                                                                                                    y2="18">
-                                                                                                                </line>
-                                                                                                            </svg>
-                                                                                                        </button>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                                <div
-                                                                                                    class="schedule-body">
-                                                                                                    <div
-                                                                                                        class="schedule-days-header">
-                                                                                                        <div></div>
-                                                                                                        <div
-                                                                                                            class="schedule-day-col">
-                                                                                                            <div
-                                                                                                                class="schedule-day-name">
-                                                                                                                Thứ 2
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-day-num">
-                                                                                                                15</div>
-                                                                                                        </div>
-                                                                                                        <div
-                                                                                                            class="schedule-day-col">
-                                                                                                            <div
-                                                                                                                class="schedule-day-name">
-                                                                                                                Thứ 3
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-day-num">
-                                                                                                                16</div>
-                                                                                                        </div>
-                                                                                                        <div
-                                                                                                            class="schedule-day-col active">
-                                                                                                            <div
-                                                                                                                class="schedule-day-name">
-                                                                                                                Thứ 4
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-day-num">
-                                                                                                                17</div>
-                                                                                                        </div>
-                                                                                                        <div
-                                                                                                            class="schedule-day-col">
-                                                                                                            <div
-                                                                                                                class="schedule-day-name">
-                                                                                                                Thứ 5
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-day-num">
-                                                                                                                18</div>
-                                                                                                        </div>
-                                                                                                        <div
-                                                                                                            class="schedule-day-col">
-                                                                                                            <div
-                                                                                                                class="schedule-day-name">
-                                                                                                                Thứ 6
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-day-num">
-                                                                                                                19</div>
-                                                                                                        </div>
-                                                                                                        <div
-                                                                                                            class="schedule-day-col">
-                                                                                                            <div
-                                                                                                                class="schedule-day-name">
-                                                                                                                Thứ 7
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-day-num">
-                                                                                                                20</div>
-                                                                                                        </div>
-                                                                                                        <div
-                                                                                                            class="schedule-day-col">
-                                                                                                            <div
-                                                                                                                class="schedule-day-name">
-                                                                                                                CN</div>
-                                                                                                            <div
-                                                                                                                class="schedule-day-num">
-                                                                                                                21</div>
-                                                                                                        </div>
-                                                                                                    </div>
-                                                                                                    <div
-                                                                                                        class="schedule-grid">
-                                                                                                        <div
-                                                                                                            class="schedule-time-col">
-                                                                                                            <div class="schedule-time-slot"
-                                                                                                                style="margin-top: 0px;">
-                                                                                                                7 am
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                8 am
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                9 am
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                10 am
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                11 am
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                12 pm
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                1 pm
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                2 pm
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                3 pm
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                4 pm
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                5 pm
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                6 pm
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                7 pm
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                8 pm
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                9 pm
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-time-slot">
-                                                                                                                10 pm
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                        <div
-                                                                                                            class="schedule-grid-cols">
-                                                                                                            <div
-                                                                                                                class="schedule-grid-col">
-                                                                                                                <div class="schedule-event event-blue"
-                                                                                                                    style="top: 80px; height: 120px;">
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-title">
-                                                                                                                        Toán
-                                                                                                                        11A
-                                                                                                                        -
-                                                                                                                        Đại
-                                                                                                                        số
-                                                                                                                    </div>
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-time">
-                                                                                                                        08:00
-                                                                                                                        -
-                                                                                                                        09:30
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                                <div class="schedule-event event-purple"
-                                                                                                                    style="top: 280px; height: 160px;">
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-title">
-                                                                                                                        Luyện
-                                                                                                                        đề
-                                                                                                                        THPT
-                                                                                                                        Quốc
-                                                                                                                        Gia
-                                                                                                                        Toán
-                                                                                                                    </div>
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-time">
-                                                                                                                        10:30
-                                                                                                                        -
-                                                                                                                        12:30
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-grid-col">
-                                                                                                                <div class="schedule-event event-green"
-                                                                                                                    style="top: 40px; height: 160px;">
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-title">
-                                                                                                                        Giải
-                                                                                                                        tích
-                                                                                                                        12
-                                                                                                                        căn
-                                                                                                                        bản
-                                                                                                                    </div>
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-time">
-                                                                                                                        07:30
-                                                                                                                        -
-                                                                                                                        09:30
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                                <div class="schedule-event event-yellow"
-                                                                                                                    style="top: 360px; height: 120px;">
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-title">
-                                                                                                                        Hình
-                                                                                                                        học
-                                                                                                                        không
-                                                                                                                        gian
-                                                                                                                    </div>
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-time">
-                                                                                                                        11:30
-                                                                                                                        -
-                                                                                                                        13:00
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                                <div class="schedule-event event-pink"
-                                                                                                                    style="top: 600px; height: 160px;">
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-title">
-                                                                                                                        Dạy
-                                                                                                                        kèm
-                                                                                                                        1-1:
-                                                                                                                        Tuấn
-                                                                                                                        Minh
-                                                                                                                    </div>
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-time">
-                                                                                                                        14:30
-                                                                                                                        -
-                                                                                                                        16:30
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-grid-col">
-                                                                                                                <div class="schedule-event event-blue"
-                                                                                                                    style="top: 720px; height: 160px;">
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-title">
-                                                                                                                        Toán
-                                                                                                                        10
-                                                                                                                        -
-                                                                                                                        Lớp
-                                                                                                                        Cơ
-                                                                                                                        Bản
-                                                                                                                    </div>
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-time">
-                                                                                                                        16:00
-                                                                                                                        -
-                                                                                                                        18:00
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-grid-col">
-                                                                                                                <div class="schedule-event event-purple"
-                                                                                                                    style="top: 160px; height: 120px;">
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-title">
-                                                                                                                        Chữa
-                                                                                                                        đề
-                                                                                                                        thi
-                                                                                                                        thử
-                                                                                                                        Đại
-                                                                                                                        học
-                                                                                                                    </div>
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-time">
-                                                                                                                        09:00
-                                                                                                                        -
-                                                                                                                        10:30
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-grid-col">
-                                                                                                                <div class="schedule-event event-green"
-                                                                                                                    style="top: 240px; height: 160px;">
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-title">
-                                                                                                                        Hình
-                                                                                                                        học
-                                                                                                                        phẳng
-                                                                                                                        11
-                                                                                                                    </div>
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-time">
-                                                                                                                        10:00
-                                                                                                                        -
-                                                                                                                        12:00
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                                <div class="schedule-event event-yellow"
-                                                                                                                    style="top: 640px; height: 200px;">
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-title">
-                                                                                                                        Toán
-                                                                                                                        nâng
-                                                                                                                        cao
-                                                                                                                        12
-                                                                                                                    </div>
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-time">
-                                                                                                                        15:00
-                                                                                                                        -
-                                                                                                                        17:30
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-grid-col">
-                                                                                                                <div class="schedule-event event-pink"
-                                                                                                                    style="top: 320px; height: 160px;">
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-title">
-                                                                                                                        Lớp
-                                                                                                                        cấp
-                                                                                                                        tốc
-                                                                                                                        cuối
-                                                                                                                        tuần
-                                                                                                                    </div>
-                                                                                                                    <div
-                                                                                                                        class="schedule-event-time">
-                                                                                                                        11:00
-                                                                                                                        -
-                                                                                                                        13:00
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="schedule-grid-col">
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div>
-
-                                                                                        <script>
-                                                                                            function openScheduleModal() {
-                                                                                                var modal = document.getElementById('scheduleModal');
-                                                                                                if (modal) {
-                                                                                                    modal.classList.add('show');
-                                                                                                    document.body.style.overflow = 'hidden';
-                                                                                                }
-                                                                                            }
-
-                                                                                            function closeScheduleModal(event) {
-                                                                                                if (event && event.target !== event.currentTarget) return;
-                                                                                                var modal = document.getElementById('scheduleModal');
-                                                                                                if (modal) {
-                                                                                                    modal.classList.remove('show');
-                                                                                                    document.body.style.overflow = '';
-                                                                                                }
-                                                                                            }
                                                                                         </script>
         <script>
         // Xử lý Dark Mode Toggle
@@ -6883,5 +6216,52 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
                                                     </body>
+                                                    <!-- ========================================== -->
+                                                    <!-- MODAL: SCHEDULE GRID (REUSED)              -->
+                                                    <!-- ========================================== -->
+                                                    <div class="schedule-modal-backdrop" id="scheduleModal" onclick="closeScheduleModal(event)">
+                                                        <div class="schedule-modal-box" id="scheduleModalBox" onclick="event.stopPropagation()">
+                                                            <jsp:include page="/WEB-INF/views/partials/schedule-grid.jsp" />
+                                                        </div>
+                                                    </div>
 
-                                                    </html>
+                                                    <script>
+                                                        let currentScheduleWeekOffset = 0;
+
+                                                        function changeScheduleWeek(delta, reset = false) {
+                                                            if (reset) {
+                                                                currentScheduleWeekOffset = 0;
+                                                            } else {
+                                                                currentScheduleWeekOffset += delta;
+                                                            }
+                                                            
+                                                            fetch('${pageContext.request.contextPath}/profile?action=getScheduleGrid&weekOffset=' + currentScheduleWeekOffset)
+                                                                .then(res => res.text())
+                                                                .then(html => {
+                                                                    var box = document.getElementById('scheduleModalBox');
+                                                                    if (box) {
+                                                                        box.innerHTML = html;
+                                                                    }
+                                                                })
+                                                                .catch(err => console.error("Error fetching schedule:", err));
+                                                        }
+
+                                                        function openScheduleModal() {
+                                                            var modal = document.getElementById('scheduleModal');
+                                                            if (modal) {
+                                                                modal.classList.add('show');
+                                                                document.body.style.overflow = 'hidden';
+                                                            }
+                                                        }
+
+                                                        function closeScheduleModal(event) {
+                                                            if (event && event.target !== event.currentTarget) return;
+                                                            var modal = document.getElementById('scheduleModal');
+                                                            if (modal) {
+                                                                modal.classList.remove('show');
+                                                                document.body.style.overflow = '';
+                                                            }
+                                                        }
+                                                    </script>
+</body>
+</html>

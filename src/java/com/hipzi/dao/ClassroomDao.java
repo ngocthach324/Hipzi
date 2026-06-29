@@ -74,7 +74,7 @@ public class ClassroomDao {
         long startedAt = System.nanoTime();
         StringBuilder sql = new StringBuilder(
                 "SELECT c.id, c.class_code, c.teacher_id, c.title, c.subject, c.grade_level, c.description, "
-                + "c.student_count, c.status, c.schedule_days, c.start_time, c.end_time, c.online_room_url, "
+                + "c.student_count, c.status, c.schedule_days, c.start_time, c.end_time, c.online_room_url, c.tuition_fee, c.tuition_due_date, "
                 + "c.created_at, c.updated_at, "
                 + "u.display_name AS teacher_name, u.avatar_url AS teacher_avatar_url, "
                 + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "
@@ -207,8 +207,8 @@ public class ClassroomDao {
             classroom.setClassCode("HPZ-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(Locale.ROOT));
         }
         String sql = "INSERT INTO classrooms "
-                + "(id, teacher_id, class_code, title, subject, grade_level, description, schedule_days, start_time, end_time, status, online_room_url) "
-                + "VALUES (?::uuid, ?::uuid, ?, ?, ?, ?, ?, ?, ?::time, ?::time, ?, ?)";
+                + "(id, teacher_id, class_code, title, subject, grade_level, description, schedule_days, start_time, end_time, status, online_room_url, tuition_fee, tuition_due_date) "
+                + "VALUES (?::uuid, ?::uuid, ?, ?, ?, ?, ?, ?, ?::time, ?::time, ?, ?, ?, ?::date)";
 
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -218,6 +218,8 @@ public class ClassroomDao {
             ps.setString(3, classroom.getClassCode());
             bindEditableFields(ps, classroom, 4, false);
             ps.setString(12, classroom.getOnlineRoomUrl());
+            ps.setBigDecimal(13, classroom.getTuitionFee());
+            ps.setString(14, classroom.getTuitionDueDate() != null ? classroom.getTuitionDueDate().toString() : null);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error in ClassroomDao.create: " + e.getMessage());
@@ -228,7 +230,7 @@ public class ClassroomDao {
     public boolean updateForTeacher(Classroom classroom) {
         String sql = "UPDATE classrooms SET "
                 + "title = ?, subject = ?, grade_level = ?, description = ?, schedule_days = ?, "
-                + "start_time = ?::time, end_time = ?::time, status = ?, online_room_url = ?, updated_at = NOW() "
+                + "start_time = ?::time, end_time = ?::time, status = ?, online_room_url = ?, tuition_fee = ?, tuition_due_date = ?::date, updated_at = NOW() "
                 + "WHERE id = ?::uuid AND teacher_id = ?::uuid";
 
         try (Connection conn = DBContext.getConnection();
@@ -236,8 +238,10 @@ public class ClassroomDao {
 
             bindEditableFields(ps, classroom, 1, false);
             ps.setString(9, classroom.getOnlineRoomUrl());
-            ps.setString(10, classroom.getId());
-            ps.setString(11, classroom.getTeacherId());
+            ps.setBigDecimal(10, classroom.getTuitionFee());
+            ps.setString(11, classroom.getTuitionDueDate() != null ? classroom.getTuitionDueDate().toString() : null);
+            ps.setString(12, classroom.getId());
+            ps.setString(13, classroom.getTeacherId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error in ClassroomDao.updateForTeacher: " + e.getMessage());
@@ -307,6 +311,9 @@ public class ClassroomDao {
         classroom.setTeacherAvatarUrl(readOptionalString(rs, "teacher_avatar_url"));
         String onlineRoomUrl = readOptionalString(rs, "online_room_url");
         classroom.setOnlineRoomUrl(onlineRoomUrl != null ? onlineRoomUrl.trim() : "");
+        classroom.setTuitionFee(rs.getBigDecimal("tuition_fee"));
+        java.sql.Date tuitionDueDate = rs.getDate("tuition_due_date");
+        classroom.setTuitionDueDate(tuitionDueDate != null ? tuitionDueDate.toLocalDate() : null);
         classroom.setSchedule(formatSchedule(classroom.getScheduleDays(), classroom.getStartTime(), classroom.getEndTime()));
         classroom.setCreatedAt(rs.getTimestamp("created_at"));
         classroom.setUpdatedAt(rs.getTimestamp("updated_at"));
@@ -342,6 +349,8 @@ public class ClassroomDao {
                     + "WHERE class_code IS NULL OR trim(class_code) = ''");
             st.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_classrooms_class_code_unique ON classrooms(class_code)");
             st.execute("ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS online_room_url TEXT");
+            st.execute("ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS tuition_fee NUMERIC(12,2) NOT NULL DEFAULT 0");
+            st.execute("ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS tuition_due_date DATE");
         } catch (SQLException e) {
             System.err.println("Error in ClassroomDao.ensureSchema: " + e.getMessage());
         }

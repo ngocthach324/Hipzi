@@ -49,6 +49,28 @@ public class TeacherTransactionDao {
             System.err.println("Error in TeacherTransactionDao.findByTeacherId: " + e.getMessage());
         }
 
+        String tuitionSql = "SELECT invoice_code, COALESCE(paid_at, created_at) AS transaction_at, classroom_title, amount, currency, status "
+                + "FROM classroom_tuition_invoices WHERE teacher_id = ?::uuid AND status = 'paid' "
+                + "ORDER BY COALESCE(paid_at, created_at) DESC LIMIT 80";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(tuitionSql)) {
+            ps.setString(1, teacherId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    TeacherTransaction tx = new TeacherTransaction();
+                    tx.setTransactionCode(rs.getString("invoice_code"));
+                    tx.setTransactionAt(rs.getTimestamp("transaction_at"));
+                    tx.setDescription("Nhận học phí lớp: " + rs.getString("classroom_title"));
+                    tx.setAmount(rs.getBigDecimal("amount"));
+                    tx.setCurrency(rs.getString("currency"));
+                    tx.setStatus(rs.getString("status"));
+                    tx.setCredit(true);
+                    transactions.add(tx);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in TeacherTransactionDao.findTuitionByTeacherId: " + e.getMessage());
+        }
         String withdrawalSql = "SELECT request_code, COALESCE(paid_at, rejected_at, failed_at, requested_at) AS transaction_at, "
                 + "amount, currency, status, momo_phone "
                 + "FROM teacher_withdrawal_requests "

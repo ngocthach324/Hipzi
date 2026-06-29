@@ -57,6 +57,16 @@ public final class PaymentConfig {
                 + encode(bankAccountName());
     }
 
+    public static String vietQrUrl(BigDecimal amountValue, String paymentContent) {
+        if (amountValue == null || amountValue.compareTo(BigDecimal.ZERO) <= 0) return "";
+        BigDecimal amount = amountValue.setScale(0, RoundingMode.HALF_UP);
+        String template = configValue("VIETQR_TEMPLATE", DEFAULT_QR_TEMPLATE);
+        return "https://img.vietqr.io/image/"
+                + encodePath(bankAcqId()) + "-" + encodePath(bankAccountNo()) + "-" + encodePath(template)
+                + ".png?amount=" + encode(amount.toPlainString())
+                + "&addInfo=" + encode(paymentContent)
+                + "&accountName=" + encode(bankAccountName());
+    }
     private static String configValue(String key, String fallback) {
         String value = System.getProperty(key);
         if (value == null || value.trim().isEmpty()) {

@@ -141,52 +141,41 @@ public class CourseOrderDao {
         String normalizedStatus = emptyToNull(status);
         String normalizedSearch = emptyToNull(search);
         StringBuilder sql = new StringBuilder()
-                .append("SELECT o.order_code, COALESCE(o.paid_at, o.created_at) AS transaction_at, ")
-                .append("o.status, oi.course_title, oi.price_amount, oi.currency, ")
+                .append("SELECT tx.* FROM (")
+                .append("SELECT o.order_code, COALESCE(o.paid_at,o.created_at) AS transaction_at, o.status, ")
+                .append("oi.course_title, oi.price_amount, oi.currency, student.display_name AS student_name, ")
+                .append("student.email AS student_email, teacher.display_name AS teacher_name, teacher.email AS teacher_email ")
+                .append("FROM course_order_items oi JOIN course_orders o ON o.id=oi.order_id ")
+                .append("JOIN users student ON student.id=o.student_id LEFT JOIN users teacher ON teacher.id=oi.teacher_id ")
+                .append("UNION ALL ")
+                .append("SELECT ti.invoice_code AS order_code, COALESCE(ti.paid_at,ti.created_at) AS transaction_at, ti.status, ")
+                .append("'Học phí lớp: ' || ti.classroom_title AS course_title, ti.amount AS price_amount, ti.currency, ")
                 .append("student.display_name AS student_name, student.email AS student_email, ")
                 .append("teacher.display_name AS teacher_name, teacher.email AS teacher_email ")
-                .append("FROM course_order_items oi ")
-                .append("JOIN course_orders o ON o.id = oi.order_id ")
-                .append("JOIN users student ON student.id = o.student_id ")
-                .append("LEFT JOIN users teacher ON teacher.id = oi.teacher_id ")
-                .append("WHERE 1=1 ");
-        if (normalizedStatus != null && !"all".equalsIgnoreCase(normalizedStatus)) {
-            sql.append("AND o.status = ? ");
-        }
+                .append("FROM classroom_tuition_invoices ti JOIN users student ON student.id=ti.student_id ")
+                .append("JOIN users teacher ON teacher.id=ti.teacher_id")
+                .append(") tx WHERE 1=1 ");
+        if (normalizedStatus != null && !"all".equalsIgnoreCase(normalizedStatus)) sql.append("AND tx.status=? ");
         if (normalizedSearch != null) {
-            sql.append("AND (LOWER(o.order_code) LIKE ? OR LOWER(oi.course_title) LIKE ? ")
-                    .append("OR LOWER(student.display_name) LIKE ? OR LOWER(student.email) LIKE ? ")
-                    .append("OR LOWER(COALESCE(teacher.display_name, '')) LIKE ? OR LOWER(COALESCE(teacher.email, '')) LIKE ?) ");
+            sql.append("AND (LOWER(tx.order_code) LIKE ? OR LOWER(tx.course_title) LIKE ? ")
+                    .append("OR LOWER(tx.student_name) LIKE ? OR LOWER(tx.student_email) LIKE ? ")
+                    .append("OR LOWER(COALESCE(tx.teacher_name,'')) LIKE ? OR LOWER(COALESCE(tx.teacher_email,'')) LIKE ?) ");
         }
-        sql.append("ORDER BY COALESCE(o.paid_at, o.created_at) DESC LIMIT ?");
-
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            int idx = 1;
-            if (normalizedStatus != null && !"all".equalsIgnoreCase(normalizedStatus)) {
-                ps.setString(idx++, normalizedStatus);
-            }
+        sql.append("ORDER BY tx.transaction_at DESC LIMIT ?");
+        try (Connection conn=DBContext.getConnection(); PreparedStatement ps=conn.prepareStatement(sql.toString())) {
+            int idx=1;
+            if (normalizedStatus != null && !"all".equalsIgnoreCase(normalizedStatus)) ps.setString(idx++,normalizedStatus);
             if (normalizedSearch != null) {
-                String like = "%" + normalizedSearch.toLowerCase(Locale.ROOT) + "%";
-                ps.setString(idx++, like);
-                ps.setString(idx++, like);
-                ps.setString(idx++, like);
-                ps.setString(idx++, like);
-                ps.setString(idx++, like);
-                ps.setString(idx++, like);
+                String like="%"+normalizedSearch.toLowerCase(Locale.ROOT)+"%";
+                for (int i=0;i<6;i++) ps.setString(idx++,like);
             }
-            ps.setInt(idx, Math.max(1, limit));
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    transactions.add(mapStaffTransaction(rs));
-                }
-            }
+            ps.setInt(idx,Math.max(1,limit));
+            try (ResultSet rs=ps.executeQuery()) { while(rs.next()) transactions.add(mapStaffTransaction(rs)); }
         } catch (SQLException e) {
-            System.err.println("Error in CourseOrderDao.listForStaffTransactions: " + e.getMessage());
+            System.err.println("Error in CourseOrderDao.listForStaffTransactions: "+e.getMessage());
         }
         return transactions;
     }
-
     private List<CourseOrderItem> listItems(Connection conn, String orderId) throws SQLException {
         String sql = "SELECT id, order_id, course_id, teacher_id, course_title, price_amount, currency, created_at "
                 + "FROM course_order_items WHERE order_id = ?::uuid ORDER BY created_at ASC";

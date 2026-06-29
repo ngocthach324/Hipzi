@@ -2,6 +2,8 @@ package com.hipzi.model;
 
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class Classroom {
     private String id;
@@ -21,6 +23,8 @@ public class Classroom {
     private Time endTime;
     private String schedule;
     private String onlineRoomUrl;
+    private BigDecimal tuitionFee;
+    private LocalDate tuitionDueDate;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
@@ -96,6 +100,12 @@ public class Classroom {
 
     public String getOnlineRoomUrl() { return onlineRoomUrl; }
     public void setOnlineRoomUrl(String onlineRoomUrl) { this.onlineRoomUrl = onlineRoomUrl; }
+
+    public BigDecimal getTuitionFee() { return tuitionFee; }
+    public void setTuitionFee(BigDecimal tuitionFee) { this.tuitionFee = tuitionFee; }
+
+    public LocalDate getTuitionDueDate() { return tuitionDueDate; }
+    public void setTuitionDueDate(LocalDate tuitionDueDate) { this.tuitionDueDate = tuitionDueDate; }
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
