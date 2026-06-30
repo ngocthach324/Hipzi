@@ -366,6 +366,7 @@ public class CourseDao {
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error in CourseDao.createForTeacher: " + e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
@@ -399,7 +400,7 @@ public class CourseDao {
     public boolean updateForTeacher(String courseId, String teacherId, Course course) {
         String sql = "UPDATE courses SET title = ?, short_description = ?, subject_code = ?, subject_name = ?, "
                 + "grade_level = ?, level_name = ?, price_type = ?, price_amount = ?, currency = ?, "
-                + "thumbnail_url = ?, thumbnail_gradient = ?, badge_text = ?, lessons_count = ?, estimated_hours = ?, "
+                + "thumbnail_url = COALESCE(NULLIF(?, ''), thumbnail_url), thumbnail_gradient = COALESCE(NULLIF(?, ''), thumbnail_gradient), badge_text = ?, lessons_count = ?, estimated_hours = ?, "
                 + "google_drive_url = ?, google_drive_file_id = ?, google_drive_folder_id = ?, drive_owner_email = ?, "
                 + "access_instructions = ?, learning_objectives = ?, curriculum_outline = ?, updated_at = NOW() "
                 + "WHERE id = ?::uuid AND teacher_id = ?::uuid AND deleted_at IS NULL";

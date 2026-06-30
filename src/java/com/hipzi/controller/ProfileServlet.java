@@ -1142,7 +1142,10 @@ public class ProfileServlet extends HttpServlet {
         BigDecimal priceAmount = parseMoneyParam(request.getParameter("coursePriceAmount"));
         String subjectCode = subjectCodeFromName(subjectName);
         String thumbnailUrl = cleanParam(request.getParameter("courseThumbnailUrl"));
-        Part thumbnailPart = request.getPart("courseThumbnailFile");
+        Part thumbnailPart = null;
+        if (request.getContentType() != null && request.getContentType().toLowerCase().startsWith("multipart/")) {
+            thumbnailPart = request.getPart("courseThumbnailFile");
+        }
         if (thumbnailPart != null && thumbnailPart.getSize() > 0) {
             thumbnailUrl = saveCourseThumbnailFile(request, user, thumbnailPart);
         }

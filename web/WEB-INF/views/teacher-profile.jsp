@@ -4246,8 +4246,16 @@
                         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.25rem;">
                             <% for (com.hipzi.model.Course course : teacherCourses) { %>
                                 <div style="border: 1.5px solid rgba(226,232,240,.95); border-radius: 18px; background: rgba(255,255,255,.92); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.2s ease;">
-                                    <div style="position: relative; height: 180px; background: <%= course.getThumbnailGradient() != null ? course.getThumbnailGradient() : "linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #38bdf8 100%)" %>; display: flex; align-items: center; justify-content: center;">
-                                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                    <%
+                                        String regThumbUrl = course.getThumbnailUrl();
+                                        String regThumbStyle = (regThumbUrl != null && !regThumbUrl.trim().isEmpty())
+                                                ? "background-image:url('" + h(regThumbUrl) + "'); background-size:cover; background-position:center;"
+                                                : "background:" + (course.getThumbnailGradient() != null ? course.getThumbnailGradient() : "linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #38bdf8 100%)") + "; display:flex; align-items:center; justify-content:center;";
+                                    %>
+                                    <div style="position: relative; height: 180px; <%= regThumbStyle %>">
+                                        <% if (regThumbUrl == null || regThumbUrl.trim().isEmpty()) { %>
+                                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                        <% } %>
                                         <span style="position: absolute; top: 0.65rem; left: 0.65rem; background: rgba(255,255,255,0.9); padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; color: #1e293b; display: inline-flex; align-items: center; gap: 0.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
                                             <svg viewBox="0 0 24 24" width="12" height="12"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#f59e0b"/></svg>
                                             <%= course.getRatingAverage() != null ? course.getRatingAverage() : "0.0" %>
@@ -4294,6 +4302,10 @@
                                         <form action="${pageContext.request.contextPath}/profile" method="POST" class="form-edit-layout" style="padding: 0; margin: 0;">
                                             <input type="hidden" name="action" value="updateTeacherCourse">
                                             <input type="hidden" name="courseId" value="<%= course.getId() %>">
+                                            <input type="hidden" name="courseGoogleDriveUrl" value="<%= h(course.getGoogleDriveUrl()) %>">
+                                            <input type="hidden" name="courseGoogleDriveFileId" value="<%= h(course.getGoogleDriveFileId()) %>">
+                                            <input type="hidden" name="courseGoogleDriveFolderId" value="<%= h(course.getGoogleDriveFolderId()) %>">
+                                            <input type="hidden" name="courseAccessInstructions" value="<%= h(course.getAccessInstructions()) %>">
                                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-dark); padding-bottom: 0.75rem;">
                                                 <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-main);">Chỉnh sửa khóa học</h3>
                                                 <div style="display: flex; gap: 0.5rem;">
