@@ -230,6 +230,16 @@ public class ProfileServlet extends HttpServlet {
                 request.setAttribute("teacherTransactions", teacherTransactionDao.findByTeacherId(user.getId()));
                 request.setAttribute("teacherReviewStats", teacherReviewStatsDao.getStats(user.getId()));
                 request.setAttribute("teacherWalletStats", teacherWalletStatsDao.getStats(user.getId()));
+            } else if ("class-registration".equals(tab)) {
+                request.setAttribute("teacherClassrooms", classroomDao.findByTeacherId(user.getId()));
+                request.setAttribute("teacherSchedules", teachingScheduleDao.findByTeacherId(user.getId()));
+            } else if ("course-registration".equals(tab)) {
+                request.setAttribute("teacherCourses", courseDao.findByTeacherId(user.getId()));
+            } else if ("balance-stats".equals(tab)) {
+                request.setAttribute("teacherReviewStats", teacherReviewStatsDao.getStats(user.getId()));
+                request.setAttribute("teacherWalletStats", teacherWalletStatsDao.getStats(user.getId()));
+            } else if ("transaction-history".equals(tab)) {
+                request.setAttribute("teacherTransactions", teacherTransactionDao.findByTeacherId(user.getId()));
             } else if ("support".equals(tab)) {
                 loadUserSupportData(request, user);
             }
