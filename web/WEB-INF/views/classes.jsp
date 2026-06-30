@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.List"%>
 <%@page import="com.hipzi.model.Classroom"%>
 <%@page import="com.hipzi.model.User"%>
@@ -326,10 +326,13 @@
             <main class="main-results" id="materials-results">
                 <div class="results-header">
                     <div class="sort-by" style="margin-left: auto;">
-                        <select class="sort-select" aria-label="Lọc trạng thái lớp học">
-                            <option>Tất cả</option>
-                            <option>Đang mở</option>
-                            <option>Sắp khai giảng</option>
+                        <select class="sort-select" aria-label="Lọc trạng thái lớp học" id="statusSelect">
+                            <option value="Tất cả" ${empty param.status or param.status eq 'Tất cả' ? 'selected' : ''}>Tất cả</option>
+                            <option value="Đang mở" ${param.status eq 'Đang mở' ? 'selected' : ''}>Đang mở</option>
+                            <option value="Sắp khai giảng" ${param.status eq 'Sắp khai giảng' ? 'selected' : ''}>Sắp khai giảng</option>
+                            <% if (user != null) { %>
+                            <option value="Lớp học của tôi" ${param.status eq 'Lớp học của tôi' ? 'selected' : ''}>Lớp học của tôi</option>
+                            <% } %>
                         </select>
                         <select class="sort-select" aria-label="Sắp xếp lớp học">
                             <option>Mới nhất</option>
@@ -378,6 +381,7 @@
             var newSubject = targetUrl.searchParams.get('subject') || currentUrl.searchParams.get('subject') || 'Tất cả';
             var newGrade   = targetUrl.searchParams.get('grade')   || currentUrl.searchParams.get('grade')   || 'Tất cả';
             var q          = currentUrl.searchParams.get('q') || '';
+            var status     = targetUrl.searchParams.get('status') || currentUrl.searchParams.get('status') || 'Tất cả';
 
             // Cập nhật trạng thái active sidebar ngay lập tức (không cần chờ server)
             updateSidebarActive(newSubject, newGrade, q);
@@ -385,6 +389,7 @@
             var fetchUrl = new URL(location.pathname, location.href);
             fetchUrl.searchParams.set('subject', newSubject);
             fetchUrl.searchParams.set('grade', newGrade);
+            fetchUrl.searchParams.set('status', status);
             if (q) fetchUrl.searchParams.set('q', q);
             fetchUrl.searchParams.set('ajax', '1'); // Chỉ lấy fragment kết quả, không tải cả trang
 
@@ -425,6 +430,8 @@
                     var updatedUrl = new URL(location.pathname, location.href);
                     updatedUrl.searchParams.set('subject', thisSubject);
                     updatedUrl.searchParams.set('grade', newGrade);
+                    var currentStatus = new URL(location.href).searchParams.get('status');
+                    if (currentStatus) updatedUrl.searchParams.set('status', currentStatus);
                     if (q) updatedUrl.searchParams.set('q', q);
                     a.href = updatedUrl.toString();
                     a.classList.toggle('active', thisSubject.toLowerCase() === newSubject.toLowerCase());
@@ -438,6 +445,8 @@
                     var updatedUrl = new URL(location.pathname, location.href);
                     updatedUrl.searchParams.set('subject', newSubject);
                     updatedUrl.searchParams.set('grade', thisGrade);
+                    var currentStatus = new URL(location.href).searchParams.get('status');
+                    if (currentStatus) updatedUrl.searchParams.set('status', currentStatus);
                     if (q) updatedUrl.searchParams.set('q', q);
                     a.href = updatedUrl.toString();
                     a.classList.toggle('active', thisGrade.toLowerCase() === newGrade.toLowerCase());
@@ -451,6 +460,15 @@
             e.preventDefault();
             applyTwoWayFilter(link.href, false, true);
         });
+
+        var statusSelect = document.getElementById('statusSelect');
+        if (statusSelect) {
+            statusSelect.addEventListener('change', function() {
+                var url = new URL(location.href);
+                url.searchParams.set('status', this.value);
+                applyTwoWayFilter(url.toString(), false, false);
+            });
+        }
 
         window.addEventListener('popstate', function () {
             applyTwoWayFilter(location.href, true, true);

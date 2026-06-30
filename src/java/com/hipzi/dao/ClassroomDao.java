@@ -70,7 +70,7 @@ public class ClassroomDao {
     }
 
 
-    public List<Classroom> listPublic(String subjectFilter, String gradeFilter, String searchQuery) {
+    public List<Classroom> listPublic(String subjectFilter, String gradeFilter, String searchQuery, String statusFilter, String userId) {
         long startedAt = System.nanoTime();
         StringBuilder sql = new StringBuilder(
                 "SELECT c.id, c.class_code, c.teacher_id, c.title, c.subject, c.grade_level, c.description, "
@@ -87,9 +87,24 @@ public class ClassroomDao {
                 + "ORDER BY submitted_at DESC "
                 + "LIMIT 1"
                 + ") ta ON true "
-                + "WHERE c.status IN ('open', 'upcoming') ");
+                + "WHERE 1=1 ");
 
         List<Object> params = new ArrayList<>();
+        
+        if ("Lớp học của tôi".equalsIgnoreCase(statusFilter) && userId != null) {
+            sql.append("AND (c.teacher_id = ?::uuid OR c.id IN (SELECT classroom_id FROM classroom_enrollments WHERE student_id = ?::uuid AND status = 'accepted')) ");
+            params.add(userId);
+            params.add(userId);
+        } else {
+            if ("Đang mở".equalsIgnoreCase(statusFilter)) {
+                sql.append("AND c.status = 'open' ");
+            } else if ("Sắp khai giảng".equalsIgnoreCase(statusFilter)) {
+                sql.append("AND c.status = 'upcoming' ");
+            } else {
+                sql.append("AND c.status IN ('open', 'upcoming') ");
+            }
+        }
+
         if (subjectFilter != null && !subjectFilter.trim().isEmpty() && !"Tất cả".equalsIgnoreCase(subjectFilter.trim())) {
             sql.append("AND c.subject = ? ");
             params.add(subjectFilter.trim());

@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.CourseOrder"%>
 <%@page import="com.hipzi.model.CourseOrderItem"%>
@@ -455,6 +455,9 @@
                     status.classList.add('paid');
                     updateAccessNotice(data.accessStatus, data.accessMessage);
                     showCheckoutToast('Thanh toán đã được ghi nhận');
+                    if (window.refreshCartBadge) {
+                        window.refreshCartBadge();
+                    }
                 } else {
                     status.textContent = 'Chờ thanh toán';
                     status.classList.remove('paid');

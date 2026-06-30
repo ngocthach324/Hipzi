@@ -21,20 +21,20 @@ public class AiRecommendationService {
         QueryHint hint = parseHint(message);
         String keyword = hint.keyword.isEmpty() ? message : hint.keyword;
 
-        List<Classroom> classrooms = classroomDao.listPublic(hint.classroomSubject, hint.grade, keyword);
+        List<Classroom> classrooms = classroomDao.listPublic(hint.classroomSubject, hint.grade, keyword, "Tất cả", null);
         if ((classrooms == null || classrooms.isEmpty()) && !hint.classroomSubject.isEmpty()) {
-            classrooms = classroomDao.listPublic(hint.classroomSubject, hint.grade, "");
+            classrooms = classroomDao.listPublic(hint.classroomSubject, hint.grade, "", "Tất cả", null);
         }
         if ((classrooms == null || classrooms.isEmpty()) && !hint.grade.isEmpty()) {
-            classrooms = classroomDao.listPublic("", hint.grade, keyword);
+            classrooms = classroomDao.listPublic("", hint.grade, keyword, "Tất cả", null);
         }
         if (classrooms == null) {
             classrooms = new ArrayList<>();
         }
         if (classrooms.isEmpty() && (!hint.classroomSubject.isEmpty() || !hint.grade.isEmpty())) {
-            classrooms = filterClassrooms(classroomDao.listPublic("", "", ""), hint);
+            classrooms = filterClassrooms(classroomDao.listPublic("", "", "", "Tất cả", null), hint);
         } else if (classrooms.isEmpty() && hint.wantsClassroomListing) {
-            classrooms = classroomDao.listPublic("", "", "");
+            classrooms = classroomDao.listPublic("", "", "", "Tất cả", null);
             if (classrooms == null) {
                 classrooms = new ArrayList<>();
             }

@@ -4121,9 +4121,36 @@
                                                                                                                             Danh sách lớp học đang tham gia
                                                                                                                         </h3>
                                                                                                                     </div>
+                                                                                                                    <%
+                                                                                                                    List<Classroom> myClasses = (List<Classroom>) request.getAttribute("studentClasses");
+                                                                                                                    if (myClasses == null || myClasses.isEmpty()) {
+                                                                                                                    %>
                                                                                                                     <div class="dashboard-list" style="min-height: 200px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-weight: 600;">
                                                                                                                         Hiện chưa có lớp học nào
                                                                                                                     </div>
+                                                                                                                    <% } else { %>
+                                                                                                                    <div class="courses-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; padding: 1.5rem;">
+                                                                                                                        <% for (Classroom cls : myClasses) { 
+                                                                                                                            String thumbStyle = "background:linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); display:flex; align-items:center; justify-content:center;";
+                                                                                                                        %>
+                                                                                                                        <article class="course-card" style="border: 1px solid var(--border-light); border-radius: 1rem; overflow: hidden; display: flex; flex-direction: column; background: #fff; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);">
+                                                                                                                            <div class="card-thumb" style="position: relative; padding-top: 56.25%; background: var(--bg-soft);">
+                                                                                                                                <div class="card-thumb-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; <%= thumbStyle %>">
+                                                                                                                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.25"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                                                                                                                </div>
+                                                                                                                            </div>
+                                                                                                                            <div class="card-body" style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column;">
+                                                                                                                                <div class="card-subject" style="font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 0.5rem;"><%= h(cls.getSubject()) %></div>
+                                                                                                                                <h3 class="card-title" style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.5rem 0; line-height: 1.4;"><%= h(cls.getTitle()) %></h3>
+                                                                                                                                <div class="card-teacher" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem;"><%= h(cls.getTeacherName()) %></div>
+                                                                                                                                <div style="margin-top: auto;">
+                                                                                                                                    <a href="${pageContext.request.contextPath}/class-detail?id=<%= h(cls.getId()) %>" class="btn btn-primary" style="display: block; text-align: center; width: 100%; padding: 0.6rem; border-radius: 0.5rem; text-decoration: none; font-size: 0.9rem; font-weight: 700; background: var(--primary); color: #fff;">Chi tiết</a>
+                                                                                                                                </div>
+                                                                                                                            </div>
+                                                                                                                        </article>
+                                                                                                                        <% } %>
+                                                                                                                    </div>
+                                                                                                                    <% } %>
                                                                                                                 </div>
                                                                                                             </section>
 
@@ -4146,9 +4173,41 @@
                                                                                                                             Danh sách khóa học đã mua
                                                                                                                         </h3>
                                                                                                                     </div>
+                                                                                                                    <%
+                                                                                                                    List<Course> myCourses = (List<Course>) request.getAttribute("studentCourses");
+                                                                                                                    if (myCourses == null || myCourses.isEmpty()) {
+                                                                                                                    %>
                                                                                                                     <div class="dashboard-list" style="min-height: 200px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-weight: 600;">
                                                                                                                         Hiện chưa có khóa học nào
                                                                                                                     </div>
+                                                                                                                    <% } else { %>
+                                                                                                                    <div class="courses-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; padding: 1.5rem;">
+                                                                                                                        <% for (Course course : myCourses) { 
+                                                                                                                            String thumbUrl = course.getThumbnailUrl();
+                                                                                                                            String thumbStyle = (thumbUrl != null && !thumbUrl.trim().isEmpty())
+                                                                                                                                    ? "background-image:url('" + h(thumbUrl) + "'); background-size:cover; background-position:center;"
+                                                                                                                                    : "background:" + h(course.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";
+                                                                                                                        %>
+                                                                                                                        <article class="course-card" style="border: 1px solid var(--border-light); border-radius: 1rem; overflow: hidden; display: flex; flex-direction: column; background: #fff; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);">
+                                                                                                                            <div class="card-thumb" style="position: relative; padding-top: 56.25%; background: var(--bg-soft);">
+                                                                                                                                <div class="card-thumb-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; <%= thumbStyle %>">
+                                                                                                                                    <% if (thumbUrl == null || thumbUrl.trim().isEmpty()) { %>
+                                                                                                                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.25"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                                                                                                                    <% } %>
+                                                                                                                                </div>
+                                                                                                                            </div>
+                                                                                                                            <div class="card-body" style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column;">
+                                                                                                                                <div class="card-subject" style="font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 0.5rem;"><%= h(course.getSubjectName()) %></div>
+                                                                                                                                <h3 class="card-title" style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.5rem 0; line-height: 1.4;"><%= h(course.getTitle()) %></h3>
+                                                                                                                                <div class="card-teacher" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem;"><%= h(course.getTeacherName()) %></div>
+                                                                                                                                <div style="margin-top: auto;">
+                                                                                                                                    <a href="${pageContext.request.contextPath}/course-detail?id=<%= h(course.getId()) %>" class="btn btn-primary" style="display: block; text-align: center; width: 100%; padding: 0.6rem; border-radius: 0.5rem; text-decoration: none; font-size: 0.9rem; font-weight: 700; background: var(--primary); color: #fff;">Chi tiết</a>
+                                                                                                                                </div>
+                                                                                                                            </div>
+                                                                                                                        </article>
+                                                                                                                        <% } %>
+                                                                                                                    </div>
+                                                                                                                    <% } %>
                                                                                                                 </div>
                                                                                                             </section>
 

@@ -57,6 +57,11 @@
                 }).catch(err => console.error(err));
         }
 
+        window.refreshCartBadge = function() {
+            cartLoaded = false;
+            loadCartCount();
+        };
+
         function renderCartItems(data) {
             if (!data.success) {
                 cartList.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--c-muted); font-size:0.85rem;">Vui lòng đăng nhập.</div>';

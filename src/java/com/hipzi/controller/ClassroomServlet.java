@@ -23,9 +23,13 @@ public class ClassroomServlet extends HttpServlet {
         String subjectParam = request.getParameter("subject");
         String gradeParam = request.getParameter("grade");
         String searchParam = request.getParameter("q");
+        String statusParam = request.getParameter("status");
+        
+        com.hipzi.model.User user = (com.hipzi.model.User) request.getSession().getAttribute("loggedUser");
+        String userId = (user != null) ? user.getId() : null;
 
         long dataStartedAt = System.nanoTime();
-        List<Classroom> filteredClasses = classroomDao.listPublic(subjectParam, gradeParam, searchParam);
+        List<Classroom> filteredClasses = classroomDao.listPublic(subjectParam, gradeParam, searchParam, statusParam, userId);
         long dataMs = elapsedMs(dataStartedAt);
         if (filteredClasses == null) {
             filteredClasses = new ArrayList<>();
