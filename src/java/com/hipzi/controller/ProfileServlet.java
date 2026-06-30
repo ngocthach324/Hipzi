@@ -183,21 +183,31 @@ public class ProfileServlet extends HttpServlet {
         else if ("/admin-profile".equals(path)) targetJsp = "/WEB-INF/views/admin-profile.jsp";
 
         request.setAttribute("user", user);
+        String tab = cleanParam(request.getParameter("tab"));
 
         // Tải dữ liệu caching thống kê nếu truy cập giao diện học viên
         if ("/WEB-INF/views/student-profile.jsp".equals(targetJsp)) {
+            if (tab.isEmpty()) tab = "dashboard";
             StudentProfile studentProfile = studentProfileService.getProfileByUserId(user.getId());
             request.setAttribute("studentProfile", studentProfile);
-            request.setAttribute("studentStudyProgressStats", studentStudyProgressDao.getStats(user.getId()));
-            request.setAttribute("studentSchedules", teachingScheduleDao.findByStudentId(user.getId()));
-            request.setAttribute("studentClasses", classroomDao.findAcceptedByStudent(user.getId()));
-            request.setAttribute("studentCourses", courseDao.findPurchasedByStudent(user.getId()));
-            request.setAttribute("tuitionInvoices", tuitionInvoiceDao.listVisibleByStudent(user.getId()));
-            loadUserSupportData(request, user);
+            
+            if ("dashboard".equals(tab)) {
+                request.setAttribute("studentStudyProgressStats", studentStudyProgressDao.getStats(user.getId()));
+                request.setAttribute("studentSchedules", teachingScheduleDao.findByStudentId(user.getId()));
+            } else if ("my-classes".equals(tab)) {
+                request.setAttribute("studentClasses", classroomDao.findAcceptedByStudent(user.getId()));
+            } else if ("my-courses".equals(tab)) {
+                request.setAttribute("studentCourses", courseDao.findPurchasedByStudent(user.getId()));
+            } else if ("wallet-history".equals(tab) || "wallet-balance".equals(tab)) {
+                request.setAttribute("tuitionInvoices", tuitionInvoiceDao.listVisibleByStudent(user.getId()));
+            } else if ("support".equals(tab)) {
+                loadUserSupportData(request, user);
+            }
         } else if ("/WEB-INF/views/parent-profile.jsp".equals(targetJsp)) {
             List<ParentStudentLink> trackedStudents = linkDao.findLinksByParentId(user.getId());
             request.setAttribute("trackedStudents", trackedStudents);
         } else if (isTeacherPage(targetJsp)) {
+            if (tab.isEmpty()) tab = "dashboard";
             // Làm mới thông tin user từ DB để lấy wallet_balance chính xác nhất
             User freshUser = userDao.findById(user.getId());
             if (freshUser != null) {
@@ -210,103 +220,121 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("teacherApplication", teacherApplication);
             request.setAttribute("approvedTeacherApplication", approvedTeacherApplication);
             request.setAttribute("hasApprovedApplication", approvedTeacherApplication != null);
-            request.setAttribute("teacherClassrooms", classroomDao.findByTeacherId(user.getId()));
-            request.setAttribute("teacherSchedules", teachingScheduleDao.findByTeacherId(user.getId()));
-            request.setAttribute("teacherCourses", courseDao.findByTeacherId(user.getId()));
-            request.setAttribute("teacherMaterialCount", repositoryMaterialDao.countByUploaderId(user.getId()));
-            request.setAttribute("teacherGoogleAccount", teacherGoogleAccountDao.findActiveByTeacherId(user.getId()));
-            request.setAttribute("teacherTransactions", teacherTransactionDao.findByTeacherId(user.getId()));
-            request.setAttribute("teacherReviewStats", teacherReviewStatsDao.getStats(user.getId()));
-            request.setAttribute("teacherWalletStats", teacherWalletStatsDao.getStats(user.getId()));
-            loadUserSupportData(request, user);
-        } else if ("/WEB-INF/views/staff-profile.jsp".equals(targetJsp)) {
-            request.setAttribute("staffTotalUsers", adminStatsDao.getSystemOverview().getTotalUsers());
-            request.setAttribute("staffActiveClassCount", classroomDao.countActiveClassrooms());
-            request.setAttribute("staffCourseCount", courseDao.countExistingCourses());
-            request.setAttribute("staffMaterialCount", repositoryMaterialDao.countVisibleApprovedMaterials());
-            request.setAttribute("staffUserGrowthStats", staffUserGrowthStatsDao.getStats());
-            loadStaffSupportData(request);
-            request.setAttribute("teacherApplications", teacherApplicationDao.listForStaffReview());
-            
-            String searchUser = cleanParam(request.getParameter("searchUser"));
-            String userRole = cleanParam(request.getParameter("userRole"));
-            String userStatus = cleanParam(request.getParameter("userStatus"));
-            request.setAttribute("managedUsers", adminUserDao.listStaffManagedLearnersAndTeachers(searchUser, userRole, userStatus));
-            request.setAttribute("searchUser", searchUser);
-            request.setAttribute("userRole", userRole);
-            request.setAttribute("userStatus", userStatus);
 
-            String classTitle = cleanParam(request.getParameter("classTitle"));
-            String classSubject = cleanParam(request.getParameter("classSubject"));
-            String classStatus = cleanParam(request.getParameter("classStatus"));
-            request.setAttribute("managedClassrooms", classroomDao.listForStaff(classTitle, classSubject, classStatus));
-            request.setAttribute("classSubjects", classroomDao.listSubjects());
-            request.setAttribute("classTitle", classTitle);
-            request.setAttribute("classSubject", classSubject);
-            request.setAttribute("classStatus", classStatus);
-
-            String courseTitle = cleanParam(request.getParameter("courseTitle"));
-            String courseSubject = cleanParam(request.getParameter("courseSubject"));
-            String courseStatus = cleanParam(request.getParameter("courseStatus"));
-            request.setAttribute("managedCourses", courseDao.listForStaff(courseTitle, courseSubject, courseStatus));
-            request.setAttribute("courseSubjects", courseDao.listSubjects());
-            request.setAttribute("courseTitle", courseTitle);
-            request.setAttribute("courseSubject", courseSubject);
-            request.setAttribute("courseStatus", courseStatus);
-
-            String withdrawalStatus = cleanParam(request.getParameter("withdrawalStatus"));
-            String withdrawalSearch = cleanParam(request.getParameter("withdrawalSearch"));
-            String saleStatus = cleanParam(request.getParameter("saleStatus"));
-            String saleSearch = cleanParam(request.getParameter("saleSearch"));
-            request.setAttribute("withdrawalRequests", withdrawalRequestDao.listForStaff(withdrawalStatus, withdrawalSearch, 120));
-            request.setAttribute("withdrawalStatus", withdrawalStatus);
-            request.setAttribute("withdrawalSearch", withdrawalSearch);
-            request.setAttribute("staffCourseTransactions", courseOrderDao.listForStaffTransactions(saleStatus, saleSearch, 120));
-            request.setAttribute("saleStatus", saleStatus);
-            request.setAttribute("saleSearch", saleSearch);
-            request.setAttribute("staffMockExams", mockExamDao.listForStaff(80));
-        } else if ("/WEB-INF/views/admin-profile.jsp".equals(targetJsp)) {
-            request.setAttribute("systemOverview", adminStatsDao.getSystemOverview());
-            request.setAttribute("financialOverview", adminStatsDao.getFinancialOverview());
-            request.setAttribute("staffUserGrowthStats", staffUserGrowthStatsDao.getStats());
-            String searchUser = cleanParam(request.getParameter("searchUser"));
-            String userRole = cleanParam(request.getParameter("userRole"));
-            String userStatus = cleanParam(request.getParameter("userStatus"));
-            
-            int adminUserPage = parsePositiveInt(request.getParameter("userPage"), 1);
-            int adminUserPageSize = 10;
-            int totalManagedUsers = adminUserDao.countManagedUsers(searchUser, userRole, userStatus);
-            int adminUserTotalPages = Math.max(1, (int) Math.ceil(totalManagedUsers / (double) adminUserPageSize));
-            if (adminUserPage > adminUserTotalPages) {
-                adminUserPage = adminUserTotalPages;
+            if ("dashboard".equals(tab)) {
+                request.setAttribute("teacherClassrooms", classroomDao.findByTeacherId(user.getId()));
+                request.setAttribute("teacherSchedules", teachingScheduleDao.findByTeacherId(user.getId()));
+                request.setAttribute("teacherCourses", courseDao.findByTeacherId(user.getId()));
+                request.setAttribute("teacherMaterialCount", repositoryMaterialDao.countByUploaderId(user.getId()));
+                request.setAttribute("teacherGoogleAccount", teacherGoogleAccountDao.findActiveByTeacherId(user.getId()));
+                request.setAttribute("teacherTransactions", teacherTransactionDao.findByTeacherId(user.getId()));
+                request.setAttribute("teacherReviewStats", teacherReviewStatsDao.getStats(user.getId()));
+                request.setAttribute("teacherWalletStats", teacherWalletStatsDao.getStats(user.getId()));
+            } else if ("support".equals(tab)) {
+                loadUserSupportData(request, user);
             }
-            request.setAttribute("adminUsers", adminUserDao.listManagedUsers(searchUser, userRole, userStatus, adminUserPage, adminUserPageSize));
-            request.setAttribute("adminUserPage", adminUserPage);
-            request.setAttribute("adminUserTotalPages", adminUserTotalPages);
-            request.setAttribute("adminUserTotalCount", totalManagedUsers);
+        } else if ("/WEB-INF/views/staff-profile.jsp".equals(targetJsp)) {
+            if (tab.isEmpty()) tab = "dashboard";
+            
+            if ("dashboard".equals(tab) || "overview".equals(tab)) {
+                request.setAttribute("staffTotalUsers", adminStatsDao.getSystemOverview().getTotalUsers());
+                request.setAttribute("staffActiveClassCount", classroomDao.countActiveClassrooms());
+                request.setAttribute("staffCourseCount", courseDao.countExistingCourses());
+                request.setAttribute("staffMaterialCount", repositoryMaterialDao.countVisibleApprovedMaterials());
+                request.setAttribute("staffUserGrowthStats", staffUserGrowthStatsDao.getStats());
+            } else if ("support".equals(tab)) {
+                loadStaffSupportData(request);
+            } else if ("teacher-applications".equals(tab) || "teacher-approval".equals(tab)) {
+                request.setAttribute("teacherApplications", teacherApplicationDao.listForStaffReview());
+            } else if ("users".equals(tab) || "manage-teachers".equals(tab)) {
+                String searchUser = cleanParam(request.getParameter("searchUser"));
+                String userRole = cleanParam(request.getParameter("userRole"));
+                String userStatus = cleanParam(request.getParameter("userStatus"));
+                request.setAttribute("managedUsers", adminUserDao.listStaffManagedLearnersAndTeachers(searchUser, userRole, userStatus));
+                request.setAttribute("searchUser", searchUser);
+                request.setAttribute("userRole", userRole);
+                request.setAttribute("userStatus", userStatus);
+            } else if ("classes".equals(tab) || "manage-classes".equals(tab)) {
+                String classTitle = cleanParam(request.getParameter("classTitle"));
+                String classSubject = cleanParam(request.getParameter("classSubject"));
+                String classStatus = cleanParam(request.getParameter("classStatus"));
+                request.setAttribute("managedClassrooms", classroomDao.listForStaff(classTitle, classSubject, classStatus));
+                request.setAttribute("classSubjects", classroomDao.listSubjects());
+                request.setAttribute("classTitle", classTitle);
+                request.setAttribute("classSubject", classSubject);
+                request.setAttribute("classStatus", classStatus);
+            } else if ("courses".equals(tab) || "manage-courses".equals(tab)) {
+                String courseTitle = cleanParam(request.getParameter("courseTitle"));
+                String courseSubject = cleanParam(request.getParameter("courseSubject"));
+                String courseStatus = cleanParam(request.getParameter("courseStatus"));
+                request.setAttribute("managedCourses", courseDao.listForStaff(courseTitle, courseSubject, courseStatus));
+                request.setAttribute("courseSubjects", courseDao.listSubjects());
+                request.setAttribute("courseTitle", courseTitle);
+                request.setAttribute("courseSubject", courseSubject);
+                request.setAttribute("courseStatus", courseStatus);
+            } else if ("financial".equals(tab) || "transaction-management".equals(tab)) {
+                String withdrawalStatus = cleanParam(request.getParameter("withdrawalStatus"));
+                String withdrawalSearch = cleanParam(request.getParameter("withdrawalSearch"));
+                String saleStatus = cleanParam(request.getParameter("saleStatus"));
+                String saleSearch = cleanParam(request.getParameter("saleSearch"));
+                request.setAttribute("withdrawalRequests", withdrawalRequestDao.listForStaff(withdrawalStatus, withdrawalSearch, 120));
+                request.setAttribute("withdrawalStatus", withdrawalStatus);
+                request.setAttribute("withdrawalSearch", withdrawalSearch);
+                request.setAttribute("staffCourseTransactions", courseOrderDao.listForStaffTransactions(saleStatus, saleSearch, 120));
+                request.setAttribute("saleStatus", saleStatus);
+                request.setAttribute("saleSearch", saleSearch);
+            } else if ("mock-exams".equals(tab)) {
+                request.setAttribute("staffMockExams", mockExamDao.listForStaff(80));
+            }
+        } else if ("/WEB-INF/views/admin-profile.jsp".equals(targetJsp)) {
+            if (tab.isEmpty()) tab = "system-dashboard";
+            
+            if ("system-dashboard".equals(tab) || "dashboard".equals(tab)) {
+                request.setAttribute("systemOverview", adminStatsDao.getSystemOverview());
+                request.setAttribute("financialOverview", adminStatsDao.getFinancialOverview());
+                request.setAttribute("staffUserGrowthStats", staffUserGrowthStatsDao.getStats());
+            } else if ("revenue".equals(tab)) {
+                request.setAttribute("financialOverview", adminStatsDao.getFinancialOverview());
+            } else if ("users".equals(tab) || "materials".equals(tab)) {
+                String searchUser = cleanParam(request.getParameter("searchUser"));
+                String userRole = cleanParam(request.getParameter("userRole"));
+                String userStatus = cleanParam(request.getParameter("userStatus"));
+                
+                int adminUserPage = parsePositiveInt(request.getParameter("userPage"), 1);
+                int adminUserPageSize = 10;
+                int totalManagedUsers = adminUserDao.countManagedUsers(searchUser, userRole, userStatus);
+                int adminUserTotalPages = Math.max(1, (int) Math.ceil(totalManagedUsers / (double) adminUserPageSize));
+                if (adminUserPage > adminUserTotalPages) {
+                    adminUserPage = adminUserTotalPages;
+                }
+                request.setAttribute("adminUsers", adminUserDao.listManagedUsers(searchUser, userRole, userStatus, adminUserPage, adminUserPageSize));
+                request.setAttribute("adminUserPage", adminUserPage);
+                request.setAttribute("adminUserTotalPages", adminUserTotalPages);
+                request.setAttribute("adminUserTotalCount", totalManagedUsers);
 
-            request.setAttribute("managedUsers", adminUserDao.listStaffManagedLearnersAndTeachers(searchUser, userRole, userStatus));
-            request.setAttribute("searchUser", searchUser);
-            request.setAttribute("userRole", userRole);
-            request.setAttribute("userStatus", userStatus);
-
-            String classTitle = cleanParam(request.getParameter("classTitle"));
-            String classSubject = cleanParam(request.getParameter("classSubject"));
-            String classStatus = cleanParam(request.getParameter("classStatus"));
-            request.setAttribute("managedClassrooms", classroomDao.listForStaff(classTitle, classSubject, classStatus));
-            request.setAttribute("classSubjects", classroomDao.listSubjects());
-            request.setAttribute("classTitle", classTitle);
-            request.setAttribute("classSubject", classSubject);
-            request.setAttribute("classStatus", classStatus);
-
-            String courseTitle = cleanParam(request.getParameter("courseTitle"));
-            String courseSubject = cleanParam(request.getParameter("courseSubject"));
-            String courseStatus = cleanParam(request.getParameter("courseStatus"));
-            request.setAttribute("managedCourses", courseDao.listForStaff(courseTitle, courseSubject, courseStatus));
-            request.setAttribute("courseSubjects", courseDao.listSubjects());
-            request.setAttribute("courseTitle", courseTitle);
-            request.setAttribute("courseSubject", courseSubject);
-            request.setAttribute("courseStatus", courseStatus);
+                request.setAttribute("managedUsers", adminUserDao.listStaffManagedLearnersAndTeachers(searchUser, userRole, userStatus));
+                request.setAttribute("searchUser", searchUser);
+                request.setAttribute("userRole", userRole);
+                request.setAttribute("userStatus", userStatus);
+            } else if ("classes".equals(tab) || "manage-classes".equals(tab)) {
+                String classTitle = cleanParam(request.getParameter("classTitle"));
+                String classSubject = cleanParam(request.getParameter("classSubject"));
+                String classStatus = cleanParam(request.getParameter("classStatus"));
+                request.setAttribute("managedClassrooms", classroomDao.listForStaff(classTitle, classSubject, classStatus));
+                request.setAttribute("classSubjects", classroomDao.listSubjects());
+                request.setAttribute("classTitle", classTitle);
+                request.setAttribute("classSubject", classSubject);
+                request.setAttribute("classStatus", classStatus);
+            } else if ("courses".equals(tab) || "manage-courses".equals(tab)) {
+                String courseTitle = cleanParam(request.getParameter("courseTitle"));
+                String courseSubject = cleanParam(request.getParameter("courseSubject"));
+                String courseStatus = cleanParam(request.getParameter("courseStatus"));
+                request.setAttribute("managedCourses", courseDao.listForStaff(courseTitle, courseSubject, courseStatus));
+                request.setAttribute("courseSubjects", courseDao.listSubjects());
+                request.setAttribute("courseTitle", courseTitle);
+                request.setAttribute("courseSubject", courseSubject);
+                request.setAttribute("courseStatus", courseStatus);
+            }
         }
 
         // Tải danh sách thông báo hệ thống gần nhất (Giới hạn 10 thông báo)
@@ -1473,7 +1501,7 @@ public class ProfileServlet extends HttpServlet {
         List<SupportMessage> messages = new ArrayList<>();
         SupportTicket selectedTicket = null;
 
-        if (user != null && supportTicketDao.tableExists()) {
+        if (user != null) {
             tickets = supportTicketDao.listByUserId(user.getId(), 10);
             String selectedTicketId = cleanParam(request.getParameter("supportTicketId"));
             if (!selectedTicketId.isEmpty() && supportTicketDao.userCanAccessTicket(selectedTicketId, user.getId())) {
@@ -1497,7 +1525,7 @@ public class ProfileServlet extends HttpServlet {
         List<SupportMessage> messages = new ArrayList<>();
         SupportTicket selectedTicket = null;
 
-        if (supportTicketDao.tableExists()) {
+        if (true) {
             String supportView = cleanParam(request.getParameter("supportView"));
             String selectedTicketId = cleanParam(request.getParameter("supportTicketId"));
             if ("detail".equals(supportView) && !selectedTicketId.isEmpty()) {

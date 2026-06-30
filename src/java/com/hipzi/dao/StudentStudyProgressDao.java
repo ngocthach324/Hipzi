@@ -26,7 +26,6 @@ public class StudentStudyProgressDao {
             return;
         }
         int safeSeconds = Math.min(seconds, MAX_SECONDS_PER_PULSE);
-        ensureSchema();
         String sql = "INSERT INTO student_study_daily_stats (student_id, study_date, seconds_spent, updated_at) "
                 + "VALUES (?::uuid, current_date, ?, now()) "
                 + "ON CONFLICT (student_id, study_date) DO UPDATE SET "
@@ -50,7 +49,6 @@ public class StudentStudyProgressDao {
             return stats;
         }
 
-        ensureSchema();
         List<StudentStudyProgressStats.Point> weeklyPoints = loadWeeklyPoints(studentId);
         stats.setWeeklyPoints(weeklyPoints);
         stats.setMonthlyPoints(loadMonthlyPoints(studentId));
@@ -90,6 +88,23 @@ public class StudentStudyProgressDao {
     private List<StudentStudyProgressStats.Point> loadMonthlyPoints(String studentId) {
         List<StudentStudyProgressStats.Point> points = new ArrayList<>();
         LocalDate start = LocalDate.now().minusDays(29);
+        
+        Map<LocalDate, Long> dailyStats = new java.util.HashMap<>();
+        String sql = "SELECT study_date, seconds_spent FROM student_study_daily_stats "
+                   + "WHERE student_id = ?::uuid AND study_date >= ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, studentId);
+            ps.setDate(2, Date.valueOf(start));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    dailyStats.put(rs.getDate("study_date").toLocalDate(), rs.getLong("seconds_spent"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in StudentStudyProgressDao.loadMonthlyPoints: " + e.getMessage());
+        }
+
         for (int i = 0; i < 7; i++) {
             LocalDate bucketStart = start.plusDays(i * 5L);
             if (bucketStart.isAfter(LocalDate.now())) {
@@ -99,10 +114,18 @@ public class StudentStudyProgressDao {
             if (bucketEnd.isAfter(LocalDate.now())) {
                 bucketEnd = LocalDate.now();
             }
+            
+            long totalSeconds = 0;
+            LocalDate current = bucketStart;
+            while (!current.isAfter(bucketEnd)) {
+                totalSeconds += dailyStats.getOrDefault(current, 0L);
+                current = current.plusDays(1);
+            }
+
             points.add(new StudentStudyProgressStats.Point(
                     dateLabel(bucketStart),
                     dateLabel(bucketStart) + (bucketEnd.equals(bucketStart) ? "" : " - " + dateLabel(bucketEnd)),
-                    loadSecondsBetween(studentId, bucketStart, bucketEnd)
+                    totalSeconds
             ));
         }
         return points;
@@ -121,24 +144,6 @@ public class StudentStudyProgressDao {
             }
         } catch (SQLException e) {
             System.err.println("Error in StudentStudyProgressDao.loadPreviousWeekSeconds: " + e.getMessage());
-        }
-        return 0L;
-    }
-
-    private long loadSecondsBetween(String studentId, LocalDate start, LocalDate end) {
-        String sql = "SELECT COALESCE(SUM(seconds_spent), 0) AS total_seconds "
-                + "FROM student_study_daily_stats "
-                + "WHERE student_id = ?::uuid AND study_date BETWEEN ? AND ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, studentId);
-            ps.setDate(2, Date.valueOf(start));
-            ps.setDate(3, Date.valueOf(end));
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? rs.getLong("total_seconds") : 0L;
-            }
-        } catch (SQLException e) {
-            System.err.println("Error in StudentStudyProgressDao.loadSecondsBetween: " + e.getMessage());
         }
         return 0L;
     }
@@ -192,22 +197,4 @@ public class StudentStudyProgressDao {
         return day.format(DateTimeFormatter.ofPattern("dd/MM", Locale.forLanguageTag("vi-VN")));
     }
 
-    private void ensureSchema() {
-        String sql = "CREATE TABLE IF NOT EXISTS student_study_daily_stats ("
-                + "id UUID PRIMARY KEY DEFAULT gen_random_uuid(), "
-                + "student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, "
-                + "study_date DATE NOT NULL DEFAULT current_date, "
-                + "seconds_spent INTEGER NOT NULL DEFAULT 0 CHECK (seconds_spent >= 0), "
-                + "created_at TIMESTAMPTZ NOT NULL DEFAULT now(), "
-                + "updated_at TIMESTAMPTZ NOT NULL DEFAULT now(), "
-                + "UNIQUE(student_id, study_date)"
-                + ")";
-        try (Connection conn = DBContext.getConnection();
-             Statement st = conn.createStatement()) {
-            st.execute(sql);
-            st.execute("CREATE INDEX IF NOT EXISTS idx_student_study_daily_student_date ON student_study_daily_stats(student_id, study_date DESC)");
-        } catch (SQLException e) {
-            System.err.println("Error in StudentStudyProgressDao.ensureSchema: " + e.getMessage());
-        }
-    }
 }

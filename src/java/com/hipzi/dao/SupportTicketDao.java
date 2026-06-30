@@ -216,33 +216,7 @@ public class SupportTicketDao {
         return false;
     }
 
-    public boolean tableExists() {
-        String sql = "SELECT to_regclass('public.support_tickets') IS NOT NULL";
-        try (Connection conn = DBContext.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            boolean exists = rs.next() && rs.getBoolean(1);
-            if (exists) {
-                ensureReadStateSchema();
-            }
-            return exists;
-        } catch (SQLException e) {
-            System.err.println("Error in SupportTicketDao.tableExists: " + e.getMessage());
-        }
-        return false;
-    }
 
-    private void ensureReadStateSchema() {
-        String sql = "ALTER TABLE support_tickets ADD COLUMN IF NOT EXISTS staff_last_read_at TIMESTAMPTZ";
-        try (Connection conn = DBContext.getConnection();
-             Statement st = conn.createStatement()) {
-            st.execute(sql);
-            st.execute("CREATE INDEX IF NOT EXISTS idx_support_tickets_staff_read_state "
-                    + "ON support_tickets(status, staff_last_read_at, updated_at DESC)");
-        } catch (SQLException e) {
-            System.err.println("Error in SupportTicketDao.ensureReadStateSchema: " + e.getMessage());
-        }
-    }
 
     private List<SupportTicket> listTickets(String sql, String id, int limit) {
         List<SupportTicket> tickets = new ArrayList<>();

@@ -18,7 +18,6 @@ public class TuitionInvoiceDao {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     public TuitionInvoiceDao() {
-        ensureSchema();
     }
 
     public List<TuitionInvoice> listVisibleByStudent(String studentId) {
@@ -246,16 +245,6 @@ public class TuitionInvoiceDao {
         return "HT" + System.currentTimeMillis() + String.format("%03d", RANDOM.nextInt(1000));
     }
     private String empty(String value) { return value == null || value.trim().isEmpty() ? null : value.trim(); }
-
-    private void ensureSchema() {
-        try (Connection conn = DBContext.getConnection(); Statement st = conn.createStatement()) {
-            st.execute("ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS tuition_fee NUMERIC(12,2) NOT NULL DEFAULT 0");
-            st.execute("ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS tuition_due_date DATE");
-            st.execute("CREATE TABLE IF NOT EXISTS classroom_tuition_invoices (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), invoice_code VARCHAR(32) UNIQUE NOT NULL, classroom_id UUID NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE, student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, teacher_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT, classroom_title TEXT NOT NULL, amount NUMERIC(12,2) NOT NULL CHECK(amount>0), currency VARCHAR(10) NOT NULL DEFAULT 'VND', due_date DATE NOT NULL, status VARCHAR(24) NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','paid','cancelled')), payment_content TEXT NOT NULL, payment_reference TEXT, paid_at TIMESTAMPTZ, created_at TIMESTAMPTZ NOT NULL DEFAULT now(), updated_at TIMESTAMPTZ NOT NULL DEFAULT now(), UNIQUE(classroom_id,student_id))");
-            st.execute("CREATE INDEX IF NOT EXISTS idx_tuition_invoices_student ON classroom_tuition_invoices(student_id,status,due_date DESC)");
-            st.execute("ALTER TABLE payment_events ADD COLUMN IF NOT EXISTS tuition_invoice_id UUID REFERENCES classroom_tuition_invoices(id) ON DELETE SET NULL");
-        } catch (SQLException e) { System.err.println("Error in TuitionInvoiceDao.ensureSchema: " + e.getMessage()); }
-    }
 
     private static class LockedInvoice {
         String id, invoiceCode, studentId, teacherId, classroomTitle, status;

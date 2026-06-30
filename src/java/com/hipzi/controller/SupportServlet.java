@@ -33,11 +33,7 @@ public class SupportServlet extends HttpServlet {
         }
 
         User user = (User) session.getAttribute("loggedUser");
-        if (!supportTicketDao.tableExists()) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Chua co bang support_tickets. Vui long chay migration database/17-support-tickets.sql.");
-            return;
-        }
+
 
         String action = cleanParam(request.getParameter("action"));
         if ("reply".equals(action)) {

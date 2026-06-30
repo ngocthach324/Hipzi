@@ -179,7 +179,7 @@ public class ClassroomDao {
                 + "JOIN users u ON u.id = c.teacher_id "
                 + "LEFT JOIN teacher_applications ta ON ta.user_id = c.teacher_id "
                 + "WHERE ce.student_id = ?::uuid AND ce.status = 'accepted' "
-                + "ORDER BY ce.created_at DESC";
+                + "ORDER BY ce.requested_at DESC";
 
         List<Classroom> classrooms = new ArrayList<>();
         try (Connection conn = DBContext.getConnection();

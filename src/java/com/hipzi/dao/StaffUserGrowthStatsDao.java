@@ -58,6 +58,24 @@ public class StaffUserGrowthStatsDao {
     private List<StaffUserGrowthStats.Point> loadMonthlyPoints() {
         List<StaffUserGrowthStats.Point> points = new ArrayList<>();
         LocalDate start = LocalDate.now().minusDays(29);
+        
+        Map<LocalDate, Integer> dailyStats = new java.util.HashMap<>();
+        String sql = "SELECT created_at::date AS signup_day, COUNT(*) AS total "
+                   + "FROM users "
+                   + "WHERE deleted_at IS NULL AND created_at::date >= ? "
+                   + "GROUP BY signup_day";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, Date.valueOf(start));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    dailyStats.put(rs.getDate("signup_day").toLocalDate(), rs.getInt("total"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in StaffUserGrowthStatsDao.loadMonthlyPoints: " + e.getMessage());
+        }
+
         for (int i = 0; i < 7; i++) {
             LocalDate bucketStart = start.plusDays(i * 5L);
             if (bucketStart.isAfter(LocalDate.now())) {
@@ -67,10 +85,18 @@ public class StaffUserGrowthStatsDao {
             if (bucketEnd.isAfter(LocalDate.now())) {
                 bucketEnd = LocalDate.now();
             }
+            
+            int totalCount = 0;
+            LocalDate current = bucketStart;
+            while (!current.isAfter(bucketEnd)) {
+                totalCount += dailyStats.getOrDefault(current, 0);
+                current = current.plusDays(1);
+            }
+            
             points.add(new StaffUserGrowthStats.Point(
                     dateLabel(bucketStart),
                     dateLabel(bucketStart) + (bucketEnd.equals(bucketStart) ? "" : " - " + dateLabel(bucketEnd)),
-                    loadCountBetween(bucketStart, bucketEnd)
+                    totalCount
             ));
         }
         return points;
@@ -87,23 +113,6 @@ public class StaffUserGrowthStatsDao {
             return rs.next() ? rs.getInt("total") : 0;
         } catch (SQLException e) {
             System.err.println("Error in StaffUserGrowthStatsDao.loadPreviousWeekTotal: " + e.getMessage());
-        }
-        return 0;
-    }
-
-    private int loadCountBetween(LocalDate start, LocalDate end) {
-        String sql = "SELECT COUNT(*) AS total "
-                + "FROM users "
-                + "WHERE deleted_at IS NULL AND created_at::date BETWEEN ? AND ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setDate(1, Date.valueOf(start));
-            ps.setDate(2, Date.valueOf(end));
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? rs.getInt("total") : 0;
-            }
-        } catch (SQLException e) {
-            System.err.println("Error in StaffUserGrowthStatsDao.loadCountBetween: " + e.getMessage());
         }
         return 0;
     }

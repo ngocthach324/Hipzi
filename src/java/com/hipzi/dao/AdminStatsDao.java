@@ -25,12 +25,9 @@ public class AdminStatsDao {
             loadUserTotals(conn, stats);
             stats.setRoleCounts(loadRoleCounts(conn));
             stats.setUsersWithoutRole(loadUsersWithoutRole(conn));
-            stats.setTotalMaterials(loadFirstAvailableCount(conn, 10,
-                    "repository_materials", "materials", "learning_materials"));
-            stats.setTotalCourses(loadFirstAvailableCount(conn, 0,
-                    "courses"));
-            stats.setTotalClassrooms(loadFirstAvailableCount(conn, 8,
-                    "classrooms", "classes"));
+            stats.setTotalMaterials(countTable(conn, "repository_materials"));
+            stats.setTotalCourses(countTable(conn, "courses"));
+            stats.setTotalClassrooms(countTable(conn, "classrooms"));
             stats.setTotalRevenue(loadTotalRevenue(conn));
         } catch (SQLException e) {
             System.err.println("Error in AdminStatsDao.getSystemOverview: " + e.getMessage());
@@ -55,19 +52,17 @@ public class AdminStatsDao {
         }
     }
 
-    private int loadFirstAvailableCount(Connection conn, int fallback, String... tableNames) {
-        for (String tableName : tableNames) {
-            String sql = "SELECT COUNT(*) AS total FROM " + tableName;
-            try (Statement st = conn.createStatement();
-                 ResultSet rs = st.executeQuery(sql)) {
-                if (rs.next()) {
-                    return rs.getInt("total");
-                }
-            } catch (SQLException ignored) {
-                // Keep the dashboard usable while this module still uses in-code sample data.
+    private int countTable(Connection conn, String tableName) {
+        String sql = "SELECT COUNT(*) AS total FROM " + tableName;
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("total");
             }
+        } catch (SQLException e) {
+            System.err.println("Error counting table " + tableName + ": " + e.getMessage());
         }
-        return fallback;
+        return 0;
     }
 
     private Map<String, Integer> loadRoleCounts(Connection conn) throws SQLException {

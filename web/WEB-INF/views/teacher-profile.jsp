@@ -5496,6 +5496,15 @@
         }
 
         function switchTab(targetTabId, options = {}) {
+            if (options.updateUrl !== false && options.replaceUrl !== true) {
+                let newTab = targetTabId;
+                if (newTab.startsWith('tab-')) newTab = newTab.substring(4);
+                const currentTab = new URLSearchParams(window.location.search).get('tab') || 'dashboard';
+                if (newTab !== currentTab) {
+                    window.location.href = '?tab=' + newTab;
+                    return;
+                }
+            }
             targetTabId = normalizeTeacherTabId(targetTabId);
             const panes = document.querySelectorAll('.tab-pane');
             const targetPane = document.getElementById(targetTabId);
