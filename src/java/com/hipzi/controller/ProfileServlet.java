@@ -616,24 +616,27 @@ public class ProfileServlet extends HttpServlet {
                 } else if (!isApprovedSubject(teacherApplication, course.getSubjectName())) {
                     session.setAttribute("toastMsg", "Bạn chỉ được đăng khóa học cho môn đã được phê duyệt trong hồ sơ giảng dạy.");
                     session.setAttribute("toastType", "error");
-                } else if (!isValidCourse(course)) {
-                    session.setAttribute("toastMsg", "Vui lòng điền đầy đủ thông tin, link Drive hợp lệ, và có ít nhất 4 mục tiêu/nội dung chương trình.");
-                    session.setAttribute("toastType", "error");
                 } else {
-                    course.setDriveOwnerEmail(googleAccount.getGoogleEmail());
-                    String accessToken = googleDriveOAuthService.accessTokenForTeacher(
-                            user.getId(),
-                            config("GOOGLE_CLIENT_ID"),
-                            config("GOOGLE_CLIENT_SECRET"),
-                            tokenEncryptionKey()
-                    );
-                    googleDriveOAuthService.verifyShareableResource(accessToken, courseDriveResourceId(course));
-                    if (courseDao.createForTeacher(course)) {
-                        session.setAttribute("toastMsg", "Đã đăng tải khóa học thành công. Vui lòng đợi nhân viên kiểm duyệt.");
-                        session.setAttribute("toastType", "success");
-                    } else {
-                        session.setAttribute("toastMsg", "Chưa lưu được khóa học. Vui lòng thử lại sau.");
+                    String validationError = validateCourse(course);
+                    if (validationError != null) {
+                        session.setAttribute("toastMsg", "Lỗi điền thiếu: " + validationError);
                         session.setAttribute("toastType", "error");
+                    } else {
+                        course.setDriveOwnerEmail(googleAccount.getGoogleEmail());
+                        String accessToken = googleDriveOAuthService.accessTokenForTeacher(
+                                user.getId(),
+                                config("GOOGLE_CLIENT_ID"),
+                                config("GOOGLE_CLIENT_SECRET"),
+                                tokenEncryptionKey()
+                        );
+                        googleDriveOAuthService.verifyShareableResource(accessToken, courseDriveResourceId(course));
+                        if (courseDao.createForTeacher(course)) {
+                            session.setAttribute("toastMsg", "Đã đăng tải khóa học thành công. Vui lòng đợi nhân viên kiểm duyệt.");
+                            session.setAttribute("toastType", "success");
+                        } else {
+                            session.setAttribute("toastMsg", "Chưa lưu được khóa học. Vui lòng thử lại sau.");
+                            session.setAttribute("toastType", "error");
+                        }
                     }
                 }
             } else if ("updateTeacherCourse".equals(action)) {
@@ -654,24 +657,27 @@ public class ProfileServlet extends HttpServlet {
                 } else if (!isApprovedSubject(teacherApplication, course.getSubjectName())) {
                     session.setAttribute("toastMsg", "Bạn chỉ được chỉnh sửa khóa học cho môn đã được phê duyệt trong hồ sơ giảng dạy.");
                     session.setAttribute("toastType", "error");
-                } else if (!isValidCourse(course)) {
-                    session.setAttribute("toastMsg", "Vui lòng điền đầy đủ thông tin, link Drive hợp lệ, và có ít nhất 4 mục tiêu/nội dung chương trình.");
-                    session.setAttribute("toastType", "error");
                 } else {
-                    course.setDriveOwnerEmail(googleAccount.getGoogleEmail());
-                    String accessToken = googleDriveOAuthService.accessTokenForTeacher(
-                            user.getId(),
-                            config("GOOGLE_CLIENT_ID"),
-                            config("GOOGLE_CLIENT_SECRET"),
-                            tokenEncryptionKey()
-                    );
-                    googleDriveOAuthService.verifyShareableResource(accessToken, courseDriveResourceId(course));
-                    if (courseDao.updateForTeacher(courseId, user.getId(), course)) {
-                        session.setAttribute("toastMsg", "Đã cập nhật khóa học '" + course.getTitle() + "'.");
-                        session.setAttribute("toastType", "success");
-                    } else {
-                        session.setAttribute("toastMsg", "Không thể cập nhật khóa học này.");
+                    String validationError = validateCourse(course);
+                    if (validationError != null) {
+                        session.setAttribute("toastMsg", "Lỗi điền thiếu (Cập nhật): " + validationError);
                         session.setAttribute("toastType", "error");
+                    } else {
+                        course.setDriveOwnerEmail(googleAccount.getGoogleEmail());
+                        String accessToken = googleDriveOAuthService.accessTokenForTeacher(
+                                user.getId(),
+                                config("GOOGLE_CLIENT_ID"),
+                                config("GOOGLE_CLIENT_SECRET"),
+                                tokenEncryptionKey()
+                        );
+                        googleDriveOAuthService.verifyShareableResource(accessToken, courseDriveResourceId(course));
+                        if (courseDao.updateForTeacher(courseId, user.getId(), course)) {
+                            session.setAttribute("toastMsg", "Đã cập nhật khóa học '" + course.getTitle() + "'.");
+                            session.setAttribute("toastType", "success");
+                        } else {
+                            session.setAttribute("toastMsg", "Không thể cập nhật khóa học này.");
+                            session.setAttribute("toastType", "error");
+                        }
                     }
                 }
             } else if ("deleteTeacherCourse".equals(action)) {
@@ -1216,18 +1222,18 @@ public class ProfileServlet extends HttpServlet {
         return course;
     }
 
-    private boolean isValidCourse(Course course) {
-        return course != null
-                && course.getTitle() != null && !course.getTitle().trim().isEmpty()
-                && course.getSubjectName() != null && !course.getSubjectName().trim().isEmpty()
-                && course.getSubjectCode() != null && !course.getSubjectCode().trim().isEmpty()
-                && course.getLessonsCount() > 0
-                && course.getPriceAmount() != null
-                && course.getPriceAmount().compareTo(BigDecimal.ZERO) >= 0
-                && isValidGoogleCourseUrl(course.getGoogleDriveUrl())
-                && !courseDriveResourceId(course).isEmpty()
-                && course.getLearningObjectivesList().size() >= 4
-                && course.getCurriculumList().size() >= 4;
+    private String validateCourse(Course course) {
+        if (course == null) return "Đối tượng khóa học rỗng";
+        if (course.getTitle() == null || course.getTitle().trim().isEmpty()) return "Tên khóa học không được trống";
+        if (course.getSubjectName() == null || course.getSubjectName().trim().isEmpty()) return "Tên môn học không được trống";
+        if (course.getSubjectCode() == null || course.getSubjectCode().trim().isEmpty()) return "Mã môn học không được trống";
+        if (course.getLessonsCount() <= 0) return "Số bài học phải > 0";
+        if (course.getPriceAmount() == null || course.getPriceAmount().compareTo(BigDecimal.ZERO) < 0) return "Giá tiền không hợp lệ";
+        if (!isValidGoogleCourseUrl(course.getGoogleDriveUrl())) return "Link Google Drive không đúng chuẩn (phải là drive.google.com hoặc docs.google.com)";
+        if (courseDriveResourceId(course).isEmpty()) return "Không lấy được ID file/folder từ link Drive";
+        if (course.getLearningObjectivesList().size() < 4) return "Cần ít nhất 4 mục tiêu khóa học";
+        if (course.getCurriculumList().size() < 4) return "Cần ít nhất 4 phần nội dung chương trình";
+        return null;
     }
 
     private String courseDriveResourceId(Course course) {
