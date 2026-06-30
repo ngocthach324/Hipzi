@@ -3627,9 +3627,15 @@
                                                     <label>Mô tả ngắn</label>
                                                     <textarea name="classDescription" rows="3"><%= cls.getDescription() != null ? cls.getDescription() : "" %></textarea>
                                                 </div>
-                                                <div class="form-group-premium" style="margin: 0;">
-                                                    <label>Link Zoom lớp học</label>
-                                                    <input type="url" name="classOnlineRoomUrl" value="<%= cls.getOnlineRoomUrl() != null ? cls.getOnlineRoomUrl() : "" %>" placeholder="Dán link Zoom meeting của giảng viên">
+                                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+                                                    <div class="form-group-premium" style="margin: 0;">
+                                                        <label>Link Zoom lớp học</label>
+                                                        <input type="url" name="classOnlineRoomUrl" value="<%= cls.getOnlineRoomUrl() != null ? cls.getOnlineRoomUrl() : "" %>" placeholder="Dán link Zoom meeting của giảng viên">
+                                                    </div>
+                                                    <div class="form-group-premium" style="margin: 0;">
+                                                        <label>Số điện thoại liên hệ (Zalo)</label>
+                                                        <input type="text" name="classContactPhone" value="<%= cls.getContactPhone() != null ? cls.getContactPhone() : "" %>" placeholder="VD: 0912345678" required>
+                                                    </div>
                                                 </div>
                                                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                                                     <div class="form-group-premium" style="margin:0;">
@@ -3737,9 +3743,15 @@
                                 <textarea name="classDescription" rows="3" placeholder="Nhập mô tả vắn tắt về lớp học này..."></textarea>
                             </div>
 
-                            <div class="form-group-premium" style="margin-bottom: 1.25rem;">
-                                <label>Link Zoom lớp học</label>
-                                <input type="url" name="classOnlineRoomUrl" placeholder="Dán link Zoom meeting của giảng viên">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+                                <div class="form-group-premium" style="margin:0;">
+                                    <label>Link Zoom lớp học</label>
+                                    <input type="url" name="classOnlineRoomUrl" placeholder="Dán link Zoom meeting của giảng viên">
+                                </div>
+                                <div class="form-group-premium" style="margin:0;">
+                                    <label>Số điện thoại liên hệ (Zalo)</label>
+                                    <input type="text" name="classContactPhone" placeholder="VD: 0912345678" required>
+                                </div>
                             </div>
                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
                                 <div class="form-group-premium" style="margin:0;">

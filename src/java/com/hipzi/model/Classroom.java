@@ -23,6 +23,7 @@ public class Classroom {
     private Time endTime;
     private String schedule;
     private String onlineRoomUrl;
+    private String contactPhone;
     private BigDecimal tuitionFee;
     private LocalDate tuitionDueDate;
     private Timestamp createdAt;
@@ -112,4 +113,7 @@ public class Classroom {
 
     public Timestamp getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getContactPhone() { return contactPhone; }
+    public void setContactPhone(String contactPhone) { this.contactPhone = contactPhone; }
 }

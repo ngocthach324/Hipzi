@@ -235,6 +235,7 @@ public class ProfileServlet extends HttpServlet {
                 request.setAttribute("teacherSchedules", teachingScheduleDao.findByTeacherId(user.getId()));
             } else if ("course-registration".equals(tab)) {
                 request.setAttribute("teacherCourses", courseDao.findByTeacherId(user.getId()));
+                request.setAttribute("teacherGoogleAccount", teacherGoogleAccountDao.findActiveByTeacherId(user.getId()));
             } else if ("balance-stats".equals(tab)) {
                 request.setAttribute("teacherReviewStats", teacherReviewStatsDao.getStats(user.getId()));
                 request.setAttribute("teacherWalletStats", teacherWalletStatsDao.getStats(user.getId()));
@@ -1104,6 +1105,7 @@ public class ProfileServlet extends HttpServlet {
         classroom.setStartTime(parseTimeParam(request.getParameter("startTime")));
         classroom.setEndTime(parseTimeParam(request.getParameter("endTime")));
         classroom.setOnlineRoomUrl(normalizeOnlineRoomUrl(request.getParameter("classOnlineRoomUrl")));
+        classroom.setContactPhone(cleanParam(request.getParameter("classContactPhone")));
         classroom.setTuitionFee(parseMoneyParam(request.getParameter("tuitionFee")));
         classroom.setTuitionDueDate(parseDateParam(request.getParameter("tuitionDueDate")));
 

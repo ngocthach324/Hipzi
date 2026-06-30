@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.List"%>
 <%@page import="com.hipzi.model.Classroom"%>
 <%@page import="com.hipzi.model.ClassroomEnrollment"%>
@@ -1293,11 +1293,11 @@
                             <a class="hero-join-btn" href="${pageContext.request.contextPath}/login">Đăng nhập để tham gia</a>
                         <% } else if (joinRequest != null && "accepted".equals(joinRequest.getStatus())) { %>
                             <a class="hero-join-btn" href="${pageContext.request.contextPath}/classroom?id=<%= h(classroom.getId()) %>">Vào không gian lớp</a>
-                            <a class="hero-join-btn secondary" href="<%= safeContactHref %>">Liên hệ với giảng viên</a>
+                            <a class="hero-join-btn secondary" href="javascript:void(0)" onclick="openContactModal()">Liên hệ với giảng viên</a>
                         <% } else if (joinRequest != null && "pending".equals(joinRequest.getStatus())) { %>
                             <div class="join-request-state">
                                 <div class="join-request-note">Đã xin vào lớp, vui lòng đợi giảng viên chấp nhận.</div>
-                                <a class="hero-join-btn secondary" href="<%= safeContactHref %>">Liên hệ với giảng viên</a>
+                                <a class="hero-join-btn secondary" href="javascript:void(0)" onclick="openContactModal()">Liên hệ với giảng viên</a>
                             </div>
                         <% } else { %>
                             <form action="${pageContext.request.contextPath}/class-detail" method="POST">
@@ -1534,9 +1534,37 @@
                 </div>
             </aside>
         </section>
+        <!-- Contact Modal -->
+        <div id="contactModalOverlay" class="contact-modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(5px); z-index:9999; align-items:center; justify-content:center;">
+            <div class="contact-modal-content" style="background:#fff; padding:2rem; border-radius:1rem; max-width:400px; width:90%; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
+                <div style="font-size:2rem; margin-bottom:1rem; color:var(--primary);">📱</div>
+                <h3 style="margin:0 0 0.5rem 0; color:var(--text-dark); font-family:var(--font-sans);">Liên hệ giảng viên</h3>
+                <p style="margin:0 0 1.5rem 0; color:var(--text-muted); font-size:0.95rem;">Bạn có thể liên hệ trực tiếp với giảng viên qua Zalo số điện thoại bên dưới.</p>
+                <div style="background:var(--bg-light); padding:1rem; border-radius:0.5rem; margin-bottom:1.5rem;">
+                    <div style="font-weight:600; color:var(--text-dark); margin-bottom:0.25rem;"><%= h(classroom.getTeacherName()) %></div>
+                    <div style="font-size:1.1rem; color:var(--primary); font-weight:700;"><%= classroom.getContactPhone() != null && !classroom.getContactPhone().isEmpty() ? h(classroom.getContactPhone()) : "Chưa cập nhật SĐT" %></div>
+                </div>
+                <button onclick="closeContactModal()" class="btn-premium primary" style="width:100%;">Đóng cửa sổ</button>
+            </div>
+        </div>
+
     </main>
 
     <script>
+        function openContactModal() {
+            const overlay = document.getElementById('contactModalOverlay');
+            if(overlay) {
+                overlay.style.display = 'flex';
+                // Close when clicking outside
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) closeContactModal();
+                };
+            }
+        }
+        function closeContactModal() {
+            const overlay = document.getElementById('contactModalOverlay');
+            if(overlay) overlay.style.display = 'none';
+        }
         function toggleModuleForm(formId) {
             const form = document.getElementById(formId);
             if (form) {
