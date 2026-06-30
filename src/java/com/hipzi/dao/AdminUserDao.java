@@ -196,6 +196,33 @@ public class AdminUserDao {
         return false;
     }
 
+    public boolean unbanUser(String userId, String adminId) {
+        if (userId == null || userId.trim().isEmpty() || userId.equals(adminId)) {
+            return false;
+        }
+
+        String sql = "UPDATE users u SET account_status = 'active', updated_at = NOW() " +
+                     "WHERE u.id = ?::uuid AND u.deleted_at IS NULL " +
+                     "AND EXISTS (" +
+                     "    SELECT 1 FROM user_roles ur " +
+                     "    JOIN roles r ON r.id = ur.role_id " +
+                     "    WHERE ur.user_id = u.id AND ur.is_active = true AND LOWER(r.name) IN " + MANAGED_ROLE_FILTER +
+                     ") " +
+                     "AND NOT EXISTS (" +
+                     "    SELECT 1 FROM user_roles ur " +
+                     "    JOIN roles r ON r.id = ur.role_id " +
+                     "    WHERE ur.user_id = u.id AND ur.is_active = true AND LOWER(r.name) = 'admin'" +
+                     ")";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error in AdminUserDao.unbanUser: " + e.getMessage());
+        }
+        return false;
+    }
+
     public boolean changeUserRole(String targetUserId, String newRoleName, String adminId) {
         String deactivateSql = "UPDATE user_roles SET is_active = false, revoked_at = NOW() WHERE user_id = ?::uuid AND is_active = true";
         String getRoleSql = "SELECT id FROM roles WHERE LOWER(name) = LOWER(?)";

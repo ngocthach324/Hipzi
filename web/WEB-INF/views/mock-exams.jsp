@@ -943,7 +943,7 @@
                                 <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                             </svg>
                         </span>
-                        <span><strong>Trắc nghiệm</strong><small>3 đề kiểm tra tốc độ</small></span>
+                        <span><strong>Trắc nghiệm</strong></span>
                     </button>
                     <button type="button" class="mock-tab" id="mock-tab-essay" data-tab-target="essay" role="tab" aria-controls="tab-essay" aria-selected="false">
                         <span class="mock-tab-icon" aria-hidden="true">
@@ -951,7 +951,7 @@
                                 <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
                             </svg>
                         </span>
-                        <span><strong>Tự luận</strong><small>2 bài luyện lập luận</small></span>
+                        <span><strong>Tự luận</strong></span>
                     </button>
                 </div>
 

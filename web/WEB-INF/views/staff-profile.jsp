@@ -4254,12 +4254,7 @@
                         <span>Hồ sơ cá nhân</span>
                     </a>
                 </li>
-                <li>
-                    <a id="nav-tab-notifications" class="<%= "tab-notifications".equals(activeStaffTab) ? "active" : "" %>" onclick="switchTab('tab-notifications')">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                        <span>Thông báo hệ thống</span>
-                    </a>
-                </li>
+
                 <li>
                     <a id="nav-tab-support" class="<%= "tab-support".equals(activeStaffTab) ? "active" : "" %>" onclick="window.location.href='${pageContext.request.contextPath}/staff-profile?tab=support'">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -4333,9 +4328,7 @@
                         <button type="button" class="nav-bell-trigger" title="Chuyển chế độ sáng/tối" onclick="alert('Chức năng chuyển đổi giao diện sáng/tối đang được phát triển.')">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                         </button>
-                        <button type="button" class="nav-bell-trigger" title="Thông báo hệ thống" onclick="switchTab('tab-notifications')">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                        </button>
+
                         <a href="${pageContext.request.contextPath}/logout" class="nav-bell-trigger" title="Đăng xuất">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                         </a>
@@ -5928,61 +5921,7 @@
                 </div>
             </section>
 
-            <!-- ========================================== -->
-            <!-- TAB: THÔNG BÁO HỆ THỐNG                     -->
-            <!-- ========================================== -->
-            <section id="tab-notifications" class="tab-pane <%= "tab-notifications".equals(activeStaffTab) ? "active-pane" : "" %>">
-                <div class="tab-grouped-container">
-                    <div class="tab-header-accent">
-                        <div class="tab-header-title-text">Thông báo hệ thống</div>
-                        <div class="tab-header-date-pill">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span><%= currentDateDisplay %></span>
-                        </div>
-                    </div>
 
-                    <div class="card-main-premium">
-                        <div style="padding:1.5rem; display:flex; flex-direction:column; gap:1rem;">
-                            <% if (notifications != null && !notifications.isEmpty()) { 
-                                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                                for (Notification n : notifications) {
-                                    String typeColor = "var(--primary)";
-                                    String bgColor = "#f0fdf4";
-                                    String iconPath = "M22 11.08V12a10 10 0 1 1-5.93-9.14\";polyline points=\"22 4 12 14.01 9 11.01";
-                                    
-                                    if ("warning".equalsIgnoreCase(n.getType())) {
-                                        typeColor = "#f59e0b";
-                                        bgColor = "#fffbeb";
-                                        iconPath = "M12 9v4\";line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\";path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z";
-                                    } else if ("error".equalsIgnoreCase(n.getType())) {
-                                        typeColor = "#ef4444";
-                                        bgColor = "#fef2f2";
-                                        iconPath = "M12 8v4\";line x1=\"12\" y1=\"16\" x2=\"12.01\" y2=\"16\";circle cx=\"12\" cy=\"12\" r=\"10";
-                                    } else if ("info".equalsIgnoreCase(n.getType())) {
-                                        typeColor = "#0ea5e9";
-                                        bgColor = "#f0f9ff";
-                                        iconPath = "M12 16v-4\";line x1=\"12\" y1=\"8\" x2=\"12.01\" y2=\"8\";circle cx=\"12\" cy=\"12\" r=\"10";
-                                    }
-                            %>
-                                <div style="padding:1rem 1.25rem; border-radius:0.75rem; background:<%= bgColor %>; border-left:4px solid <%= typeColor %>; display:flex; gap:1rem; align-items:flex-start;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="<%= typeColor %>" stroke-width="2.5" style="flex-shrink:0; margin-top:0.15rem;"><path d="<%= iconPath %>"/></svg>
-                                    <div>
-                                        <span style="font-weight:700; font-size:0.95rem; color:var(--text-main); display:block;"><%= n.getTitle() %></span>
-                                        <p style="font-size:0.85rem; color:var(--text-muted); margin:0.25rem 0 0 0;"><%= n.getMessage() %></p>
-                                        <span style="font-size:0.75rem; color:#94a3b8; display:block; margin-top:0.35rem;"><%= sdf.format(n.getCreatedAt()) %></span>
-                                    </div>
-                                </div>
-                            <% } } else { %>
-                                <div class="empty-status-panel">
-                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                                    <span style="font-weight:700; color:var(--text-main);">Không có thông báo nào</span>
-                                    <p style="font-size:0.85rem; max-width:400px; margin:0;">Bạn sẽ nhận được thông báo về các cập nhật hệ thống, phê duyệt nghiệp vụ và tin nhắn quản trị tại đây.</p>
-                                </div>
-                            <% } %>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
 
 

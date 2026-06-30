@@ -486,6 +486,18 @@ public class ProfileServlet extends HttpServlet {
                     session.setAttribute("toastMsg", "Không thể khóa tài khoản này.");
                     session.setAttribute("toastType", "error");
                 }
+            } else if ("unbanUser".equals(action)) {
+                String targetUserId = request.getParameter("targetUserId");
+                if (!hasRole(user, "admin")) {
+                    session.setAttribute("toastMsg", "Bạn không có quyền mở khóa tài khoản người dùng.");
+                    session.setAttribute("toastType", "error");
+                } else if (adminUserDao.unbanUser(targetUserId, user.getId())) {
+                    session.setAttribute("toastMsg", "Đã mở khóa tài khoản người dùng thành công.");
+                    session.setAttribute("toastType", "success");
+                } else {
+                    session.setAttribute("toastMsg", "Không thể mở khóa tài khoản này.");
+                    session.setAttribute("toastType", "error");
+                }
             } else if ("changeRole".equals(action)) {
                 String targetUserId = request.getParameter("targetUserId");
                 String newRole = request.getParameter("newRole");
@@ -930,9 +942,9 @@ public class ProfileServlet extends HttpServlet {
         }
         if ("changePassword".equals(action) || "updateName".equals(action) || "updateAvatar".equals(action) || "toggle2FA".equals(action)) {
             returnPath += "?tab=profile";
-        } else if ("banUser".equals(action) || "changeRole".equals(action)) {
+        } else if ("banUser".equals(action) || "changeRole".equals(action) || "unbanUser".equals(action)) {
             String userPage = request.getParameter("userPage");
-            returnPath += "?tab=materials&userPage=" + (userPage != null ? userPage : "1");
+            returnPath += "?tab=users&userPage=" + (userPage != null ? userPage : "1");
         } else if ("requestMomoWithdrawal".equals(action)) {
             returnPath += "?tab=balance-stats";
         } else if ("submitSupport".equals(action)) {

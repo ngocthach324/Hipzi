@@ -67,11 +67,15 @@ public class CourseDetailServlet extends HttpServlet {
             userReview = reviewDao.findByCourseAndStudent(course.getId(), viewerId);
         }
 
+        // Fetch related courses (same subject, newest first, exclude current)
+        List<Course> relatedCourses = courseDao.findRelatedCourses(course.getId(), course.getSubjectName(), 4, viewerId);
+
         request.setAttribute("course", course);
         request.setAttribute("isInCart", isInCart);
         request.setAttribute("profileHasStudent", profileHasStudent);
         request.setAttribute("reviews", reviews);
         request.setAttribute("userReview", userReview);
+        request.setAttribute("relatedCourses", relatedCourses);
 
         request.getRequestDispatcher("/WEB-INF/views/course-detail.jsp").forward(request, response);
     }

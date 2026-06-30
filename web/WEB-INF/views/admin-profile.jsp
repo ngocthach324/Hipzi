@@ -2920,7 +2920,7 @@
         #tab-manage-teachers .tab-grouped-container,
         #tab-manage-classes .tab-grouped-container,
         #tab-manage-courses .tab-grouped-container,
-        #tab-materials .tab-grouped-container,
+        #tab-users .tab-grouped-container,
         #tab-practice .tab-grouped-container {
             background: transparent;
             border: none;
@@ -2935,7 +2935,7 @@
         #tab-manage-teachers .tab-header-accent,
         #tab-manage-classes .tab-header-accent,
         #tab-manage-courses .tab-header-accent,
-        #tab-materials .tab-header-accent,
+        #tab-users .tab-header-accent,
         #tab-practice .tab-header-accent {
             display: flex;
             color: var(--text-main);
@@ -2952,7 +2952,7 @@
         #tab-manage-teachers .tab-header-title-text,
         #tab-manage-classes .tab-header-title-text,
         #tab-manage-courses .tab-header-title-text,
-        #tab-materials .tab-header-title-text,
+        #tab-users .tab-header-title-text,
         #tab-practice .tab-header-title-text {
             font-size: 1.75rem;
             line-height: 1.15;
@@ -2965,7 +2965,7 @@
         #tab-manage-teachers .tab-header-title-text::after,
         #tab-manage-classes .tab-header-title-text::after,
         #tab-manage-courses .tab-header-title-text::after,
-        #tab-materials .tab-header-title-text::after,
+        #tab-users .tab-header-title-text::after,
         #tab-practice .tab-header-title-text::after {
             display: block;
             margin-top: 0.35rem;
@@ -2992,7 +2992,7 @@
             content: "Rà soát khóa học, trạng thái duyệt và nội dung liên kết Google Drive.";
         }
 
-        #tab-materials .tab-header-title-text::after {
+        #tab-users .tab-header-title-text::after {
             content: "Kiểm tra hàng đợi tài liệu học tập do giảng viên gửi lên kho học liệu.";
         }
 
@@ -3004,7 +3004,7 @@
         #tab-manage-teachers .tab-header-date-pill,
         #tab-manage-classes .tab-header-date-pill,
         #tab-manage-courses .tab-header-date-pill,
-        #tab-materials .tab-header-date-pill,
+        #tab-users .tab-header-date-pill,
         #tab-practice .tab-header-date-pill {
             background: #ffffff;
             color: var(--text-main);
@@ -3018,7 +3018,7 @@
         #tab-manage-teachers .tab-body-content,
         #tab-manage-classes .tab-body-content,
         #tab-manage-courses .tab-body-content,
-        #tab-materials .tab-body-content,
+        #tab-users .tab-body-content,
         #tab-practice .tab-body-content {
             padding: 0;
             overflow: visible;
@@ -3029,7 +3029,7 @@
         #tab-manage-teachers .section-data-card,
         #tab-manage-classes .section-data-card,
         #tab-manage-courses .section-data-card,
-        #tab-materials .section-data-card,
+        #tab-users .section-data-card,
         #tab-practice .section-data-card {
             background: #ffffff;
             border: 1px solid #dbe4ee;
@@ -3043,7 +3043,7 @@
         #tab-manage-teachers .card-header-layout,
         #tab-manage-classes .card-header-layout,
         #tab-manage-courses .card-header-layout,
-        #tab-materials .card-header-layout,
+        #tab-users .card-header-layout,
         #tab-practice .card-header-layout {
             padding-bottom: 1.15rem !important;
             margin-bottom: 1.5rem !important;
@@ -3153,7 +3153,7 @@
         #tab-manage-teachers .empty-status-panel,
         #tab-manage-classes .empty-status-panel,
         #tab-manage-courses .empty-status-panel,
-        #tab-materials .empty-status-panel,
+        #tab-users .empty-status-panel,
         #tab-practice .empty-status-panel {
             background: #ffffff;
             border: 1px dashed #dbe4ee;
@@ -3953,7 +3953,7 @@
                 activeAdminTab = "tab-" + activeAdminTab;
             }
             if (!activeAdminTab.equals("tab-dashboard") &&
-                !activeAdminTab.equals("tab-materials") &&
+                !activeAdminTab.equals("tab-users") &&
                 !activeAdminTab.equals("tab-manage-classes") &&
                 !activeAdminTab.equals("tab-manage-courses") &&
                 !activeAdminTab.equals("tab-revenue") &&
@@ -4020,7 +4020,7 @@
 
         <div class="dashboard-unified-header">
             <span class="unified-header-tab-title" id="unified-header-title">
-                <%= "tab-materials".equals(activeAdminTab) ? "Quản lý người dùng" :
+                <%= "tab-users".equals(activeAdminTab) ? "Quản lý người dùng" :
                     "tab-manage-classes".equals(activeAdminTab) ? "Quản lý lớp học" :
                     "tab-manage-courses".equals(activeAdminTab) ? "Quản lý khóa học" :
                     "tab-revenue".equals(activeAdminTab) ? "Thống kê tiền" :
@@ -4059,7 +4059,7 @@
                         </a>
                     </li>
                     <li>
-                        <a id="nav-tab-materials" class="<%= "tab-materials".equals(activeAdminTab) ? "active" : "" %>" onclick="switchTab('tab-materials')">
+                        <a id="nav-tab-users" class="<%= "tab-users".equals(activeAdminTab) ? "active" : "" %>" onclick="switchTab('tab-users')">
                             <div class="menu-label-group">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M2 21v-2a4 4 0 0 1 3-3.87"/></svg>
                                 <span>Quản lý người dùng</span>
@@ -4333,7 +4333,7 @@
             <!-- ========================================== -->
             <!-- TAB 4: TÀI LIỆU ĐÃ LƯU                     -->
             <!-- ========================================== -->
-            <section id="tab-materials" class="tab-pane <%= "tab-materials".equals(activeAdminTab) ? "active-pane" : "" %>">
+            <section id="tab-users" class="tab-pane <%= "tab-users".equals(activeAdminTab) ? "active-pane" : "" %>">
                 <div class="tab-grouped-container">
                     <div class="tab-header-accent">
                         <div class="tab-header-title-text">Quản lý người dùng</div>
@@ -4353,7 +4353,7 @@
                             </div>
                             
                             <form class="management-toolbar" method="GET" action="${pageContext.request.contextPath}/admin-profile" style="display: grid; grid-template-columns: minmax(200px, 1fr) auto auto auto; gap: 1rem; align-items: center; margin-top: 1.5rem; margin-bottom: 1.5rem; background: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0;">
-                                <input type="hidden" name="tab" value="materials">
+                                <input type="hidden" name="tab" value="users">
                                 <input type="text" name="searchUser" value="<%= h(searchUser) %>" placeholder="Tìm tên hoặc email người dùng..." style="flex: 1; min-width: 200px; padding: 0.6rem 1rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; outline: none; font-size: 0.9rem;">
                                 <input id="admin-user-role-filter" type="hidden" name="userRole" value="<%= h(userRoleParam) %>">
                                 <div class="management-filter-dropdown" data-target-input="admin-user-role-filter" data-submit-on-change="true">
@@ -4440,18 +4440,34 @@
                                                             aria-label="Xem chi tiết người dùng">
                                                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
                                                     </button>
-                                                    <form action="${pageContext.request.contextPath}/admin-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn khóa tài khoản này?');" style="margin:0;">
-                                                        <input type="hidden" name="action" value="banUser">
-                                                        <input type="hidden" name="targetUserId" value="<%= managedUser.getId() %>">
-                                                        <input type="hidden" name="userPage" value="<%= adminUserPage %>">
-                                                        <button type="submit"
-                                                                class="table-action-btn ban"
-                                                                title="Ban tài khoản"
-                                                                aria-label="Ban tài khoản người dùng"
-                                                                <%= "active".equalsIgnoreCase(managedStatus) ? "" : "disabled" %>>
-                                                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                                                        </button>
-                                                    </form>
+                                                    <% if ("active".equalsIgnoreCase(managedStatus)) { %>
+                                                        <form action="${pageContext.request.contextPath}/admin-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn khóa tài khoản này?');" style="margin:0;">
+                                                            <input type="hidden" name="action" value="banUser">
+                                                            <input type="hidden" name="targetUserId" value="<%= managedUser.getId() %>">
+                                                            <input type="hidden" name="userPage" value="<%= adminUserPage %>">
+                                                            <button type="submit"
+                                                                    class="table-action-btn ban"
+                                                                    title="Ban tài khoản"
+                                                                    aria-label="Ban tài khoản người dùng">
+                                                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                                            </button>
+                                                        </form>
+                                                    <% } else { %>
+                                                        <form action="${pageContext.request.contextPath}/admin-profile" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn mở khóa tài khoản này?');" style="margin:0;">
+                                                            <input type="hidden" name="action" value="unbanUser">
+                                                            <input type="hidden" name="targetUserId" value="<%= managedUser.getId() %>">
+                                                            <input type="hidden" name="userPage" value="<%= adminUserPage %>">
+                                                            <button type="submit"
+                                                                    class="table-action-btn"
+                                                                    style="color: #059669; background: #ecfdf5; border: none; padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s ease;"
+                                                                    title="Mở khóa tài khoản"
+                                                                    aria-label="Mở khóa tài khoản người dùng"
+                                                                    onmouseover="this.style.background='#d1fae5';"
+                                                                    onmouseout="this.style.background='#ecfdf5';">
+                                                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                                                            </button>
+                                                        </form>
+                                                    <% } %>
                                                 </div>
                                             </td>
                                         </tr>
@@ -4467,7 +4483,7 @@
                                 <span style="color:#64748b; font-size:0.85rem; font-weight:700;">Trang <%= adminUserPage %>/<%= adminUserTotalPages %> · 10 người / trang</span>
                                 <div class="admin-page-links">
                                     <% for (int p = 1; p <= adminUserTotalPages; p++) { %>
-                                        <a class="admin-page-link <%= p == adminUserPage ? "active" : "" %>" href="${pageContext.request.contextPath}/admin-profile?tab=materials&userPage=<%= p %>"><%= p %></a>
+                                        <a class="admin-page-link <%= p == adminUserPage ? "active" : "" %>" href="${pageContext.request.contextPath}/admin-profile?tab=users&userPage=<%= p %>"><%= p %></a>
                                     <% } %>
                                 </div>
                             </div>
@@ -5384,7 +5400,7 @@
 
         const TAB_TITLES = {
             'tab-dashboard': 'Tổng quan hệ thống',
-            'tab-materials': 'Quản lý người dùng',
+            'tab-users': 'Quản lý người dùng',
             'tab-manage-classes': 'Quản lý lớp học',
             'tab-manage-courses': 'Quản lý khóa học',
             'tab-revenue': 'Thống kê tiền',

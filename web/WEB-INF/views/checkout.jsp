@@ -408,7 +408,7 @@
                         <span id="summaryTotal"><%= h(order.getTotalLabel()) %></span>
                     </div>
                     <div class="actions">
-                        <button type="button" class="btn-main" onclick="checkPaymentStatus()">Kiểm tra thanh toán</button>
+                        <button type="button" class="btn-main" onclick="checkPaymentStatus(true)">Kiểm tra thanh toán</button>
                         <a href="${pageContext.request.contextPath}/cart" class="btn-soft">Quay lại giỏ hàng</a>
                     </div>
                 </div>
@@ -441,20 +441,24 @@
             setTimeout(() => toast.remove(), 2400);
         }
 
-        async function checkPaymentStatus() {
+        async function checkPaymentStatus(isManual = false) {
             try {
                 const response = await fetch('${pageContext.request.contextPath}/checkout?action=status&id=<%= h(order.getId()) %>');
                 const data = await response.json();
                 if (!data.success) {
-                    showCheckoutToast(data.message || 'Không lấy được trạng thái', true);
+                    if (isManual) showCheckoutToast(data.message || 'Không lấy được trạng thái', true);
                     return;
                 }
                 const status = document.getElementById('orderStatus');
                 if (data.paid) {
+                    const wasPaid = status.classList.contains('paid');
                     status.textContent = 'Đã thanh toán';
                     status.classList.add('paid');
                     updateAccessNotice(data.accessStatus, data.accessMessage);
-                    showCheckoutToast('Thanh toán đã được ghi nhận');
+                    
+                    if (isManual || !wasPaid) {
+                        showCheckoutToast('Thanh toán đã được ghi nhận');
+                    }
                     if (window.refreshCartBadge) {
                         window.refreshCartBadge();
                     }
@@ -462,11 +466,13 @@
                     status.textContent = 'Chờ thanh toán';
                     status.classList.remove('paid');
                     updateAccessNotice('waiting_payment', data.accessMessage);
-                    showCheckoutToast('Đơn hàng vẫn đang chờ thanh toán');
+                    if (isManual) {
+                        showCheckoutToast('Đơn hàng vẫn đang chờ thanh toán');
+                    }
                 }
             } catch (err) {
                 console.error(err);
-                showCheckoutToast('Lỗi kiểm tra trạng thái', true);
+                if (isManual) showCheckoutToast('Lỗi kiểm tra trạng thái', true);
             }
         }
 
@@ -486,7 +492,7 @@
             }
         }
 
-        setInterval(checkPaymentStatus, 5000);
+        setInterval(() => checkPaymentStatus(false), 5000);
     </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Course"%>
+<%@page import="java.util.List"%>
 <%!
     private String h(String value) {
         if (value == null) return "";
@@ -12,6 +13,7 @@
     Course course = (Course) request.getAttribute("course");
     Boolean isInCartObj = (Boolean) request.getAttribute("isInCart");
     boolean isInCart = isInCartObj != null ? isInCartObj : false;
+    List<Course> relatedCourses = (List<Course>) request.getAttribute("relatedCourses");
     
 
     if (course == null) {
@@ -752,7 +754,7 @@
                 <div class="price <%= course.isFree() ? "free" : "" %>"><%= h(course.getPriceLabel()) %></div>
                 
                 <% if (course.isViewerEnrolled()) { %>
-                    <a href="#" class="btn btn-primary" onclick="alert('Tính năng truy cập trực tiếp sẽ ra mắt trong Phase tiếp theo!')">Truy cập khóa học</a>
+                    <a href="javascript:void(0)" class="btn btn-primary" style="cursor: default; pointer-events: none; opacity: 0.9;">Hãy kiểm tra email của bạn</a>
                     <p style="text-align:center; font-size:0.85rem; color:#666; margin-top:0.5rem;">Bạn đã đăng ký khóa học này</p>
                 <% } else if (course.isFree()) { %>
                     <% if (profileHasStudent) { %>
@@ -765,6 +767,8 @@
                                 <%= isInCart ? "Đã có trong giỏ hàng" : "Thêm vào giỏ hàng" %>
                             </button>
                         </div>
+                    <% } else if (user != null) { %>
+                        <a href="javascript:void(0)" class="btn btn-primary" style="cursor: default; pointer-events: none; opacity: 0.8;">Dành cho tài khoản Học viên</a>
                     <% } else { %>
                         <a href="${pageContext.request.contextPath}/login" class="btn btn-primary">Đăng nhập để đăng ký</a>
                     <% } %>
@@ -778,6 +782,8 @@
                         <% } else { %>
                             <a href="${pageContext.request.contextPath}/cart" class="btn btn-secondary">Đến giỏ hàng</a>
                         <% } %>
+                    <% } else if (user != null) { %>
+                        <a href="javascript:void(0)" class="btn btn-primary" style="cursor: default; pointer-events: none; opacity: 0.8;">Dành cho tài khoản Học viên</a>
                     <% } else { %>
                         <a href="${pageContext.request.contextPath}/login" class="btn btn-primary">Đăng nhập để mua</a>
                     <% } %>
@@ -796,157 +802,57 @@
     <div style="max-width: 1600px; width: 96%; margin: 0 auto 50px; padding: 0 1.5rem;">
         <div class="related-courses-section">
             <h2 class="section-title">Các Khóa Học Liên Quan</h2>
-            <div class="weekly-featured-viewport" id="relatedCoursesViewport">
-                <div class="weekly-featured-grid" id="relatedCoursesTrack">
-                    <!-- Card 1 -->
+            <div style="display: flex; gap: 1.25rem; flex-wrap: wrap; justify-content: center; padding: 1rem 0;">
+                    <%
+                        if (relatedCourses != null && !relatedCourses.isEmpty()) {
+                            for (Course rc : relatedCourses) {
+                                String rcThumbUrl = rc.getThumbnailUrl();
+                                String rcThumbStyle = (rcThumbUrl != null && !rcThumbUrl.trim().isEmpty())
+                                        ? "background-image:url('" + h(rcThumbUrl) + "'); background-size:cover; background-position:center;"
+                                        : "background:" + h(rc.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";
+                    %>
                     <article class="weekly-course-card">
-                        <div class="weekly-thumb">
-                            <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#0f766e 0%,#14b8a6 48%,#7c3aed 100%); display:flex; align-items:center; justify-content:center;">
-                                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><path d="M3 5h18M3 10h12M3 15h9M3 20h6"/><circle cx="19" cy="17" r="3"/><path d="M22 20l-1.5-1.5"/></svg>
-                            </div>
-                            <span class="weekly-rating-badge" aria-label="Đánh giá 4.9 sao">
-                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                4.9
-                            </span>
-                            <button type="button" class="weekly-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                            </button>
-                        </div>
-                        <div class="weekly-info">
-                            <h3 class="weekly-title">Master IELTS Writing Task 2 từ con số 0 đến Band 7.5</h3>
-                            <div class="weekly-teacher-row">
-                                <div class="weekly-teacher">Trần Anh Khoa</div>
-                                <span class="weekly-students" aria-label="950 học viên">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                    950
+                        <a href="${pageContext.request.contextPath}/course-detail?id=<%= h(rc.getId()) %>" style="display:block; text-decoration:none; color:inherit; height:100%;">
+                            <div class="weekly-thumb">
+                                <div class="weekly-thumb-bg" style="<%= rcThumbStyle %>">
+                                    <% if (rcThumbUrl == null || rcThumbUrl.trim().isEmpty()) { %>
+                                        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/><path d="M8 7h8M8 11h6"/></svg>
+                                    <% } %>
+                                </div>
+                                <span class="weekly-rating-badge" aria-label="Đánh giá 5.0 sao">
+                                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    5.0
                                 </span>
+                                <% if (profileHasStudent && !rc.isViewerEnrolled()) { %>
+                                <button type="button" class="weekly-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ" onclick="event.preventDefault(); event.stopPropagation(); addToCart('<%= h(rc.getId()) %>');">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                                </button>
+                                <% } %>
                             </div>
-                            <div class="weekly-footer">
-                                <span class="weekly-price free">Miễn phí</span>
-                                <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
+                            <div class="weekly-info">
+                                <h3 class="weekly-title"><%= h(rc.getTitle()) %></h3>
+                                <div class="weekly-teacher-row">
+                                    <div class="weekly-teacher"><%= h(rc.getTeacherName()) %></div>
+                                    <span class="weekly-students" aria-label="0 học viên">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                        0
+                                    </span>
+                                </div>
+                                <div class="weekly-footer">
+                                    <span class="weekly-price <%= rc.isFree() ? "free" : "" %>"><%= h(rc.getPriceLabel()) %></span>
+                                    <span class="weekly-cta">Xem chi tiết</span>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </article>
-
-                    <!-- Card 2 -->
-                    <article class="weekly-course-card">
-                        <div class="weekly-thumb">
-                            <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#2563eb 0%,#6366f1 100%); display:flex; align-items:center; justify-content:center;">
-                                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/><path d="M8 7h8M8 11h6"/></svg>
-                            </div>
-                            <span class="weekly-rating-badge" aria-label="Đánh giá 4.8 sao">
-                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                4.8
-                            </span>
-                            <button type="button" class="weekly-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                            </button>
-                        </div>
-                        <div class="weekly-info">
-                            <h3 class="weekly-title">Luyện thi ĐGNL ĐHQG TP.HCM - Toán tổng ôn siêu tốc</h3>
-                            <div class="weekly-teacher-row">
-                                <div class="weekly-teacher">Nguyễn Văn An</div>
-                                <span class="weekly-students" aria-label="820 học viên">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                    820
-                                </span>
-                            </div>
-                            <div class="weekly-footer">
-                                <span class="weekly-price free">Miễn phí</span>
-                                <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- Card 3 -->
-                    <article class="weekly-course-card">
-                        <div class="weekly-thumb">
-                            <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#7c3aed 0%,#a78bfa 100%); display:flex; align-items:center; justify-content:center;">
-                                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                            </div>
-                            <span class="weekly-rating-badge" aria-label="Đánh giá 4.7 sao">
-                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                4.7
-                            </span>
-                            <button type="button" class="weekly-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                            </button>
-                        </div>
-                        <div class="weekly-info">
-                            <h3 class="weekly-title">Chinh phục điểm 9+ Vật Lý 12 bằng sơ đồ tư duy</h3>
-                            <div class="weekly-teacher-row">
-                                <div class="weekly-teacher">Lê Hương Giang</div>
-                                <span class="weekly-students" aria-label="610 học viên">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                    610
-                                </span>
-                            </div>
-                            <div class="weekly-footer">
-                                <span class="weekly-price">150.000 đ</span>
-                                <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- Card 4 -->
-                    <article class="weekly-course-card">
-                        <div class="weekly-thumb">
-                            <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#059669 0%,#34d399 100%); display:flex; align-items:center; justify-content:center;">
-                                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                            </div>
-                            <span class="weekly-rating-badge" aria-label="Đánh giá 4.6 sao">
-                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                4.6
-                            </span>
-                            <button type="button" class="weekly-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                            </button>
-                        </div>
-                        <div class="weekly-info">
-                            <h3 class="weekly-title">Kế toán thực hành thực tế cho người mới bắt đầu</h3>
-                            <div class="weekly-teacher-row">
-                                <div class="weekly-teacher">Phạm Thị Cẩm</div>
-                                <span class="weekly-students" aria-label="450 học viên">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                    450
-                                </span>
-                            </div>
-                            <div class="weekly-footer">
-                                <span class="weekly-price">499.000 đ</span>
-                                <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- Card 5 -->
-                    <article class="weekly-course-card">
-                        <div class="weekly-thumb">
-                            <div class="weekly-thumb-bg" style="background:linear-gradient(135deg,#e11d48 0%,#fb7185 100%); display:flex; align-items:center; justify-content:center;">
-                                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.58)" stroke-width="1.25"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                            </div>
-                            <span class="weekly-rating-badge" aria-label="Đánh giá 5.0 sao">
-                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                5.0
-                            </span>
-                            <button type="button" class="weekly-cart-btn" title="Thêm vào giỏ" aria-label="Thêm vào giỏ">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                            </button>
-                        </div>
-                        <div class="weekly-info">
-                            <h3 class="weekly-title">Tiếng Anh giao tiếp cho người đi làm: Tự tin thuyết trình</h3>
-                            <div class="weekly-teacher-row">
-                                <div class="weekly-teacher">Helen Trần</div>
-                                <span class="weekly-students" aria-label="1.2k học viên">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                    1.2k
-                                </span>
-                            </div>
-                            <div class="weekly-footer">
-                                <span class="weekly-price free">Miễn phí</span>
-                                <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
-                            </div>
-                        </div>
-                    </article>
+                    <%
+                            }
+                        } else {
+                    %>
+                        <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.95rem;">Không có khóa học nào liên quan.</div>
+                    <%
+                        }
+                    %>
                 </div>
         </div>
     </div>
@@ -1020,101 +926,7 @@
             });
         }
         
-        // Infinite auto-scroll with drag support for Related Courses
-        (function() {
-            const track = document.getElementById('relatedCoursesTrack');
-            if (!track) return;
-            
-            // 1. Wrap original content for seamless looping
-            const originalContent = track.innerHTML;
-            track.innerHTML = '';
-            
-            const wrapper1 = document.createElement('div');
-            wrapper1.style.display = 'flex';
-            wrapper1.style.gap = '1.25rem';
-            wrapper1.innerHTML = originalContent;
-            
-            const wrapper2 = document.createElement('div');
-            wrapper2.style.display = 'flex';
-            wrapper2.style.gap = '1.25rem';
-            wrapper2.innerHTML = originalContent;
-            
-            track.appendChild(wrapper1);
-            track.appendChild(wrapper2);
-            
-            let isDown = false;
-            let startX;
-            let scrollLeft = 0;
-            let speed = 0.8; // Normal speed
-            let targetSpeed = 0.8;
-            
-            function animate() {
-                speed += (targetSpeed - speed) * 0.05; // Smooth speed transition
-                
-                if (!isDown) {
-                    scrollLeft -= speed;
-                    // width of one wrapper + the gap of the track
-                    const trackGap = parseFloat(window.getComputedStyle(track).gap) || 20;
-                    const singleWidth = wrapper1.offsetWidth + trackGap; 
-                    
-                    if (scrollLeft <= -singleWidth) {
-                        scrollLeft += singleWidth;
-                    }
-                    track.style.transform = `translateX(${scrollLeft}px)`;
-                }
-                requestAnimationFrame(animate);
-            }
-            
-            animate();
 
-            // 2. Slow down on hover
-            const viewport = document.getElementById('relatedCoursesViewport');
-            if (viewport) {
-                viewport.addEventListener('mouseenter', () => { targetSpeed = 0.25; });
-                viewport.addEventListener('mouseleave', () => { targetSpeed = 0.8; });
-            }
-            
-            // 3. Keep drag functionality
-            track.addEventListener('mousedown', (e) => {
-                isDown = true;
-                track.style.cursor = 'grabbing';
-                startX = e.pageX;
-                track.style.transition = 'none';
-            });
-            window.addEventListener('mouseup', () => {
-                if (isDown) {
-                    isDown = false;
-                    track.style.cursor = '';
-                }
-            });
-            window.addEventListener('mousemove', (e) => {
-                if (!isDown) return;
-                e.preventDefault();
-                const x = e.pageX;
-                const walk = (x - startX) * 1.5;
-                scrollLeft += walk;
-                startX = x;
-                
-                const trackGap = parseFloat(window.getComputedStyle(track).gap) || 20;
-                const singleWidth = wrapper1.offsetWidth + trackGap; 
-                
-                if (scrollLeft > 0) scrollLeft -= singleWidth;
-                if (scrollLeft <= -singleWidth) scrollLeft += singleWidth;
-                
-                track.style.transform = `translateX(${scrollLeft}px)`;
-            });
-            
-            // Prevent link clicking when dragging
-            let isDragging = false;
-            track.addEventListener('mousemove', (e) => { if (isDown) isDragging = true; });
-            track.addEventListener('mousedown', () => { isDragging = false; });
-            track.addEventListener('click', (e) => {
-                if (isDragging) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-            }, true);
-        })();
 
         // Interactive Review Stars
         const starContainer = document.getElementById('starRatingContainer');
@@ -1197,14 +1009,14 @@
                 if (data.success) {
                     showToast(data.message || 'Đã thêm khóa học vào giỏ hàng!');
                     // Update header cart count
-                    if (window.updateCartCountUI) {
-                        window.updateCartCountUI(data.count);
+                    if (window.refreshCartBadge) {
+                        window.refreshCartBadge();
                     } else {
                         // Fallback
-                        const cartBadge = document.querySelector('.navbar-cart .cart-badge');
-                        if (cartBadge) {
-                            cartBadge.innerText = data.count;
-                            cartBadge.style.display = data.count > 0 ? 'flex' : 'none';
+                        const badge = document.getElementById('cart-item-count');
+                        if (badge) {
+                            badge.textContent = data.count > 9 ? '9+' : String(data.count);
+                            badge.style.display = data.count > 0 ? 'flex' : 'none';
                         }
                     }
                     

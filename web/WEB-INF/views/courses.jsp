@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.Course"%>
 <%@page import="java.util.List"%>
@@ -1190,7 +1190,7 @@
         .course-filter-panel .category-scroll {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: .6rem;
+            gap: 1rem;
             margin: 0;
             padding: 0;
             overflow: visible;
@@ -1204,9 +1204,9 @@
         }
         .course-filter-panel .cat-pill,
         .course-filter-panel .chip {
-            min-height: 34px;
+            min-height: 40px;
             width: 100%;
-            padding: .42rem .72rem;
+            padding: .5rem .75rem;
             border-radius: 10px;
             font-size: .82rem;
             background: rgba(255,255,255,.86);
@@ -1628,20 +1628,7 @@
                 </div>
             </section>
 
-            <section class="filter-section">
-                <div class="filter-section-title">
-                    <span class="filter-section-label">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
-                        Trạng thái
-                    </span>
-                    <span class="filter-section-count">3 lựa chọn</span>
-                </div>
-                <div class="filter-chips">
-                    <button class="chip active" data-filter="all" id="filter-all" onclick="applyFilter(this, 'all')">Tất cả</button>
-                    <button class="chip" data-filter="free" id="filter-free" onclick="applyFilter(this, 'free')">Miễn phí</button>
-                    <button class="chip" data-filter="paid" id="filter-paid" onclick="applyFilter(this, 'paid')">Có phí</button>
-                </div>
-            </section>
+
 
         </aside>
 
