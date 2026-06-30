@@ -43,12 +43,12 @@ public class AiRecommendationService {
             classrooms = filterClassrooms(classrooms, hint);
         }
 
-        List<Course> courses = courseDao.listPublic(hint.courseSubjectCode, "all", keyword, "newest", null);
+        List<Course> courses = courseDao.listPublic(hint.courseSubjectCode, "all", keyword, "newest", null, 1, 5);
         if (courses.isEmpty() && hint.courseSubjectCode != null) {
-            courses = courseDao.listPublic(hint.courseSubjectCode, "all", "", "newest", null);
+            courses = courseDao.listPublic(hint.courseSubjectCode, "all", "", "newest", null, 1, 5);
         }
         if (courses.isEmpty()) {
-            courses = courseDao.listPublic(null, "all", keyword, "newest", null);
+            courses = courseDao.listPublic(null, "all", keyword, "newest", null, 1, 5);
         }
 
         List<Material> materials = materialDao.search("ALL", "ALL", "ALL", keyword, "newest", 1, 5);

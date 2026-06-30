@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CartDao {
+    private static volatile boolean schemaReady = false;
 
     public CartDao() {
         ensureSchema();
@@ -124,8 +125,11 @@ public class CartDao {
     }
 
     private void ensureSchema() {
-        try (Connection conn = DBContext.getConnection();
-             Statement st = conn.createStatement()) {
+        if (schemaReady) return;
+        synchronized (CartDao.class) {
+            if (schemaReady) return;
+            try (Connection conn = DBContext.getConnection();
+                 Statement st = conn.createStatement()) {
             st.execute("CREATE TABLE IF NOT EXISTS cart_items (" +
                        "id UUID PRIMARY KEY DEFAULT gen_random_uuid(), " +
                        "student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, " +
@@ -133,8 +137,10 @@ public class CartDao {
                        "added_at TIMESTAMPTZ NOT NULL DEFAULT now(), " +
                        "UNIQUE(student_id, course_id))");
             st.execute("CREATE INDEX IF NOT EXISTS idx_cart_items_student ON cart_items(student_id, added_at DESC)");
+            schemaReady = true;
         } catch (SQLException e) {
             System.err.println("Error in CartDao.ensureSchema: " + e.getMessage());
+        }
         }
     }
 }

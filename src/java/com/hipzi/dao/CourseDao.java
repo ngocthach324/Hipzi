@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class CourseDao {
+    private static volatile boolean schemaReady = false;
 
     public CourseDao() {
         ensureSchema();
@@ -53,7 +54,7 @@ public class CourseDao {
         return null;
     }
 
-    public List<Course> listPublic(String subjectCode, String priceFilter, String searchQuery, String sort, String viewerId) {
+    public List<Course> listPublic(String subjectCode, String priceFilter, String searchQuery, String sort, String viewerId, int page, int pageSize) {
         StringBuilder sql = new StringBuilder(
                 "SELECT c.*, u.display_name AS teacher_name, u.email AS teacher_email, u.avatar_url AS teacher_avatar_url, "
                 + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school, "
@@ -102,14 +103,20 @@ public class CourseDao {
         } else if ("price-desc".equals(sortValue)) {
             sql.append("ORDER BY c.price_amount DESC, c.created_at DESC");
         } else {
-            sql.append("ORDER BY c.students_count DESC, c.rating_average DESC, c.created_at DESC");
+            sql.append("ORDER BY c.students_count DESC, c.rating_average DESC, c.created_at DESC ");
         }
+
+        sql.append("LIMIT ? OFFSET ?");
 
         List<Course> courses = new ArrayList<>();
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             bindParams(ps, params);
+            int offset = (page - 1) * pageSize;
+            ps.setInt(params.size() + 1, pageSize);
+            ps.setInt(params.size() + 2, offset);
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     courses.add(mapRow(rs));
@@ -117,6 +124,40 @@ public class CourseDao {
             }
         } catch (SQLException e) {
             System.err.println("Error in CourseDao.listPublic: " + e.getMessage());
+        }
+        return courses;
+    }
+
+    public List<Course> listFeaturedPublic(int limit, String viewerId) {
+        String sql = "SELECT c.*, u.display_name AS teacher_name, u.email AS teacher_email, u.avatar_url AS teacher_avatar_url, "
+                + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school, "
+                + "(ce.id IS NOT NULL) AS viewer_enrolled, COALESCE(ce.progress_percent, 0) AS viewer_progress_percent "
+                + "FROM courses c "
+                + "JOIN users u ON u.id = c.teacher_id "
+                + "LEFT JOIN LATERAL ("
+                + "SELECT institution_name, workplace FROM teacher_applications "
+                + "WHERE user_id = c.teacher_id ORDER BY submitted_at DESC LIMIT 1"
+                + ") ta ON true "
+                + "LEFT JOIN course_enrollments ce ON ce.course_id = c.id "
+                + "AND ce.student_id = ?::uuid "
+                + "AND ce.status IN ('pending_access', 'active') "
+                + "WHERE c.deleted_at IS NULL AND c.status = 'approved' AND c.visibility = 'public' "
+                + "ORDER BY c.rating_average DESC, c.rating_count DESC, c.created_at DESC "
+                + "LIMIT ?";
+
+        List<Course> courses = new ArrayList<>();
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setObject(1, uuidOrNull(viewerId));
+            ps.setInt(2, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    courses.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in CourseDao.listFeaturedPublic: " + e.getMessage());
         }
         return courses;
     }
@@ -532,10 +573,13 @@ public class CourseDao {
     }
 
     private void ensureSchema() {
-        try (Connection conn = DBContext.getConnection();
-             Statement st = conn.createStatement()) {
+        if (schemaReady) return;
+        synchronized (CourseDao.class) {
+            if (schemaReady) return;
+            try (Connection conn = DBContext.getConnection();
+                 Statement st = conn.createStatement()) {
 
-            st.execute("CREATE TABLE IF NOT EXISTS courses ("
+                st.execute("CREATE TABLE IF NOT EXISTS courses ("
                     + "id UUID PRIMARY KEY DEFAULT gen_random_uuid(), "
                     + "course_code VARCHAR(24) UNIQUE NOT NULL, "
                     + "teacher_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, "
@@ -630,8 +674,10 @@ public class CourseDao {
                     + "last_error TEXT, email_sent_at TIMESTAMPTZ, created_at TIMESTAMPTZ NOT NULL DEFAULT now(), updated_at TIMESTAMPTZ NOT NULL DEFAULT now())");
             st.execute("CREATE INDEX IF NOT EXISTS idx_course_access_grants_enrollment ON course_access_grants(enrollment_id, status)");
             st.execute("CREATE INDEX IF NOT EXISTS idx_course_access_grants_course_student ON course_access_grants(course_id, student_id, status)");
+            schemaReady = true;
         } catch (SQLException e) {
             System.err.println("Error in CourseDao.ensureSchema: " + e.getMessage());
+        }
         }
     }
 }
