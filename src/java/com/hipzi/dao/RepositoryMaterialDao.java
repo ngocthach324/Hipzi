@@ -45,7 +45,7 @@ public class RepositoryMaterialDao {
         ensureSchema();
         String sql = "SELECT rm.*, u.display_name AS teacher_name "
                 + "FROM repository_materials rm "
-                + "LEFT JOIN users u ON u.id::text = rm.uploaded_by "
+                + "LEFT JOIN users u ON u.id::text = rm.uploaded_by::text "
                 + "WHERE rm.id = ?::uuid AND rm.visibility = 'VISIBLE' "
                 + "LIMIT 1";
 
@@ -72,7 +72,7 @@ public class RepositoryMaterialDao {
                 .append("rm.view_count, rm.rating_average, rm.rating_count, rm.status, rm.visibility, rm.created_at, ")
                 .append("u.display_name AS teacher_name ")
                 .append("FROM repository_materials rm ")
-                .append("LEFT JOIN users u ON u.id::text = rm.uploaded_by ")
+                .append("LEFT JOIN users u ON u.id::text = rm.uploaded_by::text ")
                 .append("WHERE rm.visibility = 'VISIBLE' AND rm.status = 'APPROVED' ");
 
         if (!isAll(subject)) {
@@ -89,8 +89,10 @@ public class RepositoryMaterialDao {
         }
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
             sql.append("AND (rm.title ILIKE ? "
+                    + "OR rm.subject ILIKE ? "
                     + "OR COALESCE(u.display_name, '') ILIKE ?) ");
             String keyword = "%" + searchQuery.trim() + "%";
+            params.add(keyword);
             params.add(keyword);
             params.add(keyword);
         }
@@ -131,7 +133,7 @@ public class RepositoryMaterialDao {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT count(*) ")
            .append("FROM repository_materials rm ")
-           .append("LEFT JOIN users u ON u.id::text = rm.uploaded_by ")
+           .append("LEFT JOIN users u ON u.id::text = rm.uploaded_by::text ")
            .append("WHERE rm.visibility = 'VISIBLE' AND rm.status = 'APPROVED' ");
 
         if (!isAll(subject)) {
@@ -148,8 +150,10 @@ public class RepositoryMaterialDao {
         }
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
             sql.append("AND (rm.title ILIKE ? "
+                    + "OR rm.subject ILIKE ? "
                     + "OR COALESCE(u.display_name, '') ILIKE ?) ");
             String keyword = "%" + searchQuery.trim() + "%";
+            params.add(keyword);
             params.add(keyword);
             params.add(keyword);
         }

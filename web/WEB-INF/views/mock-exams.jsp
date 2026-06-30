@@ -365,7 +365,7 @@
 
         .mock-tabs {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 0.6rem;
             padding: 0.85rem;
             background: rgba(248, 250, 252, 0.82);
@@ -945,14 +945,6 @@
                         </span>
                         <span><strong>Trắc nghiệm</strong><small>3 đề kiểm tra tốc độ</small></span>
                     </button>
-                    <button type="button" class="mock-tab" id="mock-tab-flashcard" data-tab-target="flashcard" role="tab" aria-controls="tab-flashcard" aria-selected="false">
-                        <span class="mock-tab-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h8M7 13h5"/>
-                            </svg>
-                        </span>
-                        <span><strong>Flashcard</strong><small>3 bộ thẻ ghi nhớ</small></span>
-                    </button>
                     <button type="button" class="mock-tab" id="mock-tab-essay" data-tab-target="essay" role="tab" aria-controls="tab-essay" aria-selected="false">
                         <span class="mock-tab-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1102,90 +1094,6 @@
                     </div>
                 </div>
 
-                <div id="tab-flashcard" class="mock-tab-content" role="tabpanel" aria-labelledby="mock-tab-flashcard">
-                    <div class="mock-section-head">
-                        <div>
-                            <h2>Flashcard ghi nhớ nhanh</h2>
-                            <p>Học theo bộ thẻ, chia phiên ngắn và theo dõi tiến độ ghi nhớ.</p>
-                        </div>
-                        <span class="result-count" aria-live="polite">3 lựa chọn phù hợp</span>
-                    </div>
-
-                    <div class="exam-grid">
-                        <article class="exam-card" data-search="3000 Từ vựng Tiếng Anh giao tiếp cơ bản flashcard tiếng anh cấp tốc" data-tags="tieng-anh cap-toc">
-                            <div class="exam-card-top">
-                                <span class="exam-type flashcard">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h8M7 13h5"/></svg>
-                                    Flashcard
-                                </span>
-                                <span class="exam-match">Học mỗi ngày</span>
-                            </div>
-                            <h3>3000 Từ vựng Tiếng Anh giao tiếp cơ bản</h3>
-                            <p class="exam-desc">Chia theo chủ đề thường gặp, phù hợp luyện nhớ nhanh trước giờ học.</p>
-                            <div class="exam-meta-grid">
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h20"/><path d="M2 17h20"/><path d="M7 2v20"/><path d="M17 2v20"/></svg>Tiếng Anh</span>
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h8"/></svg>300 thẻ</span>
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>12 phút</span>
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>Cấp tốc</span>
-                            </div>
-                            <div class="exam-footer">
-                                <a href="#" class="btn-start">Ôn tập thẻ <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-                                <button type="button" class="icon-action" aria-label="Lưu bộ thẻ Tiếng Anh" title="Lưu bộ thẻ"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
-                            </div>
-                        </article>
-
-                        <article class="exam-card" data-search="Công thức Vật lý 12 Chương 1 2 flashcard vật lý nâng cao" data-tags="vat-ly nang-cao">
-                            <div class="exam-card-top">
-                                <span class="exam-type flashcard">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h8M7 13h5"/></svg>
-                                    Flashcard
-                                </span>
-                                <span class="exam-match">Trước kiểm tra</span>
-                            </div>
-                            <h3>Công thức Vật lý 12 - Chương 1 và 2</h3>
-                            <p class="exam-desc">Nhắc lại công thức, đơn vị và dấu hiệu nhận dạng dạng bài dao động.</p>
-                            <div class="exam-meta-grid">
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18"/><path d="M12 3v18"/><path d="m5 5 14 14"/><path d="m19 5-14 14"/></svg>Vật lý</span>
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h8"/></svg>50 thẻ</span>
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>18 phút</span>
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Nâng cao</span>
-                            </div>
-                            <div class="exam-footer">
-                                <a href="#" class="btn-start">Ôn tập thẻ <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-                                <button type="button" class="icon-action" aria-label="Lưu bộ thẻ Vật lý" title="Lưu bộ thẻ"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
-                            </div>
-                        </article>
-
-                        <article class="exam-card" data-search="Thuật ngữ Sinh học tế bào flashcard sinh học" data-tags="sinh-hoc cap-toc">
-                            <div class="exam-card-top">
-                                <span class="exam-type flashcard">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h8M7 13h5"/></svg>
-                                    Flashcard
-                                </span>
-                                <span class="exam-match">Ôn khái niệm</span>
-                            </div>
-                            <h3>Thuật ngữ Sinh học tế bào</h3>
-                            <p class="exam-desc">Bộ thẻ ngắn giúp nhớ định nghĩa, chức năng bào quan và từ khóa quan trọng.</p>
-                            <div class="exam-meta-grid">
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v7.31"/><path d="M14 9.3V2"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/></svg>Sinh học</span>
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h8"/></svg>84 thẻ</span>
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>10 phút</span>
-                                <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>Cấp tốc</span>
-                            </div>
-                            <div class="exam-footer">
-                                <a href="#" class="btn-start">Ôn tập thẻ <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-                                <button type="button" class="icon-action" aria-label="Lưu bộ thẻ Sinh học" title="Lưu bộ thẻ"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
-                            </div>
-                        </article>
-                    </div>
-
-                    <div class="empty-state" aria-live="polite">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                        <h3>Không tìm thấy bộ thẻ phù hợp</h3>
-                        <p>Thử xoá bớt từ khóa hoặc chọn bộ lọc khác.</p>
-                    </div>
-                </div>
-
                 <div id="tab-essay" class="mock-tab-content" role="tabpanel" aria-labelledby="mock-tab-essay">
                     <div class="mock-section-head">
                         <div>
@@ -1218,7 +1126,7 @@
                                 <span class="exam-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg><%= h(exam.getGradeLevel()) %></span>
                             </div>
                             <div class="exam-footer">
-                                <a href="#" class="btn-start">Luyện viết <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+                                <a href="${pageContext.request.contextPath}/mock-essay-room?examId=<%= exam.getId() %>" class="btn-start">Luyện viết <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
                             </div>
                         </article>
                         <% }
@@ -1305,7 +1213,6 @@
                 if (filterSelect && filterSelect.value !== nextFilter) {
                     filterSelect.value = nextFilter;
                 }
-            });
             }
 
             function applyFilters() {
@@ -1317,11 +1224,17 @@
                 let visibleCount = 0;
 
                 cards.forEach(card => {
-                    const haystack = normalize([card.dataset.search, card.dataset.tags, card.textContent].join(' '));
-                    const tags = normalize(card.dataset.tags).split(/\s+/);
-                    const matchesQuery = !query || haystack.includes(query);
-                    const matchesFilter = activeFilter === 'all' || tags.includes(activeFilter) || haystack.includes(activeFilter);
+                    const titleText = card.querySelector('h3') ? card.querySelector('h3').textContent : '';
+                    const subjectText = card.querySelector('.exam-meta-item') ? card.querySelector('.exam-meta-item').textContent : '';
+                    const queryHaystack = normalize(titleText + ' ' + subjectText);
+                    
+                    const fullHaystack = normalize([card.dataset.search, card.dataset.tags, card.textContent].join(' '));
+                    const tags = normalize(card.dataset.tags || '').split(/\s+/);
+                    
+                    const matchesQuery = !query || queryHaystack.includes(query);
+                    const matchesFilter = activeFilter === 'all' || tags.includes(activeFilter) || fullHaystack.includes(activeFilter);
                     const isVisible = matchesQuery && matchesFilter;
+                    
                     card.classList.toggle('is-hidden', !isVisible);
                     if (isVisible) visibleCount += 1;
                 });

@@ -80,7 +80,7 @@ public class MockExamDao {
                 + "WHEN me.exam_type = 'essay' THEN COALESCE((SELECT COUNT(*) FROM mock_exam_essays e WHERE e.mock_exam_id = me.id), 0) "
                 + "ELSE 0 END AS item_count "
                 + "FROM mock_exams me "
-                + "LEFT JOIN users u ON u.id = me.created_by "
+                + "LEFT JOIN users u ON u.id::text = me.created_by::text "
                 + "WHERE me.exam_type IN ('multiple_choice', 'essay') "
                 + "ORDER BY me.created_at DESC "
                 + "LIMIT ?";
@@ -100,7 +100,7 @@ public class MockExamDao {
                 + "WHEN me.exam_type = 'essay' THEN COALESCE((SELECT COUNT(*) FROM mock_exam_essays e WHERE e.mock_exam_id = me.id), 0) "
                 + "ELSE 0 END AS item_count "
                 + "FROM mock_exams me "
-                + "LEFT JOIN users u ON u.id = me.created_by "
+                + "LEFT JOIN users u ON u.id::text = me.created_by::text "
                 + "WHERE me.status = 'published' AND me.exam_type = ? "
                 + "ORDER BY me.created_at DESC "
                 + "LIMIT ?";
@@ -145,7 +145,7 @@ public class MockExamDao {
                 + "WHEN me.exam_type = 'essay' THEN COALESCE((SELECT COUNT(*) FROM mock_exam_essays e WHERE e.mock_exam_id = me.id), 0) "
                 + "ELSE 0 END AS item_count "
                 + "FROM mock_exams me "
-                + "LEFT JOIN users u ON u.id = me.created_by "
+                + "LEFT JOIN users u ON u.id::text = me.created_by::text "
                 + "WHERE me.id = ?::uuid AND me.status = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -188,6 +188,31 @@ public class MockExamDao {
             }
         } catch (SQLException e) {
             System.err.println("Error in MockExamDao.listQuestionsByExamId: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public List<MockExamEssay> listEssaysByExamId(String examId) {
+        ensureSchema();
+        List<MockExamEssay> list = new ArrayList<>();
+        String sql = "SELECT * FROM mock_exam_essays WHERE mock_exam_id = ?::uuid ORDER BY sort_order ASC";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, examId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    MockExamEssay e = new MockExamEssay();
+                    e.setId(rs.getString("id"));
+                    e.setMockExamId(rs.getString("mock_exam_id"));
+                    e.setPromptText(rs.getString("prompt_text"));
+                    e.setReferenceAnswer(rs.getString("reference_answer"));
+                    e.setSortOrder(rs.getInt("sort_order"));
+                    e.setCreatedAt(rs.getTimestamp("created_at"));
+                    list.add(e);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in MockExamDao.listEssaysByExamId: " + e.getMessage());
         }
         return list;
     }
