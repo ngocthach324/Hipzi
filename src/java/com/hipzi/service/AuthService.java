@@ -196,9 +196,7 @@ public class AuthService {
         if (newPassword == null || newPassword.length() < 6) {
             throw new Exception("Mật khẩu mới phải có ít nhất 6 ký tự.");
         }
-        if (!newPassword.matches(".*[a-zA-Z].*") || !newPassword.matches(".*\\d.*")) {
-            throw new Exception("Mật khẩu phải bao gồm cả chữ cái và chữ số để đảm bảo an toàn.");
-        }
+
         
         String newHash = PasswordUtil.hashPassword(newPassword);
         if (!userDao.updatePassword(userId, newHash)) {

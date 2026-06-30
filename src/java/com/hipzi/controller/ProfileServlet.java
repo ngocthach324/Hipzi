@@ -911,8 +911,8 @@ public class ProfileServlet extends HttpServlet {
         if (returnPath == null || "/profile".equals(returnPath)) {
             returnPath = preferredProfilePath(user);
         }
-        if ("changePassword".equals(action) || "toggle2FA".equals(action)) {
-            returnPath += "?tab=security";
+        if ("changePassword".equals(action) || "updateName".equals(action) || "updateAvatar".equals(action) || "toggle2FA".equals(action)) {
+            returnPath += "?tab=profile";
         } else if ("banUser".equals(action) || "changeRole".equals(action)) {
             String userPage = request.getParameter("userPage");
             returnPath += "?tab=materials&userPage=" + (userPage != null ? userPage : "1");

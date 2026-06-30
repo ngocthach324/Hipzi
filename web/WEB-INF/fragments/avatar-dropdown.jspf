@@ -64,7 +64,7 @@
             </svg>
             <span class="avatar-menu-copy">
                 <span class="avatar-menu-title">V&#237; gi&#7843;ng vi&#234;n</span>
-                <span class="avatar-menu-subtitle">S&#7889; d&#432;: 1.250.000&#273;</span>
+                <span class="avatar-menu-subtitle">S&#7889; d&#432;: <%= user != null ? String.format(new java.util.Locale("vi", "VN"), "%,.0f", user.getWalletBalance()) : "0" %>&#273;</span>
             </span>
         </a>
         <% } else if (profileHasStaff && !profileHasAdmin) { %>

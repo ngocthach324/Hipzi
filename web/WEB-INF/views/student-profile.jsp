@@ -804,7 +804,7 @@
 
                                                             .overview-analytics-grid {
                                                                 display: grid;
-                                                                grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
+                                                                grid-template-columns: 1fr;
                                                                 gap: 1.25rem;
                                                                 margin-top: 1.25rem;
                                                             }
@@ -3134,18 +3134,6 @@
                                                                                                 </div>
                                                                                                 <ul class="sidebar-menu">
                                                                                                     <li>
-                                                                                                        <a id="nav-tab-wallet-balance"
-                                                                                                            class="<%= "tab-wallet-balance".equals(initialTab) ? "active" : "" %>"
-                                                                                                            onclick="switchTab('tab-wallet-balance')"
-                                                                                                            title="Thống kê số dư">
-                                                                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                                                                                <rect x="2" y="5" width="20" height="14" rx="2" ry="2"/>
-                                                                                                                <line x1="2" y1="10" x2="22" y2="10"/>
-                                                                                                            </svg>
-                                                                                                            <span>Thống kê số dư</span>
-                                                                                                        </a>
-                                                                                                    </li>
-                                                                                                    <li>
                                                                                                         <a id="nav-tab-wallet-history"
                                                                                                             class="<%= "tab-wallet-history".equals(initialTab) ? "active" : "" %>"
                                                                                                             onclick="switchTab('tab-wallet-history')"
@@ -3452,7 +3440,7 @@
                                                                                                                     class="metrics-row">
                                                                                                                     <!-- Metric 1: Active classrooms -->
                                                                                                                     <div class="metric-card primary"
-                                                                                                                        onclick="switchTab('tab-history')">
+                                                                                                                        onclick="switchTab('tab-my-classes')">
                                                                                                                         <div
                                                                                                                             class="metric-card-top">
                                                                                                                             <span
@@ -3501,7 +3489,7 @@
 
                                                                                                                     <!-- Metric 2: Active courses -->
                                                                                                                     <div class="metric-card secondary"
-                                                                                                                        onclick="switchTab('tab-history')">
+                                                                                                                        onclick="switchTab('tab-my-courses')">
                                                                                                                         <div
                                                                                                                             class="metric-card-top">
                                                                                                                             <span
@@ -3849,194 +3837,11 @@
                                                                                                                                 đã
                                                                                                                                 học</span>
                                                                                                                         </div>
-                                                                                                                    </div>
-
-                                                                                                                    <div
-                                                                                                                        class="overview-chart-card">
-                                                                                                                        <div
-                                                                                                                            class="overview-chart-head">
-                                                                                                                            <div>
-                                                                                                                                <h2
-                                                                                                                                    class="overview-chart-title">
-                                                                                                                                    Điểm
-                                                                                                                                    trung
-                                                                                                                                    bình
-                                                                                                                                </h2>
-                                                                                                                            </div>
-                                                                                                                            <span class="overview-chart-chip">Reset theo tuần</span>
-                                                                                                                        </div>
-
-                                                                                                                        <div class="overview-bar-chart-container"
-                                                                                                                            style="display: flex; align-items: flex-end; justify-content: space-around; width: 100%; height: 210px; padding: 1.5rem 0.5rem 0 0.5rem; margin-top: 0.5rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 0;">
-                                                                                                                            <!-- Column 1 -->
-                                                                                                                            <div
-                                                                                                                                style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 80px; position: relative;">
-                                                                                                                                <div
-                                                                                                                                    style="font-weight: 800; font-size: 1.1rem; color: #059669; margin-bottom: 0.5rem;">
-                                                                                                                                    8.5
-                                                                                                                                </div>
-                                                                                                                                <style>
-                                                                                                                                .depth-bar-1 { box-shadow: inset -4px 0 8px rgba(0,0,0,0.15), inset 3px 0 8px rgba(255,255,255,0.3), 0 10px 20px rgba(5, 150, 105, 0.4); }
-                                                                                                                                .depth-bar-2 { box-shadow: inset -4px 0 8px rgba(0,0,0,0.15), inset 3px 0 8px rgba(255,255,255,0.3), 0 10px 20px rgba(59, 130, 246, 0.4); }
-                                                                                                                                .depth-bar-3 { box-shadow: inset -4px 0 8px rgba(0,0,0,0.15), inset 3px 0 8px rgba(255,255,255,0.3), 0 10px 20px rgba(234, 88, 12, 0.4); }
-                                                                                                                                </style>
-                                                                                                                                <div class="depth-bar depth-bar-1"
-                                                                                                                                    style="width: 44px; height: 85%; background: linear-gradient(180deg, #059669 0%, #10b981 100%); border-radius: 8px 8px 0 0; position: relative; z-index: 2;">
-                                                                                                                                </div>
-                                                                                                                                <div
-                                                                                                                                    style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-align: center; margin-top: 1rem; line-height: 1.4; position: absolute; bottom: -40px;">
-                                                                                                                                    Điểm<br>lớp
-                                                                                                                                    học
-                                                                                                                                </div>
-                                                                                                                            </div>
-                                                                                                                            <!-- Column 2 -->
-                                                                                                                            <div
-                                                                                                                                style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 80px; position: relative;">
-                                                                                                                                <div
-                                                                                                                                    style="font-weight: 800; font-size: 1.1rem; color: #3b82f6; margin-bottom: 0.5rem;">
-                                                                                                                                    7.2
-                                                                                                                                </div>
-                                                                                                                                <div class="depth-bar depth-bar-2"
-                                                                                                                                    style="width: 44px; height: 72%; background: linear-gradient(180deg, #3b82f6 0%, #60a5fa 100%); border-radius: 8px 8px 0 0; position: relative; z-index: 2;">
-                                                                                                                                </div>
-                                                                                                                                <div
-                                                                                                                                    style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-align: center; margin-top: 1rem; line-height: 1.4; position: absolute; bottom: -40px;">
-                                                                                                                                    Điểm<br>thi
-                                                                                                                                    thử
-                                                                                                                                </div>
-                                                                                                                            </div>
-                                                                                                                            <!-- Column 3 -->
-                                                                                                                            <div
-                                                                                                                                style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 80px; position: relative;">
-                                                                                                                                <div
-                                                                                                                                    style="font-weight: 800; font-size: 1.1rem; color: #ea580c; margin-bottom: 0.5rem;">
-                                                                                                                                    9.0
-                                                                                                                                </div>
-                                                                                                                                <div class="depth-bar depth-bar-3"
-                                                                                                                                    style="width: 44px; height: 90%; background: linear-gradient(180deg, #ea580c 0%, #f97316 100%); border-radius: 8px 8px 0 0; position: relative; z-index: 2;">
-                                                                                                                                </div>
-                                                                                                                                <div
-                                                                                                                                    style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-align: center; margin-top: 1rem; line-height: 1.4; position: absolute; bottom: -40px;">
-                                                                                                                                    Kì
-                                                                                                                                    thi<br>Hipzi
-                                                                                                                                </div>
-                                                                                                                            </div>
-                                                                                                                        </div>
-                                                                                                                        <!-- Padding bottom to account for absolute labels -->
-                                                                                                                        <div
-                                                                                                                            style="height: 50px;">
-                                                                                                                        </div>
-                                                                                                                    </div>
-                                                                                                                </div>
 
                                                                                                             </section>
 
 
 
-                                                                                                            <!-- TAB: THỐNG KÊ SỐ DƯ -->
-                                                                                                            <section id="tab-wallet-balance" class="tab-pane <%= "tab-wallet-balance".equals(initialTab) ? "active-pane" : "" %>">
-                                                                                                                <div class="tab-pane-header">
-                                                                                                                    <div class="tab-pane-header-left">
-                                                                                                                        <h1>Thống kê số dư</h1>
-                                                                                                                        <p>Xem số dư hiện tại và nạp thêm tiền vào ví.</p>
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 2rem; align-items: stretch;">
-                                                                                                                    <!-- Balance Card -->
-                                                                                                                    <div class="premium-card" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: white; margin: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 1.75rem; box-shadow: 0 15px 35px -5px rgba(5, 150, 105, 0.4); position: relative; overflow: hidden; border-radius: 1.25rem; border: 1px solid rgba(255,255,255,0.1);">
-                                                                                                                        <!-- Abstract Decoration -->
-                                                                                                                        <div style="position: absolute; top: -50%; right: -20%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%); border-radius: 50%; pointer-events: none;"></div>
-                                                                                                                        <div style="position: absolute; bottom: -30%; left: -10%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); border-radius: 50%; pointer-events: none;"></div>
-                                                                                                                        <svg style="position: absolute; top: 0; right: 0; opacity: 0.05; pointer-events: none;" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                                                                                                                            <pattern id="pattern-circles" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                                                                                                                                <circle cx="2" cy="2" r="1.5" fill="#ffffff" />
-                                                                                                                            </pattern>
-                                                                                                                            <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-circles)" />
-                                                                                                                        </svg>
-
-                                                                                                                        <!-- Top Section -->
-                                                                                                                        <div style="position: relative; z-index: 1;">
-                                                                                                                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
-                                                                                                                                <div>
-                                                                                                                                    <div style="font-size: 0.85rem; font-weight: 600; opacity: 0.9; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em;">Số dư khả dụng</div>
-                                                                                                                                    <div style="font-size: 3.25rem; font-weight: 800; line-height: 1; letter-spacing: -0.02em; display: flex; align-items:baseline; text-shadow: 0 2px 10px rgba(0,0,0,0.15);">
-                                                                                                                                        1.250.000<span style="font-size: 1.75rem; font-weight: 600; margin-left: 6px; opacity: 0.9;">đ</span>
-                                                                                                                                    </div>
-                                                                                                                                </div>
-                                                                                                                            </div>
-                                                                                                                        </div>
-
-                                                                                                                        <!-- Bottom Actions -->
-                                                                                                                        <div style="margin-top: 2.5rem; position: relative; z-index: 1;">
-                                                                                                                            <button type="button" class="btn btn-primary" style="background: white; color: #047857; border: none; font-weight: 700; width: 100%; padding: 0.85rem 1rem; border-radius: 0.75rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); font-size: 0.95rem;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.2)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.15)'">
-                                                                                                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 0.4rem; display: inline-block; vertical-align: text-bottom;">
-                                                                                                                                    <line x1="12" y1="5" x2="12" y2="19"/>
-                                                                                                                                    <line x1="5" y1="12" x2="19" y2="12"/>
-                                                                                                                                </svg>
-                                                                                                                                Nạp tiền
-                                                                                                                            </button>
-                                                                                                                        </div>
-                                                                                                                    </div>
-
-                                                                                                                    <!-- Chart Card -->
-                                                                                                                    <div class="premium-card overview-chart-card" style="margin: 0; padding: 1.5rem; display: flex; flex-direction: column;">
-                                                                                                                        <div class="overview-chart-head" style="margin-bottom: 0.5rem; align-items: flex-start; display: flex; justify-content: space-between;">
-                                                                                                                            <div class="overview-chart-title-block">
-                                                                                                                                <h3 class="overview-chart-title" style="font-size: 1.1rem;">Thống kê dòng tiền nạp</h3>
-                                                                                                                                <span class="overview-chart-subtitle" style="font-size: 0.9rem; align-items: baseline; display: flex; gap: 0.3rem;">
-                                                                                                                                    Đã nạp: <strong style="color: #059669; font-size: 1.05rem;">2.500.000đ</strong> vào hệ thống
-                                                                                                                                </span>
-                                                                                                                            </div>
-                                                                                                                            <div class="overview-period-switch" id="walletChartPeriodSwitch" data-active="month">
-                                                                                                                                <button type="button" class="overview-period-btn" data-period="week">Tuần</button>
-                                                                                                                                <button type="button" class="overview-period-btn is-active" data-period="month">Tháng</button>
-                                                                                                                            </div>
-                                                                                                                        </div>
-
-                                                                                                                        <div class="overview-line-wrap" style="flex: 1; min-height: 180px;">
-                                                                                                                            <svg class="overview-line-chart" viewBox="0 0 640 200" role="img" style="height: 100%; width: 100%;">
-                                                                                                                                <defs>
-                                                                                                                                    <linearGradient id="walletChartFill" x1="0" y1="0" x2="0" y2="1">
-                                                                                                                                        <stop offset="0%" stop-color="#059669" stop-opacity="0.3" />
-                                                                                                                                        <stop offset="100%" stop-color="#059669" stop-opacity="0" />
-                                                                                                                                    </linearGradient>
-                                                                                                                                </defs>
-                                                                                                                                <!-- Grid Lines -->
-                                                                                                                                <line x1="45" y1="20" x2="620" y2="20" stroke="#f1f5f9" stroke-width="1.5" stroke-dasharray="4 4" />
-                                                                                                                                <line x1="45" y1="65" x2="620" y2="65" stroke="#f1f5f9" stroke-width="1.5" stroke-dasharray="4 4" />
-                                                                                                                                <line x1="45" y1="110" x2="620" y2="110" stroke="#f1f5f9" stroke-width="1.5" stroke-dasharray="4 4" />
-                                                                                                                                <line x1="45" y1="155" x2="620" y2="155" stroke="#e2e8f0" stroke-width="1.5" />
-
-                                                                                                                                <!-- Y-axis Labels -->
-                                                                                                                                <text x="35" y="24" text-anchor="end" fill="#94a3b8" font-size="11" font-weight="600">3tr</text>
-                                                                                                                                <text x="35" y="69" text-anchor="end" fill="#94a3b8" font-size="11" font-weight="600">2tr</text>
-                                                                                                                                <text x="35" y="114" text-anchor="end" fill="#94a3b8" font-size="11" font-weight="600">1tr</text>
-                                                                                                                                <text x="35" y="159" text-anchor="end" fill="#94a3b8" font-size="11" font-weight="600">0</text>
-
-                                                                                                                                <!-- X-axis Labels -->
-                                                                                                                                <text x="80" y="185" text-anchor="middle" fill="#64748b" font-size="12" font-weight="700">Tháng 1</text>
-                                                                                                                                <text x="180" y="185" text-anchor="middle" fill="#64748b" font-size="12" font-weight="700">Tháng 2</text>
-                                                                                                                                <text x="280" y="185" text-anchor="middle" fill="#64748b" font-size="12" font-weight="700">Tháng 3</text>
-                                                                                                                                <text x="380" y="185" text-anchor="middle" fill="#64748b" font-size="12" font-weight="700">Tháng 4</text>
-                                                                                                                                <text x="480" y="185" text-anchor="middle" fill="#64748b" font-size="12" font-weight="700">Tháng 5</text>
-                                                                                                                                <text x="580" y="185" text-anchor="middle" fill="#64748b" font-size="12" font-weight="700">Tháng 6</text>
-
-                                                                                                                                <!-- Fake Data Path -->
-                                                                                                                                <path d="M45 155 L80 155 C110 155, 150 132.5, 180 132.5 C210 132.5, 250 155, 280 155 C310 155, 350 87.5, 380 87.5 C410 87.5, 450 155, 480 155 C510 155, 550 132.5, 580 132.5 L620 132.5 V155 H45 Z" fill="url(#walletChartFill)" />
-                                                                                                                                <path d="M45 155 L80 155 C110 155, 150 132.5, 180 132.5 C210 132.5, 250 155, 280 155 C310 155, 350 87.5, 380 87.5 C410 87.5, 450 155, 480 155 C510 155, 550 132.5, 580 132.5 L620 132.5" fill="none" stroke="#059669" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
-
-                                                                                                                                <!-- Data Points -->
-                                                                                                                                <circle cx="80" cy="155" r="5" fill="#fff" stroke="#059669" stroke-width="2.5" />
-                                                                                                                                <circle cx="180" cy="132.5" r="5" fill="#fff" stroke="#059669" stroke-width="2.5" />
-                                                                                                                                <circle cx="280" cy="155" r="5" fill="#fff" stroke="#059669" stroke-width="2.5" />
-                                                                                                                                <circle cx="380" cy="87.5" r="5" fill="#fff" stroke="#059669" stroke-width="2.5" />
-                                                                                                                                <circle cx="480" cy="155" r="5" fill="#fff" stroke="#059669" stroke-width="2.5" />
-                                                                                                                                <circle cx="580" cy="132.5" r="5" fill="#fff" stroke="#059669" stroke-width="2.5" />
-                                                                                                                            </svg>
-                                                                                                                        </div>
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                            </section>
 
                                                                                                             <!-- TAB: THANH TOÁN HỌC PHÍ (Gộp Lịch sử giao dịch) -->
                                                                                                             <section id="tab-wallet-history" class="tab-pane <%= "tab-wallet-history".equals(initialTab) ? "active-pane" : "" %>">

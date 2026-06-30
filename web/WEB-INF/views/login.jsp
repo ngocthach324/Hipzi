@@ -106,7 +106,7 @@
                             <div class="remembered-email-wrapper">
                                 <input type="email" id="email" name="email" class="form-control" 
                                        value="${email != null ? email : ''}" required placeholder="hocsinh@gmail.com"
-                                       autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" readonly>
+                                       autocomplete="off" inputmode="email" autocapitalize="none" spellcheck="false" readonly>
                                 <div class="remembered-email-menu" id="rememberedEmailMenu"></div>
                             </div>
                         </div>

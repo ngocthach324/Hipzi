@@ -2888,9 +2888,9 @@
             <div class="sidebar-section-label">Tổng quan</div>
             <ul class="sidebar-menu">
                 <li>
-                    <a id="nav-tab-dashboard" class="<%= "tab-dashboard".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-dashboard')" title="Tổng quan hệ thống">
+                    <a id="nav-tab-dashboard" class="<%= "tab-dashboard".equals(initialTeacherTab) ? "active" : "" %>" onclick="switchTab('tab-dashboard')" title="Tổng quan giảng dạy">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-                        <span>Tổng quan hệ thống</span>
+                        <span>Tổng quan giảng dạy</span>
                     </a>
                 </li>
                 <li>
@@ -3770,7 +3770,7 @@
             <section id="tab-dashboard" class="tab-pane <%= "tab-dashboard".equals(initialTeacherTab) ? "active-pane" : "" %>">
                 <div class="tab-pane-header">
                     <div class="tab-pane-header-left">
-                        <h1>Tổng quan hệ thống</h1>
+                        <h1>Tổng quan giảng dạy</h1>
                         <p>Theo dõi nhanh hoạt động giảng dạy, khóa học, tài liệu và lịch dạy của bạn trên HIPZI.</p>
                     </div>
                     <div class="tab-pane-header-right">
@@ -5397,7 +5397,7 @@
         const TAB_TITLES = {
             'tab-teaching-registration': 'Đăng kí giảng dạy',
             'tab-class-registration': 'Đăng kí lớp học',
-            'tab-dashboard': 'Tổng quan hệ thống',
+            'tab-dashboard': 'Tổng quan giảng dạy',
             'tab-edit': 'Cập nhật thông tin',
             'tab-profile': 'Hồ sơ cá nhân',
             'tab-upload-material': 'Đăng tải tài liệu',
