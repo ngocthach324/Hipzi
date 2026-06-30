@@ -4511,7 +4511,34 @@
 
                                             <div class="teacher-detail-panel">
                                                 <p class="teacher-approval-section-title">Minh chứng</p>
-                                                <p class="teacher-approval-note"><%= h(app.getEvidenceSummary()) %></p>
+                                                <div class="teacher-approval-note">
+                                                    <%
+                                                        String ev = app.getEvidenceSummary();
+                                                        if (ev == null || ev.trim().isEmpty() || "Chưa đính kèm minh chứng.".equals(ev)) {
+                                                            out.print(h(ev != null ? ev : "Chưa đính kèm minh chứng."));
+                                                        } else {
+                                                            String[] lines = ev.split("\n");
+                                                            for (String line : lines) {
+                                                                if (line.trim().isEmpty()) continue;
+                                                                int colonIdx = line.indexOf(": /");
+                                                                if (colonIdx != -1) {
+                                                                    String textPart = line.substring(0, colonIdx);
+                                                                    String urlPart = line.substring(colonIdx + 2).trim();
+                                                    %>
+                                                                    <div style="margin-bottom: 0.35rem;">
+                                                                        <%= h(textPart) %>: 
+                                                                        <a href="<%= h(urlPart) %>" target="_blank" style="color: #047857; text-decoration: underline; font-weight: 600;">Xem minh chứng &rarr;</a>
+                                                                    </div>
+                                                    <%
+                                                                } else {
+                                                    %>
+                                                                    <div style="margin-bottom: 0.35rem;"><%= h(line) %></div>
+                                                    <%
+                                                                }
+                                                            }
+                                                        }
+                                                    %>
+                                                </div>
                                             </div>
 
                                             <form action="${pageContext.request.contextPath}/staff-profile" method="POST" class="teacher-review-form">

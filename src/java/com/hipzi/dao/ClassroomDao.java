@@ -25,7 +25,7 @@ public class ClassroomDao {
                 + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "
                 + "FROM classrooms c "
                 + "JOIN users u ON u.id = c.teacher_id "
-                + "LEFT JOIN teacher_applications ta ON ta.user_id = c.teacher_id "
+                + "LEFT JOIN (SELECT DISTINCT ON (user_id) user_id, institution_name, workplace FROM teacher_applications ORDER BY user_id, created_at DESC) ta ON ta.user_id = c.teacher_id "
                 + "WHERE c.teacher_id = ?::uuid "
                 + "ORDER BY c.updated_at DESC";
 
@@ -50,7 +50,7 @@ public class ClassroomDao {
                 + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "
                 + "FROM classrooms c "
                 + "JOIN users u ON u.id = c.teacher_id "
-                + "LEFT JOIN teacher_applications ta ON ta.user_id = c.teacher_id "
+                + "LEFT JOIN (SELECT DISTINCT ON (user_id) user_id, institution_name, workplace FROM teacher_applications ORDER BY user_id, created_at DESC) ta ON ta.user_id = c.teacher_id "
                 + "WHERE c.id::text = ? "
                 + "LIMIT 1";
 
@@ -149,7 +149,7 @@ public class ClassroomDao {
                 + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "
                 + "FROM classrooms c "
                 + "JOIN users u ON u.id = c.teacher_id "
-                + "LEFT JOIN teacher_applications ta ON ta.user_id = c.teacher_id "
+                + "LEFT JOIN (SELECT DISTINCT ON (user_id) user_id, institution_name, workplace FROM teacher_applications ORDER BY user_id, created_at DESC) ta ON ta.user_id = c.teacher_id "
                 + "WHERE 1 = 1 ");
 
         List<Object> params = new ArrayList<>();
@@ -192,7 +192,7 @@ public class ClassroomDao {
                 + "FROM classrooms c "
                 + "JOIN classroom_enrollments ce ON c.id = ce.classroom_id "
                 + "JOIN users u ON u.id = c.teacher_id "
-                + "LEFT JOIN teacher_applications ta ON ta.user_id = c.teacher_id "
+                + "LEFT JOIN (SELECT DISTINCT ON (user_id) user_id, institution_name, workplace FROM teacher_applications ORDER BY user_id, created_at DESC) ta ON ta.user_id = c.teacher_id "
                 + "WHERE ce.student_id = ?::uuid AND ce.status = 'accepted' "
                 + "ORDER BY ce.requested_at DESC";
 

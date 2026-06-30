@@ -92,6 +92,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
             return;
         }
 
+
         boolean canReviewEnrollments = isTeacherOwner(user, classroom);
         boolean canManageClassroom = canReviewEnrollments || hasRole(user, "staff") || hasRole(user, "admin");
         ClassroomEnrollment currentEnrollment = enrollmentDao.findByClassroomAndStudent(classId, user.getId());
@@ -99,7 +100,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
 
         if (!canManageClassroom && !acceptedStudent) {
             if (session != null) {
-                session.setAttribute("toastMsg", "Báº¡n cáº§n Ä‘Æ°á»£c giáº£ng viÃªn cháº¥p nháº­n trÆ°á»›c khi vÃ o khÃ´ng gian lá»›p.");
+                session.setAttribute("toastMsg", "Bạn cần được giảng viên chấp nhận trước khi vào không gian lớp.");
                 session.setAttribute("toastType", "error");
             }
             response.sendRedirect(request.getContextPath() + "/class-detail?id=" + classId);
@@ -175,7 +176,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
 
         if ("submitHomework".equals(action)) {
             if (!canSubmitHomework) {
-                session.setAttribute("toastMsg", "Ban chua co quyen nop bai tap cho lop nay.");
+                session.setAttribute("toastMsg", "Bạn chưa có quyền nộp bài tập cho lớp này.");
                 session.setAttribute("toastType", "error");
                 response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId);
                 return;
@@ -187,7 +188,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
                 saved = false;
                 System.err.println("Error uploading homework submission to Supabase Storage: " + e.getMessage());
             }
-            session.setAttribute("toastMsg", saved ? "Da nop bai tap thanh cong." : "Chua nop duoc bai tap. Vui long kiem tra file va thong tin nhap.");
+            session.setAttribute("toastMsg", saved ? "Đã nộp bài tập thành công." : "Chưa nộp được bài tập. Vui lòng kiểm tra file và thông tin nhập.");
             session.setAttribute("toastType", saved ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-materials");
             return;
@@ -196,7 +197,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
         if ("submitQuizAttempt".equals(action)) {
             boolean acceptedStudent = currentEnrollment != null && "accepted".equals(currentEnrollment.getStatus());
             if (!acceptedStudent || !hasRole(user, "student") || canManageClassroom) {
-                session.setAttribute("toastMsg", "Ban chua co quyen lam bai luyen tap trong lop nay.");
+                session.setAttribute("toastMsg", "Bạn chưa có quyền làm bài luyện tập trong lớp này.");
                 session.setAttribute("toastType", "error");
                 response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
                 return;
@@ -204,20 +205,20 @@ public class ClassroomSpaceServlet extends HttpServlet {
             String quizId = cleanParam(request.getParameter("quizId"));
             ClassroomQuiz quiz = !quizId.isEmpty() ? quizDao.findById(quizId) : null;
             if (quiz == null || !classId.equals(quiz.getClassroomId()) || !quiz.isPublished()) {
-                session.setAttribute("toastMsg", "Bai luyen tap nay chua san sang cho hoc vien.");
+                session.setAttribute("toastMsg", "Bài luyện tập này chưa sẵn sàng cho học viên.");
                 session.setAttribute("toastType", "error");
                 response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
                 return;
             }
             boolean saved = quizDao.createAttempt(quiz, user.getId(), collectQuizAnswers(request, quiz));
-            session.setAttribute("toastMsg", saved ? "Da nop bai luyen tap." : "Chua nop duoc bai luyen tap.");
+            session.setAttribute("toastMsg", saved ? "Đã nộp bài luyện tập." : "Chưa nộp được bài luyện tập.");
             session.setAttribute("toastType", saved ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
             return;
         }
 
         if (!canManageClassroom) {
-            session.setAttribute("toastMsg", "Báº¡n khÃ´ng cÃ³ quyá»n quáº£n lÃ½ lá»›p há»c nÃ y.");
+            session.setAttribute("toastMsg", "Bạn không có quyền quản lý lớp học này.");
             session.setAttribute("toastType", "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId);
             return;
@@ -225,7 +226,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
 
         if ("reviewEnrollment".equals(action)) {
             if (!canReviewEnrollments) {
-                session.setAttribute("toastMsg", "Chá»‰ giáº£ng viÃªn phá»¥ trÃ¡ch lá»›p má»›i cÃ³ thá»ƒ duyá»‡t há»c viÃªn.");
+                session.setAttribute("toastMsg", "Chỉ giảng viên phụ trách lớp mới có thể duyệt học viên.");
                 session.setAttribute("toastType", "error");
                 response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId);
                 return;
@@ -235,13 +236,10 @@ public class ClassroomSpaceServlet extends HttpServlet {
             boolean saved = !enrollmentId.isEmpty()
                     && enrollmentDao.updateStatus(classId, enrollmentId, decision, user.getId());
             session.setAttribute("toastMsg", saved
-                    ? ("accepted".equals(decision) ? "ÄÃ£ cháº¥p nháº­n há»c viÃªn vÃ o lá»›p." : "ÄÃ£ tá»« chá»‘i yÃªu cáº§u tham gia lá»›p.")
-                    : "ChÆ°a cáº­p nháº­t Ä‘Æ°á»£c yÃªu cáº§u tham gia lá»›p.");
-            session.setAttribute("toastMsg", saved
                     ? ("accepted".equals(decision)
-                            ? "\u0110\u00e3 ch\u1ea5p nh\u1eadn h\u1ecdc vi\u00ean v\u00e0o l\u1edbp."
-                            : "\u0110\u00e3 x\u00f3a h\u1ecdc vi\u00ean kh\u1ecfi l\u1edbp.")
-                    : "Ch\u01b0a c\u1eadp nh\u1eadt \u0111\u01b0\u1ee3c h\u1ecdc vi\u00ean.");
+                            ? "Đã chấp nhận học viên vào lớp."
+                            : "Đã xóa/từ chối học viên khỏi lớp.")
+                    : "Chưa cập nhật được học viên.");
             session.setAttribute("toastType", saved ? "success" : "error");
         } else if ("addStudentByEmail".equals(action)) {
             if (!canReviewEnrollments) {
@@ -269,7 +267,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
                 saved = false;
                 System.err.println("Error uploading classroom material to Supabase Storage: " + e.getMessage());
             }
-            session.setAttribute("toastMsg", saved ? "ÄÃ£ Ä‘Äƒng táº£i tÃ i liá»‡u ná»™i bá»™ lá»›p." : "ChÆ°a Ä‘Äƒng táº£i Ä‘Æ°á»£c tÃ i liá»‡u. Vui lÃ²ng kiá»ƒm tra file vÃ  thÃ´ng tin nháº­p.");
+            session.setAttribute("toastMsg", saved ? "Đã đăng tải tài liệu nội bộ lớp." : "Chưa đăng tải được tài liệu. Vui lòng kiểm tra file và thông tin nhập.");
             session.setAttribute("toastType", saved ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-materials");
             return;
@@ -282,55 +280,9 @@ public class ClassroomSpaceServlet extends HttpServlet {
             if (deleted) {
                 deleteStoredFileFromStorage(material);
             }
-            session.setAttribute("toastMsg", deleted ? "ÄÃ£ xÃ³a tÃ i liá»‡u khá»i lá»›p." : "KhÃ´ng thá»ƒ xÃ³a tÃ i liá»‡u nÃ y.");
+            session.setAttribute("toastMsg", deleted ? "Đã xóa tài liệu khỏi lớp." : "Không thể xóa tài liệu này.");
             session.setAttribute("toastType", deleted ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-materials");
-            return;
-        } else if ("scanClassExamAi".equals(action)) {
-            boolean scanned;
-            String scanError = "";
-            try {
-                scanned = handleClassExamAiScan(request, session);
-            } catch (Exception e) {
-                scanned = false;
-                scanError = compactErrorMessage(e);
-                System.err.println("Error scanning classroom exam with AI: " + scanError);
-                e.printStackTrace(System.err);
-            }
-            session.setAttribute("toastMsg", scanned
-                    ? "Da phan tich de thi bang AI. Hay kiem tra va chinh sua cau hoi truoc khi luu."
-                    : (!scanError.isEmpty()
-                            ? "Chua phan tich duoc de thi: " + scanError
-                            : "Chua phan tich duoc de thi. Kiem tra DATALAB_API_KEY, OPENAI_API_KEY, file de hoac text de."));
-            session.setAttribute("toastType", scanned ? "success" : "error");
-            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
-            return;
-        } else if ("createClassExam".equals(action)) {
-            boolean saved = handleClassExamCreate(request, classroom, user);
-            String examError = (String) session.getAttribute("classExamCreateError");
-            session.removeAttribute("classExamCreateError");
-            session.setAttribute("toastMsg", saved
-                    ? "Da tao bai thi lop hoc."
-                    : (examError != null ? examError : "Chua tao duoc bai thi. Vui long kiem tra thong tin, thoi gian mo dong va cau hoi."));
-            session.setAttribute("toastType", saved ? "success" : "error");
-            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
-            return;
-        } else if ("updateClassExam".equals(action)) {
-            boolean updated = handleClassExamUpdate(request, classroom);
-            String updateError = (String) session.getAttribute("classExamUpdateError");
-            session.removeAttribute("classExamUpdateError");
-            session.setAttribute("toastMsg", updated 
-                    ? "Da cap nhat thong tin bai thi." 
-                    : (updateError != null ? updateError : "Khong cap nhat duoc bai thi."));
-            session.setAttribute("toastType", updated ? "success" : "error");
-            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
-            return;
-        } else if ("deleteClassExam".equals(action)) {
-            String examId = cleanParam(request.getParameter("examId"));
-            boolean deleted = !examId.isEmpty() && examDao.deleteForClassroom(examId, classId);
-            session.setAttribute("toastMsg", deleted ? "Da xoa bai thi lop hoc." : "Khong the xoa bai thi nay.");
-            session.setAttribute("toastType", deleted ? "success" : "error");
-            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
             return;
         } else if ("scanQuizImage".equals(action) || "scanQuizImageAi".equals(action)) {
             boolean scanned;
@@ -344,10 +296,10 @@ public class ClassroomSpaceServlet extends HttpServlet {
                 e.printStackTrace(System.err);
             }
             session.setAttribute("toastMsg", scanned
-                    ? ("scanQuizImageAi".equals(action) ? "Da scan AI. Hay kiem tra lai cau hoi da nhan dien." : "Da scan anh de. Hay kiem tra lai noi dung scan.")
+                    ? ("scanQuizImageAi".equals(action) ? "Đã scan AI. Hãy kiểm tra lại câu hỏi đã nhận diện." : "Đã scan ảnh đề. Hãy kiểm tra lại nội dung scan.")
                     : (!scanError.isEmpty()
-                            ? "Chua scan duoc: " + scanError
-                            : ("scanQuizImageAi".equals(action) ? "Chua scan AI duoc. Kiem tra DATALAB_API_KEY, OPENAI_API_KEY hoac file de." : "Chua scan duoc anh de. Kiem tra DATALAB_API_KEY hoac chon file ro hon.")));
+                            ? "Chưa scan được: " + scanError
+                            : ("scanQuizImageAi".equals(action) ? "Chưa scan AI được. Kiểm tra API KEY hoặc file đề." : "Chưa scan được ảnh đề. Kiểm tra DATALAB_API_KEY hoặc chọn file rõ hơn.")));
             session.setAttribute("toastType", scanned ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
             return;
@@ -359,13 +311,13 @@ public class ClassroomSpaceServlet extends HttpServlet {
                 saved = false;
                 System.err.println("Error creating classroom quiz draft: " + e.getMessage());
             }
-            session.setAttribute("toastMsg", saved ? "Da tao ban nhap de luyen tap." : "Chua tao duoc ban nhap. Vui long nhap tieu de va noi dung scan.");
+            session.setAttribute("toastMsg", saved ? "Đã tạo bản nháp đề luyện tập." : "Chưa tạo được bản nháp. Vui lòng nhập tiêu đề và nội dung scan.");
             session.setAttribute("toastType", saved ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
             return;
         } else if ("updateQuizDraft".equals(action)) {
             boolean saved = handleQuizDraftUpdate(request, classroom);
-            session.setAttribute("toastMsg", saved ? "Da luu de luyen tap." : "Chua luu duoc de. Moi de can co tieu de va it nhat mot cau hoi.");
+            session.setAttribute("toastMsg", saved ? "Đã lưu đề luyện tập." : "Chưa lưu được đề. Mỗi đề cần có tiêu đề và ít nhất một câu hỏi.");
             session.setAttribute("toastType", saved ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
             return;
@@ -374,15 +326,15 @@ public class ClassroomSpaceServlet extends HttpServlet {
             String nextStatus = "publishQuiz".equals(action) ? "published" : "draft";
             boolean saved = !quizId.isEmpty() && quizDao.updateStatus(quizId, classId, nextStatus);
             session.setAttribute("toastMsg", saved
-                    ? ("published".equals(nextStatus) ? "Da publish de cho lop." : "Da dua de ve ban nhap.")
-                    : "Chua cap nhat duoc trang thai de.");
+                    ? ("published".equals(nextStatus) ? "Đã publish đề cho lớp." : "Đã đưa đề về bản nháp.")
+                    : "Chưa cập nhật được trạng thái đề.");
             session.setAttribute("toastType", saved ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
             return;
         } else if ("deleteQuiz".equals(action)) {
             String quizId = cleanParam(request.getParameter("quizId"));
             boolean deleted = !quizId.isEmpty() && quizDao.deleteForClassroom(quizId, classId);
-            session.setAttribute("toastMsg", deleted ? "Da xoa de luyen tap." : "Khong the xoa de nay.");
+            session.setAttribute("toastMsg", deleted ? "Đã xóa đề luyện tập." : "Không thể xóa đề này.");
             session.setAttribute("toastType", deleted ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-quiz");
             return;
@@ -393,7 +345,7 @@ public class ClassroomSpaceServlet extends HttpServlet {
             rule.setRuleText(cleanParam(request.getParameter("ruleText")));
             rule.setSortOrder(parsePositiveInt(request.getParameter("sortOrder"), 1));
             boolean created = ruleDao.create(rule);
-            session.setAttribute("toastMsg", created ? "Ä Ã£ thÃªm ná»™i quy." : "KhÃ´ng thá»ƒ thÃªm ná»™i quy.");
+            session.setAttribute("toastMsg", created ? "Đã thêm nội quy." : "Không thể thêm nội quy.");
             session.setAttribute("toastType", created ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-rules");
             return;
@@ -405,16 +357,62 @@ public class ClassroomSpaceServlet extends HttpServlet {
             rule.setRuleText(cleanParam(request.getParameter("ruleText")));
             rule.setSortOrder(parsePositiveInt(request.getParameter("sortOrder"), 1));
             boolean updated = !rule.getId().isEmpty() && ruleDao.updateForClassroom(rule);
-            session.setAttribute("toastMsg", updated ? "Ä Ã£ cáº­p nháº­t ná»™i quy." : "KhÃ´ng thá»ƒ cáº­p nháº­t ná»™i quy.");
+            session.setAttribute("toastMsg", updated ? "Đã cập nhật nội quy." : "Không thể cập nhật nội quy.");
             session.setAttribute("toastType", updated ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-rules");
             return;
         } else if ("deleteClassroomRule".equals(action)) {
             String ruleId = cleanParam(request.getParameter("ruleId"));
             boolean deleted = !ruleId.isEmpty() && ruleDao.deleteForClassroom(ruleId, classId);
-            session.setAttribute("toastMsg", deleted ? "Ä Ã£ xÃ³a ná»™i quy." : "KhÃ´ng thá»ƒ xÃ³a ná»™i quy.");
+            session.setAttribute("toastMsg", deleted ? "Đã xóa nội quy." : "Không thể xóa nội quy.");
             session.setAttribute("toastType", deleted ? "success" : "error");
             response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-rules");
+            return;
+        } else if ("scanClassExamAi".equals(action)) {
+            boolean scanned;
+            String scanError = "";
+            try {
+                scanned = handleClassExamAiScan(request, session);
+            } catch (Exception e) {
+                scanned = false;
+                scanError = compactErrorMessage(e);
+                System.err.println("Error scanning classroom exam with AI: " + scanError);
+                e.printStackTrace(System.err);
+            }
+            session.setAttribute("toastMsg", scanned
+                    ? "Đã phân tích đề thi bằng AI. Hãy kiểm tra và chỉnh sửa câu hỏi trước khi lưu."
+                    : (!scanError.isEmpty()
+                            ? "Chưa phân tích được đề thi: " + scanError
+                            : "Chưa phân tích được đề thi. Kiểm tra API KEY, file đề hoặc text đề."));
+            session.setAttribute("toastType", scanned ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
+            return;
+        } else if ("createClassExam".equals(action)) {
+            boolean saved = handleClassExamCreate(request, classroom, user);
+            String examError = (String) session.getAttribute("classExamCreateError");
+            session.removeAttribute("classExamCreateError");
+            session.setAttribute("toastMsg", saved
+                    ? "Đã tạo bài thi lớp học."
+                    : (examError != null ? examError : "Chưa tạo được bài thi. Vui lòng kiểm tra thông tin, thời gian mở đóng và câu hỏi."));
+            session.setAttribute("toastType", saved ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
+            return;
+        } else if ("updateClassExam".equals(action)) {
+            boolean updated = handleClassExamUpdate(request, classroom);
+            String updateError = (String) session.getAttribute("classExamUpdateError");
+            session.removeAttribute("classExamUpdateError");
+            session.setAttribute("toastMsg", updated 
+                    ? "Đã cập nhật thông tin bài thi." 
+                    : (updateError != null ? updateError : "Không cập nhật được bài thi."));
+            session.setAttribute("toastType", updated ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
+            return;
+        } else if ("deleteClassExam".equals(action)) {
+            String examId = cleanParam(request.getParameter("examId"));
+            boolean deleted = !examId.isEmpty() && examDao.deleteForClassroom(examId, classId);
+            session.setAttribute("toastMsg", deleted ? "Đã xóa bài thi lớp học." : "Không thể xóa bài thi này.");
+            session.setAttribute("toastType", deleted ? "success" : "error");
+            response.sendRedirect(request.getContextPath() + "/classroom?id=" + classId + "#tab-exams");
             return;
         }
 
