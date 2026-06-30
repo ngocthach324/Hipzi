@@ -1,6 +1,8 @@
 package com.hipzi.model;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParentStudentLink {
     private String id;
@@ -19,6 +21,8 @@ public class ParentStudentLink {
     private int currentLevel = 1;
     private int currentStreak;
     private int completedQuizzesCount;
+    private List<ParentClassSummary> acceptedClasses = new ArrayList<>();
+    private List<ParentExamScore> examScores = new ArrayList<>();
 
     public ParentStudentLink() {}
 
@@ -63,4 +67,13 @@ public class ParentStudentLink {
 
     public int getCompletedQuizzesCount() { return completedQuizzesCount; }
     public void setCompletedQuizzesCount(int completedQuizzesCount) { this.completedQuizzesCount = completedQuizzesCount; }
+
+    public List<ParentClassSummary> getAcceptedClasses() { return acceptedClasses; }
+    public void setAcceptedClasses(List<ParentClassSummary> acceptedClasses) {
+        this.acceptedClasses = acceptedClasses == null ? new ArrayList<>() : acceptedClasses;
+    }
+    public List<ParentExamScore> getExamScores() { return examScores; }
+    public void setExamScores(List<ParentExamScore> examScores) {
+        this.examScores = examScores == null ? new ArrayList<>() : examScores;
+    }
 }

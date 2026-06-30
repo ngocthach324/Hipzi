@@ -1,10 +1,14 @@
 package com.hipzi.dao;
 
 import com.hipzi.model.ParentStudentLink;
+import com.hipzi.model.ParentClassSummary;
+import com.hipzi.model.ParentExamScore;
 import com.hipzi.util.DBContext;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ParentStudentLinkDao {
 
@@ -77,9 +81,65 @@ public class ParentStudentLinkDao {
         } catch (SQLException e) {
             System.err.println("Error in ParentStudentLinkDao.findLinksByParentId: " + e.getMessage());
         }
+        loadStudentLearningData(parentId, links);
         return links;
     }
 
+    private void loadStudentLearningData(String parentId, List<ParentStudentLink> links) {
+        if (links == null || links.isEmpty()) return;
+        Map<String, ParentStudentLink> byStudent = new HashMap<>();
+        for (ParentStudentLink link : links) byStudent.put(link.getStudentId(), link);
+
+        String classSql = "SELECT ce.student_id, c.id AS classroom_id, c.title, c.schedule_days, c.start_time, c.end_time, "
+                + "c.tuition_fee, c.tuition_due_date FROM parent_student_links psl "
+                + "JOIN classroom_enrollments ce ON ce.student_id=psl.student_id AND ce.status='accepted' "
+                + "JOIN classrooms c ON c.id=ce.classroom_id "
+                + "WHERE psl.parent_id=?::uuid AND psl.status='linked' ORDER BY c.title";
+        String scoreSql = "SELECT ce.student_id, e.id AS exam_id, e.title AS exam_title, MAX(a.score) AS best_score "
+                + "FROM parent_student_links psl "
+                + "JOIN classroom_enrollments ce ON ce.student_id=psl.student_id AND ce.status='accepted' "
+                + "JOIN classroom_exams e ON e.classroom_id=ce.classroom_id "
+                + "JOIN classroom_exam_attempts a ON a.exam_id=e.id AND a.student_id=ce.student_id "
+                + "WHERE psl.parent_id=?::uuid AND psl.status='linked' AND a.status='completed' AND a.score IS NOT NULL "
+                + "GROUP BY ce.student_id,e.id,e.title,e.created_at ORDER BY e.created_at DESC";
+        try (Connection conn = DBContext.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(classSql)) {
+                ps.setString(1, parentId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        ParentStudentLink link = byStudent.get(rs.getString("student_id"));
+                        if (link == null) continue;
+                        ParentClassSummary item = new ParentClassSummary();
+                        item.setClassroomId(rs.getString("classroom_id"));
+                        item.setTitle(rs.getString("title"));
+                        item.setScheduleDays(rs.getString("schedule_days"));
+                        item.setStartTime(rs.getTime("start_time"));
+                        item.setEndTime(rs.getTime("end_time"));
+                        item.setTuitionFee(rs.getBigDecimal("tuition_fee"));
+                        Date dueDate = rs.getDate("tuition_due_date");
+                        item.setTuitionDueDate(dueDate != null ? dueDate.toLocalDate() : null);
+                        link.getAcceptedClasses().add(item);
+                    }
+                }
+            }
+            try (PreparedStatement ps = conn.prepareStatement(scoreSql)) {
+                ps.setString(1, parentId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        ParentStudentLink link = byStudent.get(rs.getString("student_id"));
+                        if (link == null) continue;
+                        ParentExamScore item = new ParentExamScore();
+                        item.setExamId(rs.getString("exam_id"));
+                        item.setExamTitle(rs.getString("exam_title"));
+                        item.setScore(rs.getBigDecimal("best_score"));
+                        link.getExamScores().add(item);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in ParentStudentLinkDao.loadStudentLearningData: " + e.getMessage());
+        }
+    }
     public boolean deleteLink(String parentId, String studentId) {
         String sql = "DELETE FROM parent_student_links WHERE parent_id = ?::uuid AND student_id = ?::uuid";
         try (Connection conn = DBContext.getConnection();

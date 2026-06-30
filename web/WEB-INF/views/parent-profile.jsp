@@ -1,7 +1,9 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.hipzi.model.User" %>
 <%@ page import="com.hipzi.model.Role" %>
 <%@ page import="com.hipzi.model.ParentStudentLink" %>
+<%@ page import="com.hipzi.model.ParentClassSummary" %>
+<%@ page import="com.hipzi.model.ParentExamScore" %>
 <%@ page import="com.hipzi.model.Notification" %>
 <%@ page import="com.hipzi.util.UserStatusWebSocket" %>
 <%@ page import="java.util.List" %>
@@ -18,6 +20,7 @@
     List<ParentStudentLink> trackedStudents = (List<ParentStudentLink>) request.getAttribute("trackedStudents");
     
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    java.time.format.DateTimeFormatter parentDateFormat = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
     String joinDate = (user.getCreatedAt() != null) ? sdf.format(user.getCreatedAt()) : "N/A";
     String currentDateDisplay = sdf.format(new Date());
     // Lấy danh sách thông báo hệ thống
@@ -1015,7 +1018,7 @@
         /* Student Grid */
         .student-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
             gap: 1.5rem;
             margin-top: 1rem;
         }
@@ -1036,6 +1039,17 @@
         .status-online { background: #dcfce7; color: #16a34a; }
         .status-offline { background: #f1f5f9; color: #64748b; }
 
+        .parent-learning-sections { display: grid; gap: 0.85rem; }
+        .parent-learning-block { border: 1px solid #e2e8f0; border-radius: 0.85rem; background: #f8fafc; padding: 0.85rem; }
+        .parent-learning-title { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; color: #0f172a; font-size: 0.85rem; font-weight: 850; margin-bottom: 0.65rem; }
+        .parent-learning-count { min-width: 1.45rem; height: 1.45rem; padding: 0 0.4rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: #d1fae5; color: #047857; font-size: 0.7rem; }
+        .parent-learning-list { display: grid; gap: 0.55rem; max-height: 180px; overflow-y: auto; }
+        .parent-learning-item { background: #fff; border: 1px solid #edf2f7; border-radius: 0.7rem; padding: 0.7rem 0.75rem; min-width: 0; }
+        .parent-learning-item strong { display: block; color: #0f172a; font-size: 0.82rem; line-height: 1.4; overflow-wrap: anywhere; }
+        .parent-learning-item span { display: block; color: #64748b; font-size: 0.74rem; font-weight: 650; margin-top: 0.2rem; line-height: 1.45; }
+        .parent-learning-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
+        .parent-learning-value { color: #059669 !important; font-weight: 850 !important; white-space: nowrap; margin-top: 0 !important; }
+        .parent-learning-empty { color: #94a3b8; font-size: 0.78rem; font-weight: 650; padding: 0.2rem 0; }
         .report-btn {
             background: var(--primary); color: white; text-decoration: none; text-align: center;
             border: none; cursor: pointer;
@@ -1436,7 +1450,47 @@
                                                 <span style="font-weight: 600;"><%= link.getStudentEmail() %></span>
                                             </div>
                                         </div>
-                                        <button type="button"
+                                        <div class="parent-learning-sections">
+                                            <section class="parent-learning-block">
+                                                <div class="parent-learning-title"><span>Lớp học</span><span class="parent-learning-count"><%= link.getAcceptedClasses().size() %></span></div>
+                                                <% if (link.getAcceptedClasses().isEmpty()) { %>
+                                                    <div class="parent-learning-empty">Chưa tham gia lớp học nào.</div>
+                                                <% } else { %>
+                                                    <div class="parent-learning-list">
+                                                        <% for (ParentClassSummary classItem : link.getAcceptedClasses()) { %>
+                                                            <div class="parent-learning-item"><strong><%= escAttr(classItem.getTitle()) %></strong><span><%= escAttr(classItem.getScheduleLabel()) %></span></div>
+                                                        <% } %>
+                                                    </div>
+                                                <% } %>
+                                            </section>
+
+                                            <section class="parent-learning-block">
+                                                <div class="parent-learning-title"><span>Học phí</span></div>
+                                                <div class="parent-learning-list">
+                                                    <% boolean hasParentTuition = false; for (ParentClassSummary classItem : link.getAcceptedClasses()) {
+                                                        if (classItem.getTuitionFee() == null || classItem.getTuitionFee().compareTo(java.math.BigDecimal.ZERO) <= 0 || classItem.getTuitionDueDate() == null) continue;
+                                                        hasParentTuition = true; %>
+                                                        <div class="parent-learning-item">
+                                                            <strong><%= escAttr(classItem.getTitle()) %></strong>
+                                                            <div class="parent-learning-row"><span>Hạn <%= classItem.getTuitionDueDate().format(parentDateFormat) %></span><span class="parent-learning-value"><%= escAttr(classItem.getTuitionLabel()) %></span></div>
+                                                        </div>
+                                                    <% } if (!hasParentTuition) { %><div class="parent-learning-empty">Chưa có thông tin học phí.</div><% } %>
+                                                </div>
+                                            </section>
+
+                                            <section class="parent-learning-block">
+                                                <div class="parent-learning-title"><span>Điểm số</span><span class="parent-learning-count"><%= link.getExamScores().size() %></span></div>
+                                                <% if (link.getExamScores().isEmpty()) { %>
+                                                    <div class="parent-learning-empty">Chưa có bài thi lớp học đã chấm điểm.</div>
+                                                <% } else { %>
+                                                    <div class="parent-learning-list">
+                                                        <% for (ParentExamScore examScore : link.getExamScores()) { %>
+                                                            <div class="parent-learning-item parent-learning-row"><strong><%= escAttr(examScore.getExamTitle()) %></strong><span class="parent-learning-value"><%= escAttr(examScore.getScoreLabel()) %></span></div>
+                                                        <% } %>
+                                                    </div>
+                                                <% } %>
+                                            </section>
+                                        </div>                                        <button type="button"
                                                 class="report-btn open-report-modal"
                                                 data-name="<%= escAttr(link.getStudentName()) %>"
                                                 data-code="<%= escAttr(link.getStudentCode()) %>"
