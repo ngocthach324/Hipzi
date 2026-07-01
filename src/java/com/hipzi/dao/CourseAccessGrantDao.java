@@ -58,6 +58,49 @@ public class CourseAccessGrantDao {
         return jobs;
     }
 
+    public List<CourseAccessGrantJob> listGrantableByCourseAndStudent(String courseId, String studentId) {
+        List<CourseAccessGrantJob> jobs = new ArrayList<>();
+        if (courseId == null || courseId.trim().isEmpty() || studentId == null || studentId.trim().isEmpty()) {
+            return jobs;
+        }
+
+        String sql = "SELECT g.id AS grant_id, g.enrollment_id, g.course_id, g.student_id, g.student_email, "
+                + "c.title AS course_title, c.teacher_id, c.google_drive_file_id, c.google_drive_folder_id, c.require_drive_grant, "
+                + "tga.scope AS teacher_google_scope "
+                + "FROM course_access_grants g "
+                + "JOIN courses c ON c.id = g.course_id "
+                + "LEFT JOIN teacher_google_accounts tga ON tga.teacher_id = c.teacher_id AND tga.revoked_at IS NULL "
+                + "WHERE g.course_id = ?::uuid AND g.student_id = ?::uuid "
+                + "AND g.status IN ('pending', 'failed') "
+                + "ORDER BY g.created_at ASC";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, courseId);
+            ps.setString(2, studentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    CourseAccessGrantJob job = new CourseAccessGrantJob();
+                    job.setGrantId(rs.getString("grant_id"));
+                    job.setEnrollmentId(rs.getString("enrollment_id"));
+                    job.setCourseId(rs.getString("course_id"));
+                    job.setStudentId(rs.getString("student_id"));
+                    job.setStudentEmail(rs.getString("student_email"));
+                    job.setCourseTitle(rs.getString("course_title"));
+                    job.setTeacherId(rs.getString("teacher_id"));
+                    job.setGoogleDriveFileId(rs.getString("google_drive_file_id"));
+                    job.setGoogleDriveFolderId(rs.getString("google_drive_folder_id"));
+                    job.setTeacherGoogleScope(rs.getString("teacher_google_scope"));
+                    job.setRequireDriveGrant(rs.getBoolean("require_drive_grant"));
+                    jobs.add(job);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in CourseAccessGrantDao.listGrantableByCourseAndStudent: " + e.getMessage());
+        }
+        return jobs;
+    }
+
     public CourseAccessSummary summarizeByOrderId(String orderId) {
         CourseAccessSummary summary = new CourseAccessSummary();
         if (orderId == null || orderId.trim().isEmpty()) {

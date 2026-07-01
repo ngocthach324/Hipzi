@@ -1484,7 +1484,7 @@
                     </div>
                     <div class="weekly-footer">
                         <span class="weekly-price <%= featuredCourse.isFree() ? "free" : "" %>"><%= h(featuredCourse.getPriceLabel()) %></span>
-                        <a href="#" class="weekly-cta" onclick="event.preventDefault(); event.stopPropagation();">Xem chi tiết</a>
+                        <a href="${pageContext.request.contextPath}/course-detail?id=<%= h(featuredCourse.getId()) %>" class="weekly-cta" style="text-decoration: none;">Xem chi tiết</a>
                     </div>
                 </div>
             </article>

@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.hipzi.model.User"%>
 <%@page import="com.hipzi.model.CartItem"%>
 <%@page import="java.util.List"%>
@@ -174,6 +174,9 @@
                 <% if (cartItems != null && !cartItems.isEmpty()) {
                        for (CartItem item : cartItems) {
                            String thumbUrl = item.getThumbnailUrl();
+                           if (thumbUrl != null && thumbUrl.startsWith("/") && !thumbUrl.startsWith(request.getContextPath())) {
+                               thumbUrl = request.getContextPath() + thumbUrl;
+                           }
                            String thumbStyle = (thumbUrl != null && !thumbUrl.trim().isEmpty())
                                ? "background-image:url('" + h(thumbUrl) + "'); background-size:cover; background-position:center;"
                                : "background:" + h(item.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";

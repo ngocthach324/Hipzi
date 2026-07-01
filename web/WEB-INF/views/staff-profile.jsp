@@ -4934,7 +4934,6 @@
                                                     <div class="class-detail-actions" style="margin-top:0; padding-top:0; border-top:0;">
                                                         <button type="button" class="class-detail-cancel" onclick="closeClassDetailModal('<%= h(courseModalId) %>')">Hủy bỏ</button>
                                                         <button type="submit" name="decision" value="approved" class="class-detail-cancel" style="border-color:#bbf7d0; color:#047857;">Duyệt</button>
-                                                        <button type="submit" name="decision" value="needs_revision" class="class-detail-cancel" style="border-color:#fed7aa; color:#c2410c;">Yêu cầu sửa</button>
                                                         <button type="submit" name="decision" value="rejected" class="class-detail-delete">Từ chối</button>
                                                     </div>
                                                 </form>

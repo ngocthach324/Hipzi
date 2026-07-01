@@ -6,17 +6,21 @@ import com.hipzi.model.Course;
 import com.hipzi.model.Role;
 import com.hipzi.model.User;
 
+import jakarta.servlet.ServletContext;
+
 public class EnrollmentService {
     
     private final CourseDao courseDao;
     private final CourseEnrollmentDao enrollmentDao;
+    private final CourseAccessGrantService grantService;
 
     public EnrollmentService() {
         this.courseDao = new CourseDao();
         this.enrollmentDao = new CourseEnrollmentDao();
+        this.grantService = new CourseAccessGrantService();
     }
 
-    public String enrollFree(User user, String courseId) {
+    public String enrollFree(User user, String courseId, ServletContext servletContext) {
         if (user == null || courseId == null || courseId.trim().isEmpty()) {
             return "Vui lòng đăng nhập để đăng ký khóa học.";
         }
@@ -54,6 +58,8 @@ public class EnrollmentService {
 
         boolean success = enrollmentDao.enrollFreeCourse(user.getId(), courseId);
         if (success) {
+            // Trigger Google Drive access grant automatically for free courses
+            grantService.processEnrollmentAccessGrants(courseId, user.getId(), servletContext);
             return null; // Success
         } else {
             return "Đăng ký không thành công. Vui lòng thử lại sau.";

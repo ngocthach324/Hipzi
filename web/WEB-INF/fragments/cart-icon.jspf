@@ -84,7 +84,10 @@
                 div.style.gap = '0.75rem';
                 
                 const courseHref = contextPath + '/course-detail?id=' + encodeURIComponent(item.courseId);
-                const thumbUrl = item.thumbnailUrl ? item.thumbnailUrl : '';
+                let thumbUrl = item.thumbnailUrl ? item.thumbnailUrl : '';
+                if (thumbUrl && thumbUrl.startsWith('/') && !thumbUrl.startsWith(contextPath)) {
+                    thumbUrl = contextPath + thumbUrl;
+                }
                 const thumbStyle = thumbUrl
                     ? 'background-image:url("'+thumbUrl+'");background-size:cover;background-position:center;'
                     : 'background:'+(item.thumbnailGradient || 'linear-gradient(135deg,#3b82f6 0%,#6366f1 100%)');

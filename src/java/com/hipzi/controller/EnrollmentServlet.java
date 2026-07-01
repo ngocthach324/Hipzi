@@ -28,7 +28,7 @@ public class EnrollmentServlet extends HttpServlet {
             return;
         }
 
-        String error = enrollmentService.enrollFree(user, courseId);
+        String error = enrollmentService.enrollFree(user, courseId, getServletContext());
         
         if (error != null) {
             request.getSession().setAttribute("errorMsg", error);

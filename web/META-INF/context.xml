@@ -10,4 +10,5 @@
   <Parameter name="GOOGLE_REDIRECT_URI" value="http://localhost:8080/HipZi/auth/google/callback" override="false" />
   <Parameter name="GOOGLE_DRIVE_REDIRECT_URI" value="http://localhost:8080/HipZi/teacher-drive/callback" override="false" />
   <Parameter name="HIPZI_TOKEN_ENCRYPTION_KEY" value="hipzi-local-dev-token-key-change-before-production" override="false" />
+  <Parameter name="GROQ_API_KEYS" value="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" override="false" />
 </Context>

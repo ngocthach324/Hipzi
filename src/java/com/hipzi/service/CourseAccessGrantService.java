@@ -25,6 +25,21 @@ public class CourseAccessGrantService {
         }
     }
 
+    public void processEnrollmentAccessGrants(String courseId, String studentId, ServletContext servletContext) {
+        List<CourseAccessGrantJob> jobs = grantDao.listGrantableByCourseAndStudent(courseId, studentId);
+        if (jobs == null || jobs.isEmpty()) {
+            return;
+        }
+
+        String clientId = config(servletContext, "GOOGLE_CLIENT_ID");
+        String clientSecret = config(servletContext, "GOOGLE_CLIENT_SECRET");
+        String encryptionKey = tokenEncryptionKey(servletContext);
+
+        for (CourseAccessGrantJob job : jobs) {
+            processOne(job, clientId, clientSecret, encryptionKey);
+        }
+    }
+
     private void processOne(CourseAccessGrantJob job, String clientId, String clientSecret, String encryptionKey) {
         try {
             if (!job.isRequireDriveGrant()) {
