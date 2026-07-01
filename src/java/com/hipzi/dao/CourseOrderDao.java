@@ -29,8 +29,8 @@ public class CourseOrderDao {
         }
 
         String insertOrder = "INSERT INTO course_orders "
-                + "(order_code, student_id, total_amount, currency, status, payment_provider, payment_content, expires_at) "
-                + "VALUES (?, ?::uuid, ?, ?, 'pending', ?, ?, ?) "
+                + "(order_code, student_id, total_amount, currency, status, payment_provider, payment_content, expires_at, discount_code_id, discount_amount, paid_at) "
+                + "VALUES (?, ?::uuid, ?, ?, ?, ?, ?, ?, ?::uuid, ?, ?) "
                 + "RETURNING id, created_at, updated_at";
 
         String insertItem = "INSERT INTO course_order_items "
@@ -46,9 +46,13 @@ public class CourseOrderDao {
                     ps.setString(2, order.getStudentId());
                     ps.setBigDecimal(3, order.getTotalAmount());
                     ps.setString(4, valueOrDefault(order.getCurrency(), "VND"));
-                    ps.setString(5, valueOrDefault(order.getPaymentProvider(), "sepay"));
-                    ps.setString(6, order.getPaymentContent());
-                    ps.setTimestamp(7, order.getExpiresAt());
+                    ps.setString(5, valueOrDefault(order.getStatus(), "pending"));
+                    ps.setString(6, valueOrDefault(order.getPaymentProvider(), "sepay"));
+                    ps.setString(7, order.getPaymentContent());
+                    ps.setTimestamp(8, order.getExpiresAt());
+                    ps.setString(9, order.getDiscountCodeId());
+                    ps.setBigDecimal(10, order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO);
+                    ps.setTimestamp(11, order.getPaidAt());
 
                     try (ResultSet rs = ps.executeQuery()) {
                         if (!rs.next()) {
@@ -194,7 +198,7 @@ public class CourseOrderDao {
     private String baseOrderSelect() {
         return "SELECT o.id, o.order_code, o.student_id, o.total_amount, o.currency, o.status, "
                 + "o.payment_provider, o.payment_reference, o.payment_content, o.paid_at, "
-                + "o.expires_at, o.created_at, o.updated_at "
+                + "o.expires_at, o.created_at, o.updated_at, o.discount_code_id, o.discount_amount "
                 + "FROM course_orders o ";
     }
 
@@ -213,6 +217,8 @@ public class CourseOrderDao {
         order.setExpiresAt(rs.getTimestamp("expires_at"));
         order.setCreatedAt(rs.getTimestamp("created_at"));
         order.setUpdatedAt(rs.getTimestamp("updated_at"));
+        order.setDiscountCodeId(rs.getString("discount_code_id"));
+        order.setDiscountAmount(rs.getBigDecimal("discount_amount"));
         return order;
     }
 

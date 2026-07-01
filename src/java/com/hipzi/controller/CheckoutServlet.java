@@ -73,11 +73,18 @@ public class CheckoutServlet extends HttpServlet {
                 ? Collections.emptyList()
                 : Arrays.asList(selected);
 
-        CheckoutService.CheckoutResult result = checkoutService.createOrderFromCart(user, selectedCourseIds);
+        String discountCode = request.getParameter("discountCode");
+
+        CheckoutService.CheckoutResult result = checkoutService.createOrderFromCart(user, selectedCourseIds, discountCode);
         if (!result.isSuccess()) {
             request.getSession().setAttribute("errorMsg", result.getError());
             response.sendRedirect(request.getContextPath() + "/cart");
             return;
+        }
+
+        if (result.getOrder().isPaid()) {
+            com.hipzi.service.CourseAccessGrantService accessService = new com.hipzi.service.CourseAccessGrantService();
+            accessService.processOrderAccessGrants(result.getOrder().getOrderCode(), request.getServletContext());
         }
 
         response.sendRedirect(request.getContextPath() + "/checkout?id=" + result.getOrder().getId());

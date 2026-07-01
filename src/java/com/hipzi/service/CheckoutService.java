@@ -24,18 +24,20 @@ public class CheckoutService {
     private final CartService cartService;
     private final CourseDao courseDao;
     private final CourseOrderDao courseOrderDao;
+    private final com.hipzi.dao.DiscountCodeDao discountCodeDao;
 
     public CheckoutService() {
         this.cartService = new CartService();
         this.courseDao = new CourseDao();
         this.courseOrderDao = new CourseOrderDao();
+        this.discountCodeDao = new com.hipzi.dao.DiscountCodeDao();
     }
 
     public CheckoutResult createOrderFromCart(User user) {
-        return createOrderFromCart(user, null);
+        return createOrderFromCart(user, null, null);
     }
 
-    public CheckoutResult createOrderFromCart(User user, List<String> selectedCourseIds) {
+    public CheckoutResult createOrderFromCart(User user, List<String> selectedCourseIds, String discountCode) {
         if (user == null) {
             return CheckoutResult.error("Vui lòng đăng nhập để thanh toán.");
         }
@@ -83,17 +85,46 @@ public class CheckoutService {
             return CheckoutResult.error("Có khóa học đã chọn không còn nằm trong giỏ hàng.");
         }
 
-        if (orderItems.isEmpty() || total.compareTo(BigDecimal.ZERO) <= 0) {
-            return CheckoutResult.error("Không có khóa học có phí hợp lệ để thanh toán.");
+        if (orderItems.isEmpty()) {
+            return CheckoutResult.error("Không có khóa học hợp lệ để thanh toán.");
         }
+
+        com.hipzi.model.DiscountCode appliedDiscount = null;
+        if (discountCode != null && !discountCode.trim().isEmpty()) {
+            appliedDiscount = discountCodeDao.findByCode(discountCode);
+            if (appliedDiscount == null) {
+                return CheckoutResult.error("Mã giảm giá không tồn tại.");
+            }
+            if (!appliedDiscount.isValid()) {
+                return CheckoutResult.error("Mã giảm giá đã hết lượt dùng hoặc không hợp lệ.");
+            }
+            BigDecimal discountAmount = appliedDiscount.getDiscountAmount();
+            total = total.subtract(discountAmount);
+            if (total.compareTo(BigDecimal.ZERO) < 0) {
+                total = BigDecimal.ZERO;
+            }
+        }
+
+        boolean isFree = total.compareTo(BigDecimal.ZERO) <= 0;
 
         CourseOrder order = new CourseOrder();
         order.setStudentId(user.getId());
-        order.setTotalAmount(total);
+        order.setTotalAmount(isFree ? BigDecimal.ZERO : total);
+        if (appliedDiscount != null) {
+            order.setDiscountCodeId(appliedDiscount.getId());
+            order.setDiscountAmount(appliedDiscount.getDiscountAmount());
+        }
         order.setCurrency("VND");
-        order.setStatus("pending");
-        order.setPaymentProvider("sepay");
-        order.setExpiresAt(new Timestamp(System.currentTimeMillis() + ORDER_EXPIRES_MINUTES * 60L * 1000L));
+
+        if (isFree) {
+            order.setStatus("paid");
+            order.setPaymentProvider("discount");
+            order.setPaidAt(new java.sql.Timestamp(System.currentTimeMillis()));
+        } else {
+            order.setStatus("pending");
+            order.setPaymentProvider("sepay");
+            order.setExpiresAt(new Timestamp(System.currentTimeMillis() + ORDER_EXPIRES_MINUTES * 60L * 1000L));
+        }
         order.setItems(orderItems);
 
         for (int attempt = 0; attempt < 3; attempt++) {
@@ -103,6 +134,13 @@ public class CheckoutService {
 
             CourseOrder created = courseOrderDao.createPendingOrder(order);
             if (created != null) {
+                if (appliedDiscount != null) {
+                    discountCodeDao.incrementUses(appliedDiscount.getId());
+                }
+                if (isFree) {
+                    com.hipzi.dao.CoursePaymentDao paymentDao = new com.hipzi.dao.CoursePaymentDao();
+                    paymentDao.processFreeOrder(created.getOrderCode());
+                }
                 return CheckoutResult.success(created);
             }
         }

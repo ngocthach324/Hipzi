@@ -21,6 +21,8 @@ public class CourseOrder {
     private Timestamp expiresAt;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private String discountCodeId;
+    private BigDecimal discountAmount;
     private List<CourseOrderItem> items = new ArrayList<>();
 
     public String getId() { return id; }
@@ -66,6 +68,12 @@ public class CourseOrder {
     public void setItems(List<CourseOrderItem> items) {
         this.items = items != null ? items : new ArrayList<>();
     }
+
+    public String getDiscountCodeId() { return discountCodeId; }
+    public void setDiscountCodeId(String discountCodeId) { this.discountCodeId = discountCodeId; }
+
+    public BigDecimal getDiscountAmount() { return discountAmount; }
+    public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
 
     public String getTotalLabel() {
         if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) <= 0) {

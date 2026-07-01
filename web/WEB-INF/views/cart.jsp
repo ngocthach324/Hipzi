@@ -224,8 +224,9 @@
                 <!-- Coupon Panel -->
                 <div class="panel">
                     <h2 class="panel-title">Mã giảm giá</h2>
-                    <input type="text" class="coupon-input" placeholder="Nhập mã giảm giá của bạn">
-                    <button class="btn-outline-green">Áp dụng mã</button>
+                    <input type="text" id="couponInput" class="coupon-input" placeholder="Nhập mã giảm giá của bạn">
+                    <button type="button" class="btn-outline-green" onclick="applyCoupon()">Áp dụng mã</button>
+                    <div id="couponMessage" style="margin-top: 8px; font-size: 14px; display: none;"></div>
                 </div>
 
                 <!-- Order Summary Panel -->
@@ -246,6 +247,7 @@
                     </div>
                     
                     <button type="submit" class="btn-checkout">Thanh toán ngay</button>
+                    <input type="hidden" name="discountCode" id="hiddenDiscountCode" value="">
                 </div>
             </div>
         </div>
@@ -323,13 +325,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             const selectAllCheckbox = document.getElementById('selectAll');
             
+            window.currentDiscountAmount = 0;
+            window.currentDiscountCode = '';
+            
             window.recalcCartTotals = function() {
                 const itemCheckboxes = document.querySelectorAll('.product-item .item-checkbox');
                 const selectedCountEl = document.getElementById('selectedCount');
                 
                 let count = 0;
                 let total = 0;
-                let discount = 0; // Discount logic can be added later
+                let discount = window.currentDiscountAmount; // Discount logic can be added later
 
                 itemCheckboxes.forEach(cb => {
                     if (cb.checked) {
@@ -342,10 +347,13 @@
                     selectedCountEl.textContent = 'Đã chọn: ' + count + ' khóa học';
                 }
 
+                let finalTotal = total - discount;
+                if (finalTotal < 0) finalTotal = 0;
+
                 // Update summary
                 document.getElementById('summaryTotal').textContent = formatCurrency(total);
                 document.getElementById('summaryDiscount').textContent = discount > 0 ? '- ' + formatCurrency(discount) : '0 đ';
-                document.getElementById('summaryFinal').textContent = formatCurrency(total - discount);
+                document.getElementById('summaryFinal').textContent = formatCurrency(finalTotal);
             };
 
             const itemCheckboxes = document.querySelectorAll('.product-item .item-checkbox');
@@ -381,6 +389,54 @@
                 if (selectAllCheckbox) selectAllCheckbox.disabled = true;
             }
         });
+
+        async function applyCoupon() {
+            const inputEl = document.getElementById('couponInput');
+            const msgEl = document.getElementById('couponMessage');
+            const code = inputEl.value.trim();
+
+            if (!code) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#b91c1c';
+                msgEl.textContent = 'Vui lòng nhập mã giảm giá.';
+                return;
+            }
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('code', code);
+                
+                const response = await fetch('${pageContext.request.contextPath}/api/discount/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData.toString()
+                });
+                
+                const data = await response.json();
+                msgEl.style.display = 'block';
+
+                if (data.success) {
+                    msgEl.style.color = '#15803d'; // Green
+                    msgEl.textContent = data.message;
+                    window.currentDiscountAmount = parseFloat(data.discount_amount);
+                    window.currentDiscountCode = data.code;
+                    document.getElementById('hiddenDiscountCode').value = data.code;
+                    window.recalcCartTotals();
+                } else {
+                    msgEl.style.color = '#b91c1c'; // Red
+                    msgEl.textContent = data.message;
+                    window.currentDiscountAmount = 0;
+                    window.currentDiscountCode = '';
+                    document.getElementById('hiddenDiscountCode').value = '';
+                    window.recalcCartTotals();
+                }
+            } catch (err) {
+                console.error(err);
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#b91c1c';
+                msgEl.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
+            }
+        }
     </script>
 </body>
 </html>

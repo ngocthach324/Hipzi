@@ -14,6 +14,9 @@ public class AppContextListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
+        // Set default timezone for the whole application to Vietnam time
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+
         // Khởi động pool sẵn khi app start để phát hiện lỗi kết nối sớm
         try {
             java.sql.Connection conn = DBContext.getConnection();

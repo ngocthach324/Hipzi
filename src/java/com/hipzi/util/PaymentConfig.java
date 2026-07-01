@@ -42,6 +42,9 @@ public final class PaymentConfig {
         }
 
         BigDecimal amount = order.getTotalAmount().setScale(0, RoundingMode.HALF_UP);
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return "";
+        }
         String template = configValue("VIETQR_TEMPLATE", DEFAULT_QR_TEMPLATE);
         return "https://img.vietqr.io/image/"
                 + encodePath(bankAcqId())

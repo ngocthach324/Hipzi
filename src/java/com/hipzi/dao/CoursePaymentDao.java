@@ -84,6 +84,29 @@ public class CoursePaymentDao {
         }
     }
 
+    public void processFreeOrder(String orderCode) {
+        try (Connection conn = DBContext.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                LockedOrder order = lockOrder(conn, orderCode);
+                if (order != null && "paid".equalsIgnoreCase(order.status)) {
+                    String walletTransactionId = insertWalletTransaction(conn, order);
+                    createEnrollments(conn, order, walletTransactionId);
+                    creditTeacherWallets(conn, order);
+                    clearPaidCartItems(conn, order);
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                System.err.println("Error in CoursePaymentDao.processFreeOrder transaction: " + e.getMessage());
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in CoursePaymentDao.processFreeOrder: " + e.getMessage());
+        }
+    }
+
     private boolean paymentEventExists(Connection conn, String providerEventId) throws SQLException {
         String sql = "SELECT 1 FROM payment_events WHERE provider = 'sepay' AND provider_event_id = ? LIMIT 1";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
