@@ -6,13 +6,18 @@ import java.util.Map;
 
 public class AdminFinancialStats {
     private BigDecimal totalCourseRevenue = BigDecimal.ZERO;
+    private BigDecimal totalTuitionRevenue = BigDecimal.ZERO;
     private BigDecimal totalWalletDeposits = BigDecimal.ZERO;
     private BigDecimal totalWithdrawals = BigDecimal.ZERO;
     private BigDecimal totalWalletBalance = BigDecimal.ZERO;
     private List<Map<String, Object>> recentTransactions;
+    private List<Map<String, Object>> recentTuitionTransactions;
 
     public BigDecimal getTotalCourseRevenue() { return totalCourseRevenue; }
     public void setTotalCourseRevenue(BigDecimal val) { this.totalCourseRevenue = val; }
+
+    public BigDecimal getTotalTuitionRevenue() { return totalTuitionRevenue; }
+    public void setTotalTuitionRevenue(BigDecimal val) { this.totalTuitionRevenue = val; }
 
     public BigDecimal getTotalWalletDeposits() { return totalWalletDeposits; }
     public void setTotalWalletDeposits(BigDecimal val) { this.totalWalletDeposits = val; }
@@ -25,4 +30,7 @@ public class AdminFinancialStats {
 
     public List<Map<String, Object>> getRecentTransactions() { return recentTransactions; }
     public void setRecentTransactions(List<Map<String, Object>> recentTransactions) { this.recentTransactions = recentTransactions; }
+
+    public List<Map<String, Object>> getRecentTuitionTransactions() { return recentTuitionTransactions; }
+    public void setRecentTuitionTransactions(List<Map<String, Object>> recentTuitionTransactions) { this.recentTuitionTransactions = recentTuitionTransactions; }
 }

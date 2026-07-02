@@ -200,6 +200,7 @@ public class ProfileServlet extends HttpServlet {
                 request.setAttribute("studentCourses", courseDao.findPurchasedByStudent(user.getId()));
             } else if ("wallet-history".equals(tab) || "wallet-balance".equals(tab)) {
                 request.setAttribute("tuitionInvoices", tuitionInvoiceDao.listVisibleByStudent(user.getId()));
+                request.setAttribute("coursePurchaseHistory", courseOrderDao.listPaidByStudentId(user.getId(), 100));
             } else if ("support".equals(tab)) {
                 loadUserSupportData(request, user);
             }
@@ -222,6 +223,7 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("hasApprovedApplication", approvedTeacherApplication != null);
 
             if ("dashboard".equals(tab)) {
+                request.setAttribute("studentStudyProgressStats", studentStudyProgressDao.getStats(user.getId()));
                 request.setAttribute("teacherClassrooms", classroomDao.findByTeacherId(user.getId()));
                 request.setAttribute("teacherSchedules", teachingScheduleDao.findByTeacherId(user.getId()));
                 request.setAttribute("teacherCourses", courseDao.findByTeacherId(user.getId()));

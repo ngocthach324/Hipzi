@@ -4000,7 +4000,7 @@
                     </div>
                     
                     <div class="dropdown-menu-popup">
-                        <a onclick="switchTab('tab-profile')">
+                        <a onclick="switchTab('tab-dashboard')">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
                             <span><%= profileMenuLabel %></span>
                         </a>
@@ -4810,7 +4810,7 @@
 
                     <div style="padding: 1.5rem;">
                         <h3 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 1.25rem;">Tổng quan tài chính</h3>
-                        <div class="system-overview-grid" style="grid-template-columns: repeat(2, 1fr);">
+                        <div class="system-overview-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
                             <div class="system-metric-card">
                                 <div class="system-metric-icon" style="color: #059669; background: #dcfce7;">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -4820,6 +4820,17 @@
                                     <div class="system-metric-value"><%= currencyFmt.format(financialOverview.getTotalCourseRevenue()) %></div>
                                 </div>
                                 <div class="system-metric-note">Khóa học đã thanh toán</div>
+                            </div>
+
+                            <div class="system-metric-card">
+                                <div class="system-metric-icon" style="color: #2563eb; background: #dbeafe;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6M7 16h4"/></svg>
+                                </div>
+                                <div>
+                                    <div class="system-metric-label">Tổng doanh thu học phí</div>
+                                    <div class="system-metric-value"><%= currencyFmt.format(financialOverview.getTotalTuitionRevenue()) %></div>
+                                </div>
+                                <div class="system-metric-note">Học phí lớp đã thanh toán</div>
                             </div>
 
                             <div class="system-metric-card">
@@ -4863,6 +4874,38 @@
                                 } else { %>
                                     <div style="padding: 2rem; text-align: center; color: #64748b;">
                                         Không có giao dịch nào gần đây.
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem;">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 1.25rem;">Giao dịch học phí gần nhất</h3>
+                            <div class="user-management-table" style="margin: 0; padding: 0;">
+                                <div class="user-management-header" style="display: grid; gap: 1rem; grid-template-columns: 1.5fr 1fr 2fr 1fr 1fr;">
+                                    <div>Người dùng</div>
+                                    <div>Mã hóa đơn</div>
+                                    <div>Lớp học</div>
+                                    <div>Số tiền</div>
+                                    <div>Trạng thái</div>
+                                </div>
+                                <% if (financialOverview.getRecentTuitionTransactions() != null && !financialOverview.getRecentTuitionTransactions().isEmpty()) {
+                                    SimpleDateFormat tuitionTxDate = new SimpleDateFormat("HH:mm - dd/MM/yyyy");
+                                    for (Map<String, Object> tx : financialOverview.getRecentTuitionTransactions()) { %>
+                                    <div class="user-management-row" style="display: grid; gap: 1rem; border-bottom: 1px solid #eef2f7; padding: 1rem 0; grid-template-columns: 1.5fr 1fr 2fr 1fr 1fr; align-items: center;">
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                            <span style="font-weight: 600; color: #1e293b;"><%= h((String) tx.get("user")) %></span>
+                                            <span style="font-size: 0.85rem; color: #64748b;"><%= tuitionTxDate.format((java.util.Date) tx.get("date")) %></span>
+                                        </div>
+                                        <div style="font-family: monospace; color: #334155;"><%= h((String) tx.get("code")) %></div>
+                                        <div style="font-weight: 600; color: #334155;"><%= h((String) tx.get("classroom")) %></div>
+                                        <div style="font-weight: 600; color: #2563eb;"><%= currencyFmt.format((java.math.BigDecimal) tx.get("amount")) %></div>
+                                        <div><span class="user-status-badge status-active">Thành công</span></div>
+                                    </div>
+                                <%  }
+                                } else { %>
+                                    <div style="padding: 2rem; text-align: center; color: #64748b;">
+                                        Không có giao dịch học phí nào gần đây.
                                     </div>
                                 <% } %>
                             </div>

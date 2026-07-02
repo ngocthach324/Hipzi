@@ -3,6 +3,8 @@
         <%@page import="com.hipzi.model.Role" %>
             <%@page import="com.hipzi.model.Classroom" %>
             <%@page import="com.hipzi.model.Course" %>
+            <%@page import="com.hipzi.model.CourseOrder" %>
+            <%@page import="com.hipzi.model.CourseOrderItem" %>
             <%@page import="java.text.NumberFormat" %>
             <%@page import="java.util.Locale" %>
                 <%@page import="com.hipzi.model.TuitionInvoice" %>
@@ -3848,6 +3850,8 @@
     <%
         List<TuitionInvoice> tuitionInvoices = (List<TuitionInvoice>) request.getAttribute("tuitionInvoices");
         if (tuitionInvoices == null) tuitionInvoices = new java.util.ArrayList<TuitionInvoice>();
+        List<CourseOrder> coursePurchaseHistory = (List<CourseOrder>) request.getAttribute("coursePurchaseHistory");
+        if (coursePurchaseHistory == null) coursePurchaseHistory = new java.util.ArrayList<CourseOrder>();
         int pendingTuitionCount = 0;
         int paidTuitionCount = 0;
         for (TuitionInvoice item : tuitionInvoices) {
@@ -3900,6 +3904,32 @@
             <thead><tr style="background:#f8fafc;border-bottom:1px solid var(--border-dark);"><th style="padding:1rem 1.25rem;">Mã hóa đơn</th><th style="padding:1rem 1.25rem;">Ngày thanh toán</th><th style="padding:1rem 1.25rem;">Lớp học</th><th style="padding:1rem 1.25rem;text-align:right;">Số tiền</th><th style="padding:1rem 1.25rem;text-align:center;">Trạng thái</th></tr></thead>
             <tbody><% for (TuitionInvoice item : tuitionInvoices) { if (!item.isPaid()) continue; %>
                 <tr style="border-bottom:1px solid var(--border-light);"><td style="padding:1rem 1.25rem;font-weight:800;"><%= h(item.getInvoiceCode()) %></td><td style="padding:1rem 1.25rem;color:var(--text-muted);"><%= item.getPaidAt() != null ? tuitionPaidFormat.format(item.getPaidAt()) : "" %></td><td style="padding:1rem 1.25rem;"><%= h(item.getClassroomTitle()) %></td><td style="padding:1rem 1.25rem;text-align:right;font-weight:900;color:#ef4444;">-<%= h(item.getAmountLabel()) %></td><td style="padding:1rem 1.25rem;text-align:center;"><span style="background:#ecfdf5;color:#047857;padding:.3rem .7rem;border-radius:999px;font-size:.75rem;font-weight:800;">Thành công</span></td></tr>
+            <% } %></tbody>
+        </table></div>
+        <% } %>
+    </div>
+    <div class="premium-card" style="padding:0;overflow:hidden;margin-top:1.5rem;">
+        <div class="premium-card-header" style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border-dark);display:flex;justify-content:space-between;">
+            <h3 class="premium-card-title" style="margin:0;font-size:1.1rem;font-weight:800;">Lịch sử mua khóa học</h3>
+            <span style="color:#64748b;font-size:.82rem;font-weight:750;"><%= coursePurchaseHistory.size() %> giao dịch</span>
+        </div>
+        <% if (coursePurchaseHistory.isEmpty()) { %>
+            <div style="padding:2rem;text-align:center;color:var(--text-muted);font-weight:700;">Chưa có giao dịch mua khóa học đã hoàn tất.</div>
+        <% } else { %>
+        <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;text-align:left;font-size:.9rem;">
+            <thead><tr style="background:#f8fafc;border-bottom:1px solid var(--border-dark);"><th style="padding:1rem 1.25rem;">Mã đơn hàng</th><th style="padding:1rem 1.25rem;">Ngày thanh toán</th><th style="padding:1rem 1.25rem;">Khóa học</th><th style="padding:1rem 1.25rem;text-align:right;">Số tiền</th><th style="padding:1rem 1.25rem;text-align:center;">Trạng thái</th></tr></thead>
+            <tbody><% for (CourseOrder order : coursePurchaseHistory) { %>
+                <tr style="border-bottom:1px solid var(--border-light);">
+                    <td style="padding:1rem 1.25rem;font-weight:800;"><%= h(order.getOrderCode()) %></td>
+                    <td style="padding:1rem 1.25rem;color:var(--text-muted);"><%= order.getPaidAt() != null ? tuitionPaidFormat.format(order.getPaidAt()) : (order.getCreatedAt() != null ? tuitionPaidFormat.format(order.getCreatedAt()) : "") %></td>
+                    <td style="padding:1rem 1.25rem;">
+                        <% for (CourseOrderItem orderItem : order.getItems()) { %>
+                            <div style="font-weight:700;line-height:1.5;"><%= h(orderItem.getCourseTitle()) %></div>
+                        <% } %>
+                    </td>
+                    <td style="padding:1rem 1.25rem;text-align:right;font-weight:900;color:#ef4444;">-<%= h(order.getTotalLabel()) %></td>
+                    <td style="padding:1rem 1.25rem;text-align:center;"><span style="background:#ecfdf5;color:#047857;padding:.3rem .7rem;border-radius:999px;font-size:.75rem;font-weight:800;">Thành công</span></td>
+                </tr>
             <% } %></tbody>
         </table></div>
         <% } %>

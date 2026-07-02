@@ -20,7 +20,7 @@ public class StudentStudySessionServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         User user = session != null ? (User) session.getAttribute("loggedUser") : null;
-        if (user == null || !hasRole(user, "student")) {
+        if (user == null || (!hasRole(user, "student") && !hasRole(user, "teacher"))) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }

@@ -140,6 +140,32 @@ public class CourseOrderDao {
         return null;
     }
 
+    public List<CourseOrder> listPaidByStudentId(String studentId, int limit) {
+        List<CourseOrder> orders = new ArrayList<>();
+        if (studentId == null || studentId.trim().isEmpty()) {
+            return orders;
+        }
+
+        String sql = baseOrderSelect()
+                + "WHERE o.student_id = ?::uuid AND o.status = 'paid' "
+                + "ORDER BY COALESCE(o.paid_at, o.created_at) DESC LIMIT ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, studentId);
+            ps.setInt(2, Math.max(1, limit));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    CourseOrder order = mapOrder(rs);
+                    order.setItems(listItems(conn, order.getId()));
+                    orders.add(order);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in CourseOrderDao.listPaidByStudentId: " + e.getMessage());
+        }
+        return orders;
+    }
+
     public List<StaffCourseTransaction> listForStaffTransactions(String status, String search, int limit) {
         List<StaffCourseTransaction> transactions = new ArrayList<>();
         String normalizedStatus = emptyToNull(status);

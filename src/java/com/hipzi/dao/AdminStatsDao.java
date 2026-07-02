@@ -126,49 +126,95 @@ public class AdminStatsDao {
     public AdminFinancialStats getFinancialOverview() {
         AdminFinancialStats stats = new AdminFinancialStats();
         try (Connection conn = DBContext.getConnection()) {
-            // 1. Total Course Revenue (course_orders where status='paid')
+            // 1. Total revenue from successfully processed course payments
             try (Statement st = conn.createStatement();
-                 ResultSet rs = st.executeQuery("SELECT COALESCE(SUM(total_amount), 0) AS total FROM course_orders WHERE status = 'paid'")) {
+                 ResultSet rs = st.executeQuery("SELECT COALESCE(SUM(pe.amount), 0) AS total "
+                         + "FROM payment_events pe "
+                         + "JOIN course_orders o ON o.id = pe.order_id "
+                         + "WHERE pe.status = 'processed' AND o.status = 'paid'")) {
                 if (rs.next()) stats.setTotalCourseRevenue(rs.getBigDecimal("total"));
-            } catch (SQLException ignored) {}
+            } catch (SQLException e) {
+                System.err.println("Error loading total course revenue: " + e.getMessage());
+            }
 
-            // 2. Total Wallet Deposits
+            // 2. Total paid classroom tuition revenue
+            try (Statement st = conn.createStatement();
+                 ResultSet rs = st.executeQuery("SELECT COALESCE(SUM(amount), 0) AS total "
+                         + "FROM classroom_tuition_invoices "
+                         + "WHERE status = 'paid' AND paid_at IS NOT NULL")) {
+                if (rs.next()) stats.setTotalTuitionRevenue(rs.getBigDecimal("total"));
+            } catch (SQLException e) {
+                System.err.println("Error loading total tuition revenue: " + e.getMessage());
+            }
+
+            // 3. Total Wallet Deposits
             try (Statement st = conn.createStatement();
                  ResultSet rs = st.executeQuery("SELECT COALESCE(SUM(amount), 0) AS total FROM wallet_transactions WHERE transaction_type = 'deposit'")) {
                 if (rs.next()) stats.setTotalWalletDeposits(rs.getBigDecimal("total"));
             } catch (SQLException ignored) {}
 
-            // 3. Total Momo Withdrawals
+            // 4. Total paid teacher withdrawals
             try (Statement st = conn.createStatement();
-                 ResultSet rs = st.executeQuery("SELECT COALESCE(SUM(amount), 0) AS total FROM momo_withdrawals WHERE status = 'completed'")) {
+                 ResultSet rs = st.executeQuery("SELECT COALESCE(SUM(amount), 0) AS total FROM teacher_withdrawal_requests WHERE status = 'paid'")) {
                 if (rs.next()) stats.setTotalWithdrawals(rs.getBigDecimal("total"));
             } catch (SQLException ignored) {}
 
-            // 4. Total Wallet Balance (system liability)
+            // 5. Total Wallet Balance (system liability)
             try (Statement st = conn.createStatement();
                  ResultSet rs = st.executeQuery("SELECT COALESCE(SUM(wallet_balance), 0) AS total FROM users WHERE deleted_at IS NULL")) {
                 if (rs.next()) stats.setTotalWalletBalance(rs.getBigDecimal("total"));
             } catch (SQLException ignored) {}
 
-            // 5. Recent 10 Course Orders
+            // 6. Recent 10 successfully processed course payments
             List<Map<String, Object>> recentTransactions = new ArrayList<>();
-            String sql = "SELECT o.order_code, o.total_amount, o.status, o.created_at, u.full_name " +
-                         "FROM course_orders o " +
-                         "JOIN users u ON o.student_id = u.id " +
-                         "ORDER BY o.created_at DESC LIMIT 10";
+            String sql = "SELECT o.order_code, pe.amount, o.status, "
+                    + "COALESCE(pe.processed_at, o.paid_at, o.created_at) AS transaction_at, "
+                    + "u.display_name AS user_name "
+                    + "FROM payment_events pe "
+                    + "JOIN course_orders o ON o.id = pe.order_id "
+                    + "JOIN users u ON u.id = o.student_id "
+                    + "WHERE pe.status = 'processed' AND o.status = 'paid' "
+                    + "ORDER BY transaction_at DESC LIMIT 10";
             try (Statement st = conn.createStatement();
                  ResultSet rs = st.executeQuery(sql)) {
                 while (rs.next()) {
                     Map<String, Object> tx = new HashMap<>();
                     tx.put("code", rs.getString("order_code"));
-                    tx.put("amount", rs.getBigDecimal("total_amount"));
+                    tx.put("amount", rs.getBigDecimal("amount"));
                     tx.put("status", rs.getString("status"));
-                    tx.put("date", rs.getTimestamp("created_at"));
-                    tx.put("user", rs.getString("full_name"));
+                    tx.put("date", rs.getTimestamp("transaction_at"));
+                    tx.put("user", rs.getString("user_name"));
                     recentTransactions.add(tx);
                 }
-            } catch (SQLException ignored) {}
+            } catch (SQLException e) {
+                System.err.println("Error loading recent course transactions: " + e.getMessage());
+            }
             stats.setRecentTransactions(recentTransactions);
+
+            // 7. Recent 10 paid classroom tuition transactions
+            List<Map<String, Object>> recentTuitionTransactions = new ArrayList<>();
+            String tuitionSql = "SELECT ti.invoice_code, ti.amount, ti.status, ti.paid_at, "
+                    + "ti.classroom_title, u.display_name AS user_name "
+                    + "FROM classroom_tuition_invoices ti "
+                    + "JOIN users u ON u.id = ti.student_id "
+                    + "WHERE ti.status = 'paid' AND ti.paid_at IS NOT NULL "
+                    + "ORDER BY ti.paid_at DESC LIMIT 10";
+            try (Statement st = conn.createStatement();
+                 ResultSet rs = st.executeQuery(tuitionSql)) {
+                while (rs.next()) {
+                    Map<String, Object> tx = new HashMap<>();
+                    tx.put("code", rs.getString("invoice_code"));
+                    tx.put("amount", rs.getBigDecimal("amount"));
+                    tx.put("status", rs.getString("status"));
+                    tx.put("date", rs.getTimestamp("paid_at"));
+                    tx.put("user", rs.getString("user_name"));
+                    tx.put("classroom", rs.getString("classroom_title"));
+                    recentTuitionTransactions.add(tx);
+                }
+            } catch (SQLException e) {
+                System.err.println("Error loading recent tuition transactions: " + e.getMessage());
+            }
+            stats.setRecentTuitionTransactions(recentTuitionTransactions);
 
         } catch (SQLException e) {
             System.err.println("Error in AdminStatsDao.getFinancialOverview: " + e.getMessage());

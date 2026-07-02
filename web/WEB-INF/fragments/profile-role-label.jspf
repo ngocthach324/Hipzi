@@ -33,12 +33,16 @@
         profileMenuLabel = "T\u1ed5ng quan h\u1ecdc t\u1eadp";
     } else if (profileHasTeacher && !profileHasStaff && !profileHasAdmin) {
         profileMenuLabel = "T\u1ed5ng quan gi\u1ea3ng d\u1ea1y";
+    } else if (profileHasStaff && !profileHasAdmin) {
+        profileMenuLabel = "T\u1ed5ng quan h\u1ec7 th\u1ed1ng";
+    } else if (profileHasAdmin) {
+        profileMenuLabel = "T\u1ed5ng quan h\u1ec7 th\u1ed1ng";
     }
     String profileMenuHref = request.getContextPath() + "/profile";
     if (profileHasAdmin) {
         profileMenuHref = request.getContextPath() + "/admin-profile";
     } else if (profileHasStaff) {
-        profileMenuHref = request.getContextPath() + "/staff-profile?tab=profile";
+        profileMenuHref = request.getContextPath() + "/staff-profile?tab=overview";
     } else if (profileHasTeacher) {
         profileMenuHref = request.getContextPath() + "/teacher-profile?tab=dashboard";
     } else if (profileHasParent) {

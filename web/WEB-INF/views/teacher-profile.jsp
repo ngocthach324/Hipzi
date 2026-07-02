@@ -11,6 +11,7 @@
 <%@page import="com.hipzi.model.TeacherReviewStats"%>
 <%@page import="com.hipzi.model.TeacherWalletStats"%>
 <%@page import="com.hipzi.model.TeacherGoogleAccount"%>
+<%@page import="com.hipzi.model.StudentStudyProgressStats"%>
 <%@page import="com.hipzi.service.NotificationService"%>
 <%@page import="java.util.List"%>
 <%@page import="java.text.SimpleDateFormat"%>
@@ -35,6 +36,27 @@
                         .append("\",\"value\":")
                         .append(point.getAmountLong())
                         .append("}");
+            }
+        }
+        json.append("]");
+        return json.toString();
+    }
+
+    private String studyProgressJson(List<StudentStudyProgressStats.Point> points) {
+        StringBuilder json = new StringBuilder("[");
+        if (points != null) {
+            for (int i = 0; i < points.size(); i++) {
+                StudentStudyProgressStats.Point point = points.get(i);
+                if (i > 0) json.append(",");
+                json.append("{\"label\":\"")
+                        .append(jsEscape(point.getLabel()))
+                        .append("\",\"fullLabel\":\"")
+                        .append(jsEscape(point.getFullLabel()))
+                        .append("\",\"hours\":")
+                        .append(String.format(java.util.Locale.US, "%.2f", point.getHours()))
+                        .append(",\"hoursLabel\":\"")
+                        .append(jsEscape(point.getHoursLabel()))
+                        .append("\"}");
             }
         }
         json.append("]");
@@ -2860,6 +2882,13 @@
                 initialTeacherTab = "tab-teaching-registration";
             }
         }
+
+        StudentStudyProgressStats studyProgressStats = (StudentStudyProgressStats) request.getAttribute("studentStudyProgressStats");
+        if (studyProgressStats == null) {
+            studyProgressStats = new StudentStudyProgressStats();
+        }
+        String weeklyStudyJson = studyProgressJson(studyProgressStats.getWeeklyPoints());
+        String monthlyStudyJson = studyProgressJson(studyProgressStats.getMonthlyPoints());
     %>
 
     <%@ include file="/WEB-INF/fragments/profile-role-label.jspf" %>
@@ -3868,15 +3897,15 @@
                     <div class="overview-chart-card">
                         <div class="overview-chart-head">
                             <div class="overview-chart-title-block">
-                                <h2 class="overview-chart-title">Th&#7901;i l&#432;&#7907;ng gi&#7843;ng d&#7841;y</h2>
-                                <div class="overview-chart-summary" aria-label="T&#7893;ng quan th&#7901;i l&#432;&#7907;ng gi&#7843;ng d&#7841;y">
+                                <h2 class="overview-chart-title">Thời lượng hoạt động</h2>
+                                <div class="overview-chart-summary" aria-label="Tổng quan thời lượng hoạt động">
                                     <span class="overview-summary-pill taught">
-                                        <strong id="overviewTotalTaught">18.5</strong>
-                                        <span>gi&#7901; &#273;&#227; d&#7841;y</span>
+                                        <strong id="overviewTotalTaught"><%= studyProgressStats.getWeeklyTotalHoursLabel() %></strong>
+                                        <span>giờ hoạt động</span>
                                     </span>
                                     <span class="overview-summary-pill trend">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: -0.2rem;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-                                        <strong>12%</strong>
+                                        <strong id="overviewTrendPercent"><%= studyProgressStats.getTrendPercentLabel() %></strong>
                                         <span>so với tuần trước</span>
                                     </span>
                                 </div>
@@ -3888,28 +3917,28 @@
                         </div>
 
                         <div class="overview-line-wrap" id="overviewLineWrap">
-                            <svg class="overview-line-chart" viewBox="0 0 640 214" role="img" aria-label="Biểu đồ thời lượng giảng dạy">
+                            <svg class="overview-line-chart" viewBox="0 0 640 214" role="img" aria-label="Biểu đồ tiến độ hoạt động">
                                 <defs>
                                     <linearGradient id="overviewTaughtFill" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#059669" stop-opacity="0.18"/>
-                                        <stop offset="100%" stop-color="#059669" stop-opacity="0"/>
+                                        <stop offset="0%" stop-color="#059669" stop-opacity="0.18" />
+                                        <stop offset="100%" stop-color="#059669" stop-opacity="0" />
                                     </linearGradient>
                                 </defs>
-                                <line x1="52" y1="24" x2="610" y2="24" stroke="#e2e8f0" stroke-width="1"/>
-                                <line x1="52" y1="70" x2="610" y2="70" stroke="#e2e8f0" stroke-width="1"/>
-                                <line x1="52" y1="116" x2="610" y2="116" stroke="#e2e8f0" stroke-width="1"/>
-                                <line x1="52" y1="162" x2="610" y2="162" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="52" y1="24" x2="610" y2="24" stroke="#e2e8f0" stroke-width="1" />
+                                <line x1="52" y1="70" x2="610" y2="70" stroke="#e2e8f0" stroke-width="1" />
+                                <line x1="52" y1="116" x2="610" y2="116" stroke="#e2e8f0" stroke-width="1" />
+                                <line x1="52" y1="162" x2="610" y2="162" stroke="#e2e8f0" stroke-width="1" />
 
                                 <text x="4" y="28">6 giờ</text>
                                 <text x="4" y="74">4 giờ</text>
                                 <text x="4" y="120">2 giờ</text>
                                 <text x="4" y="166">0 giờ</text>
 
-                                <path id="overviewTaughtArea" d="M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62 L610 162 L64 162 Z" fill="url(#overviewTaughtFill)"/>
-                                <path id="overviewTaughtLine" d="M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62" fill="none" stroke="#059669" stroke-width="3.2" stroke-linecap="round"/>
+                                <path id="overviewTaughtArea" d="M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62 L610 162 L64 162 Z" fill="url(#overviewTaughtFill)" />
+                                <path id="overviewTaughtLine" d="M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62" fill="none" stroke="#059669" stroke-width="3.2" stroke-linecap="round" />
 
-                                <line id="overviewGuideLine" x1="250" y1="34" x2="250" y2="174" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 6"/>
-                                <circle id="overviewTaughtDot" cx="250" cy="64" r="5" fill="#059669" stroke="#ffffff" stroke-width="3"/>
+                                <line id="overviewGuideLine" x1="250" y1="34" x2="250" y2="174" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 6" />
+                                <circle id="overviewTaughtDot" cx="250" cy="64" r="5" fill="#059669" stroke="#ffffff" stroke-width="3" />
 
                                 <text id="overviewTick1" x="58" y="202">01/05</text>
                                 <text id="overviewTick2" x="150" y="202">02/05</text>
@@ -3923,14 +3952,14 @@
                             <div class="overview-line-tooltip" id="overviewLineTooltip">
                                 <strong id="overviewTooltipDate">03/05/2026</strong>
                                 <div class="overview-tooltip-row">
-                                    <span class="overview-tooltip-label"><span class="overview-tooltip-dot" style="background:#059669;"></span>Đã dạy</span>
+                                    <span class="overview-tooltip-label"><span class="overview-tooltip-dot" style="background:#059669;"></span>Hoạt động</span>
                                     <span id="overviewTooltipTaught">4 giờ</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="overview-chart-legend">
-                            <span class="overview-legend-item"><span class="overview-legend-dot" style="background:#059669;"></span>Giờ đã dạy</span>
+                            <span class="overview-legend-item"><span class="overview-legend-dot" style="background:#059669;"></span>Giờ hoạt động</span>
                         </div>
                     </div>
 
@@ -5590,126 +5619,7 @@
             });
         }
 
-        const overviewChartPeriods = {
-            week: {
-                ticks: ['01/05', '02/05', '03/05', '04/05', '05/05', '06/05', '07/05'],
-                tooltipDate: '03/05/2026',
-                totalTaught: '18.5',
-                totalScheduled: '14',
-                taught: '4 gi\u1edd',
-                scheduled: '3 gi\u1edd',
-                guideX: '250',
-                taughtDot: { x: '250', y: '64' },
-                scheduledDot: { x: '250', y: '104' },
-                tooltipLeft: '46%',
-                taughtLine: 'M64 144 C108 128, 118 84, 156 94 C198 106, 206 58, 250 64 C294 70, 306 118, 344 112 C386 104, 396 42, 436 48 C478 54, 488 92, 526 86 C566 80, 572 52, 610 62',
-                scheduledLine: 'M64 116 C104 84, 120 136, 160 128 C204 120, 214 92, 250 104 C290 118, 302 148, 344 136 C382 124, 400 92, 438 104 C476 116, 488 154, 526 146 C568 138, 574 96, 610 112'
-            },
-            month: {
-                ticks: ['01/05', '05/05', '10/05', '15/05', '20/05', '25/05', '30/05'],
-                tooltipDate: '15/05/2026',
-                totalTaught: '72.5',
-                totalScheduled: '86',
-                taught: '18.5 gi\u1edd',
-                scheduled: '22 gi\u1edd',
-                guideX: '344',
-                taughtDot: { x: '344', y: '82' },
-                scheduledDot: { x: '344', y: '60' },
-                tooltipLeft: '55%',
-                taughtLine: 'M64 132 C102 114, 120 96, 156 104 C196 112, 214 78, 250 84 C290 90, 306 96, 344 82 C384 68, 402 50, 436 58 C476 68, 488 116, 526 104 C566 92, 580 74, 610 82',
-                scheduledLine: 'M64 102 C104 70, 120 88, 160 76 C202 64, 214 118, 250 110 C292 102, 304 52, 344 60 C384 70, 398 94, 438 86 C478 78, 492 126, 528 118 C568 108, 578 70, 610 74'
-            }
-        };
 
-        function setOverviewChartPeriod(period) {
-            const switchEl = document.getElementById('overviewPeriodSwitch');
-            const lineWrap = document.getElementById('overviewLineWrap');
-            const data = overviewChartPeriods[period];
-            if (!switchEl || !data) {
-                return;
-            }
-
-            switchEl.dataset.active = period;
-            switchEl.querySelectorAll('.overview-period-btn').forEach(button => {
-                const isActive = button.dataset.period === period;
-                button.classList.toggle('is-active', isActive);
-                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-            });
-
-            if (lineWrap) {
-                lineWrap.classList.add('is-switching');
-            }
-
-            window.setTimeout(() => {
-                data.ticks.forEach((label, index) => {
-                    const tick = document.getElementById('overviewTick' + (index + 1));
-                    if (tick) {
-                        tick.textContent = label;
-                    }
-                });
-
-                const tooltipDate = document.getElementById('overviewTooltipDate');
-                const tooltipTaught = document.getElementById('overviewTooltipTaught');
-                const tooltipScheduled = document.getElementById('overviewTooltipScheduled');
-                const totalTaught = document.getElementById('overviewTotalTaught');
-                const totalScheduled = document.getElementById('overviewTotalScheduled');
-                if (tooltipDate) tooltipDate.textContent = data.tooltipDate;
-                if (tooltipTaught) tooltipTaught.textContent = data.taught;
-                if (tooltipScheduled) tooltipScheduled.textContent = data.scheduled;
-                if (totalTaught) totalTaught.textContent = data.totalTaught;
-                if (totalScheduled) totalScheduled.textContent = data.totalScheduled;
-
-                const taughtLine = document.getElementById('overviewTaughtLine');
-                const scheduledLine = document.getElementById('overviewScheduledLine');
-                const taughtArea = document.getElementById('overviewTaughtArea');
-                const scheduledArea = document.getElementById('overviewScheduledArea');
-                const guideLine = document.getElementById('overviewGuideLine');
-                const taughtDot = document.getElementById('overviewTaughtDot');
-                const scheduledDot = document.getElementById('overviewScheduledDot');
-                const tooltip = document.getElementById('overviewLineTooltip');
-
-                if (taughtLine) taughtLine.setAttribute('d', data.taughtLine);
-                if (scheduledLine) scheduledLine.setAttribute('d', data.scheduledLine);
-                if (taughtArea) taughtArea.setAttribute('d', data.taughtLine + ' L610 162 L64 162 Z');
-                if (scheduledArea) scheduledArea.setAttribute('d', data.scheduledLine + ' L610 162 L64 162 Z');
-                if (guideLine) {
-                    guideLine.setAttribute('x1', data.guideX);
-                    guideLine.setAttribute('x2', data.guideX);
-                }
-                if (taughtDot) {
-                    taughtDot.setAttribute('cx', data.taughtDot.x);
-                    taughtDot.setAttribute('cy', data.taughtDot.y);
-                }
-                if (scheduledDot) {
-                    scheduledDot.setAttribute('cx', data.scheduledDot.x);
-                    scheduledDot.setAttribute('cy', data.scheduledDot.y);
-                }
-                if (tooltip) {
-                    tooltip.style.left = data.tooltipLeft;
-                }
-
-                window.setTimeout(() => {
-                    if (lineWrap) {
-                        lineWrap.classList.remove('is-switching');
-                    }
-                }, 120);
-            }, 120);
-        }
-
-        function initOverviewPeriodSwitch() {
-            const switchEl = document.getElementById('overviewPeriodSwitch');
-            if (!switchEl) {
-                return;
-            }
-            switchEl.querySelectorAll('.overview-period-btn').forEach(button => {
-                button.addEventListener('click', () => {
-                    if (button.classList.contains('is-active')) {
-                        return;
-                    }
-                    setOverviewChartPeriod(button.dataset.period);
-                });
-            });
-        }
 
         function initWalletRevenueChart() {
             const switchEl = document.getElementById('walletChartPeriodSwitch');
@@ -6557,6 +6467,252 @@
                 }());
             }
         }
+
+        const overviewStudyRawData = {
+            week: <%= weeklyStudyJson %>,
+            month: <%= monthlyStudyJson %>
+        };
+
+        function formatOverviewTotalHours(points) {
+            const total = (points || []).reduce((sum, point) => sum + (Number(point.hours) || 0), 0);
+            if (total <= 0) return '0';
+            if (total >= 10 || Math.abs(total - Math.round(total)) < 0.05) return String(Math.round(total));
+            return total.toFixed(1);
+        }
+
+        function buildOverviewChartPeriod(points) {
+            const safePoints = (points && points.length ? points : [{ label: '', fullLabel: '', hours: 0, hoursLabel: '0 giờ' }]).slice(0, 7);
+            while (safePoints.length < 7) {
+                safePoints.push({ label: '', fullLabel: '', hours: 0, hoursLabel: '0 giờ' });
+            }
+            const maxHours = Math.max(1, ...safePoints.map(point => Number(point.hours) || 0));
+            const chartLeft = 64;
+            const chartRight = 610;
+            const chartBottom = 162;
+            const chartTop = 24;
+            const chartWidth = chartRight - chartLeft;
+            const chartHeight = chartBottom - chartTop;
+            const coords = safePoints.map((point, index) => {
+                const value = Number(point.hours) || 0;
+                const x = chartLeft + (chartWidth / 6) * index;
+                const y = chartBottom - Math.min(1, value / maxHours) * chartHeight;
+                return { x, y, point };
+            });
+            const selected = coords.reduce((best, current) => {
+                const currentHours = Number(current.point.hours) || 0;
+                const bestHours = Number(best.point.hours) || 0;
+                return currentHours >= bestHours ? current : best;
+            }, coords[0]);
+            const line = coords.map((coord, index) => (index === 0 ? 'M' : 'L') + coord.x.toFixed(1) + ' ' + coord.y.toFixed(1)).join(' ');
+            return {
+                ticks: safePoints.map(point => point.label || ''),
+                points: coords.map(coord => ({
+                    x: coord.x,
+                    y: coord.y,
+                    label: coord.point.label || '',
+                    fullLabel: coord.point.fullLabel || coord.point.label || '',
+                    hoursLabel: coord.point.hoursLabel || '0 giờ'
+                })),
+                tooltipDate: selected.point.fullLabel || selected.point.label || '',
+                totalTaught: formatOverviewTotalHours(safePoints),
+                taught: selected.point.hoursLabel || '0 giờ',
+                guideX: selected.x.toFixed(1),
+                taughtDot: { x: selected.x.toFixed(1), y: selected.y.toFixed(1) },
+                tooltipLeft: Math.max(18, Math.min(82, (selected.x / 640) * 100)).toFixed(1) + '%',
+                taughtLine: line
+            };
+        }
+
+        const overviewChartPeriods = {
+            week: buildOverviewChartPeriod(overviewStudyRawData.week),
+            month: buildOverviewChartPeriod(overviewStudyRawData.month)
+        };
+
+        let currentOverviewChartPeriod = 'week';
+
+        function updateOverviewTooltipPoint(data, index) {
+            if (!data || !data.points || !data.points.length) {
+                return;
+            }
+            const safeIndex = Math.max(0, Math.min(data.points.length - 1, index));
+            const point = data.points[safeIndex];
+            const tooltipDate = document.getElementById('overviewTooltipDate');
+            const tooltipTaught = document.getElementById('overviewTooltipTaught');
+            const guideLine = document.getElementById('overviewGuideLine');
+            const taughtDot = document.getElementById('overviewTaughtDot');
+            const tooltip = document.getElementById('overviewLineTooltip');
+            if (tooltipDate) tooltipDate.textContent = point.fullLabel || point.label || '';
+            if (tooltipTaught) tooltipTaught.textContent = point.hoursLabel || '0 giờ';
+            if (guideLine) {
+                guideLine.setAttribute('x1', point.x.toFixed(1));
+                guideLine.setAttribute('x2', point.x.toFixed(1));
+            }
+            if (taughtDot) {
+                taughtDot.setAttribute('cx', point.x.toFixed(1));
+                taughtDot.setAttribute('cy', point.y.toFixed(1));
+            }
+            if (tooltip) {
+                tooltip.style.left = Math.max(18, Math.min(82, (point.x / 640) * 100)).toFixed(1) + '%';
+            }
+        }
+
+        function setOverviewChartPeriod(period) {
+            const switchEl = document.getElementById('overviewPeriodSwitch');
+            const lineWrap = document.getElementById('overviewLineWrap');
+            const data = overviewChartPeriods[period];
+            if (!switchEl || !data) {
+                return;
+            }
+
+            currentOverviewChartPeriod = period;
+            switchEl.dataset.active = period;
+            switchEl.querySelectorAll('.overview-period-btn').forEach(button => {
+                const isActive = button.dataset.period === period;
+                button.classList.toggle('is-active', isActive);
+                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+
+            if (lineWrap) {
+                lineWrap.classList.add('is-switching');
+            }
+
+            window.setTimeout(() => {
+                data.ticks.forEach((label, index) => {
+                    const tick = document.getElementById('overviewTick' + (index + 1));
+                    if (tick) {
+                        tick.textContent = label;
+                    }
+                });
+
+                const tooltipDate = document.getElementById('overviewTooltipDate');
+                const tooltipTaught = document.getElementById('overviewTooltipTaught');
+                const totalTaught = document.getElementById('overviewTotalTaught');
+                if (tooltipDate) tooltipDate.textContent = data.tooltipDate;
+                if (tooltipTaught) tooltipTaught.textContent = data.taught;
+                if (totalTaught) totalTaught.textContent = data.totalTaught;
+
+                const taughtLine = document.getElementById('overviewTaughtLine');
+                const taughtArea = document.getElementById('overviewTaughtArea');
+                const guideLine = document.getElementById('overviewGuideLine');
+                const taughtDot = document.getElementById('overviewTaughtDot');
+                const tooltip = document.getElementById('overviewLineTooltip');
+
+                if (taughtLine) taughtLine.setAttribute('d', data.taughtLine);
+                if (taughtArea) taughtArea.setAttribute('d', data.taughtLine + ' L610 162 L64 162 Z');
+                if (guideLine) {
+                    guideLine.setAttribute('x1', data.guideX);
+                    guideLine.setAttribute('x2', data.guideX);
+                }
+                if (taughtDot) {
+                    taughtDot.setAttribute('cx', data.taughtDot.x);
+                    taughtDot.setAttribute('cy', data.taughtDot.y);
+                }
+                if (tooltip) {
+                    tooltip.style.left = data.tooltipLeft;
+                }
+                updateOverviewTooltipPoint(data, data.points ? data.points.length - 1 : 0);
+
+                window.setTimeout(() => {
+                    if (lineWrap) {
+                        lineWrap.classList.remove('is-switching');
+                    }
+                }, 120);
+            }, 120);
+        }
+
+        function initOverviewPeriodSwitch() {
+            const switchEl = document.getElementById('overviewPeriodSwitch');
+            if (!switchEl) {
+                return;
+            }
+            const chartSvg = document.querySelector('#overviewLineWrap .overview-line-chart');
+            if (chartSvg && chartSvg.dataset.hoverBound !== 'true') {
+                chartSvg.dataset.hoverBound = 'true';
+                chartSvg.addEventListener('mousemove', event => {
+                    const data = overviewChartPeriods[currentOverviewChartPeriod] || overviewChartPeriods.week;
+                    if (!data || !data.points || !data.points.length) {
+                        return;
+                    }
+                    const rect = chartSvg.getBoundingClientRect();
+                    const mouseX = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 640;
+                    let closestIndex = 0;
+                    let closestDistance = Number.POSITIVE_INFINITY;
+                    data.points.forEach((point, index) => {
+                        const distance = Math.abs(point.x - mouseX);
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            closestIndex = index;
+                        }
+                    });
+                    updateOverviewTooltipPoint(data, closestIndex);
+                });
+                chartSvg.addEventListener('mouseleave', () => {
+                    const data = overviewChartPeriods[currentOverviewChartPeriod] || overviewChartPeriods.week;
+                    updateOverviewTooltipPoint(data, data && data.points ? data.points.length - 1 : 0);
+                });
+            }
+            switchEl.querySelectorAll('.overview-period-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    if (button.classList.contains('is-active')) {
+                        return;
+                    }
+                    setOverviewChartPeriod(button.dataset.period);
+                });
+            });
+            setOverviewChartPeriod(switchEl.dataset.active || 'week');
+        }
+
+        function initTeacherStudyTracking() {
+            const endpoint = '${pageContext.request.contextPath}/student-study-session';
+            let activeStartedAt = Date.now();
+            let isVisible = document.visibilityState !== 'hidden';
+
+            function flushStudySeconds(useBeacon) {
+                if (!isVisible && !useBeacon) {
+                    return;
+                }
+                const now = Date.now();
+                const seconds = Math.floor((now - activeStartedAt) / 1000);
+                if (seconds <= 0) {
+                    return;
+                }
+                const formData = new URLSearchParams();
+                formData.append('seconds', seconds);
+
+                if (useBeacon && navigator.sendBeacon) {
+                    navigator.sendBeacon(endpoint, formData);
+                } else {
+                    fetch(endpoint, {
+                        method: 'POST',
+                        body: formData,
+                        keepalive: true
+                    }).catch(err => console.error('Study tracking failed', err));
+                }
+                activeStartedAt = now;
+            }
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    flushStudySeconds(false);
+                    isVisible = false;
+                } else {
+                    activeStartedAt = Date.now();
+                    isVisible = true;
+                }
+            });
+
+            window.addEventListener('beforeunload', () => {
+                flushStudySeconds(true);
+            });
+
+            setInterval(() => {
+                flushStudySeconds(false);
+            }, 60000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTeacherStudyTracking();
+        });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </body>
