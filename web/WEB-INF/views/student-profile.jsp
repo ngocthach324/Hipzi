@@ -4018,7 +4018,7 @@
                                                                                                                     <% } else { %>
                                                                                                                     <div class="courses-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; padding: 1.5rem;">
                                                                                                                         <% for (Course course : myCourses) { 
-                                                                                                                            String thumbUrl = course.getThumbnailUrl();
+                                                                                                                            String thumbUrl = course.getThumbnailServletUrl(request.getContextPath());
                                                                                                                             String thumbStyle = (thumbUrl != null && !thumbUrl.trim().isEmpty())
                                                                                                                                     ? "background-image:url('" + h(thumbUrl) + "'); background-size:cover; background-position:center;"
                                                                                                                                     : "background:" + h(course.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";

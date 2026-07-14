@@ -4276,7 +4276,7 @@
                             <% for (com.hipzi.model.Course course : teacherCourses) { %>
                                 <div style="border: 1.5px solid rgba(226,232,240,.95); border-radius: 18px; background: rgba(255,255,255,.92); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.2s ease;">
                                     <%
-                                        String regThumbUrl = course.getThumbnailUrl();
+                                        String regThumbUrl = course.getThumbnailServletUrl(request.getContextPath());
                                         String regThumbStyle = (regThumbUrl != null && !regThumbUrl.trim().isEmpty())
                                                 ? "background-image:url('" + h(regThumbUrl) + "'); background-size:cover; background-position:center;"
                                                 : "background:" + (course.getThumbnailGradient() != null ? course.getThumbnailGradient() : "linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #38bdf8 100%)") + "; display:flex; align-items:center; justify-content:center;";
@@ -4328,9 +4328,10 @@
                                 <!-- MODAL CHỈNH SỬA KHÓA HỌC -->
                                 <div id="edit-course-<%= course.getId() %>" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
                                     <div style="background: var(--surface); width: 90%; max-width: 600px; border-radius: 1.5rem; padding: 2rem; box-shadow: var(--shadow-lg); position: relative; max-height: 90vh; overflow-y: auto;">
-                                        <form action="${pageContext.request.contextPath}/profile" method="POST" class="form-edit-layout" style="padding: 0; margin: 0;">
+                                        <form action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" class="form-edit-layout" style="padding: 0; margin: 0;">
                                             <input type="hidden" name="action" value="updateTeacherCourse">
                                             <input type="hidden" name="courseId" value="<%= course.getId() %>">
+                                            <input type="hidden" name="courseThumbnailUrl" value="<%= h(course.getThumbnailUrl()) %>">
                                             <input type="hidden" name="courseGoogleDriveUrl" value="<%= h(course.getGoogleDriveUrl()) %>">
                                             <input type="hidden" name="courseGoogleDriveFileId" value="<%= h(course.getGoogleDriveFileId()) %>">
                                             <input type="hidden" name="courseGoogleDriveFolderId" value="<%= h(course.getGoogleDriveFolderId()) %>">
@@ -4346,6 +4347,16 @@
                                                 <div class="form-group-premium" style="margin: 0;">
                                                     <label>Tên khóa học</label>
                                                     <input type="text" name="courseTitle" value="<%= h(course.getTitle()) %>" required>
+                                                </div>
+                                                <div class="form-group-premium" style="margin: 0;">
+                                                    <label>Ảnh bìa khóa học</label>
+                                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                                        <% if (course.getThumbnailServletUrl(request.getContextPath()) != null && !course.getThumbnailServletUrl(request.getContextPath()).isEmpty()) { %>
+                                                            <div style="width: 60px; height: 60px; border-radius: 0.5rem; background-image: url('<%= course.getThumbnailServletUrl(request.getContextPath()) %>'); background-size: cover; background-position: center; border: 1px solid #e2e8f0; flex-shrink: 0;"></div>
+                                                        <% } %>
+                                                        <input type="file" name="courseThumbnailFile" accept="image/*" style="flex: 1;">
+                                                    </div>
+                                                    <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">Để trống nếu không muốn thay đổi ảnh bìa hiện tại. Tệp dưới 5MB.</small>
                                                 </div>
                                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                                     <div class="form-group-premium" style="margin: 0;">

@@ -89,7 +89,7 @@
                     thumbUrl = contextPath + thumbUrl;
                 }
                 const thumbStyle = thumbUrl
-                    ? 'background-image:url("'+thumbUrl+'");background-size:cover;background-position:center;'
+                    ? "background-image:url('"+thumbUrl+"');background-size:cover;background-position:center;"
                     : 'background:'+(item.thumbnailGradient || 'linear-gradient(135deg,#3b82f6 0%,#6366f1 100%)');
                 const priceValue = Number(item.priceAmount ?? item.price ?? 0);
                 const priceLabel = item.priceLabel || (priceValue <= 0 ? 'Miễn phí' : (new Intl.NumberFormat('vi-VN').format(priceValue) + ' đ'));

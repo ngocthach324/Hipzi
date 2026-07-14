@@ -20,6 +20,7 @@ import com.hipzi.service.OtpService;
 import com.hipzi.service.NotificationService;
 import com.hipzi.service.StudentProfileService;
 import com.hipzi.service.ClassSessionService;
+import com.hipzi.service.B2StorageService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -97,6 +98,7 @@ public class ProfileServlet extends HttpServlet {
     private final WithdrawalRequestDao withdrawalRequestDao = new WithdrawalRequestDao();
     private final WithdrawalService withdrawalService = new WithdrawalService();
     private final UserDao userDao = new UserDao();
+    private final B2StorageService b2StorageService = new B2StorageService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -1167,7 +1169,7 @@ public class ProfileServlet extends HttpServlet {
             thumbnailPart = request.getPart("courseThumbnailFile");
         }
         if (thumbnailPart != null && thumbnailPart.getSize() > 0) {
-            thumbnailUrl = saveCourseThumbnailFile(request, user, thumbnailPart);
+            thumbnailUrl = saveCourseThumbnailFile(user, thumbnailPart);
         }
 
         Course course = new Course();
@@ -1302,30 +1304,31 @@ public class ProfileServlet extends HttpServlet {
         return "";
     }
 
-    private String saveCourseThumbnailFile(HttpServletRequest request, User user, Part part)
+    private String saveCourseThumbnailFile(User user, Part part)
             throws IOException {
         String contentType = part.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
             throw new IllegalArgumentException("Logo khóa học phải là file hình ảnh hợp lệ.");
         }
 
-        String uploadPath = request.getServletContext().getRealPath("/uploads/course-thumbnails");
-        if (uploadPath == null) {
-            throw new IOException("Không thể xác định thư mục tải lên logo khóa học.");
-        }
-        File uploadDir = new File(uploadPath);
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
-        }
-
         String submittedName = part.getSubmittedFileName();
         String extension = "";
         if (submittedName != null && submittedName.contains(".")) {
-            extension = submittedName.substring(submittedName.lastIndexOf(".")).replaceAll("[^a-zA-Z0-9.]", "");
+            extension = submittedName.substring(submittedName.lastIndexOf(".")).replaceAll("[^a-zA-Z0-9.]", "").toLowerCase();
         }
-        String safeFileName = "course_thumb_" + user.getId() + "_" + System.currentTimeMillis() + extension;
-        part.write(uploadPath + File.separator + safeFileName);
-        return request.getContextPath() + "/uploads/course-thumbnails/" + safeFileName;
+        String objectPath = "course-thumbnails/course_thumb_" + user.getId() + "_" + System.currentTimeMillis() + extension;
+
+        byte[] fileBytes;
+        try (java.io.InputStream is = part.getInputStream()) {
+            fileBytes = is.readAllBytes();
+        }
+        try {
+            b2StorageService.uploadObject(objectPath, fileBytes, contentType);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Tải ảnh bìa thất bại do bị gián đoạn.", e);
+        }
+        return "b2:" + objectPath;
     }
 
     private boolean isValidGoogleCourseUrl(String value) {

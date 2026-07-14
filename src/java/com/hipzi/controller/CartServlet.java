@@ -35,7 +35,7 @@ public class CartServlet extends HttpServlet {
         if ("count".equals(action)) {
             handleGetCount(user, response);
         } else if ("items".equals(action)) {
-            handleGetItems(user, response);
+            handleGetItems(request, user, response);
         } else {
             if (user == null) {
                 response.sendRedirect(request.getContextPath() + "/login");
@@ -81,7 +81,7 @@ public class CartServlet extends HttpServlet {
         }
     }
 
-    private void handleGetItems(User user, HttpServletResponse response) throws IOException {
+    private void handleGetItems(HttpServletRequest request, User user, HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         
@@ -97,10 +97,11 @@ public class CartServlet extends HttpServlet {
             StringBuilder itemsJson = new StringBuilder("[");
             for (int i = 0; i < items.size(); i++) {
                 CartItem item = items.get(i);
+                String thumbUrl = item.getThumbnailServletUrl(request.getContextPath());
                 itemsJson.append("{")
                          .append("\"courseId\":\"").append(item.getCourseId()).append("\",")
                          .append("\"courseTitle\":\"").append(item.getCourseTitle().replace("\"", "\\\"")).append("\",")
-                         .append("\"thumbnailUrl\":\"").append(item.getThumbnailUrl() != null ? item.getThumbnailUrl() : "").append("\",")
+                         .append("\"thumbnailUrl\":\"").append(thumbUrl != null ? thumbUrl : "").append("\",")
                          .append("\"thumbnailGradient\":\"").append(item.getThumbnailGradient() != null ? item.getThumbnailGradient().replace("\"", "\\\"") : "").append("\",")
                          .append("\"price\":").append(item.getPriceAmount() != null ? item.getPriceAmount() : BigDecimal.ZERO).append(",")
                          .append("\"priceAmount\":").append(item.getPriceAmount() != null ? item.getPriceAmount() : BigDecimal.ZERO).append(",")

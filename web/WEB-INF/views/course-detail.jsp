@@ -21,7 +21,7 @@
         return;
     }
     
-    String thumbUrl = course.getThumbnailUrl();
+    String thumbUrl = course.getThumbnailServletUrl(request.getContextPath());
     String thumbStyle = (thumbUrl != null && !thumbUrl.trim().isEmpty())
             ? "background-image:url('" + h(thumbUrl) + "'); background-size:cover; background-position:center;"
             : "background:" + h(course.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";
@@ -806,7 +806,7 @@
                     <%
                         if (relatedCourses != null && !relatedCourses.isEmpty()) {
                             for (Course rc : relatedCourses) {
-                                String rcThumbUrl = rc.getThumbnailUrl();
+                                String rcThumbUrl = rc.getThumbnailServletUrl(request.getContextPath());
                                 String rcThumbStyle = (rcThumbUrl != null && !rcThumbUrl.trim().isEmpty())
                                         ? "background-image:url('" + h(rcThumbUrl) + "'); background-size:cover; background-position:center;"
                                         : "background:" + h(rc.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";

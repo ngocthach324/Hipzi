@@ -39,6 +39,16 @@ public class CartItem {
     public String getThumbnailUrl() { return thumbnailUrl; }
     public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
 
+    public String getThumbnailServletUrl(String contextPath) {
+        if (thumbnailUrl == null || thumbnailUrl.isBlank()) return null;
+        if (thumbnailUrl.startsWith("b2:")) {
+            String objectPath = thumbnailUrl.substring(3);
+            return contextPath + "/course-thumbnail?p=" 
+                   + java.net.URLEncoder.encode(objectPath, java.nio.charset.StandardCharsets.UTF_8);
+        }
+        return thumbnailUrl;
+    }
+
     public BigDecimal getPriceAmount() { return priceAmount; }
     public void setPriceAmount(BigDecimal priceAmount) { this.priceAmount = priceAmount; }
 

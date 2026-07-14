@@ -4918,12 +4918,7 @@
                                                         <strong><%= course.getSubmittedAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(course.getSubmittedAt()) : "Chưa cập nhật" %></strong>
                                                     </div>
                                                 </div>
-                                                <% if (course.getShortDescription() != null && !course.getShortDescription().trim().isEmpty()) { %>
-                                                    <div class="teacher-approval-note" style="margin-top:1rem;">
-                                                        <span>Mô tả</span>
-                                                        <p><%= h(course.getShortDescription()) %></p>
-                                                    </div>
-                                                <% } %>
+
                                                 <div style="margin-top:1rem;">
                                                     <a href="<%= h(course.getGoogleDriveUrl()) %>" target="_blank" rel="noopener" style="color:#047857; font-weight:850; font-size:0.9rem; text-decoration:none;">Mở Google Drive →</a>
                                                 </div>

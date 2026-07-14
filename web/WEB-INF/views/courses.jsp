@@ -1453,7 +1453,7 @@
                 for (int loop = 0; loop < 2; loop++) {
                 for (int i = 0; i < weeklyLimit; i++) {
                     Course featuredCourse = featuredCourses.get(i);
-                    String featuredThumbUrl = featuredCourse.getThumbnailUrl();
+                    String featuredThumbUrl = featuredCourse.getThumbnailServletUrl(request.getContextPath());
                     String featuredThumbStyle = (featuredThumbUrl != null && !featuredThumbUrl.trim().isEmpty())
                             ? "background-image:url('" + h(featuredThumbUrl) + "'); background-size:cover; background-position:center;"
                             : "background:" + h(featuredCourse.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";
@@ -1664,7 +1664,7 @@
             for (Course course : courses) {
                 String priceValue = course.getPriceAmount() != null ? course.getPriceAmount().toPlainString() : "0";
                 String ratingValue = course.getRatingAverage() != null ? course.getRatingAverage().toPlainString() : "0";
-                String thumbUrl = course.getThumbnailUrl();
+                String thumbUrl = course.getThumbnailServletUrl(request.getContextPath());
                 String thumbStyle = (thumbUrl != null && !thumbUrl.trim().isEmpty())
                         ? "background-image:url('" + h(thumbUrl) + "'); background-size:cover; background-position:center;"
                         : "background:" + h(course.getThumbnailGradientOrDefault()) + "; display:flex; align-items:center; justify-content:center;";

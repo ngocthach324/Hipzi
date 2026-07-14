@@ -173,7 +173,7 @@
 
                 <% if (cartItems != null && !cartItems.isEmpty()) {
                        for (CartItem item : cartItems) {
-                           String thumbUrl = item.getThumbnailUrl();
+                           String thumbUrl = item.getThumbnailServletUrl(request.getContextPath());
                            if (thumbUrl != null && thumbUrl.startsWith("/") && !thumbUrl.startsWith(request.getContextPath())) {
                                thumbUrl = request.getContextPath() + thumbUrl;
                            }
