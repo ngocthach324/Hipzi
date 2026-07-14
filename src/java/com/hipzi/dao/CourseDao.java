@@ -162,6 +162,56 @@ public class CourseDao {
         return courses;
     }
 
+    /**
+     * AI-optimized search: finds approved public courses by subject name (ILIKE) or subject code,
+     * without requiring an exact keyword match from the user message.
+     */
+    public List<Course> searchForAi(String subjectName, String subjectCode, int limit) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT c.*, u.display_name AS teacher_name, u.email AS teacher_email, u.avatar_url AS teacher_avatar_url, "
+                + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school, "
+                + "false AS viewer_enrolled, 0 AS viewer_progress_percent "
+                + "FROM courses c "
+                + "JOIN users u ON u.id = c.teacher_id "
+                + "LEFT JOIN LATERAL ("
+                + "SELECT institution_name, workplace FROM teacher_applications "
+                + "WHERE user_id = c.teacher_id ORDER BY submitted_at DESC LIMIT 1"
+                + ") ta ON true "
+                + "WHERE c.deleted_at IS NULL AND c.status = 'approved' AND c.visibility = 'public' ");
+
+        List<Object> params = new ArrayList<>();
+        boolean hasFilter = false;
+
+        if (subjectName != null && !subjectName.trim().isEmpty()) {
+            sql.append("AND (c.subject_name ILIKE ? OR c.subject_code ILIKE ?) ");
+            params.add("%" + subjectName.trim() + "%");
+            params.add("%" + subjectName.trim() + "%");
+            hasFilter = true;
+        }
+        if (!hasFilter && subjectCode != null && !subjectCode.trim().isEmpty()) {
+            sql.append("AND c.subject_code = ? ");
+            params.add(subjectCode.trim());
+        }
+
+        sql.append("ORDER BY c.rating_average DESC, c.students_count DESC, c.created_at DESC LIMIT ?");
+        params.add(limit);
+
+        List<Course> courses = new ArrayList<>();
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            bindParams(ps, params);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    courses.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in CourseDao.searchForAi: " + e.getMessage());
+        }
+        return courses;
+    }
+
+
     public List<Course> findByTeacherId(String teacherId) {
         String sql = "SELECT c.*, u.display_name AS teacher_name, u.email AS teacher_email, u.avatar_url AS teacher_avatar_url, "
                 + "COALESCE(ta.institution_name, ta.workplace, '') AS teacher_school "

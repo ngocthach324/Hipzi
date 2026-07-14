@@ -31,12 +31,16 @@
         return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     }
 
-    function appendMessage(text, owner) {
+    function appendMessage(text, owner, isHtml = false) {
         if (!messages || !text.trim()) return;
         const item = document.createElement('div');
         item.className = 'hipzi-chat__message hipzi-chat__message--' + owner;
         item.innerHTML = '<div class="hipzi-chat__bubble"></div><span class="hipzi-chat__time"></span>';
-        item.querySelector('.hipzi-chat__bubble').textContent = text;
+        if (isHtml) {
+            item.querySelector('.hipzi-chat__bubble').innerHTML = text.replace(/\n/g, '<br>');
+        } else {
+            item.querySelector('.hipzi-chat__bubble').textContent = text;
+        }
         item.querySelector('.hipzi-chat__time').textContent = currentTime();
         messages.appendChild(item);
         scrollBottom();
@@ -80,7 +84,7 @@
             });
             const data = await response.json();
             root.classList.remove('is-typing');
-            appendMessage(data.reply || 'Hipzi AI ch\\u01b0a c\\u00f3 ph\\u1ea3n h\\u1ed3i ph\\u00f9 h\\u1ee3p.', 'bot');
+            appendMessage(data.reply || 'Hipzi AI ch\\u01b0a c\\u00f3 ph\\u1ea3n h\\u1ed3i ph\\u00f9 h\\u1ee3p.', 'bot', data.isHtml === true);
         } catch (error) {
             root.classList.remove('is-typing');
             appendMessage('Hipzi AI \\u0111ang b\\u1eadn m\\u1ed9t ch\\u00fat. B\\u1ea1n th\\u1eed l\\u1ea1i sau nh\\u00e9.', 'bot');

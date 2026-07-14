@@ -158,6 +158,16 @@
     border: 1px solid #e2e8f0;
 }
 
+.hipzi-chat__message--bot .hipzi-chat__bubble a {
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.15s;
+}
+
+.hipzi-chat__message--bot .hipzi-chat__bubble a:hover {
+    opacity: 0.85;
+}
+
 .hipzi-chat__message--user {
     align-self: flex-end;
 }

@@ -43,13 +43,17 @@ public class AiRecommendationService {
             classrooms = filterClassrooms(classrooms, hint);
         }
 
-        List<Course> courses = courseDao.listPublic(hint.courseSubjectCode, "all", keyword, "newest", null, 1, 5);
-        if (courses.isEmpty() && hint.courseSubjectCode != null) {
-            courses = courseDao.listPublic(hint.courseSubjectCode, "all", "", "newest", null, 1, 5);
+        // Use AI-specific search: match by subject_name (ILIKE) which is flexible,
+        // does NOT use the full user message as keyword (which would never match course titles).
+        List<Course> courses = courseDao.searchForAi(hint.classroomSubject, hint.courseSubjectCode, 5);
+        if (courses.isEmpty() && !hint.materialSubject.isEmpty()) {
+            courses = courseDao.searchForAi(hint.materialSubject, hint.courseSubjectCode, 5);
         }
         if (courses.isEmpty()) {
-            courses = courseDao.listPublic(null, "all", keyword, "newest", null, 1, 5);
+            // No subject detected – return top featured public courses
+            courses = courseDao.searchForAi(null, null, 5);
         }
+
 
         List<Material> materials = materialDao.search("ALL", "ALL", "ALL", keyword, "newest", 1, 5);
         if (materials.isEmpty() && !hint.materialSubject.isEmpty()) {

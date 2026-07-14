@@ -1725,7 +1725,7 @@
 
                     <script src="${pageContext.request.contextPath}/assets/js/navbar.js?v=3"></script>
                     <script src="${pageContext.request.contextPath}/assets/js/home-responsive.js?v=1"></script>
-                    <script src="${pageContext.request.contextPath}/assets/js/hipzi-chat-widget.js?v=5"></script>
+                    <script src="${pageContext.request.contextPath}/assets/js/hipzi-chat-widget.js?v=6"></script>
                     <!-- Hieu ung cuon muot va cham Lenis JS -->
                     <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
                     <script>

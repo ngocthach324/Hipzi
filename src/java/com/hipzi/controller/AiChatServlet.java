@@ -46,6 +46,15 @@ public class AiChatServlet extends HttpServlet {
                 return;
             }
 
+            // Check availability / listing requests FIRST before handing off to Groq
+            // because many phrases like "có những khóa học toán nào" also look like
+            // general learning questions but are really HIPZI resource queries.
+            AiRecommendationService.AiContext aiContext = recommendationService.buildContext(message, request.getContextPath());
+            if (isAvailabilityRequest(message)) {
+                writeJson(response, true, availabilityReply(aiContext, message, request.getContextPath()), true);
+                return;
+            }
+
             GroqChatService groq = new GroqChatService(config(request, "GROQ_API_KEYS"), config(request, "GROQ_MODEL"));
             if (isGeneralLearningQuestion(message) && !isHipziResourceRequest(message)) {
                 String reply = groq.isConfigured()
@@ -55,11 +64,6 @@ public class AiChatServlet extends HttpServlet {
                 return;
             }
 
-            AiRecommendationService.AiContext aiContext = recommendationService.buildContext(message, request.getContextPath());
-            if (isAvailabilityRequest(message)) {
-                writeJson(response, true, availabilityReply(aiContext, message, request.getContextPath()));
-                return;
-            }
             if (isLearningRoadmapRequest(message)) {
                 writeJson(response, true, learningRoadmapReply(message, aiContext, request.getContextPath()));
                 return;
@@ -176,11 +180,29 @@ public class AiChatServlet extends HttpServlet {
 
     private boolean isAvailabilityRequest(String message) {
         String normalized = normalize(message);
-        return normalized.contains(" con ") || normalized.startsWith("con ")
+        // Explicit availability markers
+        if (normalized.contains(" con ") || normalized.startsWith("con ")
                 || normalized.contains("co mon") || normalized.contains("co lop")
                 || normalized.contains("co khoa hoc") || normalized.contains("co tai lieu")
                 || normalized.contains("he thong") || normalized.contains("lop hoc dang co")
-                || normalized.contains("nhung lop hoc nao") || normalized.contains("danh sach lop");
+                || normalized.contains("nhung lop hoc nao") || normalized.contains("danh sach lop")
+                || normalized.contains("nhung khoa hoc nao") || normalized.contains("nhung tai lieu nao")
+                || normalized.contains("khoa hoc nao") || normalized.contains("lop hoc nao")
+                || normalized.contains("tai lieu nao") || normalized.contains("xem cac khoa")
+                || normalized.contains("xem cac lop") || normalized.contains("xem khoa hoc")
+                || normalized.contains("danh sach khoa hoc") || normalized.contains("co gi")
+                || normalized.contains("hien co") || normalized.contains("hien tai co")
+                || normalized.contains("dang co") || normalized.contains("dang mo")
+                || normalized.contains("dang giang")) {
+            return true;
+        }
+        // Compound: resource word + listing word
+        boolean resourceWord = normalized.contains("khoa hoc") || normalized.contains("lop hoc")
+                || normalized.contains("tai lieu") || normalized.contains("course");
+        boolean listingWord = normalized.contains("nao") || normalized.contains("gi")
+                || normalized.contains("nhung") || normalized.contains("cac")
+                || normalized.contains("so luong") || normalized.contains("bao nhieu");
+        return resourceWord && listingWord;
     }
 
     private boolean isHipziResourceRequest(String message) {
@@ -416,53 +438,110 @@ public class AiChatServlet extends HttpServlet {
                 || (wantsCourse && !context.getCourses().isEmpty())
                 || (wantsMaterial && !context.getMaterials().isEmpty());
 
+
         if (!hasRequestedData) {
-            reply.append("M\u00ecnh ch\u01b0a th\u1ea5y ");
-            reply.append(target.isEmpty() ? "d\u1eef li\u1ec7u ph\u00f9 h\u1ee3p" : "d\u1eef li\u1ec7u " + target + " ph\u00f9 h\u1ee3p");
-            reply.append(" trong HIPZI.");
-            reply.append("\nB\u1ea1n c\u00f3 th\u1ec3 th\u1eed t\u00ecm nhanh \u1edf L\u1edbp h\u1ecdc: ").append(contextPath).append("/classes");
-            reply.append("\nHo\u1eb7c Kho t\u00e0i li\u1ec7u: ").append(contextPath).append("/material-repository");
+            String subjectLabel = target.isEmpty() ? "" : " <strong>" + jsonEscapeHtml(target) + "</strong>";
+            reply.append("Mình chưa tìm thấy" + subjectLabel + " nào đang công khai trong HIPZI lúc này.<br><br>");
+            if (wantsCourse || (!wantsClassroom && !wantsMaterial)) {
+                reply.append("<a href=\"" + contextPath + "/courses\" style=\"display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; background:#0d9488; color:white; border-radius:0.5rem; text-decoration:none; font-weight:600; font-size:0.85rem;\">")
+                     .append("Xem tất cả khóa học</a><br><br>");
+            }
+            if (wantsClassroom || (!wantsCourse && !wantsMaterial)) {
+                reply.append("<a href=\"" + contextPath + "/classes\" style=\"display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; background:#3b82f6; color:white; border-radius:0.5rem; text-decoration:none; font-weight:600; font-size:0.85rem;\">")
+                     .append("Xem tất cả lớp học</a><br><br>");
+            }
+            reply.append("<span style=\"color:#64748b; font-size:0.85rem;\">Nếu muốn, hãy nói rõ môn học và lớp để mình tìm sát hơn nhé.</span>");
             return reply.toString();
         }
 
+
         reply.append("C\u00f3 nh\u00e9. M\u00ecnh t\u00ecm th\u1ea5y trong HIPZI");
         if (!target.isEmpty()) {
-            reply.append(" cho ").append(target);
+            reply.append(" cho ").append(jsonEscapeHtml(target));
         }
         reply.append(":");
 
         if (wantsClassroom && !classrooms.isEmpty()) {
-            reply.append("\n\nL\u1edbp h\u1ecdc:");
+            reply.append("\n\n<strong>L\u1edbp h\u1ecdc:</strong>\n");
+            reply.append("<div style=\"display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem;\">");
             for (Classroom classroom : classrooms) {
-                reply.append("\n- ").append(nullToEmpty(classroom.getTitle()))
-                        .append(" | ").append(nullToEmpty(classroom.getGrade()))
-                        .append(" | GV: ").append(nullToEmpty(classroom.getTeacherName()))
-                        .append("\n  ").append(contextPath).append("/classroom?id=").append(classroom.getId());
+                reply.append("<a href=\"").append(contextPath).append("/classroom?id=").append(classroom.getId()).append("\" ")
+                        .append("style=\"display:flex; align-items:center; gap:0.5rem; padding:0.5rem; border:1px solid #e2e8f0; border-radius:0.5rem; text-decoration:none; color:inherit; background:#ffffff; box-shadow:0 1px 2px rgba(0,0,0,0.05);\">")
+                        .append("<div style=\"width:40px; height:40px; border-radius:0.25rem; background:linear-gradient(135deg,#0ea5e9 0%,#22c55e 100%); display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:1.2rem; flex-shrink:0;\">")
+                        .append(jsonEscapeHtml(classroom.getSubject().substring(0, 1).toUpperCase()))
+                        .append("</div>")
+                        .append("<div style=\"flex:1; overflow:hidden;\">")
+                        .append("<div style=\"font-size:0.85rem; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:0.15rem;\">").append(jsonEscapeHtml(classroom.getTitle())).append("</div>")
+                        .append("<div style=\"font-size:0.75rem; color:#64748b; font-weight:500;\">")
+                        .append(jsonEscapeHtml(classroom.getGrade())).append(" &bull; GV: ").append(jsonEscapeHtml(classroom.getTeacherName()))
+                        .append("</div>")
+                        .append("</div>")
+                        .append("</a>");
             }
+            reply.append("</div>\n");
         }
 
         if (wantsCourse && !context.getCourses().isEmpty()) {
-            reply.append("\n\nKh\u00f3a h\u1ecdc:");
+            reply.append("\n\n<strong>Kh\u00f3a h\u1ecdc:</strong>\n");
+            reply.append("<div style=\"display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem;\">");
             for (Course course : context.getCourses()) {
-                reply.append("\n- ").append(nullToEmpty(course.getTitle()))
-                        .append(" | ").append(nullToEmpty(course.getGradeLevel()))
-                        .append("\n  ").append(contextPath).append("/course-detail?id=").append(course.getId());
+                String thumbUrl = course.getThumbnailServletUrl(contextPath);
+                String gradient = (course.getThumbnailGradient() != null && !course.getThumbnailGradient().isEmpty())
+                        ? course.getThumbnailGradient()
+                        : "linear-gradient(135deg,#3b82f6 0%,#6366f1 100%)";
+                // Use background-image with inline img element for reliability (avoids JSON-escape URL corruption)
+                // Fall back to gradient if no thumbnail
+                String thumbDiv;
+                if (thumbUrl != null && !thumbUrl.isEmpty()) {
+                    // Use an actual <img> tag instead of CSS background-image to avoid URL escaping issues
+                    thumbDiv = "<div style=\"width:56px; height:56px; border-radius:0.375rem; overflow:hidden; flex-shrink:0; background:" + jsonEscapeHtml(gradient) + ";\">"
+                             + "<img src=\"" + thumbUrl.replace("\"", "%22").replace("'", "%27") + "\" "
+                             + "style=\"width:100%; height:100%; object-fit:cover; display:block;\" "
+                             + "onerror=\"this.style.display='none'\" alt=\"\">"
+                             + "</div>";
+                } else {
+                    thumbDiv = "<div style=\"width:56px; height:56px; border-radius:0.375rem; flex-shrink:0; background:" + jsonEscapeHtml(gradient) + ";\"></div>";
+                }
+
+                reply.append("<a href=\"").append(contextPath).append("/course-detail?id=").append(course.getId()).append("\" ")
+                        .append("style=\"display:flex; align-items:center; gap:0.75rem; padding:0.6rem; border:1px solid #e2e8f0; border-radius:0.75rem; text-decoration:none; color:inherit; background:#ffffff; box-shadow:0 1px 4px rgba(0,0,0,0.06);\">")
+                        .append(thumbDiv)
+                        .append("<div style=\"flex:1; overflow:hidden;\">")
+                        .append("<div style=\"font-size:0.85rem; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:0.2rem;\">").append(jsonEscapeHtml(course.getTitle())).append("</div>")
+                        .append("<div style=\"font-size:0.75rem; color:#64748b; font-weight:500;\">")
+                        .append(jsonEscapeHtml(course.getSubjectName())).append(" &bull; ").append(jsonEscapeHtml(course.getGradeLevel()))
+                        .append("</div>")
+                        .append("</div>")
+                        .append("</a>");
             }
+            reply.append("</div>\n");
         }
 
+
         if (wantsMaterial && !context.getMaterials().isEmpty()) {
-            reply.append("\n\nT\u00e0i li\u1ec7u:");
+            reply.append("\n\n<strong>T\u00e0i li\u1ec7u:</strong>\n");
+            reply.append("<div style=\"display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem;\">");
             for (Material material : context.getMaterials()) {
-                reply.append("\n- ").append(nullToEmpty(material.getTitle()))
-                        .append(" | ").append(nullToEmpty(material.getGrade()))
-                        .append("\n  ").append(contextPath).append("/repository-material-preview?id=").append(material.getId());
+                reply.append("<a href=\"").append(contextPath).append("/repository-material-preview?id=").append(material.getId()).append("\" ")
+                        .append("style=\"display:flex; align-items:center; gap:0.5rem; padding:0.5rem; border:1px solid #e2e8f0; border-radius:0.5rem; text-decoration:none; color:inherit; background:#ffffff; box-shadow:0 1px 2px rgba(0,0,0,0.05);\">")
+                        .append("<div style=\"width:40px; height:40px; border-radius:0.25rem; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#64748b; flex-shrink:0;\">")
+                        .append("<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"></path><polyline points=\"14 2 14 8 20 8\"></polyline><line x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"></line><line x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"></line><polyline points=\"10 9 9 9 8 9\"></polyline></svg>")
+                        .append("</div>")
+                        .append("<div style=\"flex:1; overflow:hidden;\">")
+                        .append("<div style=\"font-size:0.85rem; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:0.15rem;\">").append(jsonEscapeHtml(material.getTitle())).append("</div>")
+                        .append("<div style=\"font-size:0.75rem; color:#64748b; font-weight:500;\">")
+                        .append(jsonEscapeHtml(material.getSubject())).append(" &bull; ").append(jsonEscapeHtml(material.getGrade()))
+                        .append("</div>")
+                        .append("</div>")
+                        .append("</a>");
             }
+            reply.append("</div>\n");
         }
 
         if ((wantsClassroom && classrooms.isEmpty())
                 || (wantsCourse && context.getCourses().isEmpty())
                 || (wantsMaterial && context.getMaterials().isEmpty())) {
-            reply.append("\n\nM\u1ed9t s\u1ed1 nh\u00f3m b\u1ea1n h\u1ecfi hi\u1ec7n ch\u01b0a c\u00f3 d\u1eef li\u1ec7u c\u00f4ng khai ph\u00f9 h\u1ee3p.");
+            reply.append("\n\n<p style=\"margin-top:0.5rem; color:#64748b;\">M\u1ed9t s\u1ed1 nh\u00f3m b\u1ea1n h\u1ecfi hi\u1ec7n ch\u01b0a c\u00f3 d\u1eef li\u1ec7u c\u00f4ng khai ph\u00f9 h\u1ee3p.</p>");
         }
 
         return reply.toString();
@@ -502,9 +581,15 @@ public class AiChatServlet extends HttpServlet {
                 || normalizedMessage.contains("java") || normalizedMessage.contains("javascript")) {
             return "l\u1eadp tr\u00ecnh/Tin h\u1ecdc";
         }
-        if (hint == null) return "";
-        if (!hint.getClassroomSubject().isEmpty()) return hint.getClassroomSubject();
-        if (!hint.getMaterialSubject().isEmpty()) return hint.getMaterialSubject();
+        if (hint != null && !hint.getClassroomSubject().isEmpty()) return hint.getClassroomSubject();
+        if (hint != null && !hint.getMaterialSubject().isEmpty()) return hint.getMaterialSubject();
+        // Fallback: detect from message
+        if (normalizedMessage.contains("toan")) return "To\u00e1n";
+        if (normalizedMessage.contains("tieng anh") || normalizedMessage.contains("english")) return "Ti\u1ebfng Anh";
+        if (normalizedMessage.contains("ngu van") || normalizedMessage.contains("van hoc")) return "Ng\u1eef v\u0103n";
+        if (normalizedMessage.contains("vat ly")) return "V\u1eadt l\u00fd";
+        if (normalizedMessage.contains("hoa hoc")) return "H\u00f3a h\u1ecdc";
+        if (normalizedMessage.contains("sinh hoc")) return "Sinh h\u1ecdc";
         return "";
     }
 
@@ -610,9 +695,22 @@ public class AiChatServlet extends HttpServlet {
         return value;
     }
 
-    private void writeJson(HttpServletResponse response, boolean success, String reply) throws IOException {
-        String json = "{\"success\":" + success + ",\"reply\":\"" + jsonEscape(reply) + "\"}";
+    private void writeJson(HttpServletResponse response, boolean success, String reply, boolean isHtml) throws IOException {
+        String json = "{\"success\":" + success + ",\"reply\":\"" + jsonEscape(reply) + "\",\"isHtml\":" + isHtml + "}";
         response.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private void writeJson(HttpServletResponse response, boolean success, String reply) throws IOException {
+        writeJson(response, success, reply, false);
+    }
+
+    private String jsonEscapeHtml(String text) {
+        if (text == null) return "";
+        return text.replace("&", "&amp;")
+                   .replace("<", "&lt;")
+                   .replace(">", "&gt;")
+                   .replace("\"", "&quot;")
+                   .replace("'", "&#39;");
     }
 
     private String jsonEscape(String value) {
